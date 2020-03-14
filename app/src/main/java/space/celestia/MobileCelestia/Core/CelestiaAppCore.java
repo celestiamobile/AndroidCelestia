@@ -1,14 +1,28 @@
 package space.celestia.MobileCelestia.Core;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.Date;
-import java.util.List;
 
 public class CelestiaAppCore {
     private long pointer;
     private boolean intialized;
     private CelestiaSimulation simulation;
 
-    public CelestiaAppCore(long pointer) {
+    // Singleton
+    private static CelestiaAppCore shared;
+    public static CelestiaAppCore shared() {
+        if (shared == null)
+            shared = new CelestiaAppCore();
+        return shared;
+    }
+
+    public boolean isIntialized() {
+        return intialized;
+    }
+
+    public CelestiaAppCore() {
         c_init();
         this.intialized = false;
         this.simulation = null;
@@ -18,7 +32,7 @@ public class CelestiaAppCore {
         return c_startRenderer();
     }
 
-    public boolean startSimulation(String configFileName, String[] extraDirectories) {
+    public boolean startSimulation(@Nullable String configFileName, @Nullable String[] extraDirectories) {
         return c_startSimulation(configFileName, extraDirectories);
     }
 
@@ -26,7 +40,7 @@ public class CelestiaAppCore {
         c_start();
     }
 
-    public void start(Date date) {
+    public void start(@NonNull Date date) {
         c_start((double)date.getTime() / 1000);
     }
 
@@ -45,6 +59,7 @@ public class CelestiaAppCore {
     public static boolean initGL() {
         return c_initGL();
     }
+    public static void chdir(String path) { c_chdir(path);}
 
     public CelestiaSimulation getSimulation() {
         if (simulation == null)
@@ -64,4 +79,5 @@ public class CelestiaAppCore {
     private native long c_getSimulation();
 
     private static native boolean c_initGL();
+    private static native void c_chdir(String path);
 }

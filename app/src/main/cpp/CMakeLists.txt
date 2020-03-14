@@ -472,4 +472,5 @@ target_link_libraries( # Specifies the target library.
         theora
         libogg
         cspice
+        EGL
         ${log-lib} )

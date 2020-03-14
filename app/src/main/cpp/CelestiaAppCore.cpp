@@ -1,6 +1,8 @@
 #include <jni.h>
 #include <string>
 
+#include <unistd.h>
+
 #include <celestia/celestiacore.h>
 #include <celengine/gl.h>
 
@@ -14,14 +16,6 @@ public:
     }
 private:
 };
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_space_celestia_MobileCelestia_MainActivity_stringFromJNI(
-        JNIEnv* env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
-}
 
 extern "C"
 JNIEXPORT jboolean JNICALL
@@ -174,4 +168,13 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getSimulation(JNIEnv 
     CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
 
     return (jlong)core->getSimulation();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1chdir(JNIEnv *env, jclass clazz,
+                                                                 jstring path) {
+    const char *c_str = env->GetStringUTFChars(path, nullptr);
+    chdir(c_str);
+    env->ReleaseStringUTFChars(path, c_str);
 }
