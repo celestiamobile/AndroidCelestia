@@ -33,7 +33,9 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_celestia, container, false);
         glViewContainer = view.findViewById<FrameLayout>(R.id.celestia_gl_view)
-        setupGLView()
+        if (pathToLoad != null) {
+            setupGLView()
+        }
         return view
     }
 
@@ -87,9 +89,8 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         glView?.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
 
         // Celestia initialization have to be called with an OpenGL context
-        pathToLoad.let {
-            pathToLoad = null
-            loadCelestia(it!!)
+        pathToLoad?.let {
+            loadCelestia(it)
         }
     }
 
