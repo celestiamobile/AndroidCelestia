@@ -6,6 +6,24 @@
 #include <celestia/celestiacore.h>
 #include <celengine/gl.h>
 
+static jclass cacClz = nullptr;
+static jfieldID cacPtrFieldID = nullptr;
+
+extern "C" {
+jint JNI_OnLoad(JavaVM *vm, void *reserved)
+{
+    JNIEnv* env;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
+        return JNI_ERR;
+
+    // Find some commonly used classes and fields
+    jclass cac = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaAppCore");
+    cacClz = (jclass)env->NewGlobalRef(cac);
+    cacPtrFieldID = env->GetFieldID(cacClz, "pointer", "J");
+    return JNI_VERSION_1_6;
+}
+}
+
 class AppCoreProgressWatcher: public ProgressNotifier
 {
 public:
@@ -28,17 +46,13 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1init(JNIEnv *env, jobject thiz) {
     CelestiaCore *core = new CelestiaCore;
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    env->SetLongField(thiz, fieldID, (jlong)core);
+    env->SetLongField(thiz, cacPtrFieldID, (jlong)core);
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1startRenderer(JNIEnv *env, jobject thiz) {
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     if (!core->initRenderer())
         return JNI_FALSE;
@@ -73,11 +87,8 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1startSimulation(JNIEn
                                                                            jobject thiz,
                                                                            jstring config_file_name,
                                                                            jobjectArray extra_directories) {
-
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    jfieldID initFieldID = env->GetFieldID(clz, "intialized", "Z");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
+    jfieldID initFieldID = env->GetFieldID(cacClz, "intialized", "Z");
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     AppCoreProgressWatcher watcher;
     std::vector<fs::path> extras;
@@ -110,9 +121,7 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1startSimulation(JNIEn
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1start__(JNIEnv *env, jobject thiz) {
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     core->start();
 }
@@ -121,9 +130,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1start__D(JNIEnv *env, jobject thiz,
                                                                     jdouble seconds_since_epoch) {
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     core->start(seconds_since_epoch);
 }
@@ -131,9 +138,7 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1start__D(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1draw(JNIEnv *env, jobject thiz) {
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     core->draw();
 }
@@ -141,9 +146,7 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1draw(JNIEnv *env, job
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1tick(JNIEnv *env, jobject thiz) {
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     core->tick();
 }
@@ -152,9 +155,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1resize(JNIEnv *env, jobject thiz, jint w,
                                                                   jint h) {
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     core->resize(w, h);
 }
@@ -163,9 +164,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getSimulation(JNIEnv *env,
                                                                          jobject thiz) {
-    jclass clz = env->GetObjectClass(thiz);
-    jfieldID fieldID = env->GetFieldID(clz, "pointer", "J");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, fieldID);
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     return (jlong)core->getSimulation();
 }
