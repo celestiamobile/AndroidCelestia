@@ -10,14 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
-import javax.microedition.khronos.egl.EGL
 import javax.microedition.khronos.egl.EGLConfig
-import javax.microedition.khronos.egl.EGLContext
 import javax.microedition.khronos.opengles.GL10
 
 class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
@@ -59,7 +53,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         if (activity == null) { return }
         if (glView != null) { return }
 
-        glView = GLSurfaceView(activity)
+        glView = CelestiaView(activity!!)
         glView?.setEGLContextClientVersion(2)
         glView?.setRenderer(this)
         glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
