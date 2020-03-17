@@ -27,12 +27,25 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 class AppCoreProgressWatcher: public ProgressNotifier
 {
 public:
-    AppCoreProgressWatcher() : ProgressNotifier() {};
+    AppCoreProgressWatcher(JNIEnv *env, jobject object, jmethodID method) :
+    ProgressNotifier(),
+    env(env),
+    object(object),
+    method(method) {};
+
     void update(const std::string& status)
     {
-        // TODO: tell object to update UI
+        if (!object) { return; }
+
+        const char *c_str = status.c_str();
+        jstring str = env->NewStringUTF(c_str);
+        env->CallVoidMethod(object, method, str);
     }
+
 private:
+    JNIEnv *env;
+    jobject object;
+    jmethodID method;
 };
 
 extern "C"
@@ -86,11 +99,19 @@ JNIEXPORT jboolean JNICALL
 Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1startSimulation(JNIEnv *env,
                                                                            jobject thiz,
                                                                            jstring config_file_name,
-                                                                           jobjectArray extra_directories) {
+                                                                           jobjectArray extra_directories,
+                                                                           jobject wc) {
     jfieldID initFieldID = env->GetFieldID(cacClz, "intialized", "Z");
     CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
-    AppCoreProgressWatcher watcher;
+    jmethodID jWcMethod = nullptr;
+    if (wc)
+    {
+        jclass jWcClz = env->GetObjectClass(wc);
+        jWcMethod = env->GetMethodID(jWcClz, "onCelestiaProgress", "(Ljava/lang/String;)V");
+    }
+
+    AppCoreProgressWatcher watcher(env, wc, jWcMethod);
     std::vector<fs::path> extras;
     if (extra_directories != nullptr)
     {

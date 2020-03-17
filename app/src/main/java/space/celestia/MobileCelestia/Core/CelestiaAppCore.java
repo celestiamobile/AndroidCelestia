@@ -14,6 +14,10 @@ public class CelestiaAppCore {
     public static final int MOUSE_BUTTON_MIDDLE     = 0x2;
     public static final int MOUSE_BUTTON_RIGHT      = 0x4;
 
+    public interface ProgressWatcher {
+        void onCelestiaProgress(@NonNull String progress);
+    }
+
     private long pointer;
     private boolean intialized;
     private CelestiaSimulation simulation;
@@ -40,8 +44,8 @@ public class CelestiaAppCore {
         return c_startRenderer();
     }
 
-    public boolean startSimulation(@Nullable String configFileName, @Nullable String[] extraDirectories) {
-        return c_startSimulation(configFileName, extraDirectories);
+    public boolean startSimulation(@Nullable String configFileName, @Nullable String[] extraDirectories, @Nullable ProgressWatcher watcher) {
+        return c_startSimulation(configFileName, extraDirectories, watcher);
     }
 
     public void start() {
@@ -107,7 +111,7 @@ public class CelestiaAppCore {
     // C function
     private native void c_init();
     private native boolean c_startRenderer();
-    private native boolean c_startSimulation(String configFileName, String[] extraDirectories);
+    private native boolean c_startSimulation(String configFileName, String[] extraDirectories, ProgressWatcher watcher);
     private native void c_start();
     private native void c_start(double secondsSinceEpoch);
     private native void c_draw();

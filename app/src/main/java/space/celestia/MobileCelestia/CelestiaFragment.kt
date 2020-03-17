@@ -14,7 +14,7 @@ import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
+class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.ProgressWatcher {
     private val TAG = "CelestiaFragment"
 
     private var activity: Activity? = null
@@ -70,7 +70,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     private fun loadCelestia(path: String) {
         CelestiaAppCore.chdir(path)
 
-        if (!core.startSimulation("$path/celestia.cfg", null)) {
+        if (!core.startSimulation("$path/celestia.cfg", null, this)) {
             return
         }
 
@@ -104,5 +104,10 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     override fun onDrawFrame(p0: GL10?) {
         core.draw()
         core.tick()
+    }
+
+    // Progress
+    override fun onCelestiaProgress(progress: String) {
+        Log.d(TAG, "Loading $progress")
     }
 }
