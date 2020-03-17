@@ -3,6 +3,7 @@ package space.celestia.MobileCelestia
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.PointF
+import android.graphics.RectF
 import android.opengl.GLSurfaceView
 import android.util.Log
 import android.view.Choreographer
@@ -75,12 +76,17 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
 
         when (ev.actionMasked) {
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_DOWN -> {
+                val point = PointF(
+                    ev.getX(id) / density,
+                    ev.getY(id) / density
+                )
+
+                // Avoid edge gesture
+                val viewRect = RectF(0.toFloat(), 0.toFloat(), width / density,  height / density)
+                viewRect.inset(16f, 16f)
+
                 // we don't allow a third finger
-                if (touchLocations.count() < 2) {
-                    val point = PointF(
-                        ev.getX(id) / density,
-                        ev.getY(id) / density
-                    )
+                if (viewRect.contains(point.x, point.y) && touchLocations.count() < 2) {
                     Log.d(TAG, "Down $point")
                     if (touchLocations.size == 1) {
                         touchActive = true
