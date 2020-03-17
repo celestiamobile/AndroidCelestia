@@ -3,6 +3,11 @@
     <color name="colorBackground">#000000</color>
     <color name="colorLabel">#FFFFFF</color>
 
+    <color name="colorImageIconNormal">#FFFFFF</color>
+    <color name="colorImageIconSelected">#AAAAAA</color>
+
+    <color name="colorDimmingBackground">#99000000</color>
+
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
