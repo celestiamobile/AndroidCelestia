@@ -88,7 +88,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
 
     // Render
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
-        glView?.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+        glView?.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
 
         // Celestia initialization have to be called with an OpenGL context
         pathToLoad?.let {

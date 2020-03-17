@@ -5,6 +5,7 @@ import android.content.res.Resources
 import android.graphics.PointF
 import android.opengl.GLSurfaceView
 import android.util.Log
+import android.view.Choreographer
 import android.view.MotionEvent
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import java.util.*
@@ -12,7 +13,7 @@ import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.hypot
 
-class CelestiaView : GLSurfaceView {
+class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
     class Touch {
         constructor(p: PointF, t: Date) {
             point = p
@@ -32,7 +33,15 @@ class CelestiaView : GLSurfaceView {
     private var touchLocations = HashMap<Int, Touch>()
     private var touchActive = false
 
-    constructor(context: Context) : super(context) {}
+    constructor(context: Context) : super(context) {
+        Choreographer.getInstance().postFrameCallback(this)
+    }
+
+    override fun finalize() {
+        Choreographer.getInstance().removeFrameCallback(this)
+
+        super.finalize()
+    }
 
     private val core = CelestiaAppCore.shared()
 
@@ -167,5 +176,11 @@ class CelestiaView : GLSurfaceView {
 
         val density = Resources.getSystem().displayMetrics.density
         holder.setFixedSize((width / density).toInt(), (height / density).toInt())
+    }
+
+    override fun doFrame(p0: Long) {
+        requestRender()
+
+        Choreographer.getInstance().postFrameCallback(this)
     }
 }
