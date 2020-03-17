@@ -25,7 +25,7 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
         var action = false
     }
 
-    public var isUserInteractionEnabled = false
+    public var isReady = false
 
     private val TAG = "CelestiaView"
 
@@ -47,7 +47,7 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event == null) { return true }
-        if (!isUserInteractionEnabled) { return true }
+        if (!isReady) { return true }
 
         val ev = event!!
         val density = Resources.getSystem().displayMetrics.density
@@ -179,7 +179,9 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
     }
 
     override fun doFrame(p0: Long) {
-        requestRender()
+        if (isReady) {
+            requestRender()
+        }
 
         Choreographer.getInstance().postFrameCallback(this)
     }

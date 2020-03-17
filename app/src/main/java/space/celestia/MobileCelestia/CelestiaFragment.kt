@@ -2,10 +2,10 @@ package space.celestia.MobileCelestia
 
 import android.app.Activity
 import android.content.Context
-import android.graphics.Color
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
+import android.util.Size
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +23,8 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
     // MARK: GL View
     private var glViewContainer: FrameLayout? = null
     private var glView: CelestiaView? = null
+    private var glViewSize: Size? = null
+    private var isReady: Boolean = false
 
     // MARK: Celestia
     private var pathToLoad: String? = null
@@ -89,10 +91,15 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
             return
         }
 
+        glViewSize?.let {
+            core.resize(it.width, it.height)
+        }
+
         core.tick()
         core.start()
 
-        glView?.isUserInteractionEnabled = true
+        glView?.isReady = true
+        isReady = true
 
         Log.d(TAG, "Ready to display")
         resultCallback?.let { it(true) }
@@ -102,18 +109,23 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
         glView?.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
 
-        // Celestia initialization have to be called with an OpenGL context
-        if (pathToLoad != null && cfgToLoad != null) {
-            loadCelestia(pathToLoad!!, cfgToLoad!!)
+        glView?.queueEvent {
+            // Celestia initialization have to be called with an OpenGL context
+            if (pathToLoad != null && cfgToLoad != null) {
+                loadCelestia(pathToLoad!!, cfgToLoad!!)
+            }
         }
     }
 
     override fun onSurfaceChanged(p0: GL10?, p1: Int, p2: Int) {
-        Log.d(TAG, "Resize ot $p1 x $p2")
+        glViewSize = Size(p1, p2)
+        Log.d(TAG, "Resize to $p1 x $p2")
+        if (!isReady) { return }
         core.resize(p1, p2)
     }
 
     override fun onDrawFrame(p0: GL10?) {
+        if (!isReady) { return }
         core.draw()
         core.tick()
     }
