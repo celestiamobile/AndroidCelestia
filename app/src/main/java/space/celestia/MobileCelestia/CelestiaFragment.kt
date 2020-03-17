@@ -21,7 +21,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
 
     // MARK: GL View
     private var glViewContainer: FrameLayout? = null
-    private var glView: GLSurfaceView? = null
+    private var glView: CelestiaView? = null
 
     // MARK: Celestia
     private var pathToLoad: String? = null
@@ -80,6 +80,8 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
 
         core.tick()
         core.start()
+
+        glView?.isUserInteractionEnabled = true
 
         Log.d(TAG, "Ready to display")
     }

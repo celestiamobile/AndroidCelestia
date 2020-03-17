@@ -1,11 +1,19 @@
 package space.celestia.MobileCelestia.Core;
 
+import android.graphics.PointF;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Date;
 
+import kotlin.UInt;
+
 public class CelestiaAppCore {
+    public static final int MOUSE_BUTTON_LEFT       = 0x1;
+    public static final int MOUSE_BUTTON_MIDDLE     = 0x2;
+    public static final int MOUSE_BUTTON_RIGHT      = 0x4;
+
     private long pointer;
     private boolean intialized;
     private CelestiaSimulation simulation;
@@ -56,6 +64,35 @@ public class CelestiaAppCore {
         c_resize(w, h);
     }
 
+    // Control
+    public void mouseButtonUp(int buttons, PointF point, int modifiers) {
+        c_mouseButtonUp(buttons, point.x, point.y, modifiers);
+    }
+
+    public void mouseButtonDown(int buttons, PointF point, int modifiers) {
+        c_mouseButtonDown(buttons, point.x, point.y, modifiers);
+    }
+
+    public void mouseMove(int buttons, PointF offset, int modifiers) {
+        c_mouseMove(buttons, offset.x, offset.y, modifiers);
+    }
+
+    public void mouseWheel(float motion, int modifiers) {
+        c_mouseWheel(motion, modifiers);
+    }
+
+    public void keyUp(int input) {
+        c_keyUp(input);
+    }
+
+    public void keyDown(int input) {
+        c_keyDown(input);
+    }
+
+    public void charEnter(int input) {
+        c_charEnter(input);
+    }
+
     public static boolean initGL() {
         return c_initGL();
     }
@@ -77,6 +114,15 @@ public class CelestiaAppCore {
     private native void c_tick();
     private native void c_resize(int w, int h);
     private native long c_getSimulation();
+
+    // Control
+    private native void c_mouseButtonUp(int buttons, float x, float y, int modifiers);
+    private native void c_mouseButtonDown(int buttons, float x, float y, int modifiers);
+    private native void c_mouseMove(int buttons, float x, float y, int modifiers);
+    private native void c_mouseWheel(float motion, int modifiers);
+    private native void c_keyUp(int input);
+    private native void c_keyDown(int input);
+    private native void c_charEnter(int input);
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);

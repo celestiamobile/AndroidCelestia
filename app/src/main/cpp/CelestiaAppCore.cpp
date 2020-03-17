@@ -177,3 +177,79 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1chdir(JNIEnv *env, jc
     chdir(c_str);
     env->ReleaseStringUTFChars(path, c_str);
 }
+
+static int convert_modifier_to_celestia_modifier(jint buttons, jint modifiers)
+{
+    // TODO: other modifier
+    int cModifiers = 0;
+    if (buttons & 1)
+        cModifiers |= CelestiaCore::LeftButton;
+    if (buttons & 2)
+        cModifiers |= CelestiaCore::MiddleButton;
+    if (buttons & 4)
+        cModifiers |= CelestiaCore::RightButton;
+    return cModifiers;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1mouseButtonUp(JNIEnv *env, jobject thiz,
+                                                                         jint buttons, jfloat x,
+                                                                         jfloat y, jint modifiers) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->mouseButtonUp(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1mouseButtonDown(JNIEnv *env,
+                                                                           jobject thiz,
+                                                                           jint buttons, jfloat x,
+                                                                           jfloat y,
+                                                                           jint modifiers) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->mouseButtonDown(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1mouseMove(JNIEnv *env, jobject thiz,
+                                                                     jint buttons, jfloat x,
+                                                                     jfloat y, jint modifiers) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->mouseMove(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1mouseWheel(JNIEnv *env, jobject thiz,
+                                                                      jfloat motion,
+                                                                      jint modifiers) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->mouseWheel(motion, convert_modifier_to_celestia_modifier(0, modifiers));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1keyUp(JNIEnv *env, jobject thiz,
+                                                                 jint input) {
+
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->keyUp(input, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1keyDown(JNIEnv *env, jobject thiz,
+                                                                   jint input) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->keyDown(input, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1charEnter(JNIEnv *env, jobject thiz,
+                                                                     jint input) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->charEntered((char)input, 0);
+}
