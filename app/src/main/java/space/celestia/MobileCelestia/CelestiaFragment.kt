@@ -2,6 +2,7 @@ package space.celestia.MobileCelestia
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
@@ -25,7 +26,11 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
 
     // MARK: Celestia
     private var pathToLoad: String? = null
+    private var cfgToLoad: String? = null
     private var core = CelestiaAppCore.shared()
+
+    private var statusCallback: ((String) -> Unit)? = null
+    private var resultCallback: ((Boolean) -> Unit)? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,20 +66,26 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
         glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
     }
 
-    fun requestLoadCelestia(path: String) {
+    fun requestLoadCelestia(path: String, cfgPath: String,  status: (String) -> Unit, result: (Boolean) -> Unit) {
         pathToLoad = path
+        cfgToLoad = cfgPath
+
+        statusCallback = status
+        resultCallback = result
 
         setupGLView()
     }
 
-    private fun loadCelestia(path: String) {
+    private fun loadCelestia(path: String, cfg: String) {
         CelestiaAppCore.chdir(path)
 
-        if (!core.startSimulation("$path/celestia.cfg", null, this)) {
+        if (!core.startSimulation(cfg, null, this)) {
+            resultCallback?.let { it(false) }
             return
         }
 
         if (!core.startRenderer()) {
+            resultCallback?.let { it(false) }
             return
         }
 
@@ -84,6 +95,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
         glView?.isUserInteractionEnabled = true
 
         Log.d(TAG, "Ready to display")
+        resultCallback?.let { it(true) }
     }
 
     // Render
@@ -91,8 +103,8 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
         glView?.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
 
         // Celestia initialization have to be called with an OpenGL context
-        pathToLoad?.let {
-            loadCelestia(it)
+        if (pathToLoad != null && cfgToLoad != null) {
+            loadCelestia(pathToLoad!!, cfgToLoad!!)
         }
     }
 
@@ -109,5 +121,8 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
     // Progress
     override fun onCelestiaProgress(progress: String) {
         Log.d(TAG, "Loading $progress")
+        statusCallback?.let {
+            it(progress)
+        }
     }
 }
