@@ -39,13 +39,13 @@ Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1getSelectionPtr(JNI
         case Selection::Type_Generic:
             return 0;
         case Selection::Type_Body:
-            return (long)sel->body();
+            return (jlong)sel->body();
         case Selection::Type_Star:
-            return (long)sel->star();
+            return (jlong)sel->star();
         case Selection::Type_DeepSky:
-            return (long)sel->deepsky();
+            return (jlong)sel->deepsky();
         case Selection::Type_Location:
-            return (long)sel->location();
+            return (jlong)sel->location();
     }
 }
 
@@ -68,12 +68,12 @@ Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1createSelection(JNI
         case Selection::Type_Generic:
             return 0;
         case Selection::Type_Body:
-            return (long)new Selection((Body *)pointer);
+            return (jlong)new Selection((Body *)pointer);
         case Selection::Type_Star:
-            return (long)new Selection((Star *)pointer);
+            return (jlong)new Selection((Star *)pointer);
         case Selection::Type_DeepSky:
-            return (long)new Selection((DeepSkyObject *)pointer);
+            return (jlong)new Selection((DeepSkyObject *)pointer);
         case Selection::Type_Location:
-            return (long)new Selection((Location *)pointer);
+            return (jlong)new Selection((Location *)pointer);
     }
 }

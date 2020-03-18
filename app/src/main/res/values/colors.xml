@@ -10,6 +10,10 @@
     <color name="colorImageIconNormal">#FFFFFF</color>
     <color name="colorImageIconSelected">#AAAAAA</color>
 
+    <color name="colorThemeBackground">#114477</color>
+    <color name="colorSelectedThemeBackground">#80114477</color>
+    <color name="colorThemeLabel">#6699CC</color>
+
     <color name="colorDimmingBackground">#99000000</color>
 
     <color name="colorPrimary">#6200EE</color>

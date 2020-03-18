@@ -14,6 +14,13 @@ jclass cseClz = nullptr;
 jfieldID csePtrFieldID = nullptr;
 jclass caoClz = nullptr;
 jfieldID caoPtrFieldID = nullptr;
+jclass cunClz = nullptr;
+jfieldID cunPtrFieldID = nullptr;
+
+jclass cscClz = nullptr;
+jfieldID cscPtrFieldID = nullptr;
+jclass cdcClz = nullptr;
+jfieldID cdcPtrFieldID = nullptr;
 
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
@@ -38,6 +45,18 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     jclass cao = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaAstroObject");
     caoClz = (jclass)env->NewGlobalRef(cao);
     caoPtrFieldID = env->GetFieldID(caoClz, "pointer", "J");
+
+    jclass cun = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaUniverse");
+    cunClz = (jclass)env->NewGlobalRef(cun);
+    cunPtrFieldID = env->GetFieldID(cunClz, "pointer", "J");
+
+    jclass csc = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaStarCatalog");
+    cscClz = (jclass)env->NewGlobalRef(csc);
+    cscPtrFieldID = env->GetFieldID(cscClz, "pointer", "J");
+
+    jclass cdc = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaDSOCatalog");
+    cdcClz = (jclass)env->NewGlobalRef(cdc);
+    cdcPtrFieldID = env->GetFieldID(cdcClz, "pointer", "J");
     return JNI_VERSION_1_6;
 }
 }

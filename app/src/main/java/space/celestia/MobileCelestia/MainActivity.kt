@@ -7,11 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageButton
+import androidx.fragment.app.Fragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
+import space.celestia.MobileCelestia.Core.CelestiaSelection
+import space.celestia.MobileCelestia.Info.InfoFragment
+import space.celestia.MobileCelestia.Info.Model.InfoActionItem
+import space.celestia.MobileCelestia.Info.Model.InfoDescriptionItem
+import space.celestia.MobileCelestia.Info.Model.InfoNormalActionItem
+import space.celestia.MobileCelestia.Info.Model.InfoSelectActionItem
 import space.celestia.MobileCelestia.Loading.LoadingFragment
 import space.celestia.MobileCelestia.Toolbar.ToolbarAction
 import space.celestia.MobileCelestia.Toolbar.ToolbarFragment
@@ -19,7 +26,7 @@ import space.celestia.MobileCelestia.Utils.AssetUtils
 import space.celestia.MobileCelestia.Utils.PreferenceManager
 import java.io.IOException
 
-class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInteractionListener, InfoFragment.InfoListFragmentInteractionListener {
 
     private val TAG = "MainActivity"
 
@@ -34,6 +41,7 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
     private val celestiaParentPath by lazy { this.filesDir.absolutePath }
 
     private var core = CelestiaAppCore.shared()
+    private var currentSelection: CelestiaSelection? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,23 +116,42 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
     }
 
     private fun showToolbar() {
-        // TODO: pass values
-        findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
-        findViewById<View>(R.id.toolbar_right_container).visibility = View.VISIBLE
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.toolbar_right_container, ToolbarFragment.newInstance(listOf()))
-            .commitAllowingStateLoss()
+        // Show info action only when selection is not null
+        currentSelection = core.simulation.selection
+        var actions: List<List<ToolbarAction>> = listOf();
+        if (!currentSelection!!.isEmpty) {
+            actions = listOf(
+                listOf(ToolbarAction.Celestia)
+            )
+        }
+
+        showRightFragment(ToolbarFragment.newInstance(actions), R.id.toolbar_right_container)
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
         hideOverlay()
-        // TODO: responds to actions...
+        when (action) {
+            ToolbarAction.Celestia -> {
+                showInfo(currentSelection!!)
+            }
+            else -> {
+                // TODO: responds to other actions...
+            }
+        }
+    }
+
+    override fun onInfoActionSelected(action: InfoActionItem) {
+        if (action is InfoNormalActionItem) {
+            core.simulation.selection = currentSelection!!
+            core.charEnter(action.item.value)
+        } else if (action is InfoSelectActionItem) {
+            core.simulation.selection = currentSelection!!
+        }
     }
 
     private fun hideOverlay() {
         val overlay = findViewById<ViewGroup>(R.id.overlay_container)
-        for (i in 1 until overlay.childCount) {
+        for (i in 0 until overlay.childCount) {
             val child = overlay.getChildAt(i)
             supportFragmentManager.findFragmentById(child.id)?.let {
                 child.visibility = View.INVISIBLE
@@ -132,6 +159,28 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
             }
         }
         overlay.visibility = View.INVISIBLE
+    }
+
+    private fun showInfo(selection: CelestiaSelection) {
+        showRightFragment(
+            InfoFragment.newInstance(
+                InfoDescriptionItem(core.simulation.universe.nameForSelection(selection),
+                    "Overview")
+            )
+        )
+    }
+
+    private fun showRightFragment(fragment: Fragment) {
+        showRightFragment(fragment, R.id.normal_right_container)
+    }
+
+    private fun showRightFragment(fragment: Fragment, containerID: Int) {
+        findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
+        findViewById<View>(containerID).visibility = View.VISIBLE
+        supportFragmentManager
+            .beginTransaction()
+            .add(containerID, fragment)
+            .commitAllowingStateLoss()
     }
 
     companion object {

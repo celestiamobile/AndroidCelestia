@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 public class CelestiaSimulation {
     private long pointer;
+    private CelestiaUniverse universe;
 
     public @NonNull
     CelestiaSelection getSelection() {
@@ -14,6 +15,13 @@ public class CelestiaSimulation {
         c_setSelection(selection.pointer);
     }
 
+    public @NonNull
+    CelestiaUniverse getUniverse() {
+        if (universe == null)
+            universe = new CelestiaUniverse(c_getUniverse());
+        return universe;
+    }
+
     protected CelestiaSimulation(long ptr) {
         pointer = ptr;
     }
@@ -21,4 +29,5 @@ public class CelestiaSimulation {
     // C functions
     private native long c_getSelection();
     private native void c_setSelection(long ptr);
+    private native long c_getUniverse();
 }

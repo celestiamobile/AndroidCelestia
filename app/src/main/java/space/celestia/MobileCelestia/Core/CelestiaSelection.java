@@ -61,6 +61,17 @@ public class CelestiaSelection {
         return null;
     }
 
+    @Nullable
+    public String getWebInfoURL() {
+        if (c_getSelectionType() == SELECTION_TYPE_BODY)
+            return getBody().getWebInfoURL();
+        if (c_getSelectionType() == SELECTION_TYPE_STAR)
+            return getStar().getWebInfoURL();
+        if (c_getSelectionType() == SELECTION_TYPE_DEEP_SKY)
+            return getDSO().getWebInfoURL();
+        return null;
+    }
+
     @NonNull
     public String getName() {
         return c_getName();

@@ -125,7 +125,7 @@ class ToolbarFragment : Fragment() {
         if (context is ToolbarListFragmentInteractionListener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
+            throw RuntimeException(context.toString() + " must implement ToolbarListFragmentInteractionListener")
         }
     }
 
