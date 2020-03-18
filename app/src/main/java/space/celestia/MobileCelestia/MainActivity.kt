@@ -179,6 +179,7 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
         findViewById<View>(containerID).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
+            .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
             .add(containerID, fragment)
             .commitAllowingStateLoss()
     }
