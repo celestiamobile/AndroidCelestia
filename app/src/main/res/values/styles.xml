@@ -11,6 +11,10 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
+    <style name="ListItem" parent="Container">
+        <item name="android:background">@drawable/ripple_background</item>
+    </style>
+
     <style name="Background">
         <item name="android:background">@color/colorBackground</item>
     </style>
@@ -19,9 +23,18 @@
         <item name="android:background">@color/colorDimmingBackground</item>
     </style>
 
+    <style name="Separator">
+        <item name="android:layout_marginStart">32dp</item>
+        <item name="android:background">@color/colorSeparator</item>
+    </style>
+
     <style name="ImageButton">
         <item name="android:background">@android:color/transparent</item>
         <item name="android:tint">@drawable/icon_tint_selector</item>
+    </style>
+
+    <style name="Image">
+        <item name="android:tint">@color/colorLabel</item>
     </style>
 
     <style name="PrimaryLabel">

@@ -3,17 +3,23 @@ package space.celestia.MobileCelestia
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.ImageButton
+import androidx.constraintlayout.widget.ConstraintLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.MobileCelestia.Loading.LoadingFragment
+import space.celestia.MobileCelestia.Toolbar.ToolbarAction
+import space.celestia.MobileCelestia.Toolbar.ToolbarFragment
 import space.celestia.MobileCelestia.Utils.AssetUtils
 import space.celestia.MobileCelestia.Utils.PreferenceManager
 import java.io.IOException
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInteractionListener {
 
     private val TAG = "MainActivity"
 
@@ -45,6 +51,15 @@ class MainActivity : AppCompatActivity() {
             .beginTransaction()
             .add(R.id.loading_fragment_container, loadingFragment)
             .commitAllowingStateLoss()
+        
+        findViewById<View>(R.id.overlay_container).setOnTouchListener { _, _ ->
+            hideOverlay()
+            true
+        }
+
+        findViewById<ImageButton>(R.id.action_menu_button).setOnClickListener {
+            showToolbar()
+        }
 
         // Check if data is already copied
         if (preferenceManager[PreferenceManager.Preference.AssetCopied] == null) {
@@ -90,7 +105,34 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    companion object {
+    private fun showToolbar() {
+        // TODO: pass values
+        findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
+        findViewById<View>(R.id.toolbar_right_container).visibility = View.VISIBLE
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.toolbar_right_container, ToolbarFragment.newInstance(listOf()))
+            .commitAllowingStateLoss()
+    }
+
+    override fun onToolbarActionSelected(action: ToolbarAction) {
+        hideOverlay()
+        // TODO: responds to actions...
+    }
+
+    private fun hideOverlay() {
+        val overlay = findViewById<ViewGroup>(R.id.overlay_container)
+        for (i in 1 until overlay.childCount) {
+            val child = overlay.getChildAt(i)
+            supportFragmentManager.findFragmentById(child.id)?.let {
+                child.visibility = View.INVISIBLE
+                supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
+            }
+        }
+        overlay.visibility = View.INVISIBLE
+    }
+
+        companion object {
         init {
             System.loadLibrary("celestia")
         }
