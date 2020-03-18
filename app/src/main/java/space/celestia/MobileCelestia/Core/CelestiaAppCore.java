@@ -7,8 +7,6 @@ import androidx.annotation.Nullable;
 
 import java.util.Date;
 
-import kotlin.UInt;
-
 public class CelestiaAppCore {
     public static final int MOUSE_BUTTON_LEFT       = 0x1;
     public static final int MOUSE_BUTTON_MIDDLE     = 0x2;

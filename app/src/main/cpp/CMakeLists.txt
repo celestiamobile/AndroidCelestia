@@ -381,6 +381,8 @@ set(CELESTIA_JNI_DIR ${CMAKE_SOURCE_DIR})
 list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaAppCore.cpp
         ${CELESTIA_JNI_DIR}/CelestiaSimulation.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaSelection.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaAstroObject.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/libs")

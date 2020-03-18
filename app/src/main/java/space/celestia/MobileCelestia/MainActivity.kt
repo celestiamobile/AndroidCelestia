@@ -7,11 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageButton
-import androidx.constraintlayout.widget.ConstraintLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import space.celestia.MobileCelestia.Loading.LoadingFragment
 import space.celestia.MobileCelestia.Toolbar.ToolbarAction
 import space.celestia.MobileCelestia.Toolbar.ToolbarFragment
@@ -32,6 +32,8 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val celestiaParentPath by lazy { this.filesDir.absolutePath }
+
+    private var core = CelestiaAppCore.shared()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -132,7 +134,7 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
         overlay.visibility = View.INVISIBLE
     }
 
-        companion object {
+    companion object {
         init {
             System.loadLibrary("celestia")
         }

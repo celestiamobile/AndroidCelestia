@@ -1,4 +1,4 @@
-#include <jni.h>
+#include "CelestiaJNI.h"
 #include <string>
 
 #include <unistd.h>
@@ -6,8 +6,14 @@
 #include <celestia/celestiacore.h>
 #include <celengine/gl.h>
 
-static jclass cacClz = nullptr;
-static jfieldID cacPtrFieldID = nullptr;
+jclass cacClz = nullptr;
+jfieldID cacPtrFieldID = nullptr;
+jclass csiClz = nullptr;
+jfieldID csiPtrFieldID = nullptr;
+jclass cseClz = nullptr;
+jfieldID csePtrFieldID = nullptr;
+jclass caoClz = nullptr;
+jfieldID caoPtrFieldID = nullptr;
 
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
@@ -20,6 +26,18 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     jclass cac = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaAppCore");
     cacClz = (jclass)env->NewGlobalRef(cac);
     cacPtrFieldID = env->GetFieldID(cacClz, "pointer", "J");
+
+    jclass csi = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaSimulation");
+    csiClz = (jclass)env->NewGlobalRef(csi);
+    csiPtrFieldID = env->GetFieldID(csiClz, "pointer", "J");
+
+    jclass cse = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaSelection");
+    cseClz = (jclass)env->NewGlobalRef(cse);
+    csePtrFieldID = env->GetFieldID(cseClz, "pointer", "J");
+
+    jclass cao = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaAstroObject");
+    caoClz = (jclass)env->NewGlobalRef(cao);
+    caoPtrFieldID = env->GetFieldID(caoClz, "pointer", "J");
     return JNI_VERSION_1_6;
 }
 }
