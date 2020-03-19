@@ -19,6 +19,10 @@
         <item name="android:background">@color/colorBackground</item>
     </style>
 
+    <style name="SecondaryBackground">
+        <item name="android:background">@color/colorSecondaryBackground</item>
+    </style>
+
     <style name="ButtonBackground">
         <item name="android:background">@drawable/button_background_selector</item>
     </style>
@@ -43,6 +47,10 @@
 
     <style name="PrimaryLabel">
         <item name="android:textColor">@color/colorLabel</item>
+    </style>
+    
+    <style name="EditText" parent="PrimaryLabel">
+        <item name="backgroundTint">@color/colorEditTextHairLine</item>
     </style>
 
     <!-- Base application theme. -->

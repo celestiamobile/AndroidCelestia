@@ -12,7 +12,6 @@ import space.celestia.MobileCelestia.R
 import space.celestia.MobileCelestia.Toolbar.Model.ToolbarActionItem
 
 import space.celestia.MobileCelestia.Toolbar.Model.ToolbarListItem
-import space.celestia.MobileCelestia.Toolbar.Model.ToolbarSeparatorItem
 import java.io.Serializable
 import kotlin.collections.ArrayList
 
@@ -96,19 +95,7 @@ class ToolbarFragment : Fragment() {
 
         val allItems = ArrayList(existingActions)
         allItems.addAll(ToolbarAction.persistentAction)
-
-        val model = ArrayList<ToolbarListItem>()
-        for (section in allItems) {
-            for (item in section) {
-                model.add(ToolbarActionItem(
-                    item,
-                    resources.getIdentifier(item.imageName,
-                        "drawable",
-                        activity!!.packageName
-                    )))
-            }
-            model.add(ToolbarSeparatorItem())
-        }
+        val model = allItems.map { it.map { ToolbarActionItem(it, resources.getIdentifier(it.imageName, "drawable", activity!!.packageName)) } }
 
         // Set the adapter
         if (view is RecyclerView) {

@@ -54,6 +54,7 @@ class SearchFragment : Fragment(), SearchView.Listener {
             listAdapter.updateSearchResults(listOf())
         } else {
             listAdapter.updateSearchResults(core.simulation.completionForText(newText))
+            listAdapter.notifyDataSetChanged()
         }
     }
 

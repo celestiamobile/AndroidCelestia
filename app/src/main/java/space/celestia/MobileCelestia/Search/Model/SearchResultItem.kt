@@ -1,4 +1,6 @@
 package space.celestia.MobileCelestia.Search.Model
 
-class SearchResultItem(val result: String) {
+import space.celestia.MobileCelestia.Common.SeparatorRecyclerViewAdapter
+
+class SearchResultItem(val result: String) : SeparatorRecyclerViewAdapter.RecyclerViewItem {
 }

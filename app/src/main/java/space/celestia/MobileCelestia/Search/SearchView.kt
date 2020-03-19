@@ -44,16 +44,12 @@ class SearchView(context: Context, attrs: AttributeSet) : LinearLayout(context, 
     }
 
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-        if (p0 == null || p0?.length == 0) {
+        if (p0 == null || p0.isEmpty()) {
             cancelView.visibility = View.GONE
         } else {
             cancelView.visibility = View.VISIBLE
         }
-        var str = ""
-        p0?.let {
-            str = it.toString()
-        }
-        listener?.onTextChanged(str)
+        listener?.onTextChanged(p0.toString())
     }
 
     override fun afterTextChanged(p0: Editable?) {
