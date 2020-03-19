@@ -12,6 +12,9 @@
     <color name="colorImageIconNormal">#FFFFFF</color>
     <color name="colorImageIconSelected">#AAAAAA</color>
 
+    <color name="colorBottomItemSelected">#FFFFFF</color>
+    <color name="colorBottomItemUnselected">#80FFFFFF</color>
+
     <color name="colorThemeBackground">#114477</color>
     <color name="colorSelectedThemeBackground">#80114477</color>
     <color name="colorThemeLabel">#6699CC</color>

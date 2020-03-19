@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.celestia.MobileCelestia.Browser.BrowserFragment
 import space.celestia.MobileCelestia.Control.BottomControlFragment
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import space.celestia.MobileCelestia.Core.CelestiaSelection
@@ -199,7 +200,8 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun showSearch() {
-        showRightFragment(SearchFragment.newInstance())
+        showRightFragment(BrowserFragment.newInstance("", ""))
+//        showRightFragment(SearchFragment.newInstance())
     }
 
     private fun showTimeControl() {
