@@ -20,13 +20,17 @@ import space.celestia.MobileCelestia.Info.Model.InfoDescriptionItem
 import space.celestia.MobileCelestia.Info.Model.InfoNormalActionItem
 import space.celestia.MobileCelestia.Info.Model.InfoSelectActionItem
 import space.celestia.MobileCelestia.Loading.LoadingFragment
+import space.celestia.MobileCelestia.Search.SearchFragment
 import space.celestia.MobileCelestia.Toolbar.ToolbarAction
 import space.celestia.MobileCelestia.Toolbar.ToolbarFragment
 import space.celestia.MobileCelestia.Utils.AssetUtils
 import space.celestia.MobileCelestia.Utils.PreferenceManager
 import java.io.IOException
 
-class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInteractionListener, InfoFragment.InfoListFragmentInteractionListener {
+class MainActivity : AppCompatActivity(),
+    ToolbarFragment.Listener,
+    InfoFragment.Listener,
+    SearchFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -134,6 +138,9 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
             ToolbarAction.Celestia -> {
                 showInfo(currentSelection!!)
             }
+            ToolbarAction.Search -> {
+                showSearch()
+            }
             else -> {
                 // TODO: responds to other actions...
             }
@@ -147,6 +154,17 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
         } else if (action is InfoSelectActionItem) {
             core.simulation.selection = currentSelection!!
         }
+    }
+
+    override fun onSearchItemSelected(text: String) {
+        val sel = core.simulation.findObject(text)
+        if (sel.isEmpty) {
+            // TODO: object not found
+            return
+        }
+        hideOverlay()
+        currentSelection = sel
+        showInfo(sel)
     }
 
     private fun hideOverlay() {
@@ -168,6 +186,10 @@ class MainActivity : AppCompatActivity(), ToolbarFragment.ToolbarListFragmentInt
                     "Overview")
             )
         )
+    }
+
+    private fun showSearch() {
+        showRightFragment(SearchFragment.newInstance())
     }
 
     private fun showRightFragment(fragment: Fragment) {

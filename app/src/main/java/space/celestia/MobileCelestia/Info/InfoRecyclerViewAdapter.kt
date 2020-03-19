@@ -4,11 +4,10 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import space.celestia.MobileCelestia.R
 
-import space.celestia.MobileCelestia.Info.InfoFragment.InfoListFragmentInteractionListener
+import space.celestia.MobileCelestia.Info.InfoFragment.Listener
 
 import kotlinx.android.synthetic.main.fragment_info_action_item.view.*
 import kotlinx.android.synthetic.main.fragment_info_description_item.view.*
@@ -18,7 +17,7 @@ import space.celestia.MobileCelestia.Info.Model.InfoItem
 
 class InfoRecyclerViewAdapter(
     private val values: List<InfoItem>,
-    private val listener: InfoListFragmentInteractionListener?
+    private val listener: Listener?
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener = View.OnClickListener { v ->

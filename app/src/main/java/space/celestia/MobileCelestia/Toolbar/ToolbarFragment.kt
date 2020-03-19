@@ -75,7 +75,7 @@ enum class ToolbarAction : Serializable {
 class ToolbarFragment : Fragment() {
 
     private var existingActions: List<List<ToolbarAction>> = ArrayList<List<ToolbarAction>>()
-    private var listener: ToolbarListFragmentInteractionListener? = null
+    private var listener: Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,7 +122,7 @@ class ToolbarFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is ToolbarListFragmentInteractionListener) {
+        if (context is Listener) {
             listener = context
         } else {
             throw RuntimeException(context.toString() + " must implement ToolbarListFragmentInteractionListener")
@@ -134,7 +134,7 @@ class ToolbarFragment : Fragment() {
         listener = null
     }
 
-    interface ToolbarListFragmentInteractionListener {
+    interface Listener {
         fun onToolbarActionSelected(action: ToolbarAction)
     }
 

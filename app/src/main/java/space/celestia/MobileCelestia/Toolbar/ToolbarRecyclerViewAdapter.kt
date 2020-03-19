@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import space.celestia.MobileCelestia.R
 
-import space.celestia.MobileCelestia.Toolbar.ToolbarFragment.ToolbarListFragmentInteractionListener
+import space.celestia.MobileCelestia.Toolbar.ToolbarFragment.Listener
 import space.celestia.MobileCelestia.Toolbar.Model.ToolbarListItem
 import space.celestia.MobileCelestia.Toolbar.Model.ToolbarActionItem
 import space.celestia.MobileCelestia.Toolbar.Model.ToolbarSeparatorItem
@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.fragment_toolbar_action_item.view.*
 
 class ToolbarRecyclerViewAdapter(
     private val values: List<ToolbarListItem>,
-    private val listener: ToolbarListFragmentInteractionListener?
+    private val listener: Listener?
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener

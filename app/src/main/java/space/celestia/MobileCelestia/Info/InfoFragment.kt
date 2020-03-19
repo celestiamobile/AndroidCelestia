@@ -10,9 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Space
-import space.celestia.MobileCelestia.Core.CelestiaSelection
-import space.celestia.MobileCelestia.Info.Model.CelestiaAction
 import space.celestia.MobileCelestia.Info.Model.InfoActionItem
 import space.celestia.MobileCelestia.Info.Model.InfoDescriptionItem
 import space.celestia.MobileCelestia.R
@@ -21,7 +18,7 @@ import space.celestia.MobileCelestia.Info.Model.InfoItem
 
 class InfoFragment : Fragment() {
 
-    private var listener: InfoListFragmentInteractionListener? = null
+    private var listener: Listener? = null
     private var descriptionItem: InfoDescriptionItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +53,7 @@ class InfoFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is InfoListFragmentInteractionListener) {
+        if (context is Listener) {
             listener = context
         } else {
             throw RuntimeException(context.toString() + " must implement InfoListFragmentInteractionListener")
@@ -68,7 +65,7 @@ class InfoFragment : Fragment() {
         listener = null
     }
 
-    interface InfoListFragmentInteractionListener {
+    interface Listener {
         fun onInfoActionSelected(action: InfoActionItem)
     }
 

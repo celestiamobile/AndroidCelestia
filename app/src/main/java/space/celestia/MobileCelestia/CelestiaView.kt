@@ -50,10 +50,9 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
         if (event == null) { return true }
         if (!isReady) { return true }
 
-        val ev = event!!
         val density = Resources.getSystem().displayMetrics.density
 
-        val id = ev.actionIndex
+        val id = event.actionIndex
 
         fun centerPoint(): PointF {
             var x = 0.toFloat()
@@ -74,11 +73,11 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
             )
         }
 
-        when (ev.actionMasked) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_DOWN -> {
                 val point = PointF(
-                    ev.getX(id) / density,
-                    ev.getY(id) / density
+                    event.getX(id) / density,
+                    event.getY(id) / density
                 )
 
                 // Avoid edge gesture
@@ -127,8 +126,8 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
                     // Update all point locations
                     for (kv in touchLocations) {
                         val point = PointF(
-                            ev.getX(kv.key) / density,
-                            ev.getY(kv.key) / density
+                            event.getX(kv.key) / density,
+                            event.getY(kv.key) / density
                         )
                         kv.value.point = point
                     }
@@ -150,8 +149,8 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
                     }
                 } else if (touchLocations.size == 1)  {
                     val point = PointF(
-                        ev.x / density,
-                        ev.y / density
+                        event.x / density,
+                        event.y / density
                     )
                     val it = touchLocations.map { it.value }[0]
                     if (!it.action && Date().time - it.time.time > threshHold) {

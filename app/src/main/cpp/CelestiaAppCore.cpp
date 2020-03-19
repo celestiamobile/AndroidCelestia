@@ -22,6 +22,10 @@ jfieldID cscPtrFieldID = nullptr;
 jclass cdcClz = nullptr;
 jfieldID cdcPtrFieldID = nullptr;
 
+jclass alClz = nullptr;
+jmethodID aliMethodID = nullptr;
+jmethodID alaMethodID = nullptr;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -57,6 +61,12 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     jclass cdc = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaDSOCatalog");
     cdcClz = (jclass)env->NewGlobalRef(cdc);
     cdcPtrFieldID = env->GetFieldID(cdcClz, "pointer", "J");
+
+    jclass al = env->FindClass("java/util/ArrayList");
+    alClz = (jclass)env->NewGlobalRef(al);
+    aliMethodID = env->GetMethodID(alClz, "<init>", "(I)V");
+    alaMethodID = env->GetMethodID(alClz, "add", "(Ljava/lang/Object;)Z");
+
     return JNI_VERSION_1_6;
 }
 }
