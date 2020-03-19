@@ -12,13 +12,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.celestia.MobileCelestia.Control.BottomControlFragment
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import space.celestia.MobileCelestia.Core.CelestiaSelection
 import space.celestia.MobileCelestia.Info.InfoFragment
-import space.celestia.MobileCelestia.Info.Model.InfoActionItem
-import space.celestia.MobileCelestia.Info.Model.InfoDescriptionItem
-import space.celestia.MobileCelestia.Info.Model.InfoNormalActionItem
-import space.celestia.MobileCelestia.Info.Model.InfoSelectActionItem
+import space.celestia.MobileCelestia.Info.Model.*
 import space.celestia.MobileCelestia.Loading.LoadingFragment
 import space.celestia.MobileCelestia.Search.SearchFragment
 import space.celestia.MobileCelestia.Toolbar.ToolbarAction
@@ -30,7 +28,8 @@ import java.io.IOException
 class MainActivity : AppCompatActivity(),
     ToolbarFragment.Listener,
     InfoFragment.Listener,
-    SearchFragment.Listener {
+    SearchFragment.Listener,
+    BottomControlFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -141,12 +140,19 @@ class MainActivity : AppCompatActivity(),
             ToolbarAction.Search -> {
                 showSearch()
             }
+            ToolbarAction.Time -> {
+                showTimeControl()
+            }
+            ToolbarAction.Script -> {
+                showScriptControl()
+            }
             else -> {
                 // TODO: responds to other actions...
             }
         }
     }
 
+    // Listeners...
     override fun onInfoActionSelected(action: InfoActionItem) {
         if (action is InfoNormalActionItem) {
             core.simulation.selection = currentSelection!!
@@ -165,6 +171,10 @@ class MainActivity : AppCompatActivity(),
         hideOverlay()
         currentSelection = sel
         showInfo(sel)
+    }
+
+    override fun onActionSelected(item: CelestiaAction) {
+        core.charEnter(item.value)
     }
 
     private fun hideOverlay() {
@@ -192,16 +202,41 @@ class MainActivity : AppCompatActivity(),
         showRightFragment(SearchFragment.newInstance())
     }
 
-    private fun showRightFragment(fragment: Fragment) {
-        showRightFragment(fragment, R.id.normal_right_container)
+    private fun showTimeControl() {
+        showBottomFragment(
+            BottomControlFragment.newInstance(
+                listOf(
+                    CelestiaAction.Backward,
+                    CelestiaAction.PlayPause,
+                    CelestiaAction.Forward
+                )))
     }
 
-    private fun showRightFragment(fragment: Fragment, containerID: Int) {
+    private fun showScriptControl() {
+        showBottomFragment(
+            BottomControlFragment.newInstance(
+                listOf(
+                    CelestiaAction.PlayPause,
+                    CelestiaAction.CancelScript
+                )))
+    }
+
+    private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
             .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+            .add(containerID, fragment)
+            .commitAllowingStateLoss()
+    }
+
+    private fun showBottomFragment(fragment: Fragment, containerID: Int = R.id.toolbar_bottom_container) {
+        findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
+        findViewById<View>(containerID).visibility = View.VISIBLE
+        supportFragmentManager
+            .beginTransaction()
+            .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top, R.anim.enter_from_top, R.anim.exit_to_bottom)
             .add(containerID, fragment)
             .commitAllowingStateLoss()
     }
