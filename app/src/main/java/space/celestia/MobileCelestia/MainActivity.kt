@@ -20,6 +20,8 @@ import space.celestia.MobileCelestia.Control.CameraControlAction
 import space.celestia.MobileCelestia.Control.CameraControlFragment
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import space.celestia.MobileCelestia.Core.CelestiaSelection
+import space.celestia.MobileCelestia.Help.HelpAction
+import space.celestia.MobileCelestia.Help.HelpFragment
 import space.celestia.MobileCelestia.Info.InfoFragment
 import space.celestia.MobileCelestia.Info.Model.*
 import space.celestia.MobileCelestia.Loading.LoadingFragment
@@ -36,7 +38,8 @@ class MainActivity : AppCompatActivity(),
     SearchFragment.Listener,
     BottomControlFragment.Listener,
     BrowserCommonFragment.Listener,
-    CameraControlFragment.Listener {
+    CameraControlFragment.Listener,
+    HelpFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -159,6 +162,9 @@ class MainActivity : AppCompatActivity(),
             ToolbarAction.Camera -> {
                 showCameraControl()
             }
+            ToolbarAction.Help -> {
+                showHelp()
+            }
             else -> {
                 // TODO: responds to other actions...
             }
@@ -219,6 +225,10 @@ class MainActivity : AppCompatActivity(),
         core.keyUp(action.value)
     }
 
+    override fun onHelpActionSelected(action: HelpAction) {
+        core.charEnter(CelestiaAction.RunDemo.value)
+    }
+
     private fun hideOverlay() {
         val overlay = findViewById<ViewGroup>(R.id.overlay_container)
         for (i in 0 until overlay.childCount) {
@@ -269,6 +279,10 @@ class MainActivity : AppCompatActivity(),
 
     private fun showCameraControl() {
         showRightFragment(CameraControlFragment.newInstance())
+    }
+
+    private fun showHelp() {
+        showRightFragment(HelpFragment.newInstance())
     }
 
     private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {
