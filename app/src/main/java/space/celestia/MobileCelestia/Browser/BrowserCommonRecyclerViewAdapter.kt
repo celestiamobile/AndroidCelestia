@@ -51,7 +51,7 @@ class BrowserCommonRecyclerViewAdapter(
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (holder is CommonTextViewHolder && item is BrowserItem) {
             holder.title.text = item.item.name
-            if (item.final) {
+            if (item.isLeaf) {
                 holder.accessory.visibility = View.GONE
             } else {
                 holder.accessory.visibility = View.VISIBLE

@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import space.celestia.MobileCelestia.Common.*
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import space.celestia.MobileCelestia.Core.CelestiaBrowserItem
 
@@ -22,7 +22,6 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
     }
 
     private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
-    private var titles = ArrayList<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,53 +39,38 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
             nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.name).setIcon(item.icon)
         }
         toolbar.setNavigationOnClickListener {
-            pop()
+            popItem()
         }
         nav.setOnNavigationItemSelectedListener(this)
-        replace(browserItemMenu[0].item)
+        replaceItem(browserItemMenu[0].item)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        replace(browserItemMenu[item.itemId].item)
+        replaceItem(browserItemMenu[item.itemId].item)
         return true
     }
 
-    private fun replace(browserItem: CelestiaBrowserItem) {
-        val current = childFragmentManager.findFragmentById(R.id.browser_container)
-        var trans = childFragmentManager.beginTransaction()
-        if (current != null) {
-            trans = trans.hide(current).remove(current)
-        }
-        trans.add(R.id.browser_container, BrowserCommonFragment.newInstance(browserItem))
-        trans.commitAllowingStateLoss()
+    private fun replaceItem(browserItem: CelestiaBrowserItem) {
+        replace(BrowserCommonFragment.newInstance(browserItem), R.id.browser_container)
         toolbar.navigationIcon = null
         toolbar.title = browserItem.name
-        titles = arrayListOf(browserItem.name!!)
     }
 
-    public fun push(browserItem: CelestiaBrowserItem) {
+    public fun pushItem(browserItem: CelestiaBrowserItem) {
         val frag = BrowserCommonFragment.newInstance(browserItem)
-        childFragmentManager.beginTransaction()
-            .addToBackStack(null)
-            .show(frag)
-            .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
-            .add(R.id.browser_container, frag)
-            .commitAllowingStateLoss()
+        push(frag, R.id.browser_container)
         toolbar.title = browserItem.name
         toolbar.navigationIcon = resources.getDrawable(R.drawable.ic_action_arrow_back)
-        titles.add(browserItem.name!!)
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    fun pop() {
-        childFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-        if (titles.size > 1) {
-            titles.removeLast()
-            toolbar.title = titles.last()
-            if (titles.size == 1) {
-                toolbar.navigationIcon = null
-            }
+    fun popItem() {
+        pop()
+        val index = childFragmentManager.backStackEntryCount - 1
+        if (index == 0) {
+            // no more return
+            toolbar.navigationIcon = null
         }
+        toolbar.title = (childFragmentManager.fragments[index] as TitledFragment).title
     }
 
     companion object {

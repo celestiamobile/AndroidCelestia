@@ -1,9 +1,5 @@
 <resources>
     <string name="app_name">Celestia</string>
 
-    <string name="browser_tab_sso">Sol</string>
-    <string name="browser_tab_dso">DSO</string>
-    <string name="browser_tab_star">Stars</string>
     <string name="title_welcome_to_celestia">Welcome to Celestia</string>
-
 </resources>

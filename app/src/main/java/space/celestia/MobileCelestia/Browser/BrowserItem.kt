@@ -70,6 +70,6 @@ fun CelestiaUniverse.dsoBrowserRoot(): CelestiaBrowserItem {
     return CelestiaBrowserItem("Deep Sky Objects", results)
 }
 
-class BrowserItem(val item: CelestiaBrowserItem, val final: Boolean) : RecyclerViewItem {}
+class BrowserItem(val item: CelestiaBrowserItem, val isLeaf: Boolean) : RecyclerViewItem {}
 
 class BrowserItemMenu(val item: CelestiaBrowserItem, val icon: Int) {}

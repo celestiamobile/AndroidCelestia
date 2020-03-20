@@ -95,6 +95,8 @@ public class CelestiaAppCore {
         c_charEnter(input);
     }
 
+    public void runScript(@NonNull String scriptPath) { c_runScript(scriptPath); }
+
     public static boolean initGL() {
         return c_initGL();
     }
@@ -125,6 +127,8 @@ public class CelestiaAppCore {
     private native void c_keyUp(int input);
     private native void c_keyDown(int input);
     private native void c_charEnter(int input);
+
+    private native void c_runScript(String path);
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);

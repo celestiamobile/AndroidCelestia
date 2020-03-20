@@ -1,4 +1,4 @@
-package space.celestia.MobileCelestia.Browser
+package space.celestia.MobileCelestia.Favorite
 
 import android.content.Context
 import android.os.Bundle
@@ -11,23 +11,21 @@ import android.view.ViewGroup
 import space.celestia.MobileCelestia.Common.TitledFragment
 import space.celestia.MobileCelestia.R
 
-import space.celestia.MobileCelestia.Core.CelestiaAppCore
-import space.celestia.MobileCelestia.Core.CelestiaBrowserItem
 import java.io.Serializable
 
-class BrowserCommonFragment : TitledFragment() {
+class FavoriteItemFragment : TitledFragment() {
 
     private var listener: Listener? = null
-    var browserItem: CelestiaBrowserItem? = null
+    private var favoriteItem: FavoriteBaseItem? = null
 
     override val title: String
-        get() = browserItem!!.name!!
+        get() = favoriteItem!!.title
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            browserItem = (it.getSerializable(ARG_ITEM) as? Wrapper)?.item
+            favoriteItem = (it.getSerializable(ARG_ITEM) as? Wrapper)?.item
         }
     }
 
@@ -35,13 +33,13 @@ class BrowserCommonFragment : TitledFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_browser_common_list, container, false)
+        val view = inflater.inflate(R.layout.fragment_favorite_item_list, container, false)
 
         // Set the adapter
         if (view is RecyclerView) {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
-                adapter = BrowserCommonRecyclerViewAdapter(browserItem!!, listener)
+                adapter = FavoriteItemRecyclerViewAdapter(favoriteItem!!, listener)
             }
         }
         return view
@@ -52,7 +50,7 @@ class BrowserCommonFragment : TitledFragment() {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement BrowserCommonFragment.Listener")
+            throw RuntimeException("$context must implement FavoriteItemFragment.Listener")
         }
     }
 
@@ -62,18 +60,18 @@ class BrowserCommonFragment : TitledFragment() {
     }
 
     interface Listener {
-        fun onBrowserItemSelected(item: BrowserItem)
+        fun onFavoriteItemSelected(item: FavoriteBaseItem)
     }
 
-    inner class Wrapper(val item: CelestiaBrowserItem) : Serializable {}
+    inner class Wrapper(val item: FavoriteBaseItem) : Serializable {}
 
     companion object {
 
         const val ARG_ITEM = "item"
 
         @JvmStatic
-        fun newInstance(item: CelestiaBrowserItem) =
-            BrowserCommonFragment().apply {
+        fun newInstance(item: FavoriteBaseItem) =
+            FavoriteItemFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, Wrapper(item))
                 }

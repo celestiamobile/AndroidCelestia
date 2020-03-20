@@ -372,3 +372,13 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1charEnter(JNIEnv *env
     CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
     core->charEntered((char)input, 0);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1runScript(JNIEnv *env, jobject thiz,
+                                                                     jstring path) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    const char *str = env->GetStringUTFChars(path, nullptr);
+    core->runScript(str);
+    env->ReleaseStringUTFChars(path, str);
+}

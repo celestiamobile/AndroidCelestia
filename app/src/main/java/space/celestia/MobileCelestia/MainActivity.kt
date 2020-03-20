@@ -19,7 +19,9 @@ import space.celestia.MobileCelestia.Control.BottomControlFragment
 import space.celestia.MobileCelestia.Control.CameraControlAction
 import space.celestia.MobileCelestia.Control.CameraControlFragment
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
+import space.celestia.MobileCelestia.Core.CelestiaScript
 import space.celestia.MobileCelestia.Core.CelestiaSelection
+import space.celestia.MobileCelestia.Favorite.*
 import space.celestia.MobileCelestia.Help.HelpAction
 import space.celestia.MobileCelestia.Help.HelpFragment
 import space.celestia.MobileCelestia.Info.InfoFragment
@@ -39,7 +41,8 @@ class MainActivity : AppCompatActivity(),
     BottomControlFragment.Listener,
     BrowserCommonFragment.Listener,
     CameraControlFragment.Listener,
-    HelpFragment.Listener {
+    HelpFragment.Listener,
+    FavoriteItemFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -165,6 +168,9 @@ class MainActivity : AppCompatActivity(),
             ToolbarAction.Help -> {
                 showHelp()
             }
+            ToolbarAction.Favorite -> {
+                showFavorite()
+            }
             else -> {
                 // TODO: responds to other actions...
             }
@@ -197,10 +203,10 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onBrowserItemSelected(item: BrowserItem) {
-        if (!item.final) {
+        if (!item.isLeaf) {
             val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
             if (frag is BrowserFragment) {
-                frag.push(item.item)
+                frag.pushItem(item.item)
             }
         } else {
             val obj = item.item.`object`
@@ -227,6 +233,21 @@ class MainActivity : AppCompatActivity(),
 
     override fun onHelpActionSelected(action: HelpAction) {
         core.charEnter(CelestiaAction.RunDemo.value)
+    }
+
+    override fun onFavoriteItemSelected(item: FavoriteBaseItem) {
+        if (item.isLeaf) {
+            if (item is FavoriteScriptItem) {
+                core.runScript(item.script.filename)
+            } else {
+                // TODO: other items
+            }
+        } else {
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+            if (frag is FavoriteFragment) {
+                frag.pushItem(item)
+            }
+        }
     }
 
     private fun hideOverlay() {
@@ -283,6 +304,11 @@ class MainActivity : AppCompatActivity(),
 
     private fun showHelp() {
         showRightFragment(HelpFragment.newInstance())
+    }
+
+    private fun showFavorite() {
+        updateCurrentScripts(CelestiaScript.getScriptsInDirectory("scripts", true))
+        showRightFragment(FavoriteFragment.newInstance())
     }
 
     private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {

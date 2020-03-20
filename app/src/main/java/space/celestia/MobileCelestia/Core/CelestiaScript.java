@@ -13,10 +13,10 @@ public class CelestiaScript {
         this.title = title;
     }
 
-    static @NonNull
+    public static @NonNull
     List<CelestiaScript> getScriptsInDirectory(@NonNull String path, boolean deepScan) {
         return c_getScriptsInDirectory(path, deepScan);
     }
 
-    static native List<CelestiaScript> c_getScriptsInDirectory(String path, boolean deepScan);
+    private static native List<CelestiaScript> c_getScriptsInDirectory(String path, boolean deepScan);
 }
