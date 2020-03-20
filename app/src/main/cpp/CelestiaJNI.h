@@ -41,6 +41,9 @@ extern jmethodID alaMethodID;
 extern jclass hmClz;
 extern jmethodID hmiMethodID;
 extern jmethodID hmpMethodID;
+
+extern jclass cscriptClz;
+extern jmethodID cscriptiMethodID;
 }
 
 #endif //CELESTIA_CELESTIAJNI_H

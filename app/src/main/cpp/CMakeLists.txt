@@ -391,6 +391,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaBody.cpp
         ${CELESTIA_JNI_DIR}/CelestiaLocation.cpp
         ${CELESTIA_JNI_DIR}/CelestiaStarBrowser.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaScript.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/libs")

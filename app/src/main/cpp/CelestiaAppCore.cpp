@@ -44,6 +44,9 @@ jclass hmClz = nullptr;
 jmethodID hmiMethodID = nullptr;
 jmethodID hmpMethodID = nullptr;
 
+jclass cscriptClz = nullptr;
+jmethodID cscriptiMethodID = nullptr;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -100,6 +103,10 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     cbiClz = (jclass)env->NewGlobalRef(cbi);
     cbii1MethodID = env->GetMethodID(cbiClz, "<init>", "(Ljava/lang/String;Lspace/celestia/MobileCelestia/Core/CelestiaAstroObject;Lspace/celestia/MobileCelestia/Core/CelestiaBrowserItem$ChildrenProvider;)V");
     cbii2MethodID = env->GetMethodID(cbiClz, "<init>", "(Ljava/lang/String;Ljava/util/Map;)V");
+
+    jclass cscript = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaScript");
+    cscriptClz = (jclass)env->NewGlobalRef(cscript);
+    cscriptiMethodID = env->GetMethodID(cscriptClz, "<init>", "(Ljava/lang/String;Ljava/lang/String;)V");
 
     jclass al = env->FindClass("java/util/ArrayList");
     alClz = (jclass)env->NewGlobalRef(al);
