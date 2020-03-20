@@ -64,3 +64,11 @@ Java_space_celestia_MobileCelestia_Core_CelestiaSimulation_c_1getStarBrowser(JNI
     Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
     return (jlong)new StarBrowser(sim, (int)kind);
 }
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaSimulation_c_1reverseObserverOrientation(
+        JNIEnv *env, jobject thiz) {
+    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+    sim->reverseObserverOrientation();
+}

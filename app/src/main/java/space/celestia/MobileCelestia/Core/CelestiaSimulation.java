@@ -37,6 +37,10 @@ public class CelestiaSimulation {
         return new CelestiaStarBrowser(c_getStarBrowser(kind));
     }
 
+    public void reverseObserverOrientation() {
+        c_reverseObserverOrientation();
+    }
+
     protected CelestiaSimulation(long ptr) {
         pointer = ptr;
     }
@@ -48,4 +52,5 @@ public class CelestiaSimulation {
     private native List<String> c_completionForText(String text);
     private native long c_findObject(String name);
     private native long c_getStarBrowser(int kind);
+    private native long c_reverseObserverOrientation();
 }

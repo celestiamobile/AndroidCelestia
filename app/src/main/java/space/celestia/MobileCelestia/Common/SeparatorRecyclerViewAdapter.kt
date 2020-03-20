@@ -7,7 +7,10 @@ import java.lang.RuntimeException
 
 public interface ViewItem {}
 
-public interface RecyclerViewItem : ViewItem {}
+public interface RecyclerViewItem : ViewItem {
+    val clickable: Boolean
+        get() = true
+}
 
 open class CommonSection(val items: List<RecyclerViewItem>,
                          val showSectionSeparator: Boolean = true,
@@ -64,9 +67,11 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
         val item = values[position]
         if (item is RecyclerViewItem) {
             bindVH(holder, item)
-            with(holder.itemView) {
-                tag = item
-                setOnClickListener(onClickListener)
+            if (item.clickable) {
+                with(holder.itemView) {
+                    tag = item
+                    setOnClickListener(onClickListener)
+                }
             }
         }
     }
@@ -120,17 +125,30 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
     }
 }
 
-public class CommonSectionV2(items: List<RecyclerViewItem>, val title: String? = null) : CommonSection(items)  {}
+public class CommonSectionV2(items: List<RecyclerViewItem>, val header: String? = "", val footer: String? = null) : CommonSection(items)  {}
 
 private class HeaderRecyclerViewItem(val title: String?): RecyclerViewItem {}
+private class FooterRecyclerViewItem(val title: String?): RecyclerViewItem {}
 
 public fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     val innerSections = ArrayList<CommonSection>()
     for (section in this) {
-        innerSections.add(
-            CommonSection(listOf(HeaderRecyclerViewItem(section.title)),
-                false, false))
+        if (section.header != null) {
+            innerSections.add(
+                CommonSection(listOf(HeaderRecyclerViewItem(section.header)),
+                    false, false))
+        }
+
         innerSections.add(section)
+
+        if (section.footer != null) {
+            innerSections.add(
+                CommonSection(
+                    listOf(FooterRecyclerViewItem(section.footer)),
+                    false, false
+                )
+            )
+        }
     }
     return innerSections
 }
@@ -138,12 +156,18 @@ public fun List<CommonSectionV2>.transformed(): List<CommonSection> {
 open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = listOf()): SeparatorRecyclerViewAdapter(1, 16, sections.transformed()) {
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is HeaderRecyclerViewItem)
-            return HEADER;
+            return HEADER
+        if (item is FooterRecyclerViewItem)
+            return FOOTER
         throw RuntimeException("$this must deal with item type $item")
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (holder is HeaderViewHolder && item is HeaderRecyclerViewItem) {
+            holder.view.textView.text = item.title
+            return
+        }
+        if (holder is FooterViewHolder && item is FooterRecyclerViewItem) {
             holder.view.textView.text = item.title
             return
         }
@@ -153,6 +177,8 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == HEADER)
             return HeaderViewHolder(SectionHeaderView(parent.context))
+        if (viewType == FOOTER)
+            return FooterViewHolder(SectionFooterView(parent.context))
         throw RuntimeException("$this must deal with item type $viewType")
     }
 
@@ -161,8 +187,10 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
     }
 
     inner class HeaderViewHolder(val view: SectionHeaderView) : RecyclerView.ViewHolder(view) {}
+    inner class FooterViewHolder(val view: SectionFooterView) : RecyclerView.ViewHolder(view) {}
 
     companion object {
         const val HEADER = 99997
+        const val FOOTER = 99996
     }
 }

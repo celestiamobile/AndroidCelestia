@@ -16,6 +16,8 @@ import space.celestia.MobileCelestia.Browser.BrowserCommonFragment
 import space.celestia.MobileCelestia.Browser.BrowserFragment
 import space.celestia.MobileCelestia.Browser.BrowserItem
 import space.celestia.MobileCelestia.Control.BottomControlFragment
+import space.celestia.MobileCelestia.Control.CameraControlAction
+import space.celestia.MobileCelestia.Control.CameraControlFragment
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import space.celestia.MobileCelestia.Core.CelestiaSelection
 import space.celestia.MobileCelestia.Info.InfoFragment
@@ -33,7 +35,8 @@ class MainActivity : AppCompatActivity(),
     InfoFragment.Listener,
     SearchFragment.Listener,
     BottomControlFragment.Listener,
-    BrowserCommonFragment.Listener {
+    BrowserCommonFragment.Listener,
+    CameraControlFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -153,6 +156,9 @@ class MainActivity : AppCompatActivity(),
             ToolbarAction.Browse -> {
                 showBrowser()
             }
+            ToolbarAction.Camera -> {
+                showCameraControl()
+            }
             else -> {
                 // TODO: responds to other actions...
             }
@@ -201,6 +207,18 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onCameraActionClicked(action: CameraControlAction) {
+        core.simulation.reverseObserverOrientation()
+    }
+
+    override fun onCameraActionStepperTouchDown(action: CameraControlAction) {
+        core.keyDown(action.value)
+    }
+
+    override fun onCameraActionStepperTouchUp(action: CameraControlAction) {
+        core.keyUp(action.value)
+    }
+
     private fun hideOverlay() {
         val overlay = findViewById<ViewGroup>(R.id.overlay_container)
         for (i in 0 until overlay.childCount) {
@@ -247,6 +265,10 @@ class MainActivity : AppCompatActivity(),
                     CelestiaAction.PlayPause,
                     CelestiaAction.CancelScript
                 )))
+    }
+
+    private fun showCameraControl() {
+        showRightFragment(CameraControlFragment.newInstance())
     }
 
     private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {

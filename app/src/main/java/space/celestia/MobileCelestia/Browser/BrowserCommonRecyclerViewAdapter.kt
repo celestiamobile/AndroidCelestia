@@ -16,10 +16,10 @@ fun CelestiaBrowserItem.createSection(): List<CommonSectionV2> {
     val list = ArrayList<CommonSectionV2>()
 
     if (`object` != null) {
-        val section = CommonSectionV2(listOf( BrowserItem(this, true) ), null)
+        val section = CommonSectionV2(listOf( BrowserItem(this, true) ))
         list.add(section)
     }
-    list.add(CommonSectionV2(children.map { BrowserItem(it, it.children.size == 0) }, null))
+    list.add(CommonSectionV2(children.map { BrowserItem(it, it.children.size == 0) }))
     return list
 }
 
