@@ -26,7 +26,7 @@ class SectionHeaderView(context: Context): FrameLayout(context) {
     }
 
     private companion object {
-        const val headerHeight: Float = 24F
+        const val headerHeight: Float = 36F
         const val headerHorizontalPadding: Float = 16F
     }
 }

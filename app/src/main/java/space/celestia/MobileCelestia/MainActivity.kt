@@ -28,6 +28,7 @@ import space.celestia.MobileCelestia.Info.InfoFragment
 import space.celestia.MobileCelestia.Info.Model.*
 import space.celestia.MobileCelestia.Loading.LoadingFragment
 import space.celestia.MobileCelestia.Search.SearchFragment
+import space.celestia.MobileCelestia.Settings.*
 import space.celestia.MobileCelestia.Toolbar.ToolbarAction
 import space.celestia.MobileCelestia.Toolbar.ToolbarFragment
 import space.celestia.MobileCelestia.Utils.AssetUtils
@@ -42,7 +43,9 @@ class MainActivity : AppCompatActivity(),
     BrowserCommonFragment.Listener,
     CameraControlFragment.Listener,
     HelpFragment.Listener,
-    FavoriteItemFragment.Listener {
+    FavoriteItemFragment.Listener,
+    SettingsItemFragment.Listener,
+    SettingsMultiSelectionFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -171,6 +174,9 @@ class MainActivity : AppCompatActivity(),
             ToolbarAction.Favorite -> {
                 showFavorite()
             }
+            ToolbarAction.Setting -> {
+                showSettings()
+            }
             else -> {
                 // TODO: responds to other actions...
             }
@@ -250,6 +256,13 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onMainSettingItemSelected(item: SettingsItem) {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        if (frag is SettingsFragment) {
+            frag.pushMainSettingItem(item)
+        }
+    }
+
     private fun hideOverlay() {
         val overlay = findViewById<ViewGroup>(R.id.overlay_container)
         for (i in 0 until overlay.childCount) {
@@ -309,6 +322,10 @@ class MainActivity : AppCompatActivity(),
     private fun showFavorite() {
         updateCurrentScripts(CelestiaScript.getScriptsInDirectory("scripts", true))
         showRightFragment(FavoriteFragment.newInstance())
+    }
+
+    private fun showSettings() {
+        showRightFragment(SettingsFragment.newInstance())
     }
 
     private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {
