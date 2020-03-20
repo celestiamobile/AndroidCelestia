@@ -10,7 +10,7 @@ import android.view.ViewGroup
 import space.celestia.MobileCelestia.Common.TitledFragment
 import space.celestia.MobileCelestia.R
 
-class SettingsItemFragment : TitledFragment() {
+class SettingsItemFragment : SettingsBaseFragment() {
 
     var listener: Listener? = null
 

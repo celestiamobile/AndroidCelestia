@@ -263,6 +263,15 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onMultiSelectionSettingItemChange(field: String, on: Boolean) {
+        val core = CelestiaAppCore.shared()
+        core.setBooleanValueForField(field, on)
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        if (frag is SettingsFragment) {
+            frag.reload()
+        }
+    }
+
     private fun hideOverlay() {
         val overlay = findViewById<ViewGroup>(R.id.overlay_container)
         for (i in 0 until overlay.childCount) {

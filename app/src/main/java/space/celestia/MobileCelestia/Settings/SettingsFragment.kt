@@ -51,6 +51,12 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    public fun reload() {
+        val frag = childFragmentManager.findFragmentById(R.id.settings_container)
+        if (frag is SettingsBaseFragment)
+            frag.reload()
+    }
+
     fun popItem() {
         pop()
         val index = childFragmentManager.backStackEntryCount - 1

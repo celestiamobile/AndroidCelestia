@@ -382,3 +382,149 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1runScript(JNIEnv *env
     core->runScript(str);
     env->ReleaseStringUTFChars(path, str);
 }
+
+static uint64_t bit_mask_value_update(jboolean value, uint64_t bit, uint64_t set) {
+    uint64_t result = value ? ((bit & set) ? set : (set | bit)) : ((bit & set) ?  (set ^ bit) : set);
+    return result;
+}
+
+#define RENDERMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getShow##flag (JNIEnv *env, jobject thiz) { \
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    return (jboolean)(((core->getRenderer()->getRenderFlags() & Renderer::Show##flag) == 0) ? JNI_FALSE : JNI_TRUE); \
+} \
+extern "C" \
+JNIEXPORT void JNICALL \
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setShow##flag (JNIEnv *env, jobject thiz, \
+                                                                        jboolean value) { \
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    core->getRenderer()->setRenderFlags(bit_mask_value_update(value, Renderer::Show##flag, core->getRenderer()->getRenderFlags())); \
+} \
+
+RENDERMETHODS(Stars)
+RENDERMETHODS(Planets)
+RENDERMETHODS(DwarfPlanets)
+RENDERMETHODS(Moons)
+RENDERMETHODS(MinorMoons)
+RENDERMETHODS(Asteroids)
+RENDERMETHODS(Comets)
+RENDERMETHODS(Spacecrafts)
+RENDERMETHODS(Galaxies)
+RENDERMETHODS(Globulars)
+RENDERMETHODS(Nebulae)
+RENDERMETHODS(OpenClusters)
+RENDERMETHODS(Diagrams)
+RENDERMETHODS(Boundaries)
+RENDERMETHODS(CloudMaps)
+RENDERMETHODS(NightMaps)
+RENDERMETHODS(Atmospheres)
+RENDERMETHODS(CometTails)
+RENDERMETHODS(PlanetRings)
+RENDERMETHODS(Markers)
+RENDERMETHODS(Orbits)
+RENDERMETHODS(PartialTrajectories)
+RENDERMETHODS(SmoothLines)
+RENDERMETHODS(EclipseShadows)
+RENDERMETHODS(RingShadows)
+RENDERMETHODS(CloudShadows)
+RENDERMETHODS(AutoMag)
+RENDERMETHODS(CelestialSphere)
+RENDERMETHODS(EclipticGrid)
+RENDERMETHODS(HorizonGrid)
+RENDERMETHODS(GalacticGrid)
+
+#define LABELMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getShow##flag##Labels (JNIEnv *env, jobject thiz) { \
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    return (jboolean)(((core->getRenderer()->getLabelMode() & Renderer::flag##Labels) == 0) ? JNI_FALSE : JNI_TRUE); \
+} \
+extern "C" \
+JNIEXPORT void JNICALL \
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setShow##flag##Labels (JNIEnv *env, jobject thiz, \
+                                                                        jboolean value) { \
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    core->getRenderer()->setLabelMode((int)bit_mask_value_update(value, Renderer::flag##Labels, core->getRenderer()->getLabelMode())); \
+} \
+
+LABELMETHODS(Star)
+LABELMETHODS(Planet)
+LABELMETHODS(Moon)
+LABELMETHODS(Constellation)
+LABELMETHODS(Galaxy)
+LABELMETHODS(Globular)
+LABELMETHODS(Nebula)
+LABELMETHODS(OpenCluster)
+LABELMETHODS(Asteroid)
+LABELMETHODS(Spacecraft)
+LABELMETHODS(Location)
+LABELMETHODS(Comet)
+LABELMETHODS(DwarfPlanet)
+LABELMETHODS(MinorMoon)
+
+LABELMETHODS(I18nConstellation)
+
+#define ORBITMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getShow##flag##Orbits (JNIEnv *env, jobject thiz) { \
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    return (jboolean)(((core->getRenderer()->getOrbitMask() & Body::flag) == 0) ? JNI_FALSE : JNI_TRUE); \
+} \
+extern "C" \
+JNIEXPORT void JNICALL \
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setShow##flag##Orbits (JNIEnv *env, jobject thiz, \
+                                                                        jboolean value) { \
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    core->getRenderer()->setOrbitMask((int)bit_mask_value_update(value, Body::flag, core->getRenderer()->getOrbitMask())); \
+} \
+
+ORBITMETHODS(Planet)
+ORBITMETHODS(Moon)
+ORBITMETHODS(Asteroid)
+ORBITMETHODS(Spacecraft)
+ORBITMETHODS(Comet)
+ORBITMETHODS(Stellar)
+ORBITMETHODS(DwarfPlanet)
+ORBITMETHODS(MinorMoon)
+
+#define FEATUREMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getShow##flag##Labels (JNIEnv *env, jobject thiz) { \
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    return (jboolean)(((core->getSimulation()->getObserver().getLocationFilter() & Location::flag) == 0) ? JNI_FALSE : JNI_TRUE); \
+} \
+extern "C" \
+JNIEXPORT void JNICALL \
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setShow##flag##Labels (JNIEnv *env, jobject thiz, \
+                                                                        jboolean value) { \
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    core->getSimulation()->getObserver().setLocationFilter((int)bit_mask_value_update(value, Location::flag, core->getSimulation()->getObserver().getLocationFilter())); \
+} \
+
+FEATUREMETHODS(City)
+FEATUREMETHODS(Observatory)
+FEATUREMETHODS(LandingSite)
+FEATUREMETHODS(Crater)
+FEATUREMETHODS(Vallis)
+FEATUREMETHODS(Mons)
+FEATUREMETHODS(Planum)
+FEATUREMETHODS(Chasma)
+FEATUREMETHODS(Patera)
+FEATUREMETHODS(Mare)
+FEATUREMETHODS(Rupes)
+FEATUREMETHODS(Tessera)
+FEATUREMETHODS(Regio)
+FEATUREMETHODS(Chaos)
+FEATUREMETHODS(Terra)
+FEATUREMETHODS(Astrum)
+FEATUREMETHODS(Corona)
+FEATUREMETHODS(Dorsum)
+FEATUREMETHODS(Fossa)
+FEATUREMETHODS(Catena)
+FEATUREMETHODS(Mensa)
+FEATUREMETHODS(Rima)
+FEATUREMETHODS(Undae)
+FEATUREMETHODS(Reticulum)
+FEATUREMETHODS(Planitia)
+FEATUREMETHODS(Linea)
+FEATUREMETHODS(Fluctus)
+FEATUREMETHODS(Farrum)
+FEATUREMETHODS(EruptiveCenter)
+FEATUREMETHODS(Other)

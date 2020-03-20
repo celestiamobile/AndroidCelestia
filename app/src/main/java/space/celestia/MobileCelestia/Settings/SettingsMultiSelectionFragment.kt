@@ -12,11 +12,13 @@ import space.celestia.MobileCelestia.R
 
 import java.io.Serializable
 
-class SettingsMultiSelectionFragment : TitledFragment() {
+class SettingsMultiSelectionFragment : SettingsBaseFragment() {
 
     private var item: SettingsMultiSelectionItem? = null
 
     private var listener: Listener? = null
+
+    private val listAdapter by lazy { SettingsMultiSelectionRecyclerViewAdapter(item!!, listener) }
 
     override val title: String
         get() = item!!.name
@@ -40,7 +42,7 @@ class SettingsMultiSelectionFragment : TitledFragment() {
         if (view is RecyclerView) {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
-                adapter = SettingsMultiSelectionRecyclerViewAdapter(item!!, listener)
+                adapter = listAdapter
             }
         }
         return view
@@ -60,10 +62,15 @@ class SettingsMultiSelectionFragment : TitledFragment() {
         listener = null
     }
 
+    override fun reload() {
+        listAdapter.reload()
+        listAdapter.notifyDataSetChanged()
+    }
 
     inner class Wrapper(val item: SettingsMultiSelectionItem) : Serializable {}
 
     interface Listener {
+        fun onMultiSelectionSettingItemChange(field: String, on: Boolean)
     }
 
     companion object {
