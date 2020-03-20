@@ -12,7 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.celestia.MobileCelestia.Browser.BrowserCommonFragment
 import space.celestia.MobileCelestia.Browser.BrowserFragment
+import space.celestia.MobileCelestia.Browser.BrowserItem
 import space.celestia.MobileCelestia.Control.BottomControlFragment
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import space.celestia.MobileCelestia.Core.CelestiaSelection
@@ -30,7 +32,8 @@ class MainActivity : AppCompatActivity(),
     ToolbarFragment.Listener,
     InfoFragment.Listener,
     SearchFragment.Listener,
-    BottomControlFragment.Listener {
+    BottomControlFragment.Listener,
+    BrowserCommonFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -147,6 +150,9 @@ class MainActivity : AppCompatActivity(),
             ToolbarAction.Script -> {
                 showScriptControl()
             }
+            ToolbarAction.Browse -> {
+                showBrowser()
+            }
             else -> {
                 // TODO: responds to other actions...
             }
@@ -178,6 +184,23 @@ class MainActivity : AppCompatActivity(),
         core.charEnter(item.value)
     }
 
+    override fun onBrowserItemSelected(item: BrowserItem) {
+        if (!item.final) {
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+            if (frag is BrowserFragment) {
+                frag.push(item.item)
+            }
+        } else {
+            val obj = item.item.`object`
+            if (obj != null) {
+                currentSelection = CelestiaSelection(obj)
+                showInfo(currentSelection!!)
+            } else {
+                // TODO: object not found
+            }
+        }
+    }
+
     private fun hideOverlay() {
         val overlay = findViewById<ViewGroup>(R.id.overlay_container)
         for (i in 0 until overlay.childCount) {
@@ -200,8 +223,11 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun showSearch() {
-        showRightFragment(BrowserFragment.newInstance("", ""))
-//        showRightFragment(SearchFragment.newInstance())
+        showRightFragment(SearchFragment.newInstance())
+    }
+
+    private fun showBrowser() {
+        showRightFragment(BrowserFragment.newInstance())
     }
 
     private fun showTimeControl() {

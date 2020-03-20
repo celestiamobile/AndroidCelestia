@@ -12,6 +12,12 @@ public class CelestiaDSO extends CelestiaAstroObject {
         return c_getWebInfoURL();
     }
 
+    @NonNull
+    public String getType() {
+        return c_getType();
+    }
+
     // C functions
     private native String c_getWebInfoURL();
+    private native String c_getType();
 }

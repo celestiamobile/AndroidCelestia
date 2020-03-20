@@ -32,6 +32,11 @@ public class CelestiaSimulation {
         return universe;
     }
 
+    public @NonNull
+    CelestiaStarBrowser getStarBrowser(int kind) {
+        return new CelestiaStarBrowser(c_getStarBrowser(kind));
+    }
+
     protected CelestiaSimulation(long ptr) {
         pointer = ptr;
     }
@@ -42,4 +47,5 @@ public class CelestiaSimulation {
     private native long c_getUniverse();
     private native List<String> c_completionForText(String text);
     private native long c_findObject(String name);
+    private native long c_getStarBrowser(int kind);
 }

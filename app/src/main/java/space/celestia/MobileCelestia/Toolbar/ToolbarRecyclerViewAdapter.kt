@@ -13,12 +13,14 @@ import space.celestia.MobileCelestia.Toolbar.Model.ToolbarListItem
 import space.celestia.MobileCelestia.Toolbar.Model.ToolbarActionItem
 
 import kotlinx.android.synthetic.main.fragment_toolbar_action_item.view.*
+import space.celestia.MobileCelestia.Common.CommonSection
+import space.celestia.MobileCelestia.Common.RecyclerViewItem
 import space.celestia.MobileCelestia.Common.SeparatorRecyclerViewAdapter
 
 class ToolbarRecyclerViewAdapter(
     values: List<List<ToolbarListItem>>,
     private val listener: Listener?
-) : SeparatorRecyclerViewAdapter(6, 32, values.map { RecyclerViewSection(it, true, false) }, false) {
+) : SeparatorRecyclerViewAdapter(6, 32, values.map { CommonSection(it, true, false) }, false) {
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is ToolbarActionItem) {

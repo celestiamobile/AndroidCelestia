@@ -22,9 +22,27 @@ jfieldID cscPtrFieldID = nullptr;
 jclass cdcClz = nullptr;
 jfieldID cdcPtrFieldID = nullptr;
 
+jclass csbClz = nullptr;
+jfieldID csbPtrFieldID = nullptr;
+
+jclass cbiClz = nullptr;
+jmethodID cbii1MethodID = nullptr;
+jmethodID cbii2MethodID = nullptr;
+
+jclass cbClz = nullptr;
+jmethodID cbiMethodID = nullptr;
+jclass clClz = nullptr;
+jmethodID cliMethodID = nullptr;
+jclass csClz = nullptr;
+jmethodID csiMethodID = nullptr;
+
 jclass alClz = nullptr;
 jmethodID aliMethodID = nullptr;
 jmethodID alaMethodID = nullptr;
+
+jclass hmClz = nullptr;
+jmethodID hmiMethodID = nullptr;
+jmethodID hmpMethodID = nullptr;
 
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
@@ -62,10 +80,36 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     cdcClz = (jclass)env->NewGlobalRef(cdc);
     cdcPtrFieldID = env->GetFieldID(cdcClz, "pointer", "J");
 
+    jclass cb = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaBody");
+    cbClz = (jclass)env->NewGlobalRef(cb);
+    cbiMethodID = env->GetMethodID(cbClz, "<init>", "(J)V");
+
+    jclass cl = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaLocation");
+    clClz = (jclass)env->NewGlobalRef(cl);
+    cliMethodID = env->GetMethodID(clClz, "<init>", "(J)V");
+
+    jclass cs = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaStar");
+    csClz = (jclass)env->NewGlobalRef(cs);
+    csiMethodID = env->GetMethodID(csClz, "<init>", "(J)V");
+
+    jclass csb = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaStarBrowser");
+    csbClz = (jclass)env->NewGlobalRef(csb);
+    csbPtrFieldID = env->GetFieldID(csbClz, "pointer", "J");
+
+    jclass cbi = env->FindClass("space/celestia/MobileCelestia/Core/CelestiaBrowserItem");
+    cbiClz = (jclass)env->NewGlobalRef(cbi);
+    cbii1MethodID = env->GetMethodID(cbiClz, "<init>", "(Ljava/lang/String;Lspace/celestia/MobileCelestia/Core/CelestiaAstroObject;Lspace/celestia/MobileCelestia/Core/CelestiaBrowserItem$ChildrenProvider;)V");
+    cbii2MethodID = env->GetMethodID(cbiClz, "<init>", "(Ljava/lang/String;Ljava/util/Map;)V");
+
     jclass al = env->FindClass("java/util/ArrayList");
     alClz = (jclass)env->NewGlobalRef(al);
     aliMethodID = env->GetMethodID(alClz, "<init>", "(I)V");
     alaMethodID = env->GetMethodID(alClz, "add", "(Ljava/lang/Object;)Z");
+
+    jclass hm = env->FindClass("java/util/HashMap");
+    hmClz = (jclass)env->NewGlobalRef(hm);
+    hmiMethodID = env->GetMethodID(hmClz, "<init>", "()V");
+    hmpMethodID = env->GetMethodID(hmClz, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
     return JNI_VERSION_1_6;
 }

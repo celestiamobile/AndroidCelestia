@@ -1,6 +1,7 @@
 #include "CelestiaJNI.h"
 #include <celengine/simulation.h>
 #include <celengine/selection.h>
+#include <celengine/starbrowser.h>
 
 extern "C"
 JNIEXPORT jlong JNICALL
@@ -53,4 +54,13 @@ Java_space_celestia_MobileCelestia_Core_CelestiaSimulation_c_1findObject(JNIEnv 
     Selection *sel = new Selection(sim->findObject(str));
     env->ReleaseStringUTFChars(name, str);
     return (jlong)sel;
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaSimulation_c_1getStarBrowser(JNIEnv *env,
+                                                                             jobject thiz,
+                                                                             jint kind) {
+    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+    return (jlong)new StarBrowser(sim, (int)kind);
 }

@@ -390,11 +390,14 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaStar.cpp
         ${CELESTIA_JNI_DIR}/CelestiaBody.cpp
         ${CELESTIA_JNI_DIR}/CelestiaLocation.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaStarBrowser.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/libs")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
 set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
+
+set(CMAKE_CXX_STANDARD 11)
 
 add_definitions(-DNO_TTF)
 add_definitions(-DENABLE_NLS)

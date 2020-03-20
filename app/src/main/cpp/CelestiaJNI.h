@@ -20,9 +20,27 @@ extern jfieldID cscPtrFieldID;
 extern jclass cdcClz;
 extern jfieldID cdcPtrFieldID;
 
+extern jclass csbClz;
+extern jfieldID csbPtrFieldID;
+
+extern jclass cbiClz;
+extern jmethodID cbii1MethodID;
+extern jmethodID cbii2MethodID;
+
+extern jclass cbClz;
+extern jmethodID cbiMethodID;
+extern jclass clClz;
+extern jmethodID cliMethodID;
+extern jclass csClz;
+extern jmethodID csiMethodID;
+
 extern jclass alClz;
 extern jmethodID aliMethodID;
 extern jmethodID alaMethodID;
+
+extern jclass hmClz;
+extern jmethodID hmiMethodID;
+extern jmethodID hmpMethodID;
 }
 
 #endif //CELESTIA_CELESTIAJNI_H

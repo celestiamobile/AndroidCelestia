@@ -1,61 +1,97 @@
 package space.celestia.MobileCelestia.Browser
 
 import android.os.Bundle
+import android.view.*
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.fragment.app.FragmentManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import space.celestia.MobileCelestia.Core.CelestiaAppCore
+import space.celestia.MobileCelestia.Core.CelestiaBrowserItem
 
 import space.celestia.MobileCelestia.R
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [BrowserFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class BrowserFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelectedListener {
+    private val browserItemMenu by lazy {
+        val sim = CelestiaAppCore.shared().simulation
+        listOf(
+            BrowserItemMenu(sim.universe.solBrowserRoot(), R.drawable.browser_tab_sso),
+            BrowserItemMenu(sim.starBrowserRoot(), R.drawable.browser_tab_star),
+            BrowserItemMenu(sim.universe.dsoBrowserRoot(), R.drawable.browser_tab_dso)
+        )
     }
+
+    private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
+    private var titles = ArrayList<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_browser, container, false)
+        val view = inflater.inflate(R.layout.fragment_browser, container, false)
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val nav = view.findViewById<BottomNavigationView>(R.id.navigation)
+        for (i in 0 until browserItemMenu.count()) {
+            val item = browserItemMenu[i]
+            nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.name).setIcon(item.icon)
+        }
+        toolbar.setNavigationOnClickListener {
+            pop()
+        }
+        nav.setOnNavigationItemSelectedListener(this)
+        replace(browserItemMenu[0].item)
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        replace(browserItemMenu[item.itemId].item)
+        return true
+    }
+
+    private fun replace(browserItem: CelestiaBrowserItem) {
+        val current = childFragmentManager.findFragmentById(R.id.browser_container)
+        var trans = childFragmentManager.beginTransaction()
+        if (current != null) {
+            trans = trans.hide(current).remove(current)
+        }
+        trans.add(R.id.browser_container, BrowserCommonFragment.newInstance(browserItem))
+        trans.commitAllowingStateLoss()
+        toolbar.navigationIcon = null
+        toolbar.title = browserItem.name
+        titles = arrayListOf(browserItem.name!!)
+    }
+
+    public fun push(browserItem: CelestiaBrowserItem) {
+        val frag = BrowserCommonFragment.newInstance(browserItem)
+        childFragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .show(frag)
+            .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+            .add(R.id.browser_container, frag)
+            .commitAllowingStateLoss()
+        toolbar.title = browserItem.name
+        toolbar.navigationIcon = resources.getDrawable(R.drawable.ic_action_arrow_back)
+        titles.add(browserItem.name!!)
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    fun pop() {
+        childFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        if (titles.size > 1) {
+            titles.removeLast()
+            toolbar.title = titles.last()
+            if (titles.size == 1) {
+                toolbar.navigationIcon = null
+            }
+        }
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment BrowserFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            BrowserFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        fun newInstance() =
+            BrowserFragment()
     }
 }

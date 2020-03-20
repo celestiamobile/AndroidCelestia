@@ -9,24 +9,24 @@
     style="@style/Background">
 
     <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Toolbar"
-        app:title="test"/>
+        style="@style/Toolbar"/>
 
-    <View
-        android:id="@+id/view_pager"
-        android:layout_width="0dp"
+    <FrameLayout
+        android:id="@+id/browser_container"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navigation"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:itemTextColor="@color/bottom_nav_color"
         app:itemIconTint="@color/bottom_nav_color"
-        app:menu="@menu/browser_view_menu"
         style="@style/SecondaryBackground"/>
 
 </LinearLayout>

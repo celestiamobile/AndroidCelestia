@@ -15,6 +15,10 @@
         <item name="android:background">@drawable/ripple_background</item>
     </style>
 
+    <style name="ListItemGrouped" parent="Container">
+        <item name="android:background">@drawable/ripple_grouped_background</item>
+    </style>
+
     <style name="Background">
         <item name="android:background">@color/colorBackground</item>
     </style>
@@ -45,8 +49,16 @@
         <item name="android:tint">@color/colorLabel</item>
     </style>
 
+    <style name="Accessory">
+        <item name="android:tint">@color/colorTertiaryLabel</item>
+    </style>
+
     <style name="PrimaryLabel">
         <item name="android:textColor">@color/colorLabel</item>
+    </style>
+
+    <style name="SecondaryLabel">
+        <item name="android:textColor">@color/colorSecondaryLabel</item>
     </style>
     
     <style name="EditText" parent="PrimaryLabel">

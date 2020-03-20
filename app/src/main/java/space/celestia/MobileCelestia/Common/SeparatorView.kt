@@ -16,8 +16,8 @@ class SeparatorView(context: Context, height: Int, left: Int): FrameLayout(conte
         val view = View(context)
         view.setBackgroundColor(resources.getColor(R.color.colorSeparator))
 
-        val height = (separatorHeight * density).toInt()
-        view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, height, Gravity.CENTER)
+        val sepHeight = (separatorHeight * density).toInt()
+        view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, sepHeight, Gravity.CENTER)
 
         addView(view)
     }

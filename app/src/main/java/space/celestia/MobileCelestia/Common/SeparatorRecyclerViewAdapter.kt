@@ -5,22 +5,23 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import java.lang.RuntimeException
 
+public interface ViewItem {}
+
+public interface RecyclerViewItem : ViewItem {}
+
+open class CommonSection(val items: List<RecyclerViewItem>,
+                         val showSectionSeparator: Boolean = true,
+                         val showRowSeparator: Boolean = true) {}
+
 open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
                                         private val separatorLeft: Int = 16,
-                                        sections: List<RecyclerViewSection> = listOf(),
+                                        sections: List<CommonSection> = listOf(),
                                         private val fullSection: Boolean = true) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    public interface BaseRecyclerViewItem {}
-    private class SeparatorItem(val full: Boolean) : BaseRecyclerViewItem {}
+    private class SeparatorItem(val full: Boolean) : ViewItem {}
 
-    public interface RecyclerViewItem : BaseRecyclerViewItem {}
-
-    public class RecyclerViewSection(val items: List<RecyclerViewItem>,
-                                     val showSectionSeparator: Boolean = true,
-                                     val showRowSeparator: Boolean = true) {}
-
-    private var values: List<BaseRecyclerViewItem> = listOf()
+    private var values: List<ViewItem> = listOf()
 
     private val onClickListener: View.OnClickListener
 
@@ -86,8 +87,8 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
         throw RuntimeException("$this must deal with item type $viewType")
     }
 
-    fun updateSections(sections: List<RecyclerViewSection>) {
-        val data = ArrayList<BaseRecyclerViewItem>()
+    fun updateSections(sections: List<CommonSection>) {
+        val data = ArrayList<ViewItem>()
         var prevSectionHasSep = false
         for (section in sections) {
             // add a separator to section top
@@ -116,5 +117,52 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
     companion object {
         const val SEPARATOR_0 = 99998
         const val SEPARATOR_1 = 99999
+    }
+}
+
+public class CommonSectionV2(items: List<RecyclerViewItem>, val title: String? = null) : CommonSection(items)  {}
+
+private class HeaderRecyclerViewItem(val title: String?): RecyclerViewItem {}
+
+public fun List<CommonSectionV2>.transformed(): List<CommonSection> {
+    val innerSections = ArrayList<CommonSection>()
+    for (section in this) {
+        innerSections.add(
+            CommonSection(listOf(HeaderRecyclerViewItem(section.title)),
+                false, false))
+        innerSections.add(section)
+    }
+    return innerSections
+}
+
+open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = listOf()): SeparatorRecyclerViewAdapter(1, 16, sections.transformed()) {
+    override fun itemViewType(item: RecyclerViewItem): Int {
+        if (item is HeaderRecyclerViewItem)
+            return HEADER;
+        throw RuntimeException("$this must deal with item type $item")
+    }
+
+    override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
+        if (holder is HeaderViewHolder && item is HeaderRecyclerViewItem) {
+            holder.view.textView.text = item.title
+            return
+        }
+        throw RuntimeException("$this must deal with item type $item")
+    }
+
+    override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        if (viewType == HEADER)
+            return HeaderViewHolder(SectionHeaderView(parent.context))
+        throw RuntimeException("$this must deal with item type $viewType")
+    }
+
+    fun updateSectionsWithHeader(sections: List<CommonSectionV2>) {
+        updateSections(sections.transformed())
+    }
+
+    inner class HeaderViewHolder(val view: SectionHeaderView) : RecyclerView.ViewHolder(view) {}
+
+    companion object {
+        const val HEADER = 99997
     }
 }

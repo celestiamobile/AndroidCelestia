@@ -3,7 +3,8 @@
     <color name="colorBackground">#000000</color>
     <color name="colorSecondaryBackground">#1C1C1E</color>
     <color name="colorLabel">#FFFFFF</color>
-    <color name="colorSecondaryLabel">#EBEBF5</color>
+    <color name="colorSecondaryLabel">#99EBEBF5</color>
+    <color name="colorTertiaryLabel">#4DEBEBF5</color>
 
     <color name="colorSelection">#3A3A3C</color>
 
