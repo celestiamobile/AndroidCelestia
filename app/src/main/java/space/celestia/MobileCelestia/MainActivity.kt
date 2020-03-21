@@ -54,7 +54,8 @@ class MainActivity : AppCompatActivity(),
     SettingsMultiSelectionFragment.Listener,
     SettingsSingleSelectionFragment.Listener,
     SettingsCurrentTimeFragment.Listener,
-    DatePickerDialog.OnDateSetListener {
+    DatePickerDialog.OnDateSetListener,
+    AboutFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -321,6 +322,10 @@ class MainActivity : AppCompatActivity(),
             reloadSettings()
         }, h, m, true)
         dialog.show()
+    }
+
+    override fun onAboutActionSelected(action: AboutAction) {
+
     }
 
     fun reloadSettings() {

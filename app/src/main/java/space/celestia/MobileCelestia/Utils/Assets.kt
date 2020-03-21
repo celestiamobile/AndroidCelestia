@@ -35,4 +35,11 @@ object AssetUtils {
         }
         input.close()
     }
+
+    @Throws(IOException::class)
+    public fun readFileToText(context: Context, path: String): String {
+        val assetManager: AssetManager = context.assets
+        val input = assetManager.open(path)
+        return input.bufferedReader().use { it.readText() }
+    }
 }

@@ -137,8 +137,14 @@ class SettingsRenderInfoItem(): SettingsItem {
         get() = "Render Info"
 }
 
+class SettingsAboutItem(): SettingsItem {
+    override val name: String
+        get() = "About"
+}
+
 private val staticOtherItems: List<SettingsItem> = listOf(
-    SettingsRenderInfoItem()
+    SettingsRenderInfoItem(),
+    SettingsAboutItem()
 )
 
 val mainSettingSections: List<CommonSectionV2> = listOf(

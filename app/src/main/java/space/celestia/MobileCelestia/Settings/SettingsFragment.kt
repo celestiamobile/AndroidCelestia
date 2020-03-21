@@ -55,6 +55,8 @@ class SettingsFragment : Fragment() {
             push(SettingsCurrentTimeFragment.newInstance(), item.name)
         } else if (item is SettingsRenderInfoItem) {
             push(SimpleTextFragment.newInstance(item.name, CelestiaAppCore.shared().renderInfo), item.name)
+        } else if (item is SettingsAboutItem) {
+            push(AboutFragment.newInstance(), item.name)
         }
     }
 
