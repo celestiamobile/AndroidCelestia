@@ -60,7 +60,7 @@ private val staticDisplayItems: List<SettingsMultiSelectionItem> = listOf(
     )),
     SettingsMultiSelectionItem("Constellations", "ShowDiagrams", listOf(
         SettingsMultiSelectionItem.Selection("Constellation Labels", "ShowConstellationLabels"),
-        SettingsMultiSelectionItem.Selection("Localized Constellations", "ShowI18nConstellationLabels"),
+        SettingsMultiSelectionItem.Selection("Constellations in Latin", "ShowLatinConstellationLabels"),
         SettingsMultiSelectionItem.Selection("Show Boundaries", "ShowBoundaries")
     )),
     SettingsMultiSelectionItem("Object Labels", null, listOf(

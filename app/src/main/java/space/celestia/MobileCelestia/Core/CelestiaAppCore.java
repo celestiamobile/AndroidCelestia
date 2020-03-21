@@ -367,8 +367,9 @@ public class CelestiaAppCore {
     private native void c_setShowMinorMoonLabels(boolean showMinorMoonLabels);
     private native boolean c_getShowMinorMoonLabels();
 
-    public boolean getShowI18nConstellationLabels() { return c_getShowI18nConstellationLabels(); }
-    public void setShowI18nConstellationLabels(boolean showI18nConstellationLabels) { c_setShowI18nConstellationLabels(showI18nConstellationLabels); }
+    // ShowLatinConstellationLabels (UI) is the opposite value of ShowI18nConstellationLabels
+    public boolean getShowLatinConstellationLabels() { return !c_getShowI18nConstellationLabels(); }
+    public void setShowLatinConstellationLabels(boolean showLatinConstellationLabels) { c_setShowI18nConstellationLabels(!showLatinConstellationLabels); }
     private native void c_setShowI18nConstellationLabels(boolean showI18nConstellationLabels);
     private native boolean c_getShowI18nConstellationLabels();
 
