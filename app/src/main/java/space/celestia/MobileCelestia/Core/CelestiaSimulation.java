@@ -52,5 +52,5 @@ public class CelestiaSimulation {
     private native List<String> c_completionForText(String text);
     private native long c_findObject(String name);
     private native long c_getStarBrowser(int kind);
-    private native long c_reverseObserverOrientation();
+    private native void c_reverseObserverOrientation();
 }
