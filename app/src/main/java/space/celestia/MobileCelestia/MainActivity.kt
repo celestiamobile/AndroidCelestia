@@ -2,6 +2,8 @@ package space.celestia.MobileCelestia
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -39,6 +41,7 @@ import space.celestia.MobileCelestia.Utils.createDateFromJulianDay
 import space.celestia.MobileCelestia.Utils.PreferenceManager
 import space.celestia.MobileCelestia.Utils.julianDay
 import java.io.IOException
+import java.net.URI
 import java.util.*
 
 class MainActivity : AppCompatActivity(),
@@ -325,7 +328,16 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onAboutActionSelected(action: AboutAction) {
-
+        when (action) {
+            AboutAction.VisitOfficialWebsite -> {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://celestia.space"))
+                startActivity(intent)
+            }
+            AboutAction.VisitOfficialForum -> {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://celestia.space/forum"))
+                startActivity(intent)
+            }
+        }
     }
 
     fun reloadSettings() {
