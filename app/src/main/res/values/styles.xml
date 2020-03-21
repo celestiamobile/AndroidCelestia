@@ -49,6 +49,10 @@
         <item name="android:tint">@color/colorLabel</item>
     </style>
 
+    <style name="SecondaryImage">
+        <item name="android:tint">@color/colorSecondaryLabel</item>
+    </style>
+
     <style name="Accessory">
         <item name="android:tint">@color/colorTertiaryLabel</item>
     </style>
@@ -67,6 +71,10 @@
     
     <style name="EditText" parent="PrimaryLabel">
         <item name="backgroundTint">@color/colorEditTextHairLine</item>
+    </style>
+
+    <style name="SearchEditText" parent="EditText">
+        <item name="android:background">@null</item>
     </style>
 
     <style name="Toolbar">

@@ -1,40 +1,46 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="8dp"
-    android:paddingRight="8dp"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp"
-    android:gravity="center_vertical">
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="8dp">
 
-    <ImageView
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:adjustViewBounds="true"
-        android:src="@drawable/ic_search_white"
-        style="@style/Image"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="2dp"
+        android:gravity="center"
+        android:background="@drawable/search_background_selector">
 
-    <EditText
-        android:id="@+id/edt_search_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:inputType="text"
-        android:imeOptions="actionSearch"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:lines="1"
-        style="@style/EditText" />
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_search_white"
+            style="@style/Image"/>
 
-    <ImageView
-        android:id="@+id/iv_clear_text"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:adjustViewBounds="true"
-        android:visibility="gone"
-        android:alpha="0.8"
-        android:src="@drawable/ic_clear"
-        style="@style/Image"/>
+        <EditText
+            android:id="@+id/edt_search_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="text"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:lines="1"
+            style="@style/SearchEditText" />
 
-</LinearLayout>
+        <ImageView
+            android:id="@+id/iv_clear_text"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:adjustViewBounds="true"
+            android:visibility="gone"
+            android:alpha="0.8"
+            android:src="@drawable/ic_clear"
+            style="@style/SecondaryImage"/>
+
+    </LinearLayout>
+</FrameLayout>
