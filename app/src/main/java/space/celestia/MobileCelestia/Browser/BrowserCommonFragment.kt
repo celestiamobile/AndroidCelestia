@@ -65,7 +65,7 @@ class BrowserCommonFragment : TitledFragment() {
         fun onBrowserItemSelected(item: BrowserItem)
     }
 
-    inner class Wrapper(val item: CelestiaBrowserItem) : Serializable {}
+    inner class Wrapper(val item: CelestiaBrowserItem) : Serializable
 
     companion object {
 

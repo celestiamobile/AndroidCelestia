@@ -16,10 +16,6 @@ class SearchFragment : Fragment(), SearchView.Listener {
     private var listener: Listener? = null
     private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -30,11 +26,9 @@ class SearchFragment : Fragment(), SearchView.Listener {
         searchView.listener = this
 
         // Set the adapter
-        view.findViewById<RecyclerView>(R.id.list).let {
-            with(it) {
-                layoutManager = LinearLayoutManager(context)
-                adapter = listAdapter
-            }
+        with(view.findViewById<RecyclerView>(R.id.list)) {
+            layoutManager = LinearLayoutManager(context)
+            adapter = listAdapter
         }
         return view
     }
@@ -44,7 +38,7 @@ class SearchFragment : Fragment(), SearchView.Listener {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement SearchListFragmentInteractionListener")
+            throw RuntimeException("$context must implement SearchListFragmentInteractionListener")
         }
     }
 
@@ -54,8 +48,8 @@ class SearchFragment : Fragment(), SearchView.Listener {
             listAdapter.updateSearchResults(listOf())
         } else {
             listAdapter.updateSearchResults(core.simulation.completionForText(newText))
-            listAdapter.notifyDataSetChanged()
         }
+        listAdapter.notifyDataSetChanged()
     }
 
     override fun onDetach() {
