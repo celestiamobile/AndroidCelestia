@@ -1,11 +1,14 @@
 package space.celestia.MobileCelestia
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.DatePicker
 import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +53,8 @@ class MainActivity : AppCompatActivity(),
     SettingsItemFragment.Listener,
     SettingsMultiSelectionFragment.Listener,
     SettingsSingleSelectionFragment.Listener,
-    SettingsCurrentTimeFragment.Listener {
+    SettingsCurrentTimeFragment.Listener,
+    DatePickerDialog.OnDateSetListener {
 
     private val TAG = "MainActivity"
 
@@ -284,10 +288,39 @@ class MainActivity : AppCompatActivity(),
         when (action) {
             CurrentTimeAction.SetToCurrentTime -> {
                 core.charEnter(CelestiaAction.CurrentTime.value)
+                reloadSettings()
             }
             CurrentTimeAction.PickDate -> {
+                val current = createDateFromJulianDay(core.simulation.time)
+                val ca = Calendar.getInstance()
+                ca.time = current
+                val year = ca.get(Calendar.YEAR)
+                val month = ca.get(Calendar.MONTH)
+                val day = ca.get(Calendar.DAY_OF_MONTH)
+                val dialog = DatePickerDialog(this, this, year, month, day)
+                dialog.show()
             }
         }
+    }
+
+    override fun onDateSet(p0: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
+        val current = createDateFromJulianDay(core.simulation.time)
+        val ca = Calendar.getInstance()
+        ca.time = current
+        val h = ca.get(Calendar.HOUR_OF_DAY)
+        val m = ca.get(Calendar.MINUTE)
+
+        val dialog = TimePickerDialog(this, { _, hourOfDay, minute ->
+            val nca = Calendar.getInstance()
+            nca.set(Calendar.YEAR, year)
+            nca.set(Calendar.MONTH, month)
+            nca.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            nca.set(Calendar.HOUR_OF_DAY, hourOfDay)
+            nca.set(Calendar.MINUTE, minute)
+            core.simulation.time = nca.time.julianDay
+            reloadSettings()
+        }, h, m, true)
+        dialog.show()
     }
 
     fun reloadSettings() {
