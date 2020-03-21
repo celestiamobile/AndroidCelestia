@@ -5,6 +5,7 @@
 
 #include <celestia/celestiacore.h>
 #include <celengine/gl.h>
+#include <celestia/helper.h>
 
 jclass cacClz = nullptr;
 jfieldID cacPtrFieldID = nullptr;
@@ -602,4 +603,12 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getStarStyle(JNIEnv *
                                                                          jobject thiz) {
     CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
     return core->getRenderer()->getStarStyle();
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getRenderInfo(JNIEnv *env,
+                                                                         jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    return env->NewStringUTF(Helper::getRenderInfo(core->getRenderer()).c_str());
 }

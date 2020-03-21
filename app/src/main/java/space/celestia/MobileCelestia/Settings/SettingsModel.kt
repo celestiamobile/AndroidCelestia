@@ -132,10 +132,20 @@ private val staticAdvancedItems: List<SettingsSingleSelectionItem> = listOf(
     ))
 )
 
+class SettingsRenderInfoItem(): SettingsItem {
+    override val name: String
+        get() = "Render Info"
+}
+
+private val staticOtherItems: List<SettingsItem> = listOf(
+    SettingsRenderInfoItem()
+)
+
 val mainSettingSections: List<CommonSectionV2> = listOf(
     CommonSectionV2(staticDisplayItems, "Display"),
     CommonSectionV2(staticTimeItems, "Time"),
-    CommonSectionV2(staticAdvancedItems, "Advanced")
+    CommonSectionV2(staticAdvancedItems, "Advanced"),
+    CommonSectionV2(staticOtherItems, "Other")
 )
 
 open class SettingsBaseFragment: TitledFragment() {

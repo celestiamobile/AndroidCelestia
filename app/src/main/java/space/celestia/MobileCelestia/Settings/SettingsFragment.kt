@@ -10,6 +10,7 @@ import space.celestia.MobileCelestia.Common.TitledFragment
 import space.celestia.MobileCelestia.Common.pop
 import space.celestia.MobileCelestia.Common.push
 import space.celestia.MobileCelestia.Common.replace
+import space.celestia.MobileCelestia.Core.CelestiaAppCore
 
 import space.celestia.MobileCelestia.R
 
@@ -52,6 +53,8 @@ class SettingsFragment : Fragment() {
             push(SettingsSingleSelectionFragment.newInstance(item), item.name)
         } else if (item is SettingsCurrentTimeItem) {
             push(SettingsCurrentTimeFragment.newInstance(), item.name)
+        } else if (item is SettingsRenderInfoItem) {
+            push(SimpleTextFragment.newInstance(item.name, CelestiaAppCore.shared().renderInfo), item.name)
         }
     }
 

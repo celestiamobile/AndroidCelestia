@@ -111,6 +111,9 @@ public class CelestiaAppCore {
         return simulation;
     }
 
+    public @NonNull String getRenderInfo() {
+        return c_getRenderInfo();
+    }
 
     // C function
     private native void c_init();
@@ -136,6 +139,8 @@ public class CelestiaAppCore {
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);
+
+    private native String c_getRenderInfo();
 
     private final static String TAG = "CelestiaAppCore";
 
