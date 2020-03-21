@@ -45,7 +45,8 @@ class MainActivity : AppCompatActivity(),
     HelpFragment.Listener,
     FavoriteItemFragment.Listener,
     SettingsItemFragment.Listener,
-    SettingsMultiSelectionFragment.Listener {
+    SettingsMultiSelectionFragment.Listener,
+    SettingsSingleSelectionFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -266,6 +267,15 @@ class MainActivity : AppCompatActivity(),
     override fun onMultiSelectionSettingItemChange(field: String, on: Boolean) {
         val core = CelestiaAppCore.shared()
         core.setBooleanValueForField(field, on)
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        if (frag is SettingsFragment) {
+            frag.reload()
+        }
+    }
+
+    override fun onSingleSelectionSettingItemChange(field: String, value: Int) {
+        val core = CelestiaAppCore.shared()
+        core.setIntValueForField(field, value)
         val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
         if (frag is SettingsFragment) {
             frag.reload()

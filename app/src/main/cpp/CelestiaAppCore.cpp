@@ -527,4 +527,79 @@ FEATUREMETHODS(Linea)
 FEATUREMETHODS(Fluctus)
 FEATUREMETHODS(Farrum)
 FEATUREMETHODS(EruptiveCenter)
-FEATUREMETHODS(Other)
+FEATUREMETHODS(Other)extern "C"
+
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setResolution(JNIEnv *env, jobject thiz,
+                                                                         jint value) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->getRenderer()->setResolution(value);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getResolution(JNIEnv *env,
+                                                                         jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    return core->getRenderer()->getResolution();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setHudDetail(JNIEnv *env, jobject thiz,
+                                                                         jint value) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->setHudDetail(value);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getHudDetail(JNIEnv *env,
+                                                                         jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    return core->getHudDetail();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setTimeZone(JNIEnv *env, jobject thiz,
+                                                                        jint value) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->setTimeZoneBias(0 == value ? 1 : 0);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getTimeZone(JNIEnv *env,
+                                                                        jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    return core->getTimeZoneBias() == 0 ? 1 : 0;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setDateFormat(JNIEnv *env, jobject thiz,
+                                                                       jint value) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->setDateFormat((astro::Date::Format)value);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getDateFormat(JNIEnv *env,
+                                                                       jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    return core->getDateFormat();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setStarStyle(JNIEnv *env, jobject thiz,
+                                                                         jint value) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->getRenderer()->setStarStyle((Renderer::StarStyle)value);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getStarStyle(JNIEnv *env,
+                                                                         jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    return core->getRenderer()->getStarStyle();
+}

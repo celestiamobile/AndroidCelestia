@@ -1,6 +1,7 @@
 package space.celestia.MobileCelestia.Core;
 
 import android.graphics.PointF;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -136,20 +137,16 @@ public class CelestiaAppCore {
     private static native boolean c_initGL();
     private static native void c_chdir(String path);
 
+    private final static String TAG = "CelestiaAppCore";
+
     // Settings
     public boolean getBooleanValueForPield(@NonNull String field) {
         try {
             Method method = getClass().getDeclaredMethod("get" + field);
             Object value = method.invoke(this);
             return (boolean)value;
-        } catch (SecurityException e) {
-
-        } catch (NoSuchMethodException e) {
-
-        } catch (InvocationTargetException e) {
-
-        } catch (IllegalAccessException e) {
-
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get field " + field);
         }
         return false;
     }
@@ -158,14 +155,28 @@ public class CelestiaAppCore {
         try {
             Method method = getClass().getDeclaredMethod("set" + field, boolean.class);
             method.invoke(this, value);
-        } catch (SecurityException e) {
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set field " + field);
+        }
+    }
 
-        } catch (NoSuchMethodException e) {
+    public int getIntValueForPield(@NonNull String field) {
+        try {
+            Method method = getClass().getDeclaredMethod("get" + field);
+            Object value = method.invoke(this);
+            return (int)value;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get field " + field);
+        }
+        return 0;
+    }
 
-        } catch (InvocationTargetException e) {
-
-        } catch (IllegalAccessException e) {
-
+    public void setIntValueForField(@NonNull String field, int value) {
+        try {
+            Method method = getClass().getDeclaredMethod("set" + field, int.class);
+            method.invoke(this, value);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set field " + field);
         }
     }
 
@@ -509,4 +520,25 @@ public class CelestiaAppCore {
     public void setShowOtherLabels(boolean showOtherLabels) { c_setShowOtherLabels(showOtherLabels); }
     private native void c_setShowOtherLabels(boolean showOtherLabels);
     private native boolean c_getShowOtherLabels();
+
+    public void setResolution(int resolution) { c_setResolution(resolution); }
+    public int getResolution() { return c_getResolution(); }
+    public native void c_setResolution(int resolution);
+    public native int c_getResolution();
+    public void setStarStyle(int starStyle) { c_setStarStyle(starStyle);}
+    public int getStarStyle() { return c_getStarStyle(); }
+    public native void c_setStarStyle(int starStyle);
+    public native int c_getStarStyle();
+    public void setHudDetail(int hudDetail) { c_setHudDetail(hudDetail); }
+    public int getHudDetail() { return c_getHudDetail(); }
+    public native void c_setHudDetail(int hudDetail);
+    public native int c_getHudDetail();
+    public void setTimeZone(int timeZone) { c_setTimeZone(timeZone); }
+    public int getTimeZone() { return c_getTimeZone(); }
+    public native void c_setTimeZone(int TimeZone);
+    public native int c_getTimeZone();
+    public void setDateFormat(int dateFormat) { c_setDateFormat(dateFormat); }
+    public int getDateFormat() { return c_getDateFormat(); }
+    public native void c_setDateFormat(int DateFormat);
+    public native int c_getDateFormat();
 }

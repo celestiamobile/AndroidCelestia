@@ -48,6 +48,8 @@ class SettingsFragment : Fragment() {
     public fun pushMainSettingItem(item: SettingsItem) {
         if (item is SettingsMultiSelectionItem) {
             push(SettingsMultiSelectionFragment.newInstance(item), item.name)
+        } else if (item is SettingsSingleSelectionItem) {
+            push(SettingsSingleSelectionFragment.newInstance(item), item.name)
         }
     }
 

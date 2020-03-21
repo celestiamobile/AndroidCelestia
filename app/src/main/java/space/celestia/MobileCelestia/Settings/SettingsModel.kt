@@ -1,6 +1,5 @@
 package space.celestia.MobileCelestia.Settings
 
-import android.preference.MultiSelectListPreference
 import space.celestia.MobileCelestia.Common.CommonSectionV2
 import space.celestia.MobileCelestia.Common.RecyclerViewItem
 import space.celestia.MobileCelestia.Common.TitledFragment
@@ -94,19 +93,43 @@ class SettingsSingleSelectionItem(
     override val name: String,
     val key: String,
     val selections: List<Selection>) : SettingsItem {
-    class Selection(val name: String, val value: Int) {}
+    class Selection(val name: String, val value: Int) : RecyclerViewItem {}
 }
 
 private val staticTimeItems: List<SettingsSingleSelectionItem> = listOf(
     SettingsSingleSelectionItem("Time Zone", "TimeZone", listOf(
         SettingsSingleSelectionItem.Selection("Local Time", 0),
         SettingsSingleSelectionItem.Selection("UTC", 1)
+    )),
+    SettingsSingleSelectionItem("Date Format", "DateFormat", listOf(
+        SettingsSingleSelectionItem.Selection("Default", 0),
+        SettingsSingleSelectionItem.Selection("YYYY MMM DD HH:MM:SS TZ", 1),
+        SettingsSingleSelectionItem.Selection("UTC Offset", 2)
+    ))
+)
+
+private val staticAdvancedItems: List<SettingsSingleSelectionItem> = listOf(
+    SettingsSingleSelectionItem("Texture Resolution", "Resolution", listOf(
+        SettingsSingleSelectionItem.Selection("Low", 0),
+        SettingsSingleSelectionItem.Selection("Medium", 1),
+        SettingsSingleSelectionItem.Selection("High", 2)
+    )),
+    SettingsSingleSelectionItem("Star Style", "StarStyle", listOf(
+        SettingsSingleSelectionItem.Selection("Fuzzy Points", 0),
+        SettingsSingleSelectionItem.Selection("Points", 1),
+        SettingsSingleSelectionItem.Selection("Scaled Discs", 2)
+    )),
+    SettingsSingleSelectionItem("Info Display", "HudDetail", listOf(
+        SettingsSingleSelectionItem.Selection("None", 0),
+        SettingsSingleSelectionItem.Selection("Terse", 1),
+        SettingsSingleSelectionItem.Selection("Verbose", 2)
     ))
 )
 
 val mainSettingSections: List<CommonSectionV2> = listOf(
     CommonSectionV2(staticDisplayItems, "Display"),
-    CommonSectionV2(staticTimeItems, "Time")
+    CommonSectionV2(staticTimeItems, "Time"),
+    CommonSectionV2(staticAdvancedItems, "Advanced")
 )
 
 open class SettingsBaseFragment: TitledFragment() {
