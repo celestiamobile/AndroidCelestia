@@ -25,8 +25,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:itemTextColor="@color/bottom_nav_color"
-        app:itemIconTint="@color/bottom_nav_color"
-        style="@style/SecondaryBackground"/>
+        style="@style/BottomNav"/>
 
 </LinearLayout>

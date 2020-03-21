@@ -2,6 +2,7 @@
 <resources>
     <color name="colorBackground">#000000</color>
     <color name="colorSecondaryBackground">#1C1C1E</color>
+    <color name="colorBarBackground">#0E0E0F</color>
     <color name="colorLabel">#FFFFFF</color>
     <color name="colorSecondaryLabel">#99EBEBF5</color>
     <color name="colorTertiaryLabel">#4DEBEBF5</color>
@@ -13,18 +14,16 @@
     <color name="colorImageIconNormal">#FFFFFF</color>
     <color name="colorImageIconSelected">#AAAAAA</color>
 
-    <color name="colorBottomItemSelected">#FFFFFF</color>
-    <color name="colorBottomItemUnselected">#80FFFFFF</color>
-
     <color name="colorThemeBackground">#114477</color>
     <color name="colorSelectedThemeBackground">#80114477</color>
     <color name="colorThemeLabel">#6699CC</color>
+    <color name="colorThemeSecondaryLabel">#114477</color>
 
     <color name="colorEditTextHairLine">#808080</color>
 
     <color name="colorDimmingBackground">#99000000</color>
 
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">@color/colorThemeLabel</color>
+    <color name="colorPrimaryDark">@color/colorThemeSecondaryLabel</color>
+    <color name="colorAccent">@color/colorThemeLabel</color>
 </resources>
