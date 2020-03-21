@@ -14,29 +14,21 @@ import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.hypot
 
-class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
-    class Touch {
-        constructor(p: PointF, t: Date) {
-            point = p
-            time = t
-        }
+class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.FrameCallback {
+    class Touch(p: PointF, t: Date) {
 
-        var point: PointF
-        var time: Date
+        var point: PointF = p
+        var time: Date = t
         var action = false
     }
 
-    public var isReady = false
+    var isReady = false
 
     private val TAG = "CelestiaView"
 
     private val threshHold: Int = 20 // thresh hold to start a one finger pan (milliseconds)
     private var touchLocations = HashMap<Int, Touch>()
     private var touchActive = false
-
-    constructor(context: Context) : super(context) {
-        Choreographer.getInstance().postFrameCallback(this)
-    }
 
     override fun finalize() {
         Choreographer.getInstance().removeFrameCallback(this)
@@ -101,7 +93,7 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
                         val p = PointF((prev.point.x + point.x) / 2, (prev.point.y + point.y) / 2)
                         core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_LEFT, p, 0)
                     }
-                    touchLocations.put(id, Touch(point, Date()))
+                    touchLocations[id] = Touch(point, Date())
                 }
             }
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -114,6 +106,12 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
                     else
                         Log.d(TAG, "One finger action stopped")
                     touchActive = false
+                } else if (touchLocations.size == 1) {
+                    // Canceled convert to one finger tap
+                    val loc = touchLocations[0]!!
+                    Log.d(TAG, "One finger tap action")
+                    core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_LEFT, loc.point, 0)
+                    core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_LEFT, loc.point, 0)
                 }
                 touchLocations.clear()
             }
@@ -188,6 +186,10 @@ class CelestiaView : GLSurfaceView, Choreographer.FrameCallback {
             requestRender()
         }
 
+        Choreographer.getInstance().postFrameCallback(this)
+    }
+
+    init {
         Choreographer.getInstance().postFrameCallback(this)
     }
 }
