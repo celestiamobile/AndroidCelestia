@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import space.celestia.MobileCelestia.R
 
 import space.celestia.MobileCelestia.Info.Model.CelestiaAction
-import java.io.Serializable
 
 fun CelestiaAction.imageName(): String? {
     return when (this) {
@@ -33,7 +32,7 @@ fun CelestiaAction.imageName(): String? {
     }
 }
 
-class CelestiaActionItem(val action: CelestiaAction, val image: Int) {}
+class CelestiaActionItem(val action: CelestiaAction, val image: Int)
 
 class BottomControlFragment : Fragment() {
 
@@ -44,7 +43,7 @@ class BottomControlFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            items = (it.getSerializable(ARG_ACTIONS) as? Wrapper)?.actions
+            items = it.getSerializable(ARG_ACTIONS) as? List<CelestiaAction>
         }
     }
 
@@ -75,7 +74,7 @@ class BottomControlFragment : Fragment() {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement BottomControlFragment.Listener")
+            throw RuntimeException("$context must implement BottomControlFragment.Listener")
         }
     }
 
@@ -88,8 +87,6 @@ class BottomControlFragment : Fragment() {
         fun onActionSelected(item: CelestiaAction)
     }
 
-    private inner class Wrapper(val actions: List<CelestiaAction>) : Serializable {}
-
     companion object {
 
         const val ARG_ACTIONS = "action"
@@ -98,7 +95,7 @@ class BottomControlFragment : Fragment() {
         fun newInstance(items: List<CelestiaAction>) =
             BottomControlFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_ACTIONS, Wrapper(items))
+                    putSerializable(ARG_ACTIONS, ArrayList<CelestiaAction>(items))
                 }
             }
     }

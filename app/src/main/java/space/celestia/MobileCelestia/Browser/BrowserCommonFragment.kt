@@ -2,23 +2,19 @@ package space.celestia.MobileCelestia.Browser
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import space.celestia.MobileCelestia.Common.TitledFragment
-import space.celestia.MobileCelestia.R
-
-import space.celestia.MobileCelestia.Core.CelestiaAppCore
 import space.celestia.MobileCelestia.Core.CelestiaBrowserItem
-import java.io.Serializable
+import space.celestia.MobileCelestia.R
 
 class BrowserCommonFragment : TitledFragment() {
 
     private var listener: Listener? = null
-    var browserItem: CelestiaBrowserItem? = null
+    private var browserItem: CelestiaBrowserItem? = null
 
     override val title: String
         get() = browserItem!!.name!!
@@ -27,7 +23,7 @@ class BrowserCommonFragment : TitledFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            browserItem = (it.getSerializable(ARG_ITEM) as? Wrapper)?.item
+            browserItem = it.getSerializable(ARG_ITEM) as? CelestiaBrowserItem
         }
     }
 
@@ -65,17 +61,14 @@ class BrowserCommonFragment : TitledFragment() {
         fun onBrowserItemSelected(item: BrowserItem)
     }
 
-    inner class Wrapper(val item: CelestiaBrowserItem) : Serializable
-
     companion object {
-
         const val ARG_ITEM = "item"
 
         @JvmStatic
         fun newInstance(item: CelestiaBrowserItem) =
             BrowserCommonFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_ITEM, Wrapper(item))
+                    putSerializable(ARG_ITEM, item)
                 }
             }
     }

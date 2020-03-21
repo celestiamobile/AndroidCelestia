@@ -6,14 +6,14 @@ import android.view.ViewGroup
 import space.celestia.MobileCelestia.Common.CommonSectionV2
 import space.celestia.MobileCelestia.Common.CommonTextViewHolder
 
-
 import space.celestia.MobileCelestia.Favorite.FavoriteItemFragment.Listener
 
 import space.celestia.MobileCelestia.Common.RecyclerViewItem
 import space.celestia.MobileCelestia.Common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.MobileCelestia.Core.CelestiaScript
+import java.io.Serializable
 
-interface FavoriteBaseItem : RecyclerViewItem {
+interface FavoriteBaseItem : RecyclerViewItem, Serializable {
     val children: List<FavoriteBaseItem>
     val isLeaf: Boolean
     val title: String

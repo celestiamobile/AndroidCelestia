@@ -3,13 +3,14 @@ package space.celestia.MobileCelestia.Core;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class CelestiaBrowserItem {
-    public interface ChildrenProvider {
+public class CelestiaBrowserItem implements Serializable {
+    public interface ChildrenProvider extends Serializable {
         Map<String, CelestiaBrowserItem> childrenForItem(CelestiaBrowserItem item);
     }
 

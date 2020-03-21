@@ -9,8 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import space.celestia.MobileCelestia.R
 
-import java.io.Serializable
-
 class SettingsSingleSelectionFragment : SettingsBaseFragment() {
 
     private var item: SettingsSingleSelectionItem? = null
@@ -26,7 +24,7 @@ class SettingsSingleSelectionFragment : SettingsBaseFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            item = (it.getSerializable(ARG_ITEM) as Wrapper).item
+            item = it.getSerializable(ARG_ITEM) as? SettingsSingleSelectionItem
         }
     }
 
@@ -66,8 +64,6 @@ class SettingsSingleSelectionFragment : SettingsBaseFragment() {
         listAdapter.notifyDataSetChanged()
     }
 
-    inner class Wrapper(val item: SettingsSingleSelectionItem) : Serializable {}
-
     interface Listener {
         fun onSingleSelectionSettingItemChange(field: String, value: Int)
     }
@@ -80,7 +76,7 @@ class SettingsSingleSelectionFragment : SettingsBaseFragment() {
         fun newInstance(item: SettingsSingleSelectionItem) =
             SettingsSingleSelectionFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_ITEM, Wrapper(item))
+                    putSerializable(ARG_ITEM, item)
                 }
             }
     }

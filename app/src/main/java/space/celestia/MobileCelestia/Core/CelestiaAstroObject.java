@@ -1,6 +1,8 @@
 package space.celestia.MobileCelestia.Core;
 
-public class CelestiaAstroObject {
+import java.io.Serializable;
+
+public class CelestiaAstroObject implements Serializable {
     protected long pointer;
 
     protected CelestiaAstroObject(long ptr) {

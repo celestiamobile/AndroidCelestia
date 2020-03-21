@@ -56,8 +56,6 @@ class SettingsCurrentTimeFragment : SettingsBaseFragment() {
         listAdapter.notifyDataSetChanged()
     }
 
-    inner class Wrapper(val item: SettingsCurrentTimeItem) : Serializable {}
-
     interface Listener {
         fun onCurrentTimeActionRequested(action: CurrentTimeAction)
     }

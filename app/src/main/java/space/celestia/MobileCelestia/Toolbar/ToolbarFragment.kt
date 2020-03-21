@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import space.celestia.MobileCelestia.R
 import space.celestia.MobileCelestia.Toolbar.Model.ToolbarActionItem
 
-import space.celestia.MobileCelestia.Toolbar.Model.ToolbarListItem
 import java.io.Serializable
 import kotlin.collections.ArrayList
 
@@ -80,9 +79,9 @@ class ToolbarFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            val value = it.getSerializable(ARG_ACTION_WRAPPER)
-            if (value is Wrapper) {
-                existingActions = value.items
+            val value = it.getSerializable(ARG_ACTION_WRAPPER) as? List<List<ToolbarAction>>
+            if (value != null) {
+                existingActions = value
             }
         }
     }
@@ -112,7 +111,7 @@ class ToolbarFragment : Fragment() {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement ToolbarListFragmentInteractionListener")
+            throw RuntimeException("$context must implement ToolbarListFragmentInteractionListener")
         }
     }
 
@@ -125,8 +124,6 @@ class ToolbarFragment : Fragment() {
         fun onToolbarActionSelected(action: ToolbarAction)
     }
 
-    inner class Wrapper(val items: List<List<ToolbarAction>>) : Serializable {}
-
     companion object {
 
         const val ARG_ACTION_WRAPPER = "action-wrapper"
@@ -135,7 +132,7 @@ class ToolbarFragment : Fragment() {
         fun newInstance(actions: List<List<ToolbarAction>>) =
             ToolbarFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_ACTION_WRAPPER, Wrapper(actions))
+                    putSerializable(ARG_ACTION_WRAPPER, ArrayList<ArrayList<ToolbarAction>>(actions.map { ArrayList(it) }))
                 }
             }
     }

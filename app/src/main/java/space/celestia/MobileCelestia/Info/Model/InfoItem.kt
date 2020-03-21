@@ -2,7 +2,7 @@ package space.celestia.MobileCelestia.Info.Model
 
 import java.io.Serializable
 
-enum class CelestiaAction(val value: Int) {
+enum class CelestiaAction(val value: Int) : Serializable {
     GoTo(103),
     Center(99),
     PlayPause(32),

@@ -3,6 +3,7 @@ package space.celestia.MobileCelestia.Settings
 import space.celestia.MobileCelestia.Common.CommonSectionV2
 import space.celestia.MobileCelestia.Common.RecyclerViewItem
 import space.celestia.MobileCelestia.Common.TitledFragment
+import java.io.Serializable
 
 interface SettingsItem : RecyclerViewItem {
     val name: String
@@ -12,8 +13,8 @@ class SettingsMultiSelectionItem(
     override val name: String,
     val masterKey: String?,
     val selections: List<Selection>
-) : SettingsItem {
-    class Selection(val name: String, val key: String) : RecyclerViewItem {
+) : SettingsItem, Serializable {
+    class Selection(val name: String, val key: String) : RecyclerViewItem, Serializable {
     }
 }
 
@@ -92,8 +93,8 @@ private val staticDisplayItems: List<SettingsMultiSelectionItem> = listOf(
 class SettingsSingleSelectionItem(
     override val name: String,
     val key: String,
-    val selections: List<Selection>) : SettingsItem {
-    class Selection(val name: String, val value: Int) : RecyclerViewItem {}
+    val selections: List<Selection>) : SettingsItem, Serializable {
+    class Selection(val name: String, val value: Int) : RecyclerViewItem, Serializable {}
 }
 
 class SettingsCurrentTimeItem(): SettingsItem {

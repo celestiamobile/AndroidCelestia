@@ -7,10 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import space.celestia.MobileCelestia.Common.TitledFragment
 import space.celestia.MobileCelestia.R
-
-import java.io.Serializable
 
 class SettingsMultiSelectionFragment : SettingsBaseFragment() {
 
@@ -27,7 +24,7 @@ class SettingsMultiSelectionFragment : SettingsBaseFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            item = (it.getSerializable(ARG_ITEM) as Wrapper).item
+            item = it.getSerializable(ARG_ITEM) as? SettingsMultiSelectionItem
         }
     }
 
@@ -67,8 +64,6 @@ class SettingsMultiSelectionFragment : SettingsBaseFragment() {
         listAdapter.notifyDataSetChanged()
     }
 
-    inner class Wrapper(val item: SettingsMultiSelectionItem) : Serializable {}
-
     interface Listener {
         fun onMultiSelectionSettingItemChange(field: String, on: Boolean)
     }
@@ -81,7 +76,7 @@ class SettingsMultiSelectionFragment : SettingsBaseFragment() {
         fun newInstance(item: SettingsMultiSelectionItem) =
             SettingsMultiSelectionFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_ITEM, Wrapper(item))
+                    putSerializable(ARG_ITEM, item)
                 }
             }
     }
