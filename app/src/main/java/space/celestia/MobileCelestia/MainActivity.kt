@@ -351,7 +351,7 @@ class MainActivity : AppCompatActivity(),
         showRightFragment(
             InfoFragment.newInstance(
                 InfoDescriptionItem(core.simulation.universe.nameForSelection(selection),
-                    "Overview")
+                    "No overview available.")
             )
         )
     }
