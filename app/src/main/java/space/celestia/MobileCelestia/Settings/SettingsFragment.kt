@@ -50,6 +50,8 @@ class SettingsFragment : Fragment() {
             push(SettingsMultiSelectionFragment.newInstance(item), item.name)
         } else if (item is SettingsSingleSelectionItem) {
             push(SettingsSingleSelectionFragment.newInstance(item), item.name)
+        } else if (item is SettingsCurrentTimeItem) {
+            push(SettingsCurrentTimeFragment.newInstance(), item.name)
         }
     }
 

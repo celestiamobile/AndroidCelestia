@@ -96,7 +96,12 @@ class SettingsSingleSelectionItem(
     class Selection(val name: String, val value: Int) : RecyclerViewItem {}
 }
 
-private val staticTimeItems: List<SettingsSingleSelectionItem> = listOf(
+class SettingsCurrentTimeItem(): SettingsItem {
+    override val name: String
+        get() = "Current Time"
+}
+
+private val staticTimeItems: List<SettingsItem> = listOf(
     SettingsSingleSelectionItem("Time Zone", "TimeZone", listOf(
         SettingsSingleSelectionItem.Selection("Local Time", 0),
         SettingsSingleSelectionItem.Selection("UTC", 1)
@@ -105,7 +110,8 @@ private val staticTimeItems: List<SettingsSingleSelectionItem> = listOf(
         SettingsSingleSelectionItem.Selection("Default", 0),
         SettingsSingleSelectionItem.Selection("YYYY MMM DD HH:MM:SS TZ", 1),
         SettingsSingleSelectionItem.Selection("UTC Offset", 2)
-    ))
+    )),
+    SettingsCurrentTimeItem()
 )
 
 private val staticAdvancedItems: List<SettingsSingleSelectionItem> = listOf(

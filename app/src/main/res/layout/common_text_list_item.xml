@@ -9,9 +9,8 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
@@ -21,12 +20,14 @@
 
     <TextView
         android:id="@+id/detail"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:layout_marginEnd="4dp"
+        android:layout_weight="1"
+        android:layout_marginEnd="8dp"
         android:textAppearance="?attr/textAppearanceListItem"
         android:lines="1"
+        android:ellipsize="end"
         style="@style/SecondaryLabel"/>
 
     <ImageView

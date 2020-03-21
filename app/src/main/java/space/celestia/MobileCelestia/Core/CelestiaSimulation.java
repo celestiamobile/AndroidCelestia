@@ -45,6 +45,9 @@ public class CelestiaSimulation {
         pointer = ptr;
     }
 
+    public double getTime() { return c_getTime(); }
+    public void setTime(double time) { c_setTime(time); }
+
     // C functions
     private native long c_getSelection();
     private native void c_setSelection(long ptr);
@@ -53,4 +56,6 @@ public class CelestiaSimulation {
     private native long c_findObject(String name);
     private native long c_getStarBrowser(int kind);
     private native void c_reverseObserverOrientation();
+    private native double c_getTime();
+    private native void c_setTime(double time);
 }

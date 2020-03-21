@@ -32,8 +32,11 @@ import space.celestia.MobileCelestia.Settings.*
 import space.celestia.MobileCelestia.Toolbar.ToolbarAction
 import space.celestia.MobileCelestia.Toolbar.ToolbarFragment
 import space.celestia.MobileCelestia.Utils.AssetUtils
+import space.celestia.MobileCelestia.Utils.createDateFromJulianDay
 import space.celestia.MobileCelestia.Utils.PreferenceManager
+import space.celestia.MobileCelestia.Utils.julianDay
 import java.io.IOException
+import java.util.*
 
 class MainActivity : AppCompatActivity(),
     ToolbarFragment.Listener,
@@ -46,7 +49,8 @@ class MainActivity : AppCompatActivity(),
     FavoriteItemFragment.Listener,
     SettingsItemFragment.Listener,
     SettingsMultiSelectionFragment.Listener,
-    SettingsSingleSelectionFragment.Listener {
+    SettingsSingleSelectionFragment.Listener,
+    SettingsCurrentTimeFragment.Listener {
 
     private val TAG = "MainActivity"
 
@@ -267,15 +271,26 @@ class MainActivity : AppCompatActivity(),
     override fun onMultiSelectionSettingItemChange(field: String, on: Boolean) {
         val core = CelestiaAppCore.shared()
         core.setBooleanValueForField(field, on)
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
-        if (frag is SettingsFragment) {
-            frag.reload()
-        }
+        reloadSettings()
     }
 
     override fun onSingleSelectionSettingItemChange(field: String, value: Int) {
         val core = CelestiaAppCore.shared()
         core.setIntValueForField(field, value)
+        reloadSettings()
+    }
+
+    override fun onCurrentTimeActionRequested(action: CurrentTimeAction) {
+        when (action) {
+            CurrentTimeAction.SetToCurrentTime -> {
+                core.charEnter(CelestiaAction.CurrentTime.value)
+            }
+            CurrentTimeAction.PickDate -> {
+            }
+        }
+    }
+
+    fun reloadSettings() {
         val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
         if (frag is SettingsFragment) {
             frag.reload()

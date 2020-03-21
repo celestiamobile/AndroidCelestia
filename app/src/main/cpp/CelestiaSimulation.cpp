@@ -72,3 +72,18 @@ Java_space_celestia_MobileCelestia_Core_CelestiaSimulation_c_1reverseObserverOri
     Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
     sim->reverseObserverOrientation();
 }
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaSimulation_c_1getTime(JNIEnv *env, jobject thiz) {
+    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+    return sim->getTime();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaSimulation_c_1setTime(JNIEnv *env, jobject thiz,
+                                                                      jdouble time) {
+    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+    sim->setTime(time);
+}
