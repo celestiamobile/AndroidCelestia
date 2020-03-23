@@ -198,6 +198,15 @@ public class CelestiaAppCore {
         }
     }
 
+    public void setDoubleValueForField(@NonNull String field, double value) {
+        try {
+            Method method = getClass().getDeclaredMethod("set" + field, double.class);
+            method.invoke(this, value);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set field " + field);
+        }
+    }
+
     public boolean getShowStars() { return c_getShowStars(); }
     public void setShowStars(boolean showStars) { c_setShowStars(showStars); }
     private native void c_setShowStars(boolean showStars);
@@ -560,4 +569,24 @@ public class CelestiaAppCore {
     public int getDateFormat() { return c_getDateFormat(); }
     private native void c_setDateFormat(int DateFormat);
     private native int c_getDateFormat();
+
+    public void setAmbientLightLevel(double ambientLightLevel) { c_setAmbientLightLevel(ambientLightLevel); }
+    public double getAmbientLightLevel() { return c_getAmbientLightLevel(); }
+    private native void c_setAmbientLightLevel(double ambientLightLevel);
+    private native double c_getAmbientLightLevel();
+
+    public void setFaintestVisible(double faintestVisible) { c_setFaintestVisible(faintestVisible); }
+    public double getFaintestVisible() { return c_getFaintestVisible(); }
+    private native void c_setFaintestVisible(double faintestVisible);
+    private native double c_getFaintestVisible();
+
+    public void setGalaxyBrightness(double galaxyBrightness) { c_setGalaxyBrightness(galaxyBrightness); }
+    public double getGalaxyBrightness() { return c_getGalaxyBrightness(); }
+    private native void c_setGalaxyBrightness(double galaxyBrightness);
+    private native double c_getGalaxyBrightness();
+
+    public void setMinimumFeatureSize(double minimumFeatureSize) { c_setMinimumFeatureSize(minimumFeatureSize); }
+    public double getMinimumFeatureSize() { return c_geMinimumFeatureSize(); }
+    private native void c_setMinimumFeatureSize(double minimumFeatureSize);
+    private native double c_geMinimumFeatureSize();
 }

@@ -682,3 +682,84 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getRenderInfo(JNIEnv 
     CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
     return env->NewStringUTF(Helper::getRenderInfo(core->getRenderer()).c_str());
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setAmbientLightLevel(JNIEnv *env,
+                                                                                jobject thiz,
+                                                                                jdouble ambient_light_level) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->getRenderer()->setAmbientLightLevel((float)ambient_light_level);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getAmbientLightLevel(JNIEnv *env,
+                                                                                jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    return core->getRenderer()->getAmbientLightLevel();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setFaintestVisible(JNIEnv *env,
+                                                                              jobject thiz,
+                                                                              jdouble faintest_visible) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    if ((core->getRenderer()->getRenderFlags() & Renderer::ShowAutoMag) == 0)
+    {
+        core->setFaintest((float)faintest_visible);
+    }
+    else
+    {
+        core->getRenderer()->setFaintestAM45deg((float)faintest_visible);
+        core->setFaintestAutoMag();
+    }
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getFaintestVisible(JNIEnv *env,
+                                                                              jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    if ((core->getRenderer()->getRenderFlags() & Renderer::ShowAutoMag) == 0)
+    {
+        return core->getSimulation()->getFaintestVisible();
+    }
+    else
+    {
+        return core->getRenderer()->getFaintestAM45deg();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setGalaxyBrightness(JNIEnv *env,
+                                                                               jobject thiz,
+                                                                               jdouble galaxy_brightness) {
+    Galaxy::setLightGain((float)galaxy_brightness);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getGalaxyBrightness(JNIEnv *env,
+                                                                               jobject thiz) {
+    return Galaxy::getLightGain();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setMinimumFeatureSize(JNIEnv *env,
+                                                                                 jobject thiz,
+                                                                                 jdouble minimum_feature_size) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    core->getRenderer()->setMinimumFeatureSize((float)minimum_feature_size);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1geMinimumFeatureSize(JNIEnv *env,
+                                                                                jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    return core->getRenderer()->getMinimumFeatureSize();
+}

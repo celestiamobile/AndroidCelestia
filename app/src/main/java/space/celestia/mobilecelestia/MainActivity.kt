@@ -138,10 +138,19 @@ class MainActivity : AppCompatActivity(),
         val map = readDefaultSetting()
         val bools = HashMap<String, Boolean>()
         val ints = HashMap<String, Int>()
+        val doubles = HashMap<String, Double>()
 
         fun getDefaultInt(key: String): Int? {
             val value = map[key]
             if (value is Int) {
+                return value
+            }
+            return null
+        }
+
+        fun getDefaultDouble(key: String): Double? {
+            val value = map[key]
+            if (value is Double) {
                 return value
             }
             return null
@@ -174,6 +183,15 @@ class MainActivity : AppCompatActivity(),
             return null
         }
 
+        fun getCustomDouble(key: String): Double? {
+            val value = settingManager[PreferenceManager.CustomKey(key)] ?: return null
+            return try {
+                value.toDouble()
+            } catch (exp: NumberFormatException) {
+                null
+            }
+        }
+
         for (key in SettingsKey.allBooleanCases) {
             val def = getDefaultBool(key.valueString)
             if (def != null) {
@@ -194,12 +212,26 @@ class MainActivity : AppCompatActivity(),
                 ints[key.valueString] = cus
         }
 
+        for (key in SettingsKey.allDoubleCases) {
+            val def = getDefaultDouble(key.valueString)
+            if (def != null) {
+                doubles[key.valueString] = def
+            }
+            val cus = getCustomDouble(key.valueString)
+            if (cus != null)
+                doubles[key.valueString] = cus
+        }
+
         for ((key, value) in bools) {
             core.setBooleanValueForField(key, value)
         }
 
         for ((key, value) in ints) {
             core.setIntValueForField(key, value)
+        }
+
+        for ((key, value) in doubles) {
+            core.setDoubleValueForField(key, value)
         }
     }
 

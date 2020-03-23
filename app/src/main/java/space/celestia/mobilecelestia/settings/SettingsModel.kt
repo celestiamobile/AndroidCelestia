@@ -71,7 +71,12 @@ enum class SettingsKey(var displayName: String) : PreferenceManager.Key, Seriali
     DateFormat("Date Format"),
     Resolution("Texture Resolution"),
     StarStyle("Star Style"),
-    HudDetail("Info Display");
+    HudDetail("Info Display"),
+    // Double values
+    FaintestVisible("Faintest Visible"),
+    AmbientLightLevel("Ambient Light Level"),
+    GalaxyBrightness("Galaxy Brightness"),
+    MinimumFeatureSize("Minimum FeatureSize");
 
     companion object {
         val allBooleanCases: List<SettingsKey>
@@ -144,6 +149,14 @@ enum class SettingsKey(var displayName: String) : PreferenceManager.Key, Seriali
                 Resolution,
                 StarStyle,
                 HudDetail
+            )
+
+        val allDoubleCases: List<SettingsKey>
+            get() = listOf(
+                FaintestVisible,
+                AmbientLightLevel,
+                GalaxyBrightness,
+                MinimumFeatureSize
             )
     }
 
