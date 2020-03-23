@@ -1,16 +1,19 @@
 package space.celestia.MobileCelestia
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.DatePicker
+import android.widget.EditText
 import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
@@ -387,6 +390,34 @@ class MainActivity : AppCompatActivity(),
                 frag.pushItem(item)
             }
         }
+    }
+
+    override fun deleteFavoriteItem(index: Int) {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        if (frag is FavoriteFragment) {
+            frag.remove(index)
+        }
+    }
+
+    override fun renameFavoriteItem(item: MutableFavoriteBaseItem) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Rename")
+        val editText = EditText(this)
+        editText.inputType = InputType.TYPE_CLASS_TEXT
+        editText.hint = item.title
+        builder.setView(editText)
+
+        builder.setPositiveButton("OK") { _, _ ->
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+            if (frag is FavoriteFragment) {
+                frag.rename(item, editText.text.toString())
+            }
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.cancel()
+        }
+        builder.show()
     }
 
     override fun onMainSettingItemSelected(item: SettingsItem) {

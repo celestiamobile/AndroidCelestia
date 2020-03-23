@@ -56,6 +56,18 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         frag.reload()
     }
 
+    public fun remove(index: Int) {
+        val frag = currentFrag
+        (frag.favoriteItem as MutableFavoriteBaseItem).remove(index)
+        frag.reload()
+    }
+
+    public fun rename(item: MutableFavoriteBaseItem, newName: String) {
+        val frag = currentFrag
+        item.rename(newName)
+        frag.reload()
+    }
+
     private fun reloadMenu(item: FavoriteBaseItem) {
         if (item is MutableFavoriteBaseItem) {
             toolbar.menu.clear()

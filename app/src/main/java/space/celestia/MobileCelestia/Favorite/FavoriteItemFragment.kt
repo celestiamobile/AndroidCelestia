@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.ItemTouchHelper
 import space.celestia.MobileCelestia.Common.TitledFragment
 import space.celestia.MobileCelestia.R
 
@@ -39,6 +40,7 @@ class FavoriteItemFragment : TitledFragment() {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
                 adapter = listAdapter
+                ItemTouchHelper(FavoriteItemItemTouchCallback(listAdapter)).attachToRecyclerView(this)
             }
         }
         return view
@@ -65,6 +67,8 @@ class FavoriteItemFragment : TitledFragment() {
 
     interface Listener {
         fun onFavoriteItemSelected(item: FavoriteBaseItem)
+        fun deleteFavoriteItem(index: Int)
+        fun renameFavoriteItem(item: MutableFavoriteBaseItem)
     }
 
     companion object {

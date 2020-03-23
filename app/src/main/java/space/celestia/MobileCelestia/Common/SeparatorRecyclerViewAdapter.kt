@@ -24,7 +24,7 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
 
     private class SeparatorItem(val full: Boolean) : ViewItem {}
 
-    private var values: List<ViewItem> = listOf()
+    private var values: ArrayList<ViewItem> = arrayListOf()
 
     private val onClickListener: View.OnClickListener
 
@@ -36,6 +36,22 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
                 onItemSelected(tag)
             }
         }
+    }
+
+    public fun swapItem(index1: Int, index2: Int): Boolean {
+        val item1 = values[index1]
+        val item2 = values[index2]
+        if (item1 is RecyclerViewItem && item2 is RecyclerViewItem && swapItem(item1, item2)) {
+            values[index2] = item2
+            values[index1] = item1
+            notifyItemMoved(index1, index2)
+            return true
+        }
+        return false
+    }
+
+    open fun swapItem(item1: RecyclerViewItem, item2: RecyclerViewItem): Boolean {
+        return false
     }
 
     override fun getItemViewType(position: Int): Int {
