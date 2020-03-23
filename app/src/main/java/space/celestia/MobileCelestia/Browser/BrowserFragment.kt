@@ -22,6 +22,24 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
     }
 
     private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
+    private var currentPath = ""
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        if (savedInstanceState != null) {
+            val p = savedInstanceState.getString("path")
+            if (p != null) {
+                currentPath = p
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putString("path", currentPath)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,16 +69,20 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
     }
 
     private fun replaceItem(browserItem: CelestiaBrowserItem) {
-        replace(BrowserCommonFragment.newInstance(browserItem), R.id.browser_container)
         toolbar.navigationIcon = null
         toolbar.title = browserItem.name
+        currentPath = browserItem.name
+        browserMap[currentPath] = browserItem
+        replace(BrowserCommonFragment.newInstance(currentPath), R.id.browser_container)
     }
 
     public fun pushItem(browserItem: CelestiaBrowserItem) {
-        val frag = BrowserCommonFragment.newInstance(browserItem)
-        push(frag, R.id.browser_container)
         toolbar.title = browserItem.name
         toolbar.navigationIcon = resources.getDrawable(R.drawable.ic_action_arrow_back)
+        currentPath = "$currentPath/${browserItem.name}"
+        browserMap[currentPath] = browserItem
+        val frag = BrowserCommonFragment.newInstance(currentPath)
+        push(frag, R.id.browser_container)
     }
 
     fun popItem() {
@@ -77,5 +99,7 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
         @JvmStatic
         fun newInstance() =
             BrowserFragment()
+
+        val browserMap = HashMap<String, CelestiaBrowserItem>()
     }
 }

@@ -9,8 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class CelestiaBrowserItem implements Serializable {
-    public interface ChildrenProvider extends Serializable {
+public class CelestiaBrowserItem {
+    public interface ChildrenProvider {
         Map<String, CelestiaBrowserItem> childrenForItem(CelestiaBrowserItem item);
     }
 
@@ -36,7 +36,7 @@ public class CelestiaBrowserItem implements Serializable {
         return _object;
     }
 
-    public @Nullable String getName() {
+    public @NonNull String getName() {
         return _name;
     }
 

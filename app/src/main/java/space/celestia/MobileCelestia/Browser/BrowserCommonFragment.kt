@@ -23,7 +23,8 @@ class BrowserCommonFragment : TitledFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            browserItem = it.getSerializable(ARG_ITEM) as? CelestiaBrowserItem
+            val path = it.getString(ARG_PATH)!!
+            browserItem = BrowserFragment.browserMap[path]
         }
     }
 
@@ -62,13 +63,13 @@ class BrowserCommonFragment : TitledFragment() {
     }
 
     companion object {
-        const val ARG_ITEM = "item"
+        const val ARG_PATH = "path"
 
         @JvmStatic
-        fun newInstance(item: CelestiaBrowserItem) =
+        fun newInstance(path: String) =
             BrowserCommonFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_ITEM, item)
+                    putString(ARG_PATH, path)
                 }
             }
     }

@@ -3,12 +3,22 @@ package space.celestia.MobileCelestia.Browser
 import space.celestia.MobileCelestia.Common.RecyclerViewItem
 import space.celestia.MobileCelestia.Core.*
 
-fun CelestiaUniverse.solBrowserRoot(): CelestiaBrowserItem {
+private var solRoot: CelestiaBrowserItem? = null
+private var starRoot: CelestiaBrowserItem? = null
+private var dsoRoot: CelestiaBrowserItem? = null
+
+private fun CelestiaUniverse.createSolBrowserRoot(): CelestiaBrowserItem {
     val sol = findObject("Sol").star!!
     return CelestiaBrowserItem(starCatalog.getStarName(sol), sol, this)
 }
 
-fun CelestiaSimulation.starBrowserRoot(): CelestiaBrowserItem {
+fun CelestiaUniverse.solBrowserRoot(): CelestiaBrowserItem {
+    if (solRoot == null)
+        solRoot = createSolBrowserRoot()
+    return solRoot!!
+}
+
+private fun CelestiaSimulation.createStarBrowserRoot(): CelestiaBrowserItem {
     fun List<CelestiaStar>.createBrowserMap(): Map<String, CelestiaBrowserItem> {
         val map = HashMap<String, CelestiaBrowserItem>()
         for (item in this) {
@@ -31,7 +41,13 @@ fun CelestiaSimulation.starBrowserRoot(): CelestiaBrowserItem {
     ))
 }
 
-fun CelestiaUniverse.dsoBrowserRoot(): CelestiaBrowserItem {
+fun CelestiaSimulation.starBrowserRoot(): CelestiaBrowserItem {
+    if (starRoot == null)
+        starRoot = createStarBrowserRoot()
+    return starRoot!!
+}
+
+private fun CelestiaUniverse.createDSOBrowserRoot(): CelestiaBrowserItem {
     val typeMap = mapOf<String, String>(
         "SB" to "Galaxies (Barred Spiral)",
         "S" to "Galaxies (Spiral)",
@@ -68,6 +84,12 @@ fun CelestiaUniverse.dsoBrowserRoot(): CelestiaBrowserItem {
     }
 
     return CelestiaBrowserItem("Deep Sky Objects", results)
+}
+
+fun CelestiaUniverse.dsoBrowserRoot(): CelestiaBrowserItem {
+    if (dsoRoot == null)
+        dsoRoot = createDSOBrowserRoot()
+    return dsoRoot!!
 }
 
 class BrowserItem(val item: CelestiaBrowserItem, val isLeaf: Boolean) : RecyclerViewItem {}
