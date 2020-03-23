@@ -74,15 +74,11 @@ class MainActivity : AppCompatActivity(),
     private val celestiaFolderName = "CelestiaResources"
     private val celestiaCfgName = "celestia.cfg"
 
-    // Fragments
-    private val celestiaFragment = CelestiaFragment()
-    private val loadingFragment = LoadingFragment()
-
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
     private val celestiaParentPath by lazy { this.filesDir.absolutePath }
 
-    private var core = CelestiaAppCore.shared()
+    private val core = CelestiaAppCore.shared()
     private var currentSelection: CelestiaSelection? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,11 +90,9 @@ class MainActivity : AppCompatActivity(),
 
         if (savedInstanceState != null) { return }
 
+        val loadingFragment = LoadingFragment()
+
         // Add fragments
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.celestia_fragment_container, celestiaFragment)
-            .commitAllowingStateLoss()
         supportFragmentManager
             .beginTransaction()
             .add(R.id.loading_fragment_container, loadingFragment)
@@ -116,13 +110,13 @@ class MainActivity : AppCompatActivity(),
         // Check if data is already copied
         if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
             // When version name does not match, copy the asset again
-            copyAssets()
+            copyAssets(loadingFragment)
         } else {
-            copyAssetSuccess()
+            copyAssetSuccess(CelestiaFragment(), loadingFragment)
         }
     }
 
-    private fun copyAssets() {
+    private fun copyAssets(loadingFragment: LoadingFragment) {
         loadingFragment.update("Copying data...")
 
         GlobalScope.launch(Dispatchers.IO) {
@@ -130,7 +124,7 @@ class MainActivity : AppCompatActivity(),
                 AssetUtils.copyFileOrDir(this@MainActivity,celestiaFolderName, celestiaParentPath)
                 preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
                 withContext(Dispatchers.Main) {
-                    copyAssetSuccess()
+                    copyAssetSuccess(CelestiaFragment(), loadingFragment)
                 }
             } catch (exp: IOException) {
                 Log.e(TAG, "Copy data failed, ${exp.localizedMessage}")
@@ -224,7 +218,13 @@ class MainActivity : AppCompatActivity(),
         return mapOf()
     }
 
-    private fun copyAssetSuccess() {
+    private fun copyAssetSuccess(celestiaFragment: CelestiaFragment, loadingFragment: LoadingFragment) {
+        // Add fragment
+        supportFragmentManager
+                    .beginTransaction()
+                    .add(R.id.celestia_fragment_container, celestiaFragment)
+                    .commitAllowingStateLoss()
+
         celestiaFragment.requestLoadCelestia("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName", {
             GlobalScope.launch(Dispatchers.Main) {
                 loadingFragment.update(it)
@@ -243,7 +243,7 @@ class MainActivity : AppCompatActivity(),
     private fun showToolbar() {
         // Show info action only when selection is not null
         currentSelection = core.simulation.selection
-        var actions: List<List<ToolbarAction>> = listOf();
+        var actions: List<List<ToolbarAction>> = listOf()
         if (!currentSelection!!.isEmpty) {
             actions = listOf(
                 listOf(ToolbarAction.Celestia)
@@ -497,7 +497,7 @@ class MainActivity : AppCompatActivity(),
         readSettings()
     }
 
-    fun reloadSettings() {
+    private fun reloadSettings() {
         val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
         if (frag is SettingsFragment) {
             frag.reload()

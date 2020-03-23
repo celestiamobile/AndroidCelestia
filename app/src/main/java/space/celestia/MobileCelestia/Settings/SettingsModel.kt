@@ -6,7 +6,7 @@ import space.celestia.MobileCelestia.Common.TitledFragment
 import space.celestia.MobileCelestia.Utils.PreferenceManager
 import java.io.Serializable
 
-enum class SettingsKey(var displayName: String) : PreferenceManager.Key {
+enum class SettingsKey(var displayName: String) : PreferenceManager.Key, Serializable {
     // Boolean values
     ShowPlanets("Planets"),
     ShowDwarfPlanets("Dwarf Planets"),

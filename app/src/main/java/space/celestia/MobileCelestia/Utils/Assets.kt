@@ -30,7 +30,7 @@ object AssetUtils {
         val assetManager: AssetManager = context.assets
         val input = assetManager.open(filename)
         val fullPath = "$base/$filename"
-        val output = File(fullPath).outputStream().use {
+        File(fullPath).outputStream().use {
             input.copyTo(it)
         }
         input.close()
