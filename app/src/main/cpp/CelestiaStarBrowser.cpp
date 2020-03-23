@@ -5,14 +5,14 @@
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaStarBrowser_c_1destroy(JNIEnv *env, jobject thiz) {
+Java_space_celestia_mobilecelestia_core_CelestiaStarBrowser_c_1destroy(JNIEnv *env, jobject thiz) {
     StarBrowser *browser = (StarBrowser *)env->GetLongField(thiz, csbPtrFieldID);
     delete browser;
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaStarBrowser_c_1getStars(JNIEnv *env, jobject thiz) {
+Java_space_celestia_mobilecelestia_core_CelestiaStarBrowser_c_1getStars(JNIEnv *env, jobject thiz) {
     StarBrowser *browser = (StarBrowser *)env->GetLongField(thiz, csbPtrFieldID);
     std::vector<const Star *> *stars = browser->listStars( BROWSER_MAX_STAR_COUNT );
     if (stars == nullptr)

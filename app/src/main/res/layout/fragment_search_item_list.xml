@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Search.SearchFragment"
+    tools:context=".search.SearchFragment"
     android:orientation="vertical"
     style="@style/Background">
 
-    <space.celestia.MobileCelestia.Search.SearchView
+    <space.celestia.mobilecelestia.search.SearchView
         android:id="@+id/search"
         android:layout_width="match_parent"
         android:layout_height="56dp"

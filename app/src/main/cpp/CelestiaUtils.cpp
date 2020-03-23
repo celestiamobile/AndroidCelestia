@@ -5,7 +5,7 @@
 
 extern "C"
 JNIEXPORT jintArray JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaUtils_getJulianDayComponents(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaUtils_getJulianDayComponents(JNIEnv *env,
                                                                              jclass clazz,
                                                                              jdouble julian_day) {
     astro::Date astroDate(julian_day);
@@ -34,7 +34,7 @@ Java_space_celestia_MobileCelestia_Core_CelestiaUtils_getJulianDayComponents(JNI
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaUtils_getJulianDay(JNIEnv *env, jclass clazz,
+Java_space_celestia_mobilecelestia_core_CelestiaUtils_getJulianDay(JNIEnv *env, jclass clazz,
                                                                    jint era, jint year, jint month,
                                                                    jint day, jint hour, jint minute,
                                                                    jint second, jint millisecond) {

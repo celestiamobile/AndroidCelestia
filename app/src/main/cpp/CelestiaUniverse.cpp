@@ -8,7 +8,7 @@
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaUniverse_c_1getStarCatalog(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getStarCatalog(JNIEnv *env,
                                                                            jobject thiz) {
     Universe *u = (Universe *)env->GetLongField(thiz, cunPtrFieldID);
     return (jlong)u->getStarCatalog();
@@ -16,7 +16,7 @@ Java_space_celestia_MobileCelestia_Core_CelestiaUniverse_c_1getStarCatalog(JNIEn
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaUniverse_c_1getDSOCatalog(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getDSOCatalog(JNIEnv *env,
                                                                           jobject thiz) {
     Universe *u = (Universe *)env->GetLongField(thiz, cunPtrFieldID);
     return (jlong)u->getDSOCatalog();
@@ -24,7 +24,7 @@ Java_space_celestia_MobileCelestia_Core_CelestiaUniverse_c_1getDSOCatalog(JNIEnv
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaUniverse_c_1findObject(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1findObject(JNIEnv *env, jobject thiz,
                                                                        jstring name) {
     Universe *u = (Universe *)env->GetLongField(thiz, cunPtrFieldID);
     const char *str = env->GetStringUTFChars(name, nullptr);
@@ -50,7 +50,7 @@ static void create_browser_item_and_add(JNIEnv *env, jobject parent, std::string
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaUniverse_c_1getChildrenForStar(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(JNIEnv *env,
                                                                                jobject thiz,
                                                                                jlong pointer) {
     Universe *u = (Universe *)env->GetLongField(thiz, cunPtrFieldID);
@@ -142,7 +142,7 @@ Java_space_celestia_MobileCelestia_Core_CelestiaUniverse_c_1getChildrenForStar(J
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaUniverse_c_1getChildrenForBody(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(JNIEnv *env,
                                                                                jobject thiz,
                                                                                jlong pointer) {
     Universe *u = (Universe *)env->GetLongField(thiz, cunPtrFieldID);

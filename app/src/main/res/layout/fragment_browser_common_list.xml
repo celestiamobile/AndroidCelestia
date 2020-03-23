@@ -5,5 +5,5 @@
     android:name="space.celestia.MobileCelestia.Browser.BrowserCommonFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Browser.BrowserCommonFragment"
+    tools:context=".browser.BrowserCommonFragment"
     style="@style/Background"/>

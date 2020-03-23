@@ -8,21 +8,21 @@
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaSelection_destroy(JNIEnv *env, jobject thiz) {
+Java_space_celestia_mobilecelestia_core_CelestiaSelection_destroy(JNIEnv *env, jobject thiz) {
     Selection *sel = (Selection *)env->GetLongField(thiz, csePtrFieldID);
     delete sel;
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1isEmpty(JNIEnv *env, jobject thiz) {
+Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1isEmpty(JNIEnv *env, jobject thiz) {
     Selection *sel = (Selection *)env->GetLongField(thiz, csePtrFieldID);
     return (jboolean)(sel->empty() ? JNI_TRUE : JNI_FALSE);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1getSelectionType(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getSelectionType(JNIEnv *env,
                                                                               jobject thiz) {
     Selection *sel = (Selection *)env->GetLongField(thiz, csePtrFieldID);
     return sel->getType();
@@ -30,7 +30,7 @@ Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1getSelectionType(JN
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1getSelectionPtr(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getSelectionPtr(JNIEnv *env,
                                                                              jobject thiz) {
     Selection *sel = (Selection *)env->GetLongField(thiz, csePtrFieldID);
     switch (sel->getType())
@@ -51,14 +51,14 @@ Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1getSelectionPtr(JNI
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1getName(JNIEnv *env, jobject thiz) {
+Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getName(JNIEnv *env, jobject thiz) {
     Selection *sel = (Selection *)env->GetLongField(thiz, csePtrFieldID);
     return env->NewStringUTF(sel->getName(true).c_str());
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaSelection_c_1createSelection(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1createSelection(JNIEnv *env,
                                                                              jclass clazz,
                                                                              jint type,
                                                                              jlong pointer) {

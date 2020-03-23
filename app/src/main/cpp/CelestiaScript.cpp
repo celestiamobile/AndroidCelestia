@@ -3,7 +3,7 @@
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_MobileCelestia_Core_CelestiaScript_c_1getScriptsInDirectory(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaScript_c_1getScriptsInDirectory(JNIEnv *env,
                                                                                 jclass clazz,
                                                                                 jstring path,
                                                                                 jboolean deep_scan) {

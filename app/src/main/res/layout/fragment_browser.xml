@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".Browser.BrowserFragment"
+    tools:context=".browser.BrowserFragment"
     style="@style/Background">
 
     <androidx.appcompat.widget.Toolbar

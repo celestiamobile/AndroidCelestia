@@ -16,7 +16,7 @@
         android:textAppearance="?attr/textAppearanceListItem"
         style="@style/PrimaryLabel" />
 
-    <space.celestia.MobileCelestia.Common.SteppeView
+    <space.celestia.mobilecelestia.common.SteppeView
         android:id="@+id/stepper"
         android:layout_gravity="center_vertical"
         android:layout_width="wrap_content"
