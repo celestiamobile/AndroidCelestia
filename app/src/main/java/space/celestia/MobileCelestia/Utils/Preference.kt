@@ -3,19 +3,11 @@ package space.celestia.MobileCelestia.Utils
 import android.content.Context
 import android.content.SharedPreferences
 
-class PreferenceManager {
-    private val context: Context
-    private val name: String
-    private val sp: SharedPreferences
-
-    constructor(context: Context, name: String) {
-        this.context = context
-        this.name = name
-        this.sp = context.getSharedPreferences(name, Context.MODE_PRIVATE)
-    }
+class PreferenceManager(private val context: Context, private val name: String) {
+    private val sp: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
 
     enum class Preference {
-        AssetCopied
+        DataVersion
     }
 
     operator fun get(key: Preference): String? {

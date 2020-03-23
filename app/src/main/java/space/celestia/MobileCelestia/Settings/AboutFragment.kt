@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import space.celestia.MobileCelestia.Common.TitledFragment
 import space.celestia.MobileCelestia.R
 import space.celestia.MobileCelestia.Utils.AssetUtils
+import space.celestia.MobileCelestia.Utils.versionCode
+import space.celestia.MobileCelestia.Utils.versionName
 import java.lang.Exception
 
 enum class AboutAction {
@@ -39,13 +41,11 @@ class AboutFragment : TitledFragment() {
         val array = ArrayList<List<AboutItem>>()
 
         // Version
+        val ctx = context
         var versionName = "Unknown"
-        val pm = context?.packageManager
-        val pn = context?.packageName
-        if (pm != null && pn != null) {
-            val pi = pm.getPackageInfo(pn, 0)
-            versionName = "${pi.versionName}(${pi.versionCode})"
-        }
+        if (ctx != null)
+            versionName = "${ctx.versionName}(${ctx.versionCode})"
+
         array.add(listOf(
             VersionItem(versionName)
         ))

@@ -36,10 +36,7 @@ import space.celestia.MobileCelestia.Search.SearchFragment
 import space.celestia.MobileCelestia.Settings.*
 import space.celestia.MobileCelestia.Toolbar.ToolbarAction
 import space.celestia.MobileCelestia.Toolbar.ToolbarFragment
-import space.celestia.MobileCelestia.Utils.AssetUtils
-import space.celestia.MobileCelestia.Utils.createDateFromJulianDay
-import space.celestia.MobileCelestia.Utils.PreferenceManager
-import space.celestia.MobileCelestia.Utils.julianDay
+import space.celestia.MobileCelestia.Utils.*
 import java.io.IOException
 import java.net.URI
 import java.util.*
@@ -60,6 +57,8 @@ class MainActivity : AppCompatActivity(),
     DatePickerDialog.OnDateSetListener,
     AboutFragment.Listener {
 
+    private val CURRENT_DATA_VERSION = "1"
+
     private val TAG = "MainActivity"
 
     private val celestiaFolderName = "CelestiaResources"
@@ -70,6 +69,7 @@ class MainActivity : AppCompatActivity(),
     private val loadingFragment = LoadingFragment()
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
+    private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
     private val celestiaParentPath by lazy { this.filesDir.absolutePath }
 
     private var core = CelestiaAppCore.shared()
@@ -104,7 +104,8 @@ class MainActivity : AppCompatActivity(),
         }
 
         // Check if data is already copied
-        if (preferenceManager[PreferenceManager.Preference.AssetCopied] == null) {
+        if (preferenceManager[PreferenceManager.Preference.DataVersion] != CURRENT_DATA_VERSION) {
+            // When version name does not match, copy the asset again
             copyAssets()
         } else {
             copyAssetSuccess()
@@ -117,7 +118,7 @@ class MainActivity : AppCompatActivity(),
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 AssetUtils.copyFileOrDir(this@MainActivity,celestiaFolderName, celestiaParentPath)
-                preferenceManager[PreferenceManager.Preference.AssetCopied] = "true"
+                preferenceManager[PreferenceManager.Preference.DataVersion] = CURRENT_DATA_VERSION
                 withContext(Dispatchers.Main) {
                     copyAssetSuccess()
                 }
