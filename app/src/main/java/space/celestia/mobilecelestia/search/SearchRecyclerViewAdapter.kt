@@ -1,8 +1,7 @@
 package space.celestia.mobilecelestia.search
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
-
+import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.common.CommonSection
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem

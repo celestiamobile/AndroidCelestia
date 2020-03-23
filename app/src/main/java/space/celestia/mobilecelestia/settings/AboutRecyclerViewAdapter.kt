@@ -1,17 +1,16 @@
 package space.celestia.mobilecelestia.settings
 
 import android.view.LayoutInflater
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_multiline_list_item.view.*
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.R
 
 interface AboutItem : RecyclerViewItem {}
 

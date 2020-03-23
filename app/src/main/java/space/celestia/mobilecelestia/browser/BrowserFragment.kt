@@ -5,11 +5,13 @@ import android.view.*
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import space.celestia.mobilecelestia.common.*
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.TitledFragment
+import space.celestia.mobilecelestia.common.pop
+import space.celestia.mobilecelestia.common.push
+import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
-
-import space.celestia.mobilecelestia.R
 
 class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelectedListener {
     private val browserItemMenu by lazy {

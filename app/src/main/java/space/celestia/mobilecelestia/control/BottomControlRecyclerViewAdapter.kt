@@ -1,15 +1,13 @@
 package space.celestia.mobilecelestia.control
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import space.celestia.mobilecelestia.R
-
-import space.celestia.mobilecelestia.control.BottomControlFragment.Listener
-
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_bottom_control_item.view.*
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.control.BottomControlFragment.Listener
 
 class BottomControlRecyclerViewAdapter(
     private val values: List<CelestiaActionItem>,

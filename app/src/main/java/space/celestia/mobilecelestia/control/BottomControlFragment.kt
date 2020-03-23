@@ -2,14 +2,13 @@ package space.celestia.mobilecelestia.control
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 
 fun CelestiaAction.imageName(): String? {

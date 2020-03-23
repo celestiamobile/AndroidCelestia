@@ -6,11 +6,11 @@ import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig

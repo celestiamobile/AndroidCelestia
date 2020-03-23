@@ -1,15 +1,14 @@
 package space.celestia.mobilecelestia.settings
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
-
+import androidx.recyclerview.widget.RecyclerView
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.R
 
 fun SettingsSingleSelectionItem.createSections(): List<CommonSectionV2> {
     val sections = ArrayList<CommonSectionV2>()

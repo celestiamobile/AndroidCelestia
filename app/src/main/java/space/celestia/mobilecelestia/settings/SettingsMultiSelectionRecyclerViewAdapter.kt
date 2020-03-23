@@ -1,19 +1,18 @@
 package space.celestia.mobilecelestia.settings
 
 import android.view.LayoutInflater
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_settings_multi_selection_master_item.view.*
-
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.R
 
 fun SettingsMultiSelectionItem.createSections(): List<CommonSectionV2> {
     val sections = ArrayList<CommonSectionV2>()

@@ -2,20 +2,17 @@ package space.celestia.mobilecelestia.favorite
 
 import android.view.Menu
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
-
-import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener
-
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.core.CelestiaScript
+import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener
 import java.io.Serializable
-import java.lang.RuntimeException
 
 enum class FavoriteItemAction {
     Delete, Rename

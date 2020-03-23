@@ -1,9 +1,8 @@
 package space.celestia.mobilecelestia.settings
 
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
-
+import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem

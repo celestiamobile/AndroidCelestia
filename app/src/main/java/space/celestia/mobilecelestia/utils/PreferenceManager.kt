@@ -3,7 +3,6 @@ package space.celestia.mobilecelestia.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import java.lang.RuntimeException
 
 class PreferenceManager(private val context: Context, private val name: String) {
     private val sp: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)

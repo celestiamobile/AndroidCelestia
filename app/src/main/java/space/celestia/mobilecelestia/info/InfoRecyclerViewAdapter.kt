@@ -1,16 +1,14 @@
 package space.celestia.mobilecelestia.info
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import space.celestia.mobilecelestia.R
-
-import space.celestia.mobilecelestia.info.InfoFragment.Listener
-
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_info_action_item.view.*
 import kotlinx.android.synthetic.main.fragment_info_description_item.view.*
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.info.InfoFragment.Listener
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 import space.celestia.mobilecelestia.info.model.InfoItem

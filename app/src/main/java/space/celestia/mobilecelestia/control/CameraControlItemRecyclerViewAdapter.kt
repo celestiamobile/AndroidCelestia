@@ -1,14 +1,13 @@
 package space.celestia.mobilecelestia.control
 
 import android.view.LayoutInflater
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_camera_control_item.view.*
-import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.*
 
 class CameraControlStepperItem(val title: String, val left: CameraControlAction, val right: CameraControlAction): RecyclerViewItem {
     override val clickable: Boolean

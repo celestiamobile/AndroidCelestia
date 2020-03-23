@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.settings.SettingsItemFragment.Listener
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import space.celestia.mobilecelestia.settings.SettingsItemFragment.Listener
 
 class SettingsItemRecyclerViewAdapter(
     private val listener: Listener?

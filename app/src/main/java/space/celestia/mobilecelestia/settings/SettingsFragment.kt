@@ -1,18 +1,17 @@
 package space.celestia.mobilecelestia.settings
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.TitledFragment
 import space.celestia.mobilecelestia.common.pop
 import space.celestia.mobilecelestia.common.push
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.core.CelestiaAppCore
-
-import space.celestia.mobilecelestia.R
 
 class SettingsFragment : Fragment() {
 

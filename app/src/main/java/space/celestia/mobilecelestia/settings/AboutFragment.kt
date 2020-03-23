@@ -2,17 +2,16 @@ package space.celestia.mobilecelestia.settings
 
 import android.content.Context
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import space.celestia.mobilecelestia.common.TitledFragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.TitledFragment
 import space.celestia.mobilecelestia.utils.AssetUtils
 import space.celestia.mobilecelestia.utils.versionCode
 import space.celestia.mobilecelestia.utils.versionName
-import java.lang.Exception
 
 enum class AboutAction {
     VisitOfficialWebsite, VisitOfficialForum;

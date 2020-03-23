@@ -3,7 +3,6 @@ package space.celestia.mobilecelestia.common
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import java.lang.RuntimeException
 
 public interface ViewItem {}
 

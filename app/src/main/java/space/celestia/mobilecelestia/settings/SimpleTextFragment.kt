@@ -5,9 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import space.celestia.mobilecelestia.common.TitledFragment
-
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.TitledFragment
 
 class SimpleTextFragment : TitledFragment() {
 

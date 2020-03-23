@@ -1,20 +1,18 @@
 package space.celestia.mobilecelestia.help
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_help_action_item.view.*
-import space.celestia.mobilecelestia.R
-
-import space.celestia.mobilecelestia.help.HelpFragment.Listener
-
 import kotlinx.android.synthetic.main.fragment_help_description_item.view.*
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSection
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorRecyclerViewAdapter
+import space.celestia.mobilecelestia.help.HelpFragment.Listener
 
 open class HelpItem : RecyclerViewItem {
     override val clickable: Boolean

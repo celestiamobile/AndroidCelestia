@@ -1,21 +1,19 @@
 package space.celestia.mobilecelestia.toolbar
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import space.celestia.mobilecelestia.R
-
-import space.celestia.mobilecelestia.toolbar.ToolbarFragment.Listener
-import space.celestia.mobilecelestia.toolbar.model.ToolbarListItem
-import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
-
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_toolbar_action_item.view.*
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSection
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorRecyclerViewAdapter
+import space.celestia.mobilecelestia.toolbar.ToolbarFragment.Listener
+import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
+import space.celestia.mobilecelestia.toolbar.model.ToolbarListItem
 
 class ToolbarRecyclerViewAdapter(
     values: List<List<ToolbarListItem>>,

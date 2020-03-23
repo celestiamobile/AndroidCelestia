@@ -7,9 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.TitledFragment
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
-import space.celestia.mobilecelestia.R
 
 class BrowserCommonFragment : TitledFragment() {
 

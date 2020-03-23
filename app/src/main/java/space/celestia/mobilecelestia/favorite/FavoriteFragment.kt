@@ -3,13 +3,12 @@ package space.celestia.mobilecelestia.favorite
 import android.content.Context
 import android.os.Bundle
 import android.view.*
-import androidx.fragment.app.Fragment
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.pop
 import space.celestia.mobilecelestia.common.push
 import space.celestia.mobilecelestia.common.replace
-
-import space.celestia.mobilecelestia.R
 
 class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
