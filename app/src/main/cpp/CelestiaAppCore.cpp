@@ -6,6 +6,8 @@
 #include <celestia/celestiacore.h>
 #include <celengine/gl.h>
 #include <celestia/helper.h>
+#include <celutil/util.h>
+#include <celutil/gettext.h>
 
 jclass cacClz = nullptr;
 jfieldID cacPtrFieldID = nullptr;
@@ -382,6 +384,51 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1runScript(JNIEnv *env
     const char *str = env->GetStringUTFChars(path, nullptr);
     core->runScript(str);
     env->ReleaseStringUTFChars(path, str);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1setLocaleDirectoryPath(JNIEnv *env,
+                                                                                  jclass clazz,
+                                                                                  jstring path,
+                                                                                  jstring locale) {
+    // Set environment variable since NDK does not support locale
+    const char *str = env->GetStringUTFChars(locale, nullptr);
+    setenv("LANG", str, true);
+    env->ReleaseStringUTFChars(locale, str);
+
+    // Gettext integration
+    setlocale(LC_ALL, "");
+    setlocale(LC_NUMERIC, "C");
+    str = env->GetStringUTFChars(path, nullptr);
+    bindtextdomain("celestia", str);
+    bind_textdomain_codeset("celestia", "UTF-8");
+    bindtextdomain("celestia_constellations", str);
+    bind_textdomain_codeset("celestia_constellations", "UTF-8");
+    textdomain("celestia");
+    env->ReleaseStringUTFChars(path, str);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getLocalizedString(JNIEnv *env,
+                                                                              jclass clazz,
+                                                                              jstring string) {
+    const char *str = env->GetStringUTFChars(string, nullptr);
+    jstring localized = env->NewStringUTF(_(str));
+    env->ReleaseStringUTFChars(string, str);
+    return localized;
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getLocalizedFilename(JNIEnv *env,
+                                                                                jclass clazz,
+                                                                                jstring string) {
+    const char *str = env->GetStringUTFChars(string, nullptr);
+    jstring localized = env->NewStringUTF(LocaleFilename(str).string().c_str());
+    env->ReleaseStringUTFChars(string, str);
+    return localized;
 }
 
 static uint64_t bit_mask_value_update(jboolean value, uint64_t bit, uint64_t set) {

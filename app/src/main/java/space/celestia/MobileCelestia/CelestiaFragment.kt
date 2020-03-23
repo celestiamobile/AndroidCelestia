@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
+import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -80,6 +81,8 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
 
     private fun loadCelestia(path: String, cfg: String) {
         CelestiaAppCore.chdir(path)
+
+        CelestiaAppCore.setLocaleDirectoryPath("$path/locale", Locale.getDefault().toString())
 
         if (!core.startSimulation(cfg, null, this)) {
             resultCallback?.let { it(false) }
