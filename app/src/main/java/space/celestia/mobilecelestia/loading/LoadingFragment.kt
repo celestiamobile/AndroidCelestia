@@ -12,6 +12,7 @@ import space.celestia.mobilecelestia.R
 class LoadingFragment : Fragment() {
 
     private var loadingLabel: TextView? = null
+    private var currentText: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -20,11 +21,19 @@ class LoadingFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_loading, container, false)
         loadingLabel = view.findViewById(R.id.loading_label)
+        if (currentText != null) {
+            loadingLabel?.text = currentText
+            currentText = null
+        }
         return view
     }
 
     public fun update(status: String) {
-        loadingLabel?.text = status
+        if (loadingLabel == null) {
+            currentText = status
+        } else {
+            loadingLabel?.text = status
+        }
     }
 
 }
