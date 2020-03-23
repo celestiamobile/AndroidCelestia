@@ -99,6 +99,8 @@ public class CelestiaAppCore {
     }
 
     public void runScript(@NonNull String scriptPath) { c_runScript(scriptPath); }
+    public @NonNull String getCurrentURL() { return c_getCurrentURL(); }
+    public void goToURL(@NonNull String url) { c_goToURL(url); }
 
     public static boolean initGL() {
         return c_initGL();
@@ -141,6 +143,8 @@ public class CelestiaAppCore {
     private native void c_charEnter(int input);
 
     private native void c_runScript(String path);
+    private native String c_getCurrentURL();
+    private native void c_goToURL(String url);
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);
@@ -539,22 +543,22 @@ public class CelestiaAppCore {
 
     public void setResolution(int resolution) { c_setResolution(resolution); }
     public int getResolution() { return c_getResolution(); }
-    public native void c_setResolution(int resolution);
-    public native int c_getResolution();
+    private native void c_setResolution(int resolution);
+    private native int c_getResolution();
     public void setStarStyle(int starStyle) { c_setStarStyle(starStyle);}
     public int getStarStyle() { return c_getStarStyle(); }
-    public native void c_setStarStyle(int starStyle);
-    public native int c_getStarStyle();
+    private native void c_setStarStyle(int starStyle);
+    private native int c_getStarStyle();
     public void setHudDetail(int hudDetail) { c_setHudDetail(hudDetail); }
     public int getHudDetail() { return c_getHudDetail(); }
-    public native void c_setHudDetail(int hudDetail);
-    public native int c_getHudDetail();
+    private native void c_setHudDetail(int hudDetail);
+    private native int c_getHudDetail();
     public void setTimeZone(int timeZone) { c_setTimeZone(timeZone); }
     public int getTimeZone() { return c_getTimeZone(); }
-    public native void c_setTimeZone(int TimeZone);
-    public native int c_getTimeZone();
+    private native void c_setTimeZone(int TimeZone);
+    private native int c_getTimeZone();
     public void setDateFormat(int dateFormat) { c_setDateFormat(dateFormat); }
     public int getDateFormat() { return c_getDateFormat(); }
-    public native void c_setDateFormat(int DateFormat);
-    public native int c_getDateFormat();
+    private native void c_setDateFormat(int DateFormat);
+    private native int c_getDateFormat();
 }

@@ -13,7 +13,9 @@ import space.celestia.MobileCelestia.R
 class FavoriteItemFragment : TitledFragment() {
 
     private var listener: Listener? = null
-    private var favoriteItem: FavoriteBaseItem? = null
+
+    var favoriteItem: FavoriteBaseItem? = null
+    private val listAdapter by lazy { FavoriteItemRecyclerViewAdapter(favoriteItem!!, listener) }
 
     override val title: String
         get() = favoriteItem!!.title
@@ -36,7 +38,7 @@ class FavoriteItemFragment : TitledFragment() {
         if (view is RecyclerView) {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
-                adapter = FavoriteItemRecyclerViewAdapter(favoriteItem!!, listener)
+                adapter = listAdapter
             }
         }
         return view
@@ -54,6 +56,11 @@ class FavoriteItemFragment : TitledFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    fun reload() {
+        listAdapter.reload()
+        listAdapter.notifyDataSetChanged()
     }
 
     interface Listener {

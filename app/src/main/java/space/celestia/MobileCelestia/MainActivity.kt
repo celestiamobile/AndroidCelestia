@@ -13,6 +13,8 @@ import android.view.WindowManager
 import android.widget.DatePicker
 import android.widget.ImageButton
 import androidx.fragment.app.Fragment
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -52,6 +54,7 @@ class MainActivity : AppCompatActivity(),
     BrowserCommonFragment.Listener,
     CameraControlFragment.Listener,
     HelpFragment.Listener,
+    FavoriteFragment.Listener,
     FavoriteItemFragment.Listener,
     SettingsItemFragment.Listener,
     SettingsMultiSelectionFragment.Listener,
@@ -341,12 +344,42 @@ class MainActivity : AppCompatActivity(),
         core.charEnter(CelestiaAction.RunDemo.value)
     }
 
+    override fun addFavoriteItem(item: MutableFavoriteBaseItem) {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
+            val bookmark = core.currentBookmark
+                ?: // TODO: no selection
+                return
+            frag.add(FavoriteBookmarkItem(bookmark))
+        }
+    }
+
+    fun readFavorites() {
+        var favorites = arrayListOf<BookmarkNode>()
+        try {
+            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
+            val str = FileUtils.readFileToText("${filesDir.absolutePath}/favorites.json")
+            val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
+            favorites = decoded
+        } catch (exp: Exception) { }
+        updateCurrentBookmarks(favorites)
+    }
+
+    override fun saveFavorites() {
+        val favorites = getCurrentBookmarks()
+        try {
+            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
+            val str = Gson().toJson(favorites, myType)
+            FileUtils.writeTextToFile(str, "${filesDir.absolutePath}/favorites.json")
+        } catch (exp: Exception) { }
+    }
+
     override fun onFavoriteItemSelected(item: FavoriteBaseItem) {
         if (item.isLeaf) {
             if (item is FavoriteScriptItem) {
                 core.runScript(item.script.filename)
-            } else {
-                // TODO: other items
+            } else if (item is FavoriteBookmarkItem) {
+                core.goToURL(item.bookmark.url)
             }
         } else {
             val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
@@ -497,6 +530,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun showFavorite() {
+        readFavorites()
         updateCurrentScripts(CelestiaScript.getScriptsInDirectory("scripts", true))
         showRightFragment(FavoriteFragment.newInstance())
     }

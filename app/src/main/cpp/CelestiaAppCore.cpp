@@ -8,6 +8,7 @@
 #include <celestia/helper.h>
 #include <celutil/util.h>
 #include <celutil/gettext.h>
+#include <celestia/url.h>
 
 jclass cacClz = nullptr;
 jfieldID cacPtrFieldID = nullptr;
@@ -384,6 +385,28 @@ Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1runScript(JNIEnv *env
     const char *str = env->GetStringUTFChars(path, nullptr);
     core->runScript(str);
     env->ReleaseStringUTFChars(path, str);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1getCurrentURL(JNIEnv *env,
+                                                                         jobject thiz) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    CelestiaState appState;
+    appState.captureState(core);
+
+    Url currentURL(appState, Url::CurrentVersion);
+    return env->NewStringUTF(currentURL.getAsString().c_str());
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_MobileCelestia_Core_CelestiaAppCore_c_1goToURL(JNIEnv *env, jobject thiz,
+                                                                   jstring url) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    const char *str = env->GetStringUTFChars(url, nullptr);
+    core->goToUrl(str);
+    env->ReleaseStringUTFChars(url, str);
 }
 
 extern "C"
