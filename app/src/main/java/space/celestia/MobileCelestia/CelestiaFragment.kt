@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
+import space.celestia.MobileCelestia.Settings.AboutFragment
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -35,6 +36,12 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
     private var statusCallback: ((String) -> Unit)? = null
     private var resultCallback: ((Boolean) -> Unit)? = null
 
+    private var listener: Listener? = null
+
+    interface Listener {
+        fun celestiaWillStart()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -51,12 +58,18 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
         super.onAttach(context)
 
         activity = context as? Activity
+        if (context is Listener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement CelestiaFragment.Listener")
+        }
     }
 
     override fun onDetach() {
         super.onDetach()
 
         activity = null
+        listener = null
     }
 
     private fun setupGLView() {
@@ -94,8 +107,11 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
             return
         }
 
+        listener?.celestiaWillStart()
+
         glViewSize?.let {
             core.resize(it.width, it.height)
+            glViewSize = null
         }
 
         core.tick()

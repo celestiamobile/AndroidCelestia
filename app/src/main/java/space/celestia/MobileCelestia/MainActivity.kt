@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import space.celestia.MobileCelestia.Browser.BrowserCommonFragment
 import space.celestia.MobileCelestia.Browser.BrowserFragment
 import space.celestia.MobileCelestia.Browser.BrowserItem
@@ -38,8 +39,10 @@ import space.celestia.MobileCelestia.Toolbar.ToolbarAction
 import space.celestia.MobileCelestia.Toolbar.ToolbarFragment
 import space.celestia.MobileCelestia.Utils.*
 import java.io.IOException
-import java.net.URI
+import java.lang.Exception
+import java.lang.NumberFormatException
 import java.util.*
+import kotlin.collections.HashMap
 
 class MainActivity : AppCompatActivity(),
     ToolbarFragment.Listener,
@@ -55,7 +58,8 @@ class MainActivity : AppCompatActivity(),
     SettingsSingleSelectionFragment.Listener,
     SettingsCurrentTimeFragment.Listener,
     DatePickerDialog.OnDateSetListener,
-    AboutFragment.Listener {
+    AboutFragment.Listener,
+    CelestiaFragment.Listener {
 
     private val CURRENT_DATA_VERSION = "1"
 
@@ -104,7 +108,7 @@ class MainActivity : AppCompatActivity(),
         }
 
         // Check if data is already copied
-        if (preferenceManager[PreferenceManager.Preference.DataVersion] != CURRENT_DATA_VERSION) {
+        if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
             // When version name does not match, copy the asset again
             copyAssets()
         } else {
@@ -118,7 +122,7 @@ class MainActivity : AppCompatActivity(),
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 AssetUtils.copyFileOrDir(this@MainActivity,celestiaFolderName, celestiaParentPath)
-                preferenceManager[PreferenceManager.Preference.DataVersion] = CURRENT_DATA_VERSION
+                preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
                 withContext(Dispatchers.Main) {
                     copyAssetSuccess()
                 }
@@ -130,6 +134,88 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         }
+    }
+
+    private fun readSettings() {
+        val map = readDefaultSetting()
+        val bools = HashMap<String, Boolean>()
+        val ints = HashMap<String, Int>()
+
+        fun getDefaultInt(key: String): Int? {
+            val value = map[key]
+            if (value is Int) {
+                return value
+            }
+            return null
+        }
+
+        fun getDefaultBool(key: String): Boolean? {
+            val value = getDefaultInt(key)
+            if (value != null) {
+                if (value == 1) { return true }
+                if (value == 0) { return false }
+            }
+            return null
+        }
+
+        fun getCustomInt(key: String): Int? {
+            val value = settingManager[PreferenceManager.CustomKey(key)] ?: return null
+            return try {
+                value.toInt()
+            } catch (exp: NumberFormatException) {
+                null
+            }
+        }
+
+        fun getCustomBool(key: String): Boolean? {
+            val value = getCustomInt(key)
+            if (value != null) {
+                if (value == 1) { return true }
+                if (value == 0) { return false }
+            }
+            return null
+        }
+
+        for (key in SettingsKey.allBooleanCases) {
+            val def = getDefaultBool(key.valueString)
+            if (def != null) {
+                bools[key.valueString] = def
+            }
+            val cus = getCustomBool(key.valueString)
+            if (cus != null)
+                bools[key.valueString] = cus
+        }
+
+        for (key in SettingsKey.allIntCases) {
+            val def = getDefaultInt(key.valueString)
+            if (def != null) {
+                ints[key.valueString] = def
+            }
+            val cus = getCustomInt(key.valueString)
+            if (cus != null)
+                ints[key.valueString] = cus
+        }
+
+        for ((key, value) in bools) {
+            core.setBooleanValueForField(key, value)
+        }
+
+        for ((key, value) in ints) {
+            core.setIntValueForField(key, value)
+        }
+    }
+
+    private fun readDefaultSetting(): Map<String, Any> {
+        try {
+            val jsonFileContent = AssetUtils.readFileToText(this, "defaults.json")
+            val json = JSONObject(jsonFileContent)
+            val map = HashMap<String, Any>()
+            for (key in json.keys()) {
+                map[key] = json[key]
+            }
+            return map
+        } catch (exp: Exception) {}
+        return mapOf()
     }
 
     private fun copyAssetSuccess() {
@@ -280,12 +366,14 @@ class MainActivity : AppCompatActivity(),
     override fun onMultiSelectionSettingItemChange(field: String, on: Boolean) {
         val core = CelestiaAppCore.shared()
         core.setBooleanValueForField(field, on)
+        settingManager[PreferenceManager.CustomKey(field)] = if (on) "1" else "0"
         reloadSettings()
     }
 
     override fun onSingleSelectionSettingItemChange(field: String, value: Int) {
         val core = CelestiaAppCore.shared()
         core.setIntValueForField(field, value)
+        settingManager[PreferenceManager.CustomKey(field)] = value.toString()
         reloadSettings()
     }
 
@@ -339,6 +427,10 @@ class MainActivity : AppCompatActivity(),
                 startActivity(intent)
             }
         }
+    }
+
+    override fun celestiaWillStart() {
+        readSettings()
     }
 
     fun reloadSettings() {

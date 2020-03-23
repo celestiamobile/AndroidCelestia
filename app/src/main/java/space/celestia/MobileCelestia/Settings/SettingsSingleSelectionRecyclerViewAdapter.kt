@@ -27,7 +27,6 @@ class SettingsSingleSelectionRecyclerViewAdapter(
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is SettingsSingleSelectionItem.Selection) {
-            val core = CelestiaAppCore.shared()
             listener?.onSingleSelectionSettingItemChange(this.item.key, item.value)
         }
     }
