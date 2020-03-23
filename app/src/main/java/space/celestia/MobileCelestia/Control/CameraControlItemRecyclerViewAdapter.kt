@@ -8,7 +8,6 @@ import android.widget.TextView
 
 import kotlinx.android.synthetic.main.fragment_camera_control_item.view.*
 import space.celestia.MobileCelestia.Common.*
-import space.celestia.MobileCelestia.Info.Model.InfoActionItem
 import space.celestia.MobileCelestia.R
 
 class CameraControlStepperItem(val title: String, val left: CameraControlAction, val right: CameraControlAction): RecyclerViewItem {

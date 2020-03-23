@@ -357,7 +357,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    fun readFavorites() {
+    private fun readFavorites() {
         var favorites = arrayListOf<BookmarkNode>()
         try {
             val myType = object : TypeToken<List<BookmarkNode>>() {}.type

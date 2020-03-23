@@ -12,7 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import space.celestia.MobileCelestia.Core.CelestiaAppCore
-import space.celestia.MobileCelestia.Settings.AboutFragment
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -46,8 +45,8 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_celestia, container, false);
-        glViewContainer = view.findViewById<FrameLayout>(R.id.celestia_gl_view)
+        val view = inflater.inflate(R.layout.fragment_celestia, container, false)
+        glViewContainer = view.findViewById(R.id.celestia_gl_view)
         if (pathToLoad != null) {
             setupGLView()
         }

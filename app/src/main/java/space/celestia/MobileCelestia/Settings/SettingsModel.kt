@@ -163,9 +163,9 @@ class SettingsMultiSelectionItem(
 
     constructor(name: String, selections: List<Selection>) : this(name, null, selections)
 
-    constructor(internalKey: SettingsKey, selections: List<Selection>) : this(internalKey.name, internalKey.valueString, selections)
+    constructor(internalKey: SettingsKey, selections: List<Selection>) : this(internalKey.displayName, internalKey.valueString, selections)
 
-    class Selection(private val internalKey: SettingsKey) : RecyclerViewItem, Serializable {
+    class Selection(internalKey: SettingsKey) : RecyclerViewItem, Serializable {
         val name: String = internalKey.displayName
         val key: String = internalKey.valueString
     }
@@ -246,14 +246,15 @@ private val staticDisplayItems: List<SettingsMultiSelectionItem> = listOf(
 class SettingsSingleSelectionItem(
     private val internalKey: SettingsKey,
     val selections: List<Selection>) : SettingsItem, Serializable {
-    class Selection(val name: String, val value: Int) : RecyclerViewItem, Serializable {}
+    class Selection(val name: String, val value: Int) : RecyclerViewItem, Serializable
+
     val key = internalKey.valueString
 
     override val name: String
-        get() = internalKey.valueString
+        get() = internalKey.displayName
 }
 
-class SettingsCurrentTimeItem(): SettingsItem {
+class SettingsCurrentTimeItem : SettingsItem {
     override val name: String
         get() = "Current Time"
 }
@@ -289,12 +290,12 @@ private val staticAdvancedItems: List<SettingsSingleSelectionItem> = listOf(
     ))
 )
 
-class SettingsRenderInfoItem(): SettingsItem {
+class SettingsRenderInfoItem : SettingsItem {
     override val name: String
         get() = "Render Info"
 }
 
-class SettingsAboutItem(): SettingsItem {
+class SettingsAboutItem : SettingsItem {
     override val name: String
         get() = "About"
 }
