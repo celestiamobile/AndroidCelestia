@@ -1,24 +1,23 @@
 package space.celestia.mobilecelestia
 
-import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.DatePicker
-import android.widget.EditText
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -41,6 +40,10 @@ import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.*
+import space.celestia.mobilecelestia.share.ResultMap
+import space.celestia.mobilecelestia.share.ShareAPI
+import space.celestia.mobilecelestia.share.ShareAPIService
+import space.celestia.mobilecelestia.share.URLCreationResponse
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
@@ -176,19 +179,13 @@ class MainActivity : AppCompatActivity(),
         scriptOrURLPath = null
 
         val isURL = uri.startsWith("cel://")
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle(if (isURL) "Open URL?" else "Run Script?")
-        builder.setPositiveButton("OK") { _, _ ->
+        showAlert(if (isURL) "Open URL?" else "Run Script?") {
             if (isURL) {
                 core.goToURL(uri)
             } else {
                 core.runScript(uri)
             }
         }
-        builder.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.cancel()
-        }
-        builder.show()
     }
 
     private fun copyAssets(loadingFragment: LoadingFragment) {
@@ -390,8 +387,8 @@ class MainActivity : AppCompatActivity(),
             ToolbarAction.Setting -> {
                 showSettings()
             }
-            else -> {
-                // TODO: responds to other actions...
+            ToolbarAction.Share -> {
+                showShare()
             }
         }
     }
@@ -507,26 +504,12 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun renameFavoriteItem(item: MutableFavoriteBaseItem) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Rename")
-        val customView = LayoutInflater.from(this).inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
-
-        val editText = customView.findViewById<EditText>(R.id.input)
-        editText.inputType = InputType.TYPE_CLASS_TEXT
-        editText.hint = item.title
-        builder.setView(customView)
-
-        builder.setPositiveButton("OK") { _, _ ->
+        showTextInput("Rename", item.title) { text ->
             val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
             if (frag is FavoriteFragment) {
-                frag.rename(item, editText.text.toString())
+                frag.rename(item, text)
             }
         }
-
-        builder.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.cancel()
-        }
-        builder.show()
     }
 
     override fun onMainSettingItemSelected(item: SettingsItem) {
@@ -680,6 +663,39 @@ class MainActivity : AppCompatActivity(),
 
     private fun showSettings() {
         showRightFragment(SettingsFragment.newInstance())
+    }
+
+    private fun showShare() {
+        val orig = core.currentURL
+        val bytes = orig.toByteArray()
+        val url = android.util.Base64.encodeToString(bytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
+        val name = core.simulation.selection.name
+
+        showTextInput("Share", name) { title ->
+            val service = ShareAPI.shared.create(ShareAPIService::class.java)
+            service.create(title, url, versionCode.toString())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(ResultMap(URLCreationResponse::class.java))
+                .subscribe({ response ->
+                    if (response == null) {
+                        showShareError()
+                        return@subscribe
+                    }
+                    ShareCompat.IntentBuilder
+                        .from(this)
+                        .setType("text/plain")
+                        .setChooserTitle(name)
+                        .setText(response.publicURL)
+                        .startChooser()
+                }, { error ->
+                    showShareError()
+                })
+        }
+    }
+
+    private fun showShareError() {
+        // TODO: show error
     }
 
     private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {
