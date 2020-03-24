@@ -2,7 +2,6 @@ package space.celestia.mobilecelestia.utils
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
 import android.text.InputType
 import android.view.LayoutInflater
 import android.widget.EditText

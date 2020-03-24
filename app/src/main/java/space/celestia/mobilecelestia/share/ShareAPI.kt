@@ -39,5 +39,9 @@ object ShareAPI {
 interface ShareAPIService {
     @FormUrlEncoded
     @POST("create")
-    fun create(@Field("title") title: String, @Field("url") url: String, @Field("version") version: String): Observable<BaseResult>
+    fun create(
+        @Field("title") title: String,
+        @Field("url") url: String,
+        @Field("version") version: String
+    ): Observable<BaseResult>
 }

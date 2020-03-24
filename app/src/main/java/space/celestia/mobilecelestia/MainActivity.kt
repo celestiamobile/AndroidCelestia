@@ -16,6 +16,7 @@ import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.kaopiz.kprogresshud.KProgressHUD
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
@@ -676,12 +677,15 @@ class MainActivity : AppCompatActivity(),
         val name = core.simulation.selection.name
 
         showTextInput("Share", name) { title ->
+            val hud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).show()
+
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
             service.create(title, url, versionCode.toString())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(ResultMap(URLCreationResponse::class.java))
                 .subscribe({ response ->
+                    hud.dismiss()
                     if (response == null) {
                         showShareError()
                         return@subscribe
@@ -693,6 +697,7 @@ class MainActivity : AppCompatActivity(),
                         .setText(response.publicURL)
                         .startChooser()
                 }, {
+                    hud.dismiss()
                     showShareError()
                 })
         }
