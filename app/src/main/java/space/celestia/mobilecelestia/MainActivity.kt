@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -508,10 +509,12 @@ class MainActivity : AppCompatActivity(),
     override fun renameFavoriteItem(item: MutableFavoriteBaseItem) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Rename")
-        val editText = EditText(this)
+        val customView = LayoutInflater.from(this).inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
+
+        val editText = customView.findViewById<EditText>(R.id.input)
         editText.inputType = InputType.TYPE_CLASS_TEXT
         editText.hint = item.title
-        builder.setView(editText)
+        builder.setView(customView)
 
         builder.setPositiveButton("OK") { _, _ ->
             val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
