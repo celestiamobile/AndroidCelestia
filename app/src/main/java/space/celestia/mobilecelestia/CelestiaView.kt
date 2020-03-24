@@ -86,12 +86,13 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                         if (prev.action) {
                             // Stop 1 finger action
                             Log.d(TAG, "One finger action stopped")
-                            core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_RIGHT, prev.point, 0)
+                            val pt = prev.point
+                            queueEvent { core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_RIGHT, pt, 0) }
                         }
                         // Start 2 finger action immediately
                         Log.d(TAG, "Two finger action started")
                         val p = PointF((prev.point.x + point.x) / 2, (prev.point.y + point.y) / 2)
-                        core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_LEFT, p, 0)
+                        queueEvent { core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_LEFT, p, 0) }
                     }
                     touchLocations[id] = Touch(point, Date())
                 }
@@ -100,7 +101,8 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                 if (touchActive) {
                     // Stop touch
                     val button = if (touchLocations.size == 2) CelestiaAppCore.MOUSE_BUTTON_LEFT else CelestiaAppCore.MOUSE_BUTTON_RIGHT
-                    core.mouseButtonUp(button, centerPoint(), 0)
+                    val point = centerPoint()
+                    queueEvent { core.mouseButtonUp(button, point, 0) }
                     if (button == CelestiaAppCore.MOUSE_BUTTON_LEFT)
                         Log.d(TAG, "Two finger action stopped")
                     else
@@ -110,8 +112,11 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                     // Canceled convert to one finger tap
                     val loc = touchLocations[0]!!
                     Log.d(TAG, "One finger tap action")
-                    core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_LEFT, loc.point, 0)
-                    core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_LEFT, loc.point, 0)
+                    val point = loc.point
+                    queueEvent {
+                        core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_LEFT, point, 0)
+                        core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_LEFT, point, 0)
+                    }
                 }
                 touchLocations.clear()
             }
@@ -136,14 +141,14 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
                     val offset = PointF(currCenter.x - prevCenter.x, currCenter.y - prevCenter.y)
                     Log.d(TAG, "Two finger move $offset")
-                    core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_LEFT, offset, 0)
+                    queueEvent { core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_LEFT, offset, 0) }
 
                     if (prevLength > 0.2 && currLength > 0.2) {
                         val delta = currLength / prevLength
                         // FIXME: 8 is a magic number
                         val deltaY = (1 - delta) * prevLength / 8
                         Log.d(TAG, "Two finger pinch $deltaY")
-                        core.mouseWheel(deltaY, 0)
+                        queueEvent { core.mouseWheel(deltaY, 0) }
                     }
                 } else if (touchLocations.size == 1)  {
                     val point = PointF(
@@ -158,14 +163,15 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
                         // Start one finger pan
                         Log.d(TAG, "One finger action started")
-                        core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_RIGHT, it.point, 0)
+                        val pt = it.point
+                        queueEvent { core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_RIGHT, pt, 0) }
                     }
                     if (it.action) {
                         val offset = PointF(point.x - it.point.x, point.y - it.point.y)
 
                         // One finger pan
                         Log.d(TAG, "One finger move $offset")
-                        core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_RIGHT, offset, 0)
+                        queueEvent { core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_RIGHT, offset, 0) }
                     }
                     it.point = point
                 }
