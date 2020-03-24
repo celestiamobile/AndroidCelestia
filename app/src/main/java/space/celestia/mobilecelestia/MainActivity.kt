@@ -17,8 +17,6 @@ import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.kaopiz.kprogresshud.KProgressHUD
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -41,10 +39,10 @@ import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.*
-import space.celestia.mobilecelestia.share.ResultMap
 import space.celestia.mobilecelestia.share.ShareAPI
 import space.celestia.mobilecelestia.share.ShareAPIService
 import space.celestia.mobilecelestia.share.URLCreationResponse
+import space.celestia.mobilecelestia.share.commonHandler
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
@@ -680,26 +678,18 @@ class MainActivity : AppCompatActivity(),
             val hud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).show()
 
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
-            service.create(title, url, versionCode.toString())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(ResultMap(URLCreationResponse::class.java))
-                .subscribe({ response ->
-                    hud.dismiss()
-                    if (response == null) {
-                        showShareError()
-                        return@subscribe
-                    }
-                    ShareCompat.IntentBuilder
-                        .from(this)
-                        .setType("text/plain")
-                        .setChooserTitle(name)
-                        .setText(response.publicURL)
-                        .startChooser()
-                }, {
-                    hud.dismiss()
-                    showShareError()
-                })
+            service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java, {
+                hud.dismiss()
+                ShareCompat.IntentBuilder
+                    .from(this)
+                    .setType("text/plain")
+                    .setChooserTitle(name)
+                    .setText(it.publicURL)
+                    .startChooser()
+            }, {
+                hud.dismiss()
+                showShareError()
+            })
         }
     }
 

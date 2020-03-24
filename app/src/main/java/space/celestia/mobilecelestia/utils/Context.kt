@@ -5,7 +5,6 @@ import android.content.pm.PackageInfo
 
 val Context.packageInfo: PackageInfo?
     get() {
-        var versionName = "Unknown"
         val pm = packageManager
         val pn = packageName
         if (pm == null || pn == null)
