@@ -29,14 +29,17 @@ fun Activity.showTextInput(title: String, placeholder: String?, handler: (String
     builder.show()
 }
 
-fun Activity.showAlert(title: String, handler: () -> Unit) {
+fun Activity.showAlert(title: String, handler: (() -> Unit)? = null) {
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
     builder.setPositiveButton("OK") { _, _ ->
-        handler()
+        if (handler != null)
+            handler()
     }
-    builder.setNegativeButton("Cancel") { dialog, _ ->
-        dialog.cancel()
+    if (handler != null) {
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.cancel()
+        }
     }
     builder.show()
 }

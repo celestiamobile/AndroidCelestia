@@ -139,7 +139,9 @@ class MainActivity : AppCompatActivity(),
 
         // check file type
         if (!itemName.endsWith(".cel") && !itemName.endsWith(".celx")) {
-            // TODO show error
+            runOnUiThread {
+                showAlert("Wrong file type")
+            }
             return
         }
 
@@ -406,7 +408,7 @@ class MainActivity : AppCompatActivity(),
     override fun onSearchItemSelected(text: String) {
         val sel = core.simulation.findObject(text)
         if (sel.isEmpty) {
-            // TODO: object not found
+            showAlert("Object not found")
             return
         }
         hideOverlay()
@@ -430,7 +432,7 @@ class MainActivity : AppCompatActivity(),
                 currentSelection = CelestiaSelection(obj)
                 showInfo(currentSelection!!)
             } else {
-                // TODO: object not found
+                showAlert("Object not found")
             }
         }
     }
@@ -455,8 +457,10 @@ class MainActivity : AppCompatActivity(),
         val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
         if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
             val bookmark = core.currentBookmark
-                ?: // TODO: no selection
+            if (bookmark == null) {
+                showAlert("Object not found")
                 return
+            }
             frag.add(FavoriteBookmarkItem(bookmark))
         }
     }
@@ -688,14 +692,14 @@ class MainActivity : AppCompatActivity(),
                         .setChooserTitle(name)
                         .setText(response.publicURL)
                         .startChooser()
-                }, { error ->
+                }, {
                     showShareError()
                 })
         }
     }
 
     private fun showShareError() {
-        // TODO: show error
+        showAlert("Cannot share URL")
     }
 
     private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {
