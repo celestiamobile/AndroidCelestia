@@ -79,14 +79,15 @@ class MainActivity : AppCompatActivity(),
     private val core = CelestiaAppCore.shared()
     private var currentSelection: CelestiaSelection? = null
 
+    private var readyForUriInput = false
+    private var scriptOrURLPath: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         setContentView(R.layout.activity_main)
-
-        if (savedInstanceState != null) { return }
 
         val loadingFragment = LoadingFragment()
 
@@ -112,6 +113,85 @@ class MainActivity : AppCompatActivity(),
         } else {
             copyAssetSuccess(CelestiaFragment(), loadingFragment)
         }
+
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val uri = intent?.data ?: return
+
+        if (uri.scheme == "content") {
+            GlobalScope.launch(Dispatchers.IO) {
+                handleContentURI(uri)
+            }
+        } else if (uri.scheme == "cel") {
+            handleCelURI(uri)
+        }
+    }
+
+    private fun handleContentURI(uri: Uri) {
+        val itemName = uri.lastPathSegment ?: return
+
+        // check file type
+        if (!itemName.endsWith(".cel") && !itemName.endsWith(".celx")) {
+            // TODO show error
+            return
+        }
+
+        val path = "${cacheDir.absolutePath}/$itemName"
+        if (!FileUtils.copyUri(this, uri, path)) { return }
+
+        requestRunScript(path)
+    }
+
+    private fun requestRunScript(path: String) {
+        scriptOrURLPath = path
+        if (readyForUriInput)
+            runScriptOrOpenURLIfNeededOnMainThread()
+    }
+
+    private fun handleCelURI(uri: Uri) {
+        val url = uri.toString() ?: return
+        requestOpenURL(url)
+    }
+
+    private fun requestOpenURL(url: String) {
+        scriptOrURLPath = url
+        if (readyForUriInput)
+            runScriptOrOpenURLIfNeededOnMainThread()
+    }
+
+    private fun runScriptOrOpenURLIfNeededOnMainThread() {
+        runOnUiThread {
+            runScriptOrOpenURLIfNeeded()
+        }
+    }
+
+    private fun runScriptOrOpenURLIfNeeded() {
+        val uri = scriptOrURLPath ?: return
+
+        // Clear existing
+        scriptOrURLPath = null
+
+        val isURL = uri.startsWith("cel://")
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(if (isURL) "Open URL?" else "Run Script?")
+        builder.setPositiveButton("OK") { _, _ ->
+            if (isURL) {
+                core.goToURL(uri)
+            } else {
+                core.runScript(uri)
+            }
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.cancel()
+        }
+        builder.show()
     }
 
     private fun copyAssets(loadingFragment: LoadingFragment) {
@@ -525,6 +605,9 @@ class MainActivity : AppCompatActivity(),
 
     override fun celestiaWillStart() {
         readSettings()
+        readyForUriInput = true
+
+        runScriptOrOpenURLIfNeededOnMainThread()
     }
 
     private fun reloadSettings() {
