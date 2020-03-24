@@ -18,13 +18,16 @@ open class HelpItem : RecyclerViewItem {
     override val clickable: Boolean
         get() = false
 }
-class DescriptionItem(val description: String, val imageResourceID: Int) : HelpItem() {}
-class ActionItem(val title: String, val action: HelpAction) : HelpItem() {}
+class DescriptionItem(val description: String, val imageResourceID: Int) : HelpItem()
+class ActionItem(val title: String, val action: HelpAction) : HelpItem()
 
 class HelpRecyclerViewAdapter(
     values: List<List<HelpItem>>,
     private val listener: Listener?
-) : SeparatorRecyclerViewAdapter(1, 0, values.map { CommonSection(it, false, false) }) {
+) : SeparatorRecyclerViewAdapter(1, 0, values.map { CommonSection(it,
+    showSectionSeparator = false,
+    showRowSeparator = false
+) }) {
 
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is ActionItem) {

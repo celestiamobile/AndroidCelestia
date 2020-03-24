@@ -203,7 +203,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1startSimulation(JNIEn
                                                                            jstring config_file_name,
                                                                            jobjectArray extra_directories,
                                                                            jobject wc) {
-    jfieldID initFieldID = env->GetFieldID(cacClz, "intialized", "Z");
+    jfieldID initFieldID = env->GetFieldID(cacClz, "initialized", "Z");
     CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
 
     jmethodID jWcMethod = nullptr;

@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 public class CelestiaStarCatalog {
     protected long pointer;
 
-    protected CelestiaStarCatalog(long ptr) {
+    CelestiaStarCatalog(long ptr) {
         pointer = ptr;
     }
 

@@ -19,7 +19,7 @@ public class CelestiaAppCore {
     }
 
     private long pointer;
-    private boolean intialized;
+    private boolean initialized;
     private CelestiaSimulation simulation;
 
     // Singleton
@@ -30,13 +30,13 @@ public class CelestiaAppCore {
         return shared;
     }
 
-    public boolean isIntialized() {
-        return intialized;
+    public boolean isInitialized() {
+        return initialized;
     }
 
     public CelestiaAppCore() {
         c_init();
-        this.intialized = false;
+        this.initialized = false;
         this.simulation = null;
     }
 
@@ -178,7 +178,7 @@ public class CelestiaAppCore {
         }
     }
 
-    public int getIntValueForPield(@NonNull String field) {
+    public int getIntValueForField(@NonNull String field) {
         try {
             Method method = getClass().getDeclaredMethod("get" + field);
             Object value = method.invoke(this);

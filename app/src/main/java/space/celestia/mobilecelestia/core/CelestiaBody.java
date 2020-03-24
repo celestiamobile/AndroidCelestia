@@ -12,7 +12,7 @@ public class CelestiaBody extends CelestiaAstroObject {
         return c_getName();
     }
     @NonNull
-    public String getWebInfoURL() {
+    String getWebInfoURL() {
         return c_getWebInfoURL();
     }
 

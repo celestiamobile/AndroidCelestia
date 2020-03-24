@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 public class CelestiaDSOCatalog {
     protected long pointer;
 
-    protected CelestiaDSOCatalog(long ptr) {
+    CelestiaDSOCatalog(long ptr) {
         pointer = ptr;
     }
 

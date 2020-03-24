@@ -3,7 +3,7 @@ package space.celestia.mobilecelestia.core;
 import androidx.annotation.NonNull;
 
 public class CelestiaLocation extends CelestiaAstroObject {
-    protected CelestiaLocation(long ptr) {
+    CelestiaLocation(long ptr) {
         super(ptr);
     }
 

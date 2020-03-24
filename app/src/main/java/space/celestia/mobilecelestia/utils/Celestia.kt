@@ -10,14 +10,14 @@ val CelestiaAppCore.currentBookmark: BookmarkNode?
         val name: String
         if (sel.star != null) {
             name = simulation.universe.starCatalog.getStarName(sel.star)
-        } else if (sel.dso != null) {
-            name = simulation.universe.dsoCatalog.getDSOName(sel.dso)
+        } else name = if (sel.dso != null) {
+            simulation.universe.dsoCatalog.getDSOName(sel.dso)
         } else if (sel.body != null) {
-            name = sel.body!!.name
+            sel.body!!.name
         } else if (sel.location != null) {
-            name = sel.location!!.name
+            sel.location!!.name
         } else {
-            name = "Unknown"
+            "Unknown"
         }
         return BookmarkNode(name, currentURL, null)
     }

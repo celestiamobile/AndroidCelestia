@@ -3,12 +3,12 @@ package space.celestia.mobilecelestia.core;
 import androidx.annotation.NonNull;
 
 public class CelestiaStar extends CelestiaAstroObject {
-    protected CelestiaStar(long ptr) {
+    CelestiaStar(long ptr) {
         super(ptr);
     }
 
     @NonNull
-    public String getWebInfoURL() {
+    String getWebInfoURL() {
         return c_getWebInfoURL();
     }
 

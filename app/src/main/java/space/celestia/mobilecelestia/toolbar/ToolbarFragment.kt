@@ -70,7 +70,7 @@ enum class ToolbarAction : Serializable {
 
 class ToolbarFragment : Fragment() {
 
-    private var existingActions: List<List<ToolbarAction>> = ArrayList<List<ToolbarAction>>()
+    private var existingActions: List<List<ToolbarAction>> = ArrayList()
     private var listener: Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,7 +92,7 @@ class ToolbarFragment : Fragment() {
 
         val allItems = ArrayList(existingActions)
         allItems.addAll(ToolbarAction.persistentAction)
-        val model = allItems.map { it.map { ToolbarActionItem(it, resources.getIdentifier(it.imageName, "drawable", activity!!.packageName)) } }
+        val model = allItems.map { it.map { inner -> ToolbarActionItem(inner, resources.getIdentifier(inner.imageName, "drawable", activity!!.packageName)) } }
 
         // Set the adapter
         if (view is RecyclerView) {

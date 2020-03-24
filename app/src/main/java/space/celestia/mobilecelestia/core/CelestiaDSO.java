@@ -8,7 +8,7 @@ public class CelestiaDSO extends CelestiaAstroObject {
     }
 
     @NonNull
-    public String getWebInfoURL() {
+    String getWebInfoURL() {
         return c_getWebInfoURL();
     }
 

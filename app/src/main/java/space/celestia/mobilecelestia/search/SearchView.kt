@@ -1,5 +1,6 @@
 package space.celestia.mobilecelestia.search
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,7 +17,7 @@ class SearchView(context: Context, attrs: AttributeSet) : LinearLayout(context, 
     private val textView: EditText
     private val cancelView: ImageView
 
-    var listener: SearchView.Listener? = null
+    var listener: Listener? = null
 
     interface Listener {
         fun onTextChanged(newText: String)
@@ -27,8 +28,8 @@ class SearchView(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         val layoutResID = R.layout.search_view
         inflater.inflate(layoutResID, this, true)
 
-        textView = findViewById<EditText>(R.id.edt_search_text)
-        cancelView = findViewById<ImageView>(R.id.iv_clear_text)
+        textView = findViewById(R.id.edt_search_text)
+        cancelView = findViewById(R.id.iv_clear_text)
 
         textView.addTextChangedListener(this)
         cancelView.setOnClickListener {
@@ -36,6 +37,7 @@ class SearchView(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         return true
     }

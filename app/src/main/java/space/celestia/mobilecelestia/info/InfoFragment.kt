@@ -40,7 +40,7 @@ class InfoFragment : Fragment() {
                 val manager = GridLayoutManager(context, 2)
                 manager.spanSizeLookup = SizeLookup()
                 layoutManager = manager
-                var actions = ArrayList<InfoItem>()
+                val actions = ArrayList<InfoItem>()
                 actions.add(descriptionItem!!)
                 actions.addAll(InfoActionItem.infoActions)
                 adapter = InfoRecyclerViewAdapter(actions, listener)
@@ -55,7 +55,7 @@ class InfoFragment : Fragment() {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement InfoListFragmentInteractionListener")
+            throw RuntimeException("$context must implement InfoFragment.nListener")
         }
     }
 

@@ -58,8 +58,7 @@ enum class CelestiaAction(val value: Int) : Serializable {
             }
 }
 
-interface InfoItem {
-}
+interface InfoItem
 
 interface InfoActionItem : InfoItem {
     val title: String
@@ -91,4 +90,4 @@ class InfoWebActionItem : InfoActionItem {
     override val title: String
         get() = "Web Info"
 }
-class InfoDescriptionItem(val name: String, val overview: String) : InfoItem, Serializable {}
+class InfoDescriptionItem(val name: String, val overview: String) : InfoItem, Serializable

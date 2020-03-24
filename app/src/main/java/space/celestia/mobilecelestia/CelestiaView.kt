@@ -1,5 +1,6 @@
 package space.celestia.mobilecelestia
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.PointF
@@ -24,8 +25,6 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
     var isReady = false
 
-    private val TAG = "CelestiaView"
-
     private val threshHold: Int = 20 // thresh hold to start a one finger pan (milliseconds)
     private var touchLocations = HashMap<Int, Touch>()
     private var touchActive = false
@@ -38,6 +37,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
     private val core = CelestiaAppCore.shared()
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event == null) { return true }
         if (!isReady) { return true }
@@ -197,5 +197,9 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
     init {
         Choreographer.getInstance().postFrameCallback(this)
+    }
+
+    private companion object {
+        const val TAG = "CelestiaView"
     }
 }

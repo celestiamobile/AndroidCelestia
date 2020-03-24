@@ -48,7 +48,7 @@ fun CelestiaSimulation.starBrowserRoot(): CelestiaBrowserItem {
 }
 
 private fun CelestiaUniverse.createDSOBrowserRoot(): CelestiaBrowserItem {
-    val typeMap = mapOf<String, String>(
+    val typeMap = mapOf(
         "SB" to "Galaxies (Barred Spiral)",
         "S" to "Galaxies (Spiral)",
         "E" to "Galaxies (Elliptical)",
@@ -58,7 +58,7 @@ private fun CelestiaUniverse.createDSOBrowserRoot(): CelestiaBrowserItem {
         "Open cluster" to "Open Clusters",
         "Unknown" to "Unknown"
     )
-    val prefixes = listOf<String>("SB", "S", "E", "Irr", "Neb", "Glob", "Open cluster")
+    val prefixes = listOf("SB", "S", "E", "Irr", "Neb", "Glob", "Open cluster")
 
     val tempMap = HashMap<String, HashMap<String, CelestiaBrowserItem>>()
 
@@ -79,7 +79,7 @@ private fun CelestiaUniverse.createDSOBrowserRoot(): CelestiaBrowserItem {
 
     val results = HashMap<String, CelestiaBrowserItem>()
     for (map in tempMap) {
-        val fullName = typeMap[map.key]!!
+        val fullName = typeMap[map.key] ?: error("${map.key} not found")
         results[fullName] = CelestiaBrowserItem(fullName, map.value)
     }
 
@@ -92,6 +92,6 @@ fun CelestiaUniverse.dsoBrowserRoot(): CelestiaBrowserItem {
     return dsoRoot!!
 }
 
-class BrowserItem(val item: CelestiaBrowserItem, val isLeaf: Boolean) : RecyclerViewItem {}
+class BrowserItem(val item: CelestiaBrowserItem, val isLeaf: Boolean) : RecyclerViewItem
 
-class BrowserItemMenu(val item: CelestiaBrowserItem, val icon: Int) {}
+class BrowserItemMenu(val item: CelestiaBrowserItem, val icon: Int)

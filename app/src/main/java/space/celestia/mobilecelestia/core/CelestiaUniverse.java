@@ -9,7 +9,7 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
     private CelestiaStarCatalog starCatalog;
     private CelestiaDSOCatalog dsoCatalog;
 
-    protected CelestiaUniverse(long ptr) {
+    CelestiaUniverse(long ptr) {
         pointer = ptr;
     }
 

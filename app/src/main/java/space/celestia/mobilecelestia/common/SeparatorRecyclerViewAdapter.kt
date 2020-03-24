@@ -4,16 +4,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
-public interface ViewItem {}
+interface ViewItem
 
-public interface RecyclerViewItem : ViewItem {
+interface RecyclerViewItem : ViewItem {
     val clickable: Boolean
         get() = true
 }
 
 open class CommonSection(val items: List<RecyclerViewItem>,
                          val showSectionSeparator: Boolean = true,
-                         val showRowSeparator: Boolean = true) {}
+                         val showRowSeparator: Boolean = true)
 
 open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
                                         private val separatorLeft: Int = 16,
@@ -21,7 +21,7 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
                                         private val fullSection: Boolean = true) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private class SeparatorItem(val full: Boolean) : ViewItem {}
+    private class SeparatorItem(val full: Boolean) : ViewItem
 
     private var values: ArrayList<ViewItem> = arrayListOf()
 
@@ -37,7 +37,7 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
         }
     }
 
-    public fun swapItem(index1: Int, index2: Int): Boolean {
+    fun swapItem(index1: Int, index2: Int): Boolean {
         val item1 = values[index1]
         val item2 = values[index2]
         if (item1 is RecyclerViewItem && item2 is RecyclerViewItem && swapItem(item1, item2)) {
@@ -112,7 +112,7 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
         var prevSectionHasSep = false
         for (section in sections) {
             // add a separator to section top
-            var showSectionSeparator = section.showSectionSeparator && section.items.count() > 0
+            val showSectionSeparator = section.showSectionSeparator && section.items.count() > 0
             if (!prevSectionHasSep && showSectionSeparator) {
                 data.add(SeparatorItem(fullSection))
             }
@@ -132,7 +132,7 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
         values = data
     }
 
-    inner class SeparatorViewHolder(val view: View) : RecyclerView.ViewHolder(view) {}
+    inner class SeparatorViewHolder(val view: View) : RecyclerView.ViewHolder(view)
 
     companion object {
         const val SEPARATOR_0 = 99998
@@ -140,18 +140,19 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
     }
 }
 
-public class CommonSectionV2(items: List<RecyclerViewItem>, val header: String? = "", val footer: String? = null) : CommonSection(items)  {}
+class CommonSectionV2(items: List<RecyclerViewItem>, val header: String? = "", val footer: String? = null) : CommonSection(items)
 
-private class HeaderRecyclerViewItem(val title: String?): RecyclerViewItem {}
-private class FooterRecyclerViewItem(val title: String?): RecyclerViewItem {}
+private class HeaderRecyclerViewItem(val title: String?): RecyclerViewItem
+private class FooterRecyclerViewItem(val title: String?): RecyclerViewItem
 
-public fun List<CommonSectionV2>.transformed(): List<CommonSection> {
+fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     val innerSections = ArrayList<CommonSection>()
     for (section in this) {
         if (section.header != null) {
             innerSections.add(
                 CommonSection(listOf(HeaderRecyclerViewItem(section.header)),
-                    false, false))
+                    showSectionSeparator = false, showRowSeparator = false
+                ))
         }
 
         innerSections.add(section)
@@ -160,7 +161,7 @@ public fun List<CommonSectionV2>.transformed(): List<CommonSection> {
             innerSections.add(
                 CommonSection(
                     listOf(FooterRecyclerViewItem(section.footer)),
-                    false, false
+                    showSectionSeparator = false, showRowSeparator = false
                 )
             )
         }
@@ -201,8 +202,8 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
         updateSections(sections.transformed())
     }
 
-    inner class HeaderViewHolder(val view: SectionHeaderView) : RecyclerView.ViewHolder(view) {}
-    inner class FooterViewHolder(val view: SectionFooterView) : RecyclerView.ViewHolder(view) {}
+    inner class HeaderViewHolder(val view: SectionHeaderView) : RecyclerView.ViewHolder(view)
+    inner class FooterViewHolder(val view: SectionFooterView) : RecyclerView.ViewHolder(view)
 
     companion object {
         const val HEADER = 99997

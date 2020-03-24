@@ -48,8 +48,7 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_browser, container, false)
-        return view
+        return inflater.inflate(R.layout.fragment_browser, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -78,7 +77,7 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
         replace(BrowserCommonFragment.newInstance(currentPath), R.id.browser_container)
     }
 
-    public fun pushItem(browserItem: CelestiaBrowserItem) {
+    fun pushItem(browserItem: CelestiaBrowserItem) {
         toolbar.title = browserItem.name
         toolbar.navigationIcon = resources.getDrawable(R.drawable.ic_action_arrow_back)
         currentPath = "$currentPath/${browserItem.name}"
@@ -87,7 +86,7 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
         push(frag, R.id.browser_container)
     }
 
-    fun popItem() {
+    private fun popItem() {
         pop()
         val index = childFragmentManager.backStackEntryCount - 1
         if (index == 0) {

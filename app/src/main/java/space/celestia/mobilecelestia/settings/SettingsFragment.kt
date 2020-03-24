@@ -45,27 +45,33 @@ class SettingsFragment : Fragment() {
         toolbar.navigationIcon = resources.getDrawable(R.drawable.ic_action_arrow_back)
     }
 
-    public fun pushMainSettingItem(item: SettingsItem) {
-        if (item is SettingsMultiSelectionItem) {
-            push(SettingsMultiSelectionFragment.newInstance(item), item.name)
-        } else if (item is SettingsSingleSelectionItem) {
-            push(SettingsSingleSelectionFragment.newInstance(item), item.name)
-        } else if (item is SettingsCurrentTimeItem) {
-            push(SettingsCurrentTimeFragment.newInstance(), item.name)
-        } else if (item is SettingsRenderInfoItem) {
-            push(SimpleTextFragment.newInstance(item.name, CelestiaAppCore.shared().renderInfo), item.name)
-        } else if (item is SettingsAboutItem) {
-            push(AboutFragment.newInstance(), item.name)
+    fun pushMainSettingItem(item: SettingsItem) {
+        when (item) {
+            is SettingsMultiSelectionItem -> {
+                push(SettingsMultiSelectionFragment.newInstance(item), item.name)
+            }
+            is SettingsSingleSelectionItem -> {
+                push(SettingsSingleSelectionFragment.newInstance(item), item.name)
+            }
+            is SettingsCurrentTimeItem -> {
+                push(SettingsCurrentTimeFragment.newInstance(), item.name)
+            }
+            is SettingsRenderInfoItem -> {
+                push(SimpleTextFragment.newInstance(item.name, CelestiaAppCore.shared().renderInfo), item.name)
+            }
+            is SettingsAboutItem -> {
+                push(AboutFragment.newInstance(), item.name)
+            }
         }
     }
 
-    public fun reload() {
+    fun reload() {
         val frag = childFragmentManager.findFragmentById(R.id.settings_container)
         if (frag is SettingsBaseFragment)
             frag.reload()
     }
 
-    fun popItem() {
+    private fun popItem() {
         pop()
         val index = childFragmentManager.backStackEntryCount - 1
         if (index == 0) {

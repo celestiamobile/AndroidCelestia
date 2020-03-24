@@ -90,7 +90,7 @@ class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBaseItem
         get() = listOf(FavoriteItemAction.Delete, FavoriteItemAction.Rename)
 
     override fun insert(newItem: FavoriteBaseItem, index: Int) {
-        if (!(newItem is FavoriteBookmarkItem))
+        if (newItem !is FavoriteBookmarkItem)
             throw RuntimeException("$newItem does not match type FavoriteBookmarkItem")
         bookmark.children!!.add(index, newItem.bookmark)
     }
@@ -110,16 +110,17 @@ class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBaseItem
         bookmark.children!![index1] = i2
     }
 }
-public fun updateCurrentScripts(scripts: List<CelestiaScript>) {
+
+fun updateCurrentScripts(scripts: List<CelestiaScript>) {
     currentScripts = scripts
 }
 
 
-public fun getCurrentBookmarks(): List<BookmarkNode> {
+fun getCurrentBookmarks(): List<BookmarkNode> {
     return currentBookmarkRoot.children ?: return listOf()
 }
 
-public fun updateCurrentBookmarks(nodes: List<BookmarkNode>) {
+fun updateCurrentBookmarks(nodes: List<BookmarkNode>) {
     currentBookmarkRoot.children = ArrayList(nodes)
 }
 
@@ -167,17 +168,16 @@ class FavoriteItemRecyclerViewAdapter private constructor(
         if (holder is CommonTextViewHolder && item is FavoriteBaseItem) {
             holder.title.text = item.title
             holder.accessory.visibility = if (item.isLeaf) View.GONE else View.VISIBLE
-            if (item is MutableFavoriteBaseItem && item.supportedItemActions.size > 0) {
+            if (item is MutableFavoriteBaseItem && item.supportedItemActions.isNotEmpty()) {
                 val actions = item.supportedItemActions
                 holder.itemView.setOnLongClickListener {
                     val popup = PopupMenu(it.context, it)
-                    for (i in 0 until actions.size) {
+                    for (i in actions.indices) {
                         val action = actions[i]
                         popup.menu.add(Menu.NONE, i, Menu.NONE, action.toString())
                     }
-                    popup.setOnMenuItemClickListener {
-                        val action = actions[it.itemId]
-                        when (action) {
+                    popup.setOnMenuItemClickListener { menuItem ->
+                        when (actions[menuItem.itemId]) {
                             FavoriteItemAction.Delete -> {
                                 listener?.deleteFavoriteItem(children.indexOf(item))
                             }
@@ -201,7 +201,7 @@ class FavoriteItemRecyclerViewAdapter private constructor(
     override fun swapItem(item1: RecyclerViewItem, item2: RecyclerViewItem): Boolean {
         val index1 = children.indexOf(item1)
         val index2 = children.indexOf(item2)
-        if (index1 < 0 || index2 < 0 || !(item is MutableFavoriteBaseItem))
+        if (index1 < 0 || index2 < 0 || item !is MutableFavoriteBaseItem)
             return false
 
         item.swap(index1, index2)

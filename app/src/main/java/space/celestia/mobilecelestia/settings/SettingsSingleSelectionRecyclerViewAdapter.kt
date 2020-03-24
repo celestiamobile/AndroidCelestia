@@ -44,7 +44,7 @@ class SettingsSingleSelectionRecyclerViewAdapter(
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         val core = CelestiaAppCore.shared()
-        val current = core.getIntValueForPield(this.item.key)
+        val current = core.getIntValueForField(this.item.key)
         if (item is SettingsSingleSelectionItem.Selection && holder is CommonTextViewHolder) {
             holder.title.text = item.name
             holder.accessory.visibility = if (current == item.value) View.VISIBLE else View.INVISIBLE

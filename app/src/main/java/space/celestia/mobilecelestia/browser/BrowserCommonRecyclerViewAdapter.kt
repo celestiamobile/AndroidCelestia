@@ -22,7 +22,7 @@ fun CelestiaBrowserItem.createSection(): List<CommonSectionV2> {
 }
 
 class BrowserCommonRecyclerViewAdapter(
-    private val item: CelestiaBrowserItem,
+    item: CelestiaBrowserItem,
     private val listener: Listener?
 ) : SeparatorHeaderRecyclerViewAdapter(item.createSection()) {
 

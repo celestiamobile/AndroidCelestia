@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 
-class PreferenceManager(private val context: Context, private val name: String) {
+class PreferenceManager(context: Context, private val name: String) {
     private val sp: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
     private var et: SharedPreferences.Editor? = null
 
@@ -29,13 +29,13 @@ class PreferenceManager(private val context: Context, private val name: String) 
     }
 
     @SuppressLint("CommitPrefEdits")
-    public fun startEditing() {
+    fun startEditing() {
         if (et != null)
             throw RuntimeException("Editing context already exists when calling start.")
         et = sp.edit()
     }
 
-    public fun stopEditing() {
+    fun stopEditing() {
         if (et == null)
             throw RuntimeException("No current editing context when calling stop.")
         et!!.apply()

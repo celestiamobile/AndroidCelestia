@@ -27,7 +27,7 @@ class LoadingFragment : Fragment() {
         return view
     }
 
-    public fun update(status: String) {
+    fun update(status: String) {
         if (loadingLabel == null) {
             currentText = status
         } else {

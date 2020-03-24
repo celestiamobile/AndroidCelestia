@@ -17,8 +17,6 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.ProgressWatcher {
-    private val TAG = "CelestiaFragment"
-
     private var activity: Activity? = null
 
     // MARK: GL View
@@ -154,5 +152,9 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
         statusCallback?.let {
             it(progress)
         }
+    }
+
+    private companion object {
+        private const val TAG = "CelestiaFragment"
     }
 }

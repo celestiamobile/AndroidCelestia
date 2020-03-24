@@ -15,15 +15,14 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
     private var listener: Listener? = null
 
-    val currentFrag: FavoriteItemFragment
+    private val currentFrag: FavoriteItemFragment
         get() = childFragmentManager.fragments.last() as FavoriteItemFragment
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_favorite, container, false)
-        return view
+        return inflater.inflate(R.layout.fragment_favorite, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -40,7 +39,7 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         toolbar.title = item.title
     }
 
-    public fun pushItem(item: FavoriteBaseItem) {
+    fun pushItem(item: FavoriteBaseItem) {
         val frag = FavoriteItemFragment.newInstance(item)
         push(frag, R.id.favorite_container)
         toolbar.title = item.title
@@ -48,19 +47,19 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         reloadMenu(item)
     }
 
-    public fun add(item: FavoriteBaseItem) {
+    fun add(item: FavoriteBaseItem) {
         val frag = currentFrag
         (frag.favoriteItem as MutableFavoriteBaseItem).append(item)
         frag.reload()
     }
 
-    public fun remove(index: Int) {
+    fun remove(index: Int) {
         val frag = currentFrag
         (frag.favoriteItem as MutableFavoriteBaseItem).remove(index)
         frag.reload()
     }
 
-    public fun rename(item: MutableFavoriteBaseItem, newName: String) {
+    fun rename(item: MutableFavoriteBaseItem, newName: String) {
         val frag = currentFrag
         item.rename(newName)
         frag.reload()
@@ -75,7 +74,7 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    fun popItem() {
+    private fun popItem() {
         pop()
         val index = childFragmentManager.backStackEntryCount - 1
         if (index == 0) {

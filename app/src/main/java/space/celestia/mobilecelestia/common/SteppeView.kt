@@ -13,7 +13,7 @@ class SteppeView(context: Context, attrs: AttributeSet): LinearLayout(context, a
 
     var listener: Listener? = null
 
-    private val subViewListener: View.OnTouchListener = View.OnTouchListener { view, event ->
+    private val subViewListener: OnTouchListener = OnTouchListener { view, event ->
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 listener?.stepperTouchDown(this, view == leftView)
@@ -35,9 +35,5 @@ class SteppeView(context: Context, attrs: AttributeSet): LinearLayout(context, a
     interface Listener {
         fun stepperTouchDown(view: SteppeView, left: Boolean)
         fun stepperTouchUp(view: SteppeView, left: Boolean)
-    }
-
-    companion object {
-        const val TAG = "StepperView"
     }
 }

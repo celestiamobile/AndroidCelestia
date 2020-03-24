@@ -12,7 +12,7 @@ import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 
-interface AboutItem : RecyclerViewItem {}
+interface AboutItem : RecyclerViewItem
 
 class VersionItem(val versionName: String) : AboutItem {
     val title: String
@@ -52,7 +52,7 @@ class DetailItem(val detail: String) : AboutItem {
 }
 
 class AboutRecyclerViewAdapter(
-    private val values: List<List<AboutItem>>,
+    values: List<List<AboutItem>>,
     private val listener: AboutFragment.Listener?
 ) : SeparatorHeaderRecyclerViewAdapter(values.map { CommonSectionV2(it) }) {
 
@@ -76,8 +76,7 @@ class AboutRecyclerViewAdapter(
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == VERSION_ITEM) {
-            val holder = CommonTextViewHolder(parent)
-            return holder
+            return CommonTextViewHolder(parent)
         }
         if (viewType == ACTION_ITEM) {
             val holder = CommonTextViewHolder(parent)
@@ -85,26 +84,28 @@ class AboutRecyclerViewAdapter(
             return holder
         }
         if (viewType == TITLE_ITEM) {
-            val holder = CommonTextViewHolder(parent)
-            return holder
+            return CommonTextViewHolder(parent)
         }
         if (viewType == DETAIL_ITEM) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_multiline_list_item, parent, false)
-            val holder = MultilineViewHolder(view)
-            return holder
+            return MultilineViewHolder(view)
         }
         return super.createVH(parent, viewType)
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (holder is CommonTextViewHolder) {
-            if (item is VersionItem) {
-                holder.title.text = item.title
-                holder.detail.text = item.versionName
-            } else if (item is ActionItem) {
-                holder.title.text = item.title
-            } else if (item is TitleItem) {
-                holder.title.text = item.title
+            when (item) {
+                is VersionItem -> {
+                    holder.title.text = item.title
+                    holder.detail.text = item.versionName
+                }
+                is ActionItem -> {
+                    holder.title.text = item.title
+                }
+                is TitleItem -> {
+                    holder.title.text = item.title
+                }
             }
             return
         }

@@ -7,7 +7,7 @@ import java.io.IOException
 
 object AssetUtils {
     @Throws(IOException::class)
-    public fun copyFileOrDir(context: Context, path: String, base: String) {
+    fun copyFileOrDir(context: Context, path: String, base: String) {
         val assetManager: AssetManager = context.assets
         val assets = assetManager.list(path) as Array<String>
         if (assets.isEmpty()) {
@@ -35,7 +35,7 @@ object AssetUtils {
     }
 
     @Throws(IOException::class)
-    public fun readFileToText(context: Context, path: String): String {
+    fun readFileToText(context: Context, path: String): String {
         val assetManager: AssetManager = context.assets
         val input = assetManager.open(path)
         return input.bufferedReader().use { it.readText() }

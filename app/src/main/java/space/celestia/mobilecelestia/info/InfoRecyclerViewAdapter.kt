@@ -82,7 +82,7 @@ class InfoRecyclerViewAdapter(
     }
 
     companion object {
-        val ACTION_ITEM         = 0
-        val DESCRIPTION_ITEM    = 1
+        const val ACTION_ITEM         = 0
+        const val DESCRIPTION_ITEM    = 1
     }
 }

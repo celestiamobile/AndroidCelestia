@@ -11,7 +11,7 @@ public class CelestiaStarBrowser {
 
     private long pointer;
 
-    protected CelestiaStarBrowser(long pointer) {
+    CelestiaStarBrowser(long pointer) {
         this.pointer = pointer;
     }
 

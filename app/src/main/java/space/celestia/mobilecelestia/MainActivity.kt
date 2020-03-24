@@ -65,10 +65,6 @@ class MainActivity : AppCompatActivity(),
     AboutFragment.Listener,
     CelestiaFragment.Listener {
 
-    private val CURRENT_DATA_VERSION = "1"
-
-    private val TAG = "MainActivity"
-
     private val celestiaFolderName = "CelestiaResources"
     private val celestiaCfgName = "celestia.cfg"
 
@@ -704,6 +700,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     companion object {
+        private const val CURRENT_DATA_VERSION = "1"
+        private const val TAG = "MainActivity"
+
         init {
             System.loadLibrary("celestia")
         }
