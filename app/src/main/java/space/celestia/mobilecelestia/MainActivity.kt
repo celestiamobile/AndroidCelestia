@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun handleCelURI(uri: Uri) {
-        val url = uri.toString() ?: return
+        val url = uri.toString()
         requestOpenURL(url)
     }
 
