@@ -9,6 +9,7 @@ import java.io.Serializable
 
 enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.Key, Serializable {
     // Boolean values
+    ShowStars("Stars"),
     ShowPlanets("Planets"),
     ShowDwarfPlanets("Dwarf Planets"),
     ShowMoons("Moons"),
@@ -86,6 +87,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
         val allBooleanCases: List<SettingsKey>
             get() = listOf(
                 // Boolean values
+                ShowStars,
                 ShowPlanets,
                 ShowDwarfPlanets,
                 ShowMoons,
@@ -192,6 +194,7 @@ class SettingsMultiSelectionItem(
 
 private val staticDisplayItems: List<SettingsMultiSelectionItem> = listOf(
     SettingsMultiSelectionItem("Objects", listOf(
+        SettingsMultiSelectionItem.Selection(SettingsKey.ShowStars),
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowPlanets),
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowDwarfPlanets),
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowMoons),
