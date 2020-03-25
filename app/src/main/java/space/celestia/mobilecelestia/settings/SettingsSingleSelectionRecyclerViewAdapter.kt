@@ -1,7 +1,10 @@
 package space.celestia.mobilecelestia.settings
 
+import android.content.res.ColorStateList
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
@@ -37,6 +40,8 @@ class SettingsSingleSelectionRecyclerViewAdapter(
         if (viewType == SETTING_ITEM) {
             val holder = CommonTextViewHolder(parent)
             holder.accessory.setImageResource(R.drawable.ic_check)
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(
+                ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null)))
             return holder
         }
         return super.createVH(parent, viewType)

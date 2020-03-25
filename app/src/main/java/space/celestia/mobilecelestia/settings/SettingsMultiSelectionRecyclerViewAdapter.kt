@@ -1,10 +1,13 @@
 package space.celestia.mobilecelestia.settings
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_settings_multi_selection_master_item.view.*
 import space.celestia.mobilecelestia.R
@@ -59,6 +62,7 @@ class SettingsMultiSelectionRecyclerViewAdapter(
         if (viewType == SETTING_ITEM) {
             val holder = CommonTextViewHolder(parent)
             holder.accessory.setImageResource(R.drawable.ic_check)
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null)))
             return holder
         }
         if (viewType == SETTING_MASTER) {
