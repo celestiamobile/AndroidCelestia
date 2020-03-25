@@ -1,5 +1,5 @@
-#ifndef CELESTIA_CELESTIAJNI_H
-#define CELESTIA_CELESTIAJNI_H
+#ifndef CELESTIA_JNI_H
+#define CELESTIA_JNI_H
 
 #include <jni.h>
 
@@ -44,6 +44,27 @@ extern jmethodID hmpMethodID;
 
 extern jclass cscriptClz;
 extern jmethodID cscriptiMethodID;
+
+// vector
+extern jclass cvClz;
+extern jmethodID cv3InitMethodID;
+extern jmethodID cv4InitMethodID;
+extern jmethodID cvxMethodID;
+extern jmethodID cvyMethodID;
+extern jmethodID cvzMethodID;
+extern jmethodID cvwMethodID;
+
+// orbit
+extern jclass coClz;
+extern jfieldID coPtrFieldID;
+
+// rotation model
+extern jclass crmClz;
+extern jfieldID crmPtrFieldID;
+
+// universal coord
+extern jclass cucClz;
+extern jfieldID cucPtrFieldID;
 }
 
-#endif //CELESTIA_CELESTIAJNI_H
+#endif //CELESTIA_JNI_H

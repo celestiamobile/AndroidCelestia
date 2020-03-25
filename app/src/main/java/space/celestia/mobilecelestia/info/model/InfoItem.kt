@@ -90,4 +90,4 @@ class InfoWebActionItem : InfoActionItem {
     override val title: String
         get() = "Web Info"
 }
-class InfoDescriptionItem(val name: String, val overview: String) : InfoItem, Serializable
+class InfoDescriptionItem(val name: String, val overview: String, val hasWebInfo: Boolean) : InfoItem, Serializable

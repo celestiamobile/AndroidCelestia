@@ -1,7 +1,6 @@
-#include "CelestiaJNI.h"
+#include "CelestiaVector.h"
 #include <celengine/astro.h>
 #include <celengine/observer.h>
-
 
 extern "C"
 JNIEXPORT jintArray JNICALL
@@ -48,4 +47,44 @@ Java_space_celestia_mobilecelestia_core_CelestiaUtils_getJulianDay(JNIEnv *env, 
 
     double jd = astro::UTCtoTDB(astroDate);
     return jd;
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaUtils_celToJ2000Ecliptic(JNIEnv *env, jclass clazz,
+                                                                         jobject cel) {
+    Eigen::Vector3d p = vector3dFromObject(env, cel);
+    return createVectorForVector3d(env, Eigen::Vector3d(p.x(), -p.z(), p.y()));
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaUtils_eclipticToEquatorial(JNIEnv *env,
+                                                                           jclass clazz,
+                                                                           jobject ecliptic) {
+    Eigen::Vector3d p = vector3dFromObject(env, ecliptic);
+    return createVectorForVector3d(env, astro::eclipticToEquatorial(p));
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaUtils_equatorialToGalactic(JNIEnv *env,
+                                                                           jclass clazz,
+                                                                           jobject equatorial) {
+    Eigen::Vector3d p = vector3dFromObject(env, equatorial);
+    return createVectorForVector3d(env, astro::equatorialToGalactic(p));
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaUtils_rectToSpherical(JNIEnv *env, jclass clazz,
+                                                                      jobject rect) {
+    Eigen::Vector3d v = vector3dFromObject(env, rect);
+    double r = v.norm();
+    double theta = atan2(v.y(), v.x());
+    if (theta < 0)
+        theta = theta + 2 * PI;
+    double phi = asin(v.z() / r);
+
+    return createVectorForVector3d(env, Eigen::Vector3d(theta, phi, r));
 }

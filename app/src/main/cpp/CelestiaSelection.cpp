@@ -64,9 +64,6 @@ Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1createSelection(JNI
                                                                              jlong pointer) {
     switch (type)
     {
-        case Selection::Type_Nil:
-        case Selection::Type_Generic:
-            return 0;
         case Selection::Type_Body:
             return (jlong)new Selection((Body *)pointer);
         case Selection::Type_Star:
@@ -75,5 +72,9 @@ Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1createSelection(JNI
             return (jlong)new Selection((DeepSkyObject *)pointer);
         case Selection::Type_Location:
             return (jlong)new Selection((Location *)pointer);
+        case Selection::Type_Nil:
+        case Selection::Type_Generic:
+        default:
+            return 0;
     }
 }

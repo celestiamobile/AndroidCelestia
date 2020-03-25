@@ -396,11 +396,27 @@ class MainActivity : AppCompatActivity(),
 
     // Listeners...
     override fun onInfoActionSelected(action: InfoActionItem) {
+        val selection = currentSelection
+        if (selection == null) {
+            showAlert("Object not found.")
+            return
+        }
+
         if (action is InfoNormalActionItem) {
-            core.simulation.selection = currentSelection!!
+            core.simulation.selection = selection
             core.charEnter(action.item.value)
         } else if (action is InfoSelectActionItem) {
-            core.simulation.selection = currentSelection!!
+            core.simulation.selection = selection
+        } else if (action is InfoWebActionItem) {
+            val url = selection.webInfoURL
+            if (url == null) {
+                showAlert("Cannot find URL")
+                return
+            }
+
+            // show web info in browser
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(browserIntent)
         }
     }
 
@@ -428,8 +444,13 @@ class MainActivity : AppCompatActivity(),
         } else {
             val obj = item.item.`object`
             if (obj != null) {
-                currentSelection = CelestiaSelection(obj)
-                showInfo(currentSelection!!)
+                val selection = CelestiaSelection.create(obj)
+                if (selection != null) {
+                    currentSelection = selection
+                    showInfo(currentSelection!!)
+                } else {
+                    showAlert("Object not found")
+                }
             } else {
                 showAlert("Object not found")
             }
@@ -617,8 +638,11 @@ class MainActivity : AppCompatActivity(),
     private fun showInfo(selection: CelestiaSelection) {
         showRightFragment(
             InfoFragment.newInstance(
-                InfoDescriptionItem(core.simulation.universe.getNameForSelection(selection),
-                    "No overview available.")
+                InfoDescriptionItem(
+                    core.simulation.universe.getNameForSelection(selection),
+                    core.getOverviewForSelection(selection),
+                    selection.webInfoURL != null
+                )
             )
         )
     }

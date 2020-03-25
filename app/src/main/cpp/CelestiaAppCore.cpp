@@ -51,6 +51,27 @@ jmethodID hmpMethodID = nullptr;
 jclass cscriptClz = nullptr;
 jmethodID cscriptiMethodID = nullptr;
 
+// vector
+jclass cvClz = nullptr;
+jmethodID cv3InitMethodID = nullptr;
+jmethodID cv4InitMethodID = nullptr;
+jmethodID cvxMethodID = nullptr;
+jmethodID cvyMethodID = nullptr;
+jmethodID cvzMethodID = nullptr;
+jmethodID cvwMethodID = nullptr;
+
+// orbit
+jclass coClz = nullptr;
+jfieldID coPtrFieldID = nullptr;
+
+// rotation model
+jclass crmClz = nullptr;
+jfieldID crmPtrFieldID = nullptr;
+
+// universal coord
+jclass cucClz = nullptr;
+jfieldID cucPtrFieldID = nullptr;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -111,6 +132,27 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     jclass cscript = env->FindClass("space/celestia/mobilecelestia/core/CelestiaScript");
     cscriptClz = (jclass)env->NewGlobalRef(cscript);
     cscriptiMethodID = env->GetMethodID(cscriptClz, "<init>", "(Ljava/lang/String;Ljava/lang/String;)V");
+
+    jclass cv = env->FindClass("space/celestia/mobilecelestia/core/CelestiaVector");
+    cvClz = (jclass)env->NewGlobalRef(cv);
+    cv3InitMethodID = env->GetMethodID(cvClz, "<init>", "(DDD)V");
+    cv4InitMethodID = env->GetMethodID(cvClz, "<init>", "(DDDD)V");
+    cvxMethodID = env->GetMethodID(cvClz, "getX", "()D");
+    cvyMethodID = env->GetMethodID(cvClz, "getY", "()D");
+    cvzMethodID = env->GetMethodID(cvClz, "getZ", "()D");
+    cvwMethodID = env->GetMethodID(cvClz, "getW", "()D");
+
+    jclass co = env->FindClass("space/celestia/mobilecelestia/core/CelestiaOrbit");
+    coClz = (jclass)env->NewGlobalRef(co);
+    coPtrFieldID = env->GetFieldID(coClz, "pointer", "J");
+
+    jclass crm = env->FindClass("space/celestia/mobilecelestia/core/CelestiaRotationModel");
+    crmClz = (jclass)env->NewGlobalRef(crm);
+    crmPtrFieldID = env->GetFieldID(crmClz, "pointer", "J");
+
+    jclass cuc = env->FindClass("space/celestia/mobilecelestia/core/CelestiaUniversalCoord");
+    cucClz = (jclass)env->NewGlobalRef(cuc);
+    cucPtrFieldID = env->GetFieldID(cucClz, "pointer", "J");
 
     jclass al = env->FindClass("java/util/ArrayList");
     alClz = (jclass)env->NewGlobalRef(al);

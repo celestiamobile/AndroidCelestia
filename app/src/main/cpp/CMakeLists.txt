@@ -393,6 +393,11 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaStarBrowser.cpp
         ${CELESTIA_JNI_DIR}/CelestiaScript.cpp
         ${CELESTIA_JNI_DIR}/CelestiaUtils.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaOrbit.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaRotationModel.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaUniversalCoord.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaDMS.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaVector.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/libs")

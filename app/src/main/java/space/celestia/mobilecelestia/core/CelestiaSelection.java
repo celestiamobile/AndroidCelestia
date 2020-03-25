@@ -17,16 +17,18 @@ public class CelestiaSelection {
         pointer = ptr;
     }
 
-    public CelestiaSelection(CelestiaAstroObject object) {
+    @Nullable
+    public static CelestiaSelection create(@NonNull CelestiaAstroObject object) {
         if (object instanceof CelestiaStar) {
-            pointer = c_createSelection(SELECTION_TYPE_STAR, object.pointer);
+            return new CelestiaSelection(c_createSelection(SELECTION_TYPE_STAR, object.pointer));
         } else if (object instanceof CelestiaBody) {
-            pointer = c_createSelection(SELECTION_TYPE_BODY, object.pointer);
+            return new CelestiaSelection(c_createSelection(SELECTION_TYPE_BODY, object.pointer));
         } else if (object instanceof CelestiaDSO) {
-            pointer = c_createSelection(SELECTION_TYPE_DEEP_SKY, object.pointer);
+            return new CelestiaSelection(c_createSelection(SELECTION_TYPE_DEEP_SKY, object.pointer));
         } else if (object instanceof CelestiaLocation) {
-            pointer = c_createSelection(SELECTION_TYPE_LOCATION, object.pointer);
+            return new CelestiaSelection(c_createSelection(SELECTION_TYPE_LOCATION, object.pointer));
         }
+        return null;
     }
 
     public boolean isEmpty() {
@@ -34,41 +36,62 @@ public class CelestiaSelection {
     }
 
     @Nullable
+    public CelestiaAstroObject getObject() {
+        int type = c_getSelectionType();
+        switch (type) {
+            case SELECTION_TYPE_STAR:
+                return new CelestiaStar(c_getSelectionPtr());
+            case SELECTION_TYPE_LOCATION:
+                return new CelestiaLocation(c_getSelectionPtr());
+            case SELECTION_TYPE_DEEP_SKY:
+                return new CelestiaDSO(c_getSelectionPtr());
+            case SELECTION_TYPE_BODY:
+                return new CelestiaBody(c_getSelectionPtr());
+        }
+        return null;
+    }
+
+    @Nullable
     public CelestiaStar getStar() {
-        if (c_getSelectionType() == SELECTION_TYPE_STAR)
-            return new CelestiaStar(c_getSelectionPtr());
+        CelestiaAstroObject obj = getObject();
+        if (obj instanceof CelestiaStar)
+            return (CelestiaStar) obj;
         return null;
     }
 
     @Nullable
     public CelestiaLocation getLocation() {
-        if (c_getSelectionType() == SELECTION_TYPE_LOCATION)
-            return new CelestiaLocation(c_getSelectionPtr());
+        CelestiaAstroObject obj = getObject();
+        if (obj instanceof CelestiaLocation)
+            return (CelestiaLocation) obj;
         return null;
     }
 
     @Nullable
     public CelestiaDSO getDSO() {
-        if (c_getSelectionType() == SELECTION_TYPE_DEEP_SKY)
-            return new CelestiaDSO(c_getSelectionPtr());
+        CelestiaAstroObject obj = getObject();
+        if (obj instanceof CelestiaDSO)
+            return (CelestiaDSO) obj;
         return null;
     }
 
     @Nullable
     public CelestiaBody getBody() {
-        if (c_getSelectionType() == SELECTION_TYPE_BODY)
-            return new CelestiaBody(c_getSelectionPtr());
+        CelestiaAstroObject obj = getObject();
+        if (obj instanceof CelestiaBody)
+            return (CelestiaBody) obj;
         return null;
     }
 
     @Nullable
     public String getWebInfoURL() {
-        if (c_getSelectionType() == SELECTION_TYPE_BODY)
-            return getBody().getWebInfoURL();
-        if (c_getSelectionType() == SELECTION_TYPE_STAR)
-            return getStar().getWebInfoURL();
-        if (c_getSelectionType() == SELECTION_TYPE_DEEP_SKY)
-            return getDSO().getWebInfoURL();
+        CelestiaAstroObject object = getObject();
+        if (object instanceof CelestiaBody)
+            return ((CelestiaBody) object).getWebInfoURL();
+        if (object instanceof CelestiaStar)
+            return ((CelestiaStar) object).getWebInfoURL();
+        if (object instanceof CelestiaDSO)
+            return ((CelestiaDSO) object).getWebInfoURL();
         return null;
     }
 

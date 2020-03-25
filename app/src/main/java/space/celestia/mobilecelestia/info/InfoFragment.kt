@@ -14,6 +14,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 import space.celestia.mobilecelestia.info.model.InfoItem
+import space.celestia.mobilecelestia.info.model.InfoWebActionItem
 
 class InfoFragment : Fragment() {
 
@@ -42,7 +43,11 @@ class InfoFragment : Fragment() {
                 layoutManager = manager
                 val actions = ArrayList<InfoItem>()
                 actions.add(descriptionItem!!)
-                actions.addAll(InfoActionItem.infoActions)
+                val otherActions = ArrayList(InfoActionItem.infoActions)
+                if (descriptionItem!!.hasWebInfo) {
+                    otherActions.add(InfoWebActionItem())
+                }
+                actions.addAll(otherActions)
                 adapter = InfoRecyclerViewAdapter(actions, listener)
                 addItemDecoration(SpaceItemDecoration())
             }
