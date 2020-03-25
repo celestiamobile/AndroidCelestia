@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_camera_control_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 class CameraControlStepperItem(val title: String, val left: CameraControlAction, val right: CameraControlAction): RecyclerViewItem {
     override val clickable: Boolean
@@ -15,21 +16,21 @@ class CameraControlStepperItem(val title: String, val left: CameraControlAction,
 
     companion object {
         val staticItems: List<CameraControlStepperItem> by lazy { listOf(
-            CameraControlStepperItem("Pitch", CameraControlAction.Pitch0, CameraControlAction.Pitch1),
-            CameraControlStepperItem("Yaw", CameraControlAction.Yaw0, CameraControlAction.Yaw1),
-            CameraControlStepperItem("Roll", CameraControlAction.Roll0, CameraControlAction.Roll1)
+            CameraControlStepperItem(CelestiaString("Pitch", ""), CameraControlAction.Pitch0, CameraControlAction.Pitch1),
+            CameraControlStepperItem(CelestiaString("Yaw", ""), CameraControlAction.Yaw0, CameraControlAction.Yaw1),
+            CameraControlStepperItem(CelestiaString("Roll", ""), CameraControlAction.Roll0, CameraControlAction.Roll1)
         ) }
     }
 }
 
 class CameraControlReverseDirectionItem : RecyclerViewItem {
     val title: String
-        get() = "Reverse Direction"
+        get() = CelestiaString("Reverse Direction", "")
 }
 
 private val controlSections by lazy {
     listOf(
-        CommonSectionV2(CameraControlStepperItem.staticItems, "", "Long press on stepper to change orientation."),
+        CommonSectionV2(CameraControlStepperItem.staticItems, "", CelestiaString("Long press on stepper to change orientation.", "")),
         CommonSectionV2(listOf(CameraControlReverseDirectionItem()), null)
     )
 }

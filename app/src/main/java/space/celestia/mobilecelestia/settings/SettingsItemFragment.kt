@@ -8,13 +8,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 class SettingsItemFragment : SettingsBaseFragment() {
 
     var listener: Listener? = null
 
     override val title: String
-        get() = "Settings"
+        get() = CelestiaString("Settings", "")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

@@ -12,6 +12,7 @@ import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.core.CelestiaScript
 import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
 enum class FavoriteItemAction {
@@ -50,7 +51,7 @@ class FavoriteRoot : FavoriteBaseItem {
             FavoriteBookmarkItem(currentBookmarkRoot)
         )
     override val title: String
-        get() = "Favorites"
+        get() = CelestiaString("Favorites", "")
     override val isLeaf: Boolean
         get() = false
 }
@@ -65,7 +66,7 @@ class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
             }
         }
     override val title: String
-        get() = type.toString()
+        get() = CelestiaString(type.toString(), "")
     override val isLeaf: Boolean
         get() = false
 }
@@ -174,7 +175,7 @@ class FavoriteItemRecyclerViewAdapter private constructor(
                     val popup = PopupMenu(it.context, it)
                     for (i in actions.indices) {
                         val action = actions[i]
-                        popup.menu.add(Menu.NONE, i, Menu.NONE, action.toString())
+                        popup.menu.add(Menu.NONE, i, Menu.NONE, CelestiaString(action.toString(), ""))
                     }
                     popup.setOnMenuItemClickListener { menuItem ->
                         when (actions[menuItem.itemId]) {

@@ -8,6 +8,7 @@ import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.createDateFromJulianDay
 
 enum class CurrentTimeAction {
@@ -24,7 +25,7 @@ class DatePickerItem : CurrentTimeItem {
         get() = CurrentTimeAction.PickDate
 
     override val title: String
-        get() = "Select Time"
+        get() = CelestiaString("Select Time", "")
 }
 
 class SetToCurrentTimeItem : CurrentTimeItem {
@@ -32,7 +33,7 @@ class SetToCurrentTimeItem : CurrentTimeItem {
         get() = CurrentTimeAction.SetToCurrentTime
 
     override val title: String
-        get() = "Set to Current Time"
+        get() = CelestiaString("Set to Current Time", "")
 }
 
 private fun createSections(): List<CommonSectionV2> {

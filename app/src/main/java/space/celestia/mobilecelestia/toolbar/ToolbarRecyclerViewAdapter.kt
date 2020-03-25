@@ -49,10 +49,6 @@ class ToolbarRecyclerViewAdapter(
     inner class ActionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val contentView: TextView = view.content
         val imageView: ImageView = view.image
-
-        override fun toString(): String {
-            return super.toString() + " '" + contentView.text + "'"
-        }
     }
 
     companion object {

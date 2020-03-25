@@ -12,12 +12,13 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 interface AboutItem : RecyclerViewItem
 
 class VersionItem(val versionName: String) : AboutItem {
     val title: String
-        get() = "Version"
+        get() = CelestiaString("Version", "")
     override val clickable: Boolean
         get() = false
 }
@@ -26,10 +27,10 @@ val AboutAction.title: String
     get() {
         return when (this) {
             AboutAction.VisitOfficialWebsite -> {
-                "Official Website"
+                CelestiaString("Official Website", "")
             }
             AboutAction.VisitOfficialForum -> {
-                "Support Forum"
+                CelestiaString("Support Forum", "")
             }
         }
     }

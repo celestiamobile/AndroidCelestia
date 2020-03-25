@@ -3,10 +3,11 @@ package space.celestia.mobilecelestia.settings
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.TitledFragment
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.io.Serializable
 
-enum class SettingsKey(var displayName: String) : PreferenceManager.Key, Serializable {
+enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.Key, Serializable {
     // Boolean values
     ShowPlanets("Planets"),
     ShowDwarfPlanets("Dwarf Planets"),
@@ -77,6 +78,9 @@ enum class SettingsKey(var displayName: String) : PreferenceManager.Key, Seriali
     AmbientLightLevel("Ambient Light Level"),
     GalaxyBrightness("Galaxy Brightness"),
     MinimumFeatureSize("Minimum FeatureSize");
+
+    val displayName: String
+        get() = CelestiaString(rawDisplayName, "")
 
     companion object {
         val allBooleanCases: List<SettingsKey>
@@ -169,12 +173,14 @@ interface SettingsItem : RecyclerViewItem {
 }
 
 class SettingsMultiSelectionItem(
-    override val name: String,
+    private val rawDisplayName: String,
     val masterKey: String?,
     val selections: List<Selection>
 ) : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString(rawDisplayName, "")
 
-    constructor(name: String, selections: List<Selection>) : this(name, null, selections)
+    constructor(rawDisplayName: String, selections: List<Selection>) : this(rawDisplayName, null, selections)
 
     constructor(internalKey: SettingsKey, selections: List<Selection>) : this(internalKey.displayName, internalKey.valueString, selections)
 
@@ -259,7 +265,10 @@ private val staticDisplayItems: List<SettingsMultiSelectionItem> = listOf(
 class SettingsSingleSelectionItem(
     private val internalKey: SettingsKey,
     val selections: List<Selection>) : SettingsItem, Serializable {
-    class Selection(val name: String, val value: Int) : RecyclerViewItem, Serializable
+    class Selection(private val rawDisplayName: String, val value: Int) : RecyclerViewItem, Serializable {
+        val name: String
+            get() = CelestiaString(rawDisplayName, "")
+    }
 
     val key = internalKey.valueString
 
@@ -269,7 +278,7 @@ class SettingsSingleSelectionItem(
 
 class SettingsCurrentTimeItem : SettingsItem {
     override val name: String
-        get() = "Current Time"
+        get() = CelestiaString("Current Time", "")
 }
 
 private val staticTimeItems: List<SettingsItem> = listOf(
@@ -305,12 +314,12 @@ private val staticAdvancedItems: List<SettingsSingleSelectionItem> = listOf(
 
 class SettingsRenderInfoItem : SettingsItem {
     override val name: String
-        get() = "Render Info"
+        get() = CelestiaString("Render Info", "")
 }
 
 class SettingsAboutItem : SettingsItem {
     override val name: String
-        get() = "About"
+        get() = CelestiaString("About", "")
 }
 
 private val staticOtherItems: List<SettingsItem> = listOf(
@@ -319,10 +328,10 @@ private val staticOtherItems: List<SettingsItem> = listOf(
 )
 
 val mainSettingSections: List<CommonSectionV2> = listOf(
-    CommonSectionV2(staticDisplayItems, "Display"),
-    CommonSectionV2(staticTimeItems, "Time"),
-    CommonSectionV2(staticAdvancedItems, "Advanced"),
-    CommonSectionV2(staticOtherItems, "Other")
+    CommonSectionV2(staticDisplayItems, CelestiaString("Display", "")),
+    CommonSectionV2(staticTimeItems, CelestiaString("Time", "")),
+    CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "")),
+    CommonSectionV2(staticOtherItems, CelestiaString("Other", ""))
 )
 
 open class SettingsBaseFragment: TitledFragment() {

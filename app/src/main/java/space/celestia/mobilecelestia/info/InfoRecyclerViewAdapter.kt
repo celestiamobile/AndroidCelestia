@@ -66,19 +66,11 @@ class InfoRecyclerViewAdapter(
 
     inner class ActionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val button: TextView = view.button
-
-        override fun toString(): String {
-            return super.toString() + " '" + button.text + "'"
-        }
     }
 
     inner class DescriptionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val contentView: TextView = view.content
         val titleView: TextView = view.title
-
-        override fun toString(): String {
-            return super.toString() + " '" + contentView.text + "'"
-        }
     }
 
     companion object {

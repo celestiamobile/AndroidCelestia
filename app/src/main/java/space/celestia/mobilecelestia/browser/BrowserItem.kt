@@ -2,6 +2,7 @@ package space.celestia.mobilecelestia.browser
 
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.core.*
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 private var solRoot: CelestiaBrowserItem? = null
 private var starRoot: CelestiaBrowserItem? = null
@@ -30,11 +31,11 @@ private fun CelestiaSimulation.createStarBrowserRoot(): CelestiaBrowserItem {
     val nearest = getStarBrowser(CelestiaStarBrowser.KIND_NEAREST).stars.createBrowserMap()
     val brightest = getStarBrowser(CelestiaStarBrowser.KIND_BRIGHTEST).stars.createBrowserMap()
     val hasPlanets = getStarBrowser(CelestiaStarBrowser.KIND_WITH_PLANETS).stars.createBrowserMap()
-    val nearestItem = CelestiaBrowserItem("Nearest Stars", nearest)
-    val brightestItem = CelestiaBrowserItem("Brightest Stars", brightest)
-    val hasPlanetItem = CelestiaBrowserItem("Stars with Planets", hasPlanets)
+    val nearestItem = CelestiaBrowserItem(CelestiaString("Nearest Stars", ""), nearest)
+    val brightestItem = CelestiaBrowserItem(CelestiaString("Brightest Stars",""), brightest)
+    val hasPlanetItem = CelestiaBrowserItem(CelestiaString("Stars with Planets",""), hasPlanets)
 
-    return CelestiaBrowserItem("Stars", mapOf(
+    return CelestiaBrowserItem(CelestiaString("Stars", ""), mapOf(
         nearestItem.name to nearestItem,
         brightestItem.name to brightestItem,
         hasPlanetItem.name to hasPlanetItem
@@ -49,14 +50,14 @@ fun CelestiaSimulation.starBrowserRoot(): CelestiaBrowserItem {
 
 private fun CelestiaUniverse.createDSOBrowserRoot(): CelestiaBrowserItem {
     val typeMap = mapOf(
-        "SB" to "Galaxies (Barred Spiral)",
-        "S" to "Galaxies (Spiral)",
-        "E" to "Galaxies (Elliptical)",
-        "Irr" to "Galaxies (Irregular)",
-        "Neb" to "Nebulae",
-        "Glob" to "Globulars",
-        "Open cluster" to "Open Clusters",
-        "Unknown" to "Unknown"
+        "SB" to CelestiaString("Galaxies (Barred Spiral)", ""),
+        "S" to CelestiaString("Galaxies (Spiral)", ""),
+        "E" to CelestiaString("Galaxies (Elliptical)", ""),
+        "Irr" to CelestiaString("Galaxies (Irregular)", ""),
+        "Neb" to CelestiaString("Nebulae", ""),
+        "Glob" to CelestiaString("Globulars", ""),
+        "Open cluster" to CelestiaString("Open Clusters", ""),
+        "Unknown" to CelestiaString("Unknown", "")
     )
     val prefixes = listOf("SB", "S", "E", "Irr", "Neb", "Glob", "Open cluster")
 
@@ -83,7 +84,7 @@ private fun CelestiaUniverse.createDSOBrowserRoot(): CelestiaBrowserItem {
         results[fullName] = CelestiaBrowserItem(fullName, map.value)
     }
 
-    return CelestiaBrowserItem("Deep Sky Objects", results)
+    return CelestiaBrowserItem(CelestiaString("Deep Sky Objects", ""), results)
 }
 
 fun CelestiaUniverse.dsoBrowserRoot(): CelestiaBrowserItem {

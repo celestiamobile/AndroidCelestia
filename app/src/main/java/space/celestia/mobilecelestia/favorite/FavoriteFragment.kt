@@ -10,6 +10,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.pop
 import space.celestia.mobilecelestia.common.push
 import space.celestia.mobilecelestia.common.replace
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
@@ -69,7 +70,7 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private fun reloadMenu(item: FavoriteBaseItem) {
         if (item is MutableFavoriteBaseItem) {
             toolbar.menu.clear()
-            toolbar.menu.add(Menu.NONE, MENU_ITEM_ADD, Menu.NONE, "Add").setIcon(R.drawable.ic_add)
+            toolbar.menu.add(Menu.NONE, MENU_ITEM_ADD, Menu.NONE, CelestiaString("Add", "")).setIcon(R.drawable.ic_add)
         } else {
             toolbar.menu.clear()
         }

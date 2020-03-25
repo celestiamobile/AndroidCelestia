@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class CameraControlAction(val value: Int) {
     Pitch0(32), Pitch1(26), Yaw0(28), Yaw1(30), Roll0(31), Roll1(33), Reverse(-1);
@@ -34,7 +35,7 @@ class CameraControlFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar.title = "Camera Control"
+        toolbar.title = CelestiaString("Camera Control", "")
     }
 
     override fun onAttach(context: Context) {

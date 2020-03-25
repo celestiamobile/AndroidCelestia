@@ -38,7 +38,7 @@ class SearchFragment : Fragment(), SearchView.Listener {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement SearchListFragmentInteractionListener")
+            throw RuntimeException("$context must implement SearchFragment.Listener")
         }
     }
 

@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity(),
         // check file type
         if (!itemName.endsWith(".cel") && !itemName.endsWith(".celx")) {
             runOnUiThread {
-                showAlert("Wrong file type")
+                showAlert(CelestiaString("Wrong file type", ""))
             }
             return
         }
@@ -180,7 +180,7 @@ class MainActivity : AppCompatActivity(),
         scriptOrURLPath = null
 
         val isURL = uri.startsWith("cel://")
-        showAlert(if (isURL) "Open URL?" else "Run Script?") {
+        showAlert(CelestiaString(if (isURL) "Open URL?" else "Run Script?", "")) {
             if (isURL) {
                 core.goToURL(uri)
             } else {
@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun copyAssets(loadingFragment: LoadingFragment) {
-        loadingFragment.update("Copying data...")
+        loadingFragment.update(CelestiaString("Copying data...", ""))
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
@@ -203,7 +203,7 @@ class MainActivity : AppCompatActivity(),
                 Log.e(TAG, "Copy data failed, ${exp.localizedMessage}")
 
                 withContext(Dispatchers.Main) {
-                    loadingFragment.update("Copying data failed...")
+                    loadingFragment.update(CelestiaString("Copying data failed...", ""))
                 }
             }
         }
@@ -339,7 +339,7 @@ class MainActivity : AppCompatActivity(),
                 if (success) {
                     supportFragmentManager.beginTransaction().remove(loadingFragment).commitAllowingStateLoss()
                 } else {
-                    loadingFragment.update("Loading Celestia failed...")
+                    loadingFragment.update(CelestiaString("Loading Celestia failed...", ""))
                 }
             }
         })
@@ -398,7 +398,7 @@ class MainActivity : AppCompatActivity(),
     override fun onInfoActionSelected(action: InfoActionItem) {
         val selection = currentSelection
         if (selection == null) {
-            showAlert("Object not found.")
+            showAlert(CelestiaString("Object not found.", ""))
             return
         }
 
@@ -410,7 +410,7 @@ class MainActivity : AppCompatActivity(),
         } else if (action is InfoWebActionItem) {
             val url = selection.webInfoURL
             if (url == null) {
-                showAlert("Cannot find URL")
+                showAlert(CelestiaString("Cannot find URL", ""))
                 return
             }
 
@@ -423,7 +423,7 @@ class MainActivity : AppCompatActivity(),
     override fun onSearchItemSelected(text: String) {
         val sel = core.simulation.findObject(text)
         if (sel.isEmpty) {
-            showAlert("Object not found")
+            showAlert(CelestiaString("Object not found", ""))
             return
         }
         hideOverlay()
@@ -449,10 +449,10 @@ class MainActivity : AppCompatActivity(),
                     currentSelection = selection
                     showInfo(currentSelection!!)
                 } else {
-                    showAlert("Object not found")
+                    showAlert(CelestiaString("Object not found", ""))
                 }
             } else {
-                showAlert("Object not found")
+                showAlert(CelestiaString("Object not found", ""))
             }
         }
     }
@@ -478,7 +478,7 @@ class MainActivity : AppCompatActivity(),
         if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
             val bookmark = core.currentBookmark
             if (bookmark == null) {
-                showAlert("Object not found")
+                showAlert(CelestiaString("Object not found", ""))
                 return
             }
             frag.add(FavoriteBookmarkItem(bookmark))
@@ -528,7 +528,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun renameFavoriteItem(item: MutableFavoriteBaseItem) {
-        showTextInput("Rename", item.title) { text ->
+        showTextInput(CelestiaString("Rename", ""), item.title) { text ->
             val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
             if (frag is FavoriteFragment) {
                 frag.rename(item, text)
@@ -699,7 +699,7 @@ class MainActivity : AppCompatActivity(),
         val sel = core.simulation.selection
         val name = core.simulation.universe.getNameForSelection(sel)
 
-        showTextInput("Share", name) { title ->
+        showTextInput(CelestiaString("Share", ""), name) { title ->
             val hud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).show()
 
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
@@ -719,7 +719,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun showShareError() {
-        showAlert("Cannot share URL")
+        showAlert(CelestiaString("Cannot share URL", ""))
     }
 
     private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {

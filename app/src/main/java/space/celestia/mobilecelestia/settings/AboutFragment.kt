@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.TitledFragment
 import space.celestia.mobilecelestia.utils.AssetUtils
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.versionCode
 import space.celestia.mobilecelestia.utils.versionName
 
@@ -50,12 +51,12 @@ class AboutFragment : TitledFragment() {
         ))
 
         // Authors
-        getInfo("AUTHORS", "Authors")?.let {
+        getInfo("AUTHORS", CelestiaString("Authors", ""))?.let {
             array.add(it)
         }
 
         // Translators
-        getInfo("TRANSLATORS", "Translators")?.let {
+        getInfo("TRANSLATORS", CelestiaString("Translators", ""))?.let {
             array.add(it)
         }
 

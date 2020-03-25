@@ -7,18 +7,7 @@ val CelestiaAppCore.currentBookmark: BookmarkNode?
     get() {
         val sel = simulation.selection
         if (sel.isEmpty) return null
-        val name: String
-        if (sel.star != null) {
-            name = simulation.universe.starCatalog.getStarName(sel.star)
-        } else name = if (sel.dso != null) {
-            simulation.universe.dsoCatalog.getDSOName(sel.dso)
-        } else if (sel.body != null) {
-            sel.body!!.name
-        } else if (sel.location != null) {
-            sel.location!!.name
-        } else {
-            "Unknown"
-        }
+        val name = simulation.universe.getNameForSelection(sel)
         return BookmarkNode(name, currentURL, null)
     }
 
@@ -34,18 +23,18 @@ private val Float.radiusString: String
 
 public fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): String {
     val obj = selection.`object`
-    when (obj) {
+    return when (obj) {
         is CelestiaBody -> {
-            return getOverviewForBody(obj)
+            getOverviewForBody(obj)
         }
         is CelestiaStar -> {
-            return getOverviewForStar(obj)
+            getOverviewForStar(obj)
         }
         is CelestiaDSO -> {
-            return getOverviewForDSO(obj)
+            getOverviewForDSO(obj)
         }
         else -> {
-            return "No overview available."
+            CelestiaString("No overview available.", "")
         }
     }
 }

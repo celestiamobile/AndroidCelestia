@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
 enum class ToolbarAction : Serializable {
@@ -17,38 +18,17 @@ enum class ToolbarAction : Serializable {
 
     val title: String
         get() {
-            when (this) {
-                Celestia -> {
-                    return "Information"
-                }
-                Setting -> {
-                    return "Setting"
-                }
-                Share -> {
-                    return "Share"
-                }
-                Search -> {
-                    return "Search"
-                }
-                Time -> {
-                    return "Time Control"
-                }
-                Script -> {
-                    return "Script Control"
-                }
-                Camera -> {
-                    return "Camera Control"
-                }
-                Browse -> {
-                    return "Browser"
-                }
-                Help -> {
-                    return "Help"
-                }
-                Favorite -> {
-                    return "Favorite"
-                }
+            val orig = when (this) {
+                Celestia -> "Information"
+                Time -> "Time Control"
+                Script -> "Script Control"
+                Camera -> "Camera Control"
+                Browse -> "Browser"
+                Favorite -> "Favorites"
+                Setting -> "Settings"
+                else -> this.toString()
             }
+            return CelestiaString(orig, "")
         }
 
     val imageName: String
@@ -110,7 +90,7 @@ class ToolbarFragment : Fragment() {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement ToolbarListFragmentInteractionListener")
+            throw RuntimeException("$context must implement ToolbarFragment.Listener")
         }
     }
 

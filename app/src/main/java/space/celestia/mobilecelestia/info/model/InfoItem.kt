@@ -1,5 +1,6 @@
 package space.celestia.mobilecelestia.info.model
 
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
 enum class CelestiaAction(val value: Int) : Serializable {
@@ -18,51 +19,23 @@ enum class CelestiaAction(val value: Int) : Serializable {
 
     val title: String
         get() {
-            when (this) {
-                GoTo -> {
-                    return "Go"
-                }
-                Center -> {
-                    return "Center"
-                }
-                PlayPause -> {
-                    return "Resume/Pause"
-                }
-                Backward -> {
-                    return "Backward"
-                }
-                Forward -> {
-                    return "Forward"
-                }
-                CurrentTime -> {
-                    return "Current Time"
-                }
-                SyncOrbit -> {
-                    return "Sync Orbit"
-                }
-                Lock -> {
-                    return "Lock"
-                }
-                Chase -> {
-                    return "Chase"
-                }
-                Follow -> {
-                    return "Follow"
-                }
-                RunDemo -> {
-                    return "Run Demo"
-                }
-                CancelScript ->
-                    return "Cancel Script"
-                }
+            val orig = when (this) {
+                GoTo -> "Go"
+                PlayPause -> "Resume/Pause"
+                CurrentTime -> "Current Time"
+                SyncOrbit -> "Sync Orbit"
+                RunDemo -> "Run Demo"
+                CancelScript -> "Cancel Script"
+                else -> this.toString()
             }
+            return CelestiaString(orig, "")
+        }
 }
 
 interface InfoItem
 
 interface InfoActionItem : InfoItem {
     val title: String
-
 
     companion object {
         val infoActions: List<InfoActionItem>
@@ -84,10 +57,10 @@ class InfoNormalActionItem(val item: CelestiaAction) : InfoActionItem {
 }
 class InfoSelectActionItem : InfoActionItem {
     override val title: String
-        get() = "Select"
+        get() = CelestiaString("Select", "")
 }
 class InfoWebActionItem : InfoActionItem {
     override val title: String
-        get() = "Web Info"
+        get() = CelestiaString("Web Info", "")
 }
 class InfoDescriptionItem(val name: String, val overview: String, val hasWebInfo: Boolean) : InfoItem, Serializable
