@@ -617,7 +617,7 @@ class MainActivity : AppCompatActivity(),
     private fun showInfo(selection: CelestiaSelection) {
         showRightFragment(
             InfoFragment.newInstance(
-                InfoDescriptionItem(core.simulation.universe.nameForSelection(selection),
+                InfoDescriptionItem(core.simulation.universe.getNameForSelection(selection),
                     "No overview available.")
             )
         )
@@ -672,7 +672,8 @@ class MainActivity : AppCompatActivity(),
         val orig = core.currentURL
         val bytes = orig.toByteArray()
         val url = android.util.Base64.encodeToString(bytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
-        val name = core.simulation.selection.name
+        val sel = core.simulation.selection
+        val name = core.simulation.universe.getNameForSelection(sel)
 
         showTextInput("Share", name) { title ->
             val hud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).show()

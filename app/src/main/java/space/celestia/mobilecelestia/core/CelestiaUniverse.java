@@ -28,7 +28,7 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
     }
 
     @NonNull
-    public String nameForSelection(CelestiaSelection selection) {
+    public String getNameForSelection(CelestiaSelection selection) {
         CelestiaStar star = selection.getStar();
         if (star != null)
             return getStarCatalog().getStarName(star);

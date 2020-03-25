@@ -72,11 +72,6 @@ public class CelestiaSelection {
         return null;
     }
 
-    @NonNull
-    public String getName() {
-        return c_getName();
-    }
-
     @Override
     protected void finalize() throws Throwable {
         destroy();
