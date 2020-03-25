@@ -26,6 +26,7 @@ class ResultMap<T>(private val cls: Class<T>?) : Function<BaseResult, T?> {
     override fun apply(baseResult: BaseResult): T? {
         if (baseResult.status != 0) throw ResultException(baseResult.status)
         val detail = baseResult.info.detail ?: throw ResultException(baseResult.status)
+        @Suppress("UNCHECKED_CAST")
         if (cls == String::class.java) return cls.cast(detail) as T
         return Gson().fromJson(detail, cls)
     }

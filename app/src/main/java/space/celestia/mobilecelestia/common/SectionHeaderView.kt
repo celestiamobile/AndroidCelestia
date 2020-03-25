@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import space.celestia.mobilecelestia.R
 
 class SectionHeaderView(context: Context): FrameLayout(context) {
@@ -17,10 +18,7 @@ class SectionHeaderView(context: Context): FrameLayout(context) {
         val padding = (headerHorizontalPadding * density).toInt()
         setPadding(padding, 0, padding, 0)
 
-        val view = View(context)
-        view.setBackgroundColor(resources.getColor(R.color.colorSeparator))
-
-        textView.setTextColor(resources.getColor(R.color.colorSecondaryLabel))
+        textView.setTextColor(ResourcesCompat.getColor(resources, R.color.colorSecondaryLabel, null))
         textView.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL)
         addView(textView)
     }

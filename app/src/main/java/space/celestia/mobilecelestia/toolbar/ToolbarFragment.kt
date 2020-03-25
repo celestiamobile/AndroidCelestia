@@ -77,6 +77,7 @@ class ToolbarFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
+            @Suppress("UNCHECKED_CAST")
             val value = it.getSerializable(ARG_ACTION_WRAPPER) as? List<List<ToolbarAction>>
             if (value != null) {
                 existingActions = value

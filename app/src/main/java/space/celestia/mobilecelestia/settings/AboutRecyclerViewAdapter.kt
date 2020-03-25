@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_multiline_list_item.view.*
 import space.celestia.mobilecelestia.R
@@ -80,7 +81,7 @@ class AboutRecyclerViewAdapter(
         }
         if (viewType == ACTION_ITEM) {
             val holder = CommonTextViewHolder(parent)
-            holder.title.setTextColor(parent.resources.getColor(R.color.colorThemeLabel))
+            holder.title.setTextColor(ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null))
             return holder
         }
         if (viewType == TITLE_ITEM) {

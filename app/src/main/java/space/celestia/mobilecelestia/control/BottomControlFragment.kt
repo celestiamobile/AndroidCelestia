@@ -42,6 +42,7 @@ class BottomControlFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
+            @Suppress("UNCHECKED_CAST")
             items = it.getSerializable(ARG_ACTIONS) as? List<CelestiaAction>
         }
     }

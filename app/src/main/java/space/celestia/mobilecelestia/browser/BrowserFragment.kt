@@ -3,6 +3,7 @@ package space.celestia.mobilecelestia.browser
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import space.celestia.mobilecelestia.R
@@ -79,7 +80,7 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
 
     fun pushItem(browserItem: CelestiaBrowserItem) {
         toolbar.title = browserItem.name
-        toolbar.navigationIcon = resources.getDrawable(R.drawable.ic_action_arrow_back)
+        toolbar.setNavigationIcon(R.drawable.ic_action_arrow_back)
         currentPath = "$currentPath/${browserItem.name}"
         browserMap[currentPath] = browserItem
         val frag = BrowserCommonFragment.newInstance(currentPath)

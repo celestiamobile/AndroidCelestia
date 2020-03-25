@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.TitledFragment
@@ -42,7 +43,7 @@ class SettingsFragment : Fragment() {
     fun push(fragment: Fragment, title: String) {
         push(fragment, R.id.settings_container)
         toolbar.title = title
-        toolbar.navigationIcon = resources.getDrawable(R.drawable.ic_action_arrow_back)
+        toolbar.navigationIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null)
     }
 
     fun pushMainSettingItem(item: SettingsItem) {

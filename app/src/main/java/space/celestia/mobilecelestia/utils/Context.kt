@@ -2,6 +2,7 @@ package space.celestia.mobilecelestia.utils
 
 import android.content.Context
 import android.content.pm.PackageInfo
+import android.os.Build
 
 val Context.packageInfo: PackageInfo?
     get() {
@@ -18,8 +19,13 @@ val Context.versionName: String
         return pi.versionName
     }
 
-val Context.versionCode: Int
+val Context.versionCode: Long
     get() {
         val pi = packageInfo ?: return 1
-        return pi.versionCode
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            pi.longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            pi.versionCode.toLong()
+        }
     }

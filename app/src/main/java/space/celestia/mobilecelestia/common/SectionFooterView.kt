@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import space.celestia.mobilecelestia.R
 
 class SectionFooterView(context: Context): FrameLayout(context) {
@@ -17,10 +18,7 @@ class SectionFooterView(context: Context): FrameLayout(context) {
         val paddingV = (footerVerticalPadding * density).toInt()
         setPadding(paddingH, paddingV, paddingH, paddingV)
 
-        val view = View(context)
-        view.setBackgroundColor(resources.getColor(R.color.colorSeparator))
-
-        textView.setTextColor(resources.getColor(R.color.colorSecondaryLabel))
+        textView.setTextColor(ResourcesCompat.getColor(resources, R.color.colorSecondaryLabel, null))
         textView.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
         addView(textView)
     }
