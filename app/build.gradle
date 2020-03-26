@@ -38,6 +38,23 @@ android {
         }
     }
 
+    task copyGeneralData(type: Exec) {
+        println "Copying general data"
+        workingDir projectDir
+        executable = '/bin/sh'
+        args = ["copy_general_data.sh"]
+    }
+
+    task convertPO(type: Exec) {
+        println "Converting PO"
+        workingDir projectDir
+        executable = '/bin/sh'
+        args = ["convert_po.sh", temporaryDir]
+    }
+
+    convertPO.dependsOn copyGeneralData
+    preBuild.dependsOn convertPO
+
     compileOptions {
         targetCompatibility = "8"
         sourceCompatibility = "8"

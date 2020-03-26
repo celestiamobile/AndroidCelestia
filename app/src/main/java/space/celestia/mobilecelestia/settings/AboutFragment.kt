@@ -51,12 +51,12 @@ class AboutFragment : TitledFragment() {
         ))
 
         // Authors
-        getInfo("AUTHORS", CelestiaString("Authors", ""))?.let {
+        getInfo("CelestiaResources/AUTHORS", CelestiaString("Authors", ""))?.let {
             array.add(it)
         }
 
         // Translators
-        getInfo("TRANSLATORS", CelestiaString("Translators", ""))?.let {
+        getInfo("CelestiaResources/TRANSLATORS", CelestiaString("Translators", ""))?.let {
             array.add(it)
         }
 
