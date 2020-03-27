@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity(),
     SettingsCurrentTimeFragment.Listener,
     DatePickerDialog.OnDateSetListener,
     AboutFragment.Listener,
-    CelestiaFragment.Listener,
     AppStatusReporter.Listener {
 
     private val celestiaFolderName = "CelestiaResources"
@@ -129,6 +128,13 @@ class MainActivity : AppCompatActivity(),
         runOnUiThread {
             // hide the loading container
             findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+
+            // apply setting
+            readSettings()
+
+            // open url/script if present
+            readyForUriInput = true
+            runScriptOrOpenURLIfNeededOnMainThread()
         }
     }
 
@@ -342,13 +348,11 @@ class MainActivity : AppCompatActivity(),
 
     private fun copyAssetSuccess() {
         // Add fragment
-        val celestiaFragment = CelestiaFragment.newInstance()
+        val celestiaFragment = CelestiaFragment.newInstance("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName")
         supportFragmentManager
                     .beginTransaction()
                     .add(R.id.celestia_fragment_container, celestiaFragment)
                     .commitAllowingStateLoss()
-
-        celestiaFragment.requestLoadCelestia("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName")
     }
 
     private fun showToolbar() {
@@ -613,13 +617,6 @@ class MainActivity : AppCompatActivity(),
                 startActivity(intent)
             }
         }
-    }
-
-    override fun celestiaWillStart() {
-        readSettings()
-        readyForUriInput = true
-
-        runScriptOrOpenURLIfNeededOnMainThread()
     }
 
     private fun reloadSettings() {

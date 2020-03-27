@@ -31,14 +31,13 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     private var cfgToLoad: String? = null
     private var core = CelestiaAppCore.shared()
 
-    private var listener: Listener? = null
-
-    interface Listener {
-        fun celestiaWillStart()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        arguments?.let {
+            pathToLoad = it.getString(ARG_DATA_DIR)
+            cfgToLoad = it.getString(ARG_CFG_FILE)
+        }
 
         retainInstance = true
     }
@@ -59,18 +58,12 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         super.onAttach(context)
 
         activity = context as? Activity
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement CelestiaFragment.Listener")
-        }
     }
 
     override fun onDetach() {
         super.onDetach()
 
         activity = null
-        listener = null
     }
 
     private fun setupGLView() {
@@ -81,13 +74,6 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         glView?.setEGLContextClientVersion(2)
         glView?.setRenderer(this)
         glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-    }
-
-    fun requestLoadCelestia(path: String, cfgPath: String) {
-        pathToLoad = path
-        cfgToLoad = cfgPath
-
-        setupGLView()
     }
 
     private fun loadCelestia(path: String, cfg: String) {
@@ -104,8 +90,6 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
             AppStatusReporter.shared().celestiaLoadResult(false)
             return
         }
-
-        listener?.celestiaWillStart()
 
         glViewSize?.let {
             core.resize(it.width, it.height)
@@ -148,8 +132,17 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     }
 
     companion object {
+        private const val ARG_DATA_DIR = "data"
+        private const val ARG_CFG_FILE = "cfg"
+
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance() = CelestiaFragment()
+        fun newInstance(data: String, cfg: String) =
+            CelestiaFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_DATA_DIR, data)
+                    putString(ARG_CFG_FILE, cfg)
+                }
+            }
     }
 }
