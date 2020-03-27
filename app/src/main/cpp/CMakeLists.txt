@@ -408,6 +408,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_definitions(-DNO_TTF)
 add_definitions(-DENABLE_NLS)
+add_definitions(-DUSE_SPICE)
 add_definitions(-DEIGEN_NO_DEBUG)
 
 include_directories(
