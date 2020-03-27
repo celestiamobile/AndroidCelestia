@@ -330,11 +330,7 @@ class MainActivity : AppCompatActivity(),
                     .add(R.id.celestia_fragment_container, celestiaFragment)
                     .commitAllowingStateLoss()
 
-        celestiaFragment.requestLoadCelestia("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName", {
-            GlobalScope.launch(Dispatchers.Main) {
-                loadingFragment.update(it)
-            }
-        }, { success ->
+        celestiaFragment.requestLoadCelestia("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName") { success ->
             GlobalScope.launch(Dispatchers.Main) {
                 if (success) {
                     supportFragmentManager.beginTransaction().remove(loadingFragment).commitAllowingStateLoss()
@@ -342,7 +338,7 @@ class MainActivity : AppCompatActivity(),
                     loadingFragment.update(CelestiaString("Loading Celestia failed...", ""))
                 }
             }
-        })
+        }
     }
 
     private fun showToolbar() {

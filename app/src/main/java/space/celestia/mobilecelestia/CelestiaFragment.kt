@@ -12,11 +12,12 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.utils.AppStatusReporter
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.ProgressWatcher {
+class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     private var activity: Activity? = null
 
     // MARK: GL View
@@ -30,7 +31,6 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
     private var cfgToLoad: String? = null
     private var core = CelestiaAppCore.shared()
 
-    private var statusCallback: ((String) -> Unit)? = null
     private var resultCallback: ((Boolean) -> Unit)? = null
 
     private var listener: Listener? = null
@@ -85,11 +85,10 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
         glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
     }
 
-    fun requestLoadCelestia(path: String, cfgPath: String,  status: (String) -> Unit, result: (Boolean) -> Unit) {
+    fun requestLoadCelestia(path: String, cfgPath: String, result: (Boolean) -> Unit) {
         pathToLoad = path
         cfgToLoad = cfgPath
 
-        statusCallback = status
         resultCallback = result
 
         setupGLView()
@@ -100,7 +99,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
 
         CelestiaAppCore.setLocaleDirectoryPath("$path/locale", Locale.getDefault().toString())
 
-        if (!core.startSimulation(cfg, null, this)) {
+        if (!core.startSimulation(cfg, null, AppStatusReporter.shared())) {
             resultCallback?.let { it(false) }
             return
         }
@@ -150,14 +149,6 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer, CelestiaAppCore.Pro
         if (!isReady) { return }
         core.draw()
         core.tick()
-    }
-
-    // Progress
-    override fun onCelestiaProgress(progress: String) {
-        Log.d(TAG, "Loading $progress")
-        statusCallback?.let {
-            it(progress)
-        }
     }
 
     private companion object {
