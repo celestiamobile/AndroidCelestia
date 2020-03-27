@@ -13,7 +13,6 @@ import space.celestia.mobilecelestia.utils.AppStatusReporter
 class LoadingFragment : Fragment(), AppStatusReporter.Listener {
 
     private var loadingLabel: TextView? = null
-    private var currentText: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,30 +35,24 @@ class LoadingFragment : Fragment(), AppStatusReporter.Listener {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_loading, container, false)
         loadingLabel = view.findViewById(R.id.loading_label)
-        if (currentText != null) {
-            loadingLabel?.text = currentText
-            currentText = null
-        }
+        loadingLabel?.text = AppStatusReporter.shared().currentStatusString
         return view
-    }
-
-    fun update(status: String) {
-        if (loadingLabel == null) {
-            currentText = status
-        } else {
-            loadingLabel?.text = status
-        }
     }
 
     override fun celestiaLoadingProgress(status: String) {
         activity?.runOnUiThread {
             Log.d(TAG, "Loading $status")
-            update(status)
+            loadingLabel?.text = status
         }
     }
 
-    private companion object {
-        const val TAG = "LoadingFragment"
+    override fun celestiaLoadingSucceeded() {}
+    override fun celestiaLoadingFailed() {}
+
+    companion object {
+        private const val TAG = "LoadingFragment"
+
+        public fun newInstance() = LoadingFragment()
     }
 
 }

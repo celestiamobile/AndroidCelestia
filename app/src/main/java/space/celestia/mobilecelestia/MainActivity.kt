@@ -66,7 +66,8 @@ class MainActivity : AppCompatActivity(),
     SettingsCurrentTimeFragment.Listener,
     DatePickerDialog.OnDateSetListener,
     AboutFragment.Listener,
-    CelestiaFragment.Listener {
+    CelestiaFragment.Listener,
+    AppStatusReporter.Listener {
 
     private val celestiaFolderName = "CelestiaResources"
     private val celestiaCfgName = "celestia.cfg"
@@ -86,19 +87,19 @@ class MainActivity : AppCompatActivity(),
 
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        setContentView(R.layout.activity_main)
+        AppStatusReporter.shared().register(this)
 
-        val loadingFragment = LoadingFragment()
+        setContentView(R.layout.activity_main)
 
         // Add fragments
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.loading_fragment_container, loadingFragment)
+            .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
             .commitAllowingStateLoss()
         
         findViewById<View>(R.id.overlay_container).setOnTouchListener { _, _ ->
             hideOverlay()
-            true
+            return@setOnTouchListener true
         }
 
         findViewById<ImageButton>(R.id.action_menu_button).setOnClickListener {
@@ -108,12 +109,31 @@ class MainActivity : AppCompatActivity(),
         // Check if data is already copied
         if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
             // When version name does not match, copy the asset again
-            copyAssets(loadingFragment)
+            copyAssets()
         } else {
-            copyAssetSuccess(CelestiaFragment(), loadingFragment)
+            copyAssetSuccess()
         }
 
         handleIntent(intent)
+    }
+
+    override fun onDestroy() {
+        AppStatusReporter.shared().unregister(this)
+
+        super.onDestroy()
+    }
+
+    override fun celestiaLoadingProgress(status: String) {}
+
+    override fun celestiaLoadingSucceeded() {
+        runOnUiThread {
+            // hide the loading container
+            findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+        }
+    }
+
+    override fun celestiaLoadingFailed() {
+        AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed...", ""))
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -189,22 +209,19 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun copyAssets(loadingFragment: LoadingFragment) {
-        loadingFragment.update(CelestiaString("Copying data...", ""))
+    private fun copyAssets() {
+        AppStatusReporter.shared().updateStatus(CelestiaString("Copying data...", ""))
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                AssetUtils.copyFileOrDir(this@MainActivity,celestiaFolderName, celestiaParentPath)
+                AssetUtils.copyFileOrDir(this@MainActivity, celestiaFolderName, celestiaParentPath)
                 preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
                 withContext(Dispatchers.Main) {
-                    copyAssetSuccess(CelestiaFragment(), loadingFragment)
+                    copyAssetSuccess()
                 }
             } catch (exp: IOException) {
                 Log.e(TAG, "Copy data failed, ${exp.localizedMessage}")
-
-                withContext(Dispatchers.Main) {
-                    loadingFragment.update(CelestiaString("Copying data failed...", ""))
-                }
+                AppStatusReporter.shared().updateStatus(CelestiaString("Copying data failed...", ""))
             }
         }
     }
@@ -323,22 +340,15 @@ class MainActivity : AppCompatActivity(),
         return mapOf()
     }
 
-    private fun copyAssetSuccess(celestiaFragment: CelestiaFragment, loadingFragment: LoadingFragment) {
+    private fun copyAssetSuccess() {
         // Add fragment
+        val celestiaFragment = CelestiaFragment.newInstance()
         supportFragmentManager
                     .beginTransaction()
                     .add(R.id.celestia_fragment_container, celestiaFragment)
                     .commitAllowingStateLoss()
 
-        celestiaFragment.requestLoadCelestia("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName") { success ->
-            GlobalScope.launch(Dispatchers.Main) {
-                if (success) {
-                    supportFragmentManager.beginTransaction().remove(loadingFragment).commitAllowingStateLoss()
-                } else {
-                    loadingFragment.update(CelestiaString("Loading Celestia failed...", ""))
-                }
-            }
-        }
+        celestiaFragment.requestLoadCelestia("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName")
     }
 
     private fun showToolbar() {

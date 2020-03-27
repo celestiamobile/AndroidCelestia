@@ -31,8 +31,6 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     private var cfgToLoad: String? = null
     private var core = CelestiaAppCore.shared()
 
-    private var resultCallback: ((Boolean) -> Unit)? = null
-
     private var listener: Listener? = null
 
     interface Listener {
@@ -85,11 +83,9 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
     }
 
-    fun requestLoadCelestia(path: String, cfgPath: String, result: (Boolean) -> Unit) {
+    fun requestLoadCelestia(path: String, cfgPath: String) {
         pathToLoad = path
         cfgToLoad = cfgPath
-
-        resultCallback = result
 
         setupGLView()
     }
@@ -100,12 +96,12 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         CelestiaAppCore.setLocaleDirectoryPath("$path/locale", Locale.getDefault().toString())
 
         if (!core.startSimulation(cfg, null, AppStatusReporter.shared())) {
-            resultCallback?.let { it(false) }
+            AppStatusReporter.shared().celestiaLoadResult(false)
             return
         }
 
         if (!core.startRenderer()) {
-            resultCallback?.let { it(false) }
+            AppStatusReporter.shared().celestiaLoadResult(false)
             return
         }
 
@@ -123,7 +119,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         isReady = true
 
         Log.d(TAG, "Ready to display")
-        resultCallback?.let { it(true) }
+        AppStatusReporter.shared().celestiaLoadResult(true)
     }
 
     // Render
@@ -151,7 +147,9 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         core.tick()
     }
 
-    private companion object {
+    companion object {
         private const val TAG = "CelestiaFragment"
+
+        fun newInstance() = CelestiaFragment()
     }
 }
