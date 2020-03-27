@@ -16,6 +16,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name="space.celestia.mobilecelestia.MainActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="sensorLandscape"
             android:launchMode="singleInstance"
             tools:ignore="LockedOrientationActivity">

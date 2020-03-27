@@ -13,6 +13,12 @@ class LoadingFragment : Fragment() {
     private var loadingLabel: TextView? = null
     private var currentText: String? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        retainInstance = true
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
