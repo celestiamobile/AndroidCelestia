@@ -41,8 +41,8 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
         val item1 = values[index1]
         val item2 = values[index2]
         if (item1 is RecyclerViewItem && item2 is RecyclerViewItem && swapItem(item1, item2)) {
-            values[index2] = item2
-            values[index1] = item1
+            values[index1] = item2
+            values[index2] = item1
             notifyItemMoved(index1, index2)
             return true
         }

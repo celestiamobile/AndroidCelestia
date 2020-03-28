@@ -1,15 +1,15 @@
 package space.celestia.mobilecelestia.favorite
 
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.common.CommonTextViewHolder
-import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import kotlinx.android.synthetic.main.common_reorderable_text_list_item.view.*
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.core.CelestiaScript
 import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -23,11 +23,12 @@ interface FavoriteBaseItem : RecyclerViewItem, Serializable {
     val children: List<FavoriteBaseItem>
     val isLeaf: Boolean
     val title: String
+
+    val supportedItemActions: List<FavoriteItemAction>
+        get() = listOf()
 }
 
 interface MutableFavoriteBaseItem : FavoriteBaseItem {
-    val supportedItemActions: List<FavoriteItemAction>
-
     fun insert(newItem: FavoriteBaseItem, index: Int)
 
     fun append(newItem: FavoriteBaseItem) {
@@ -48,7 +49,7 @@ class FavoriteRoot : FavoriteBaseItem {
     override val children: List<FavoriteBaseItem>
         get() = listOf(
             FavoriteTypeItem(FavoriteType.Script),
-            FavoriteBookmarkItem(currentBookmarkRoot)
+            FavoriteBookmarkRootItem(currentBookmarkRoot)
         )
     override val title: String
         get() = CelestiaString("Favorites", "")
@@ -80,7 +81,7 @@ class FavoriteScriptItem(val script: CelestiaScript) : FavoriteBaseItem {
         get() = true
 }
 
-class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBaseItem {
+open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBaseItem {
     override val children: List<FavoriteBaseItem>
         get() = if (bookmark.isLeaf) listOf() else bookmark.children!!.map { FavoriteBookmarkItem(it) }
     override val title: String
@@ -112,6 +113,12 @@ class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBaseItem
     }
 }
 
+class FavoriteBookmarkRootItem(bookmark: BookmarkNode) : FavoriteBookmarkItem(bookmark) {
+    // Root item does not support any customization
+    override val supportedItemActions: List<FavoriteItemAction>
+        get() = listOf()
+}
+
 fun updateCurrentScripts(scripts: List<CelestiaScript>) {
     currentScripts = scripts
 }
@@ -131,10 +138,11 @@ private var currentBookmarkRoot: BookmarkNode = BookmarkNode("Bookmarks", "", ar
 class FavoriteItemRecyclerViewAdapter private constructor(
     private val item: FavoriteBaseItem,
     private var children: List<FavoriteBaseItem>,
-    private val listener: Listener?
+    private val listener: Listener?,
+    private val helper: ItemTouchHelper
 ) : SeparatorHeaderRecyclerViewAdapter(listOf(CommonSectionV2(children))) {
 
-    constructor(item: FavoriteBaseItem, listener: Listener?) : this(item, item.children, listener)
+    constructor(item: FavoriteBaseItem, listener: Listener?, helper: ItemTouchHelper) : this(item, item.children, listener, helper)
 
     val editable: Boolean
         get() = item is MutableFavoriteBaseItem
@@ -146,39 +154,40 @@ class FavoriteItemRecyclerViewAdapter private constructor(
     }
 
     override fun itemViewType(item: RecyclerViewItem): Int {
-        if (item is FavoriteTypeItem) {
-            return FAVORITE_TYPE
-        }
-        if (item is FavoriteScriptItem) {
-            return FAVORITE_SCRIPT
-        }
-        if (item is FavoriteBookmarkItem) {
-            return FAVORITE_BOOKMARK
+
+        if (item is FavoriteBaseItem) {
+            return if (editable) FAVORITE_EDITABLE else FAVORITE_CONST
         }
         return super.itemViewType(item)
     }
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewType == FAVORITE_TYPE || viewType == FAVORITE_SCRIPT || viewType == FAVORITE_BOOKMARK) {
+        if (viewType == FAVORITE_CONST) {
             return CommonTextViewHolder(parent)
+        }
+        if (viewType == FAVORITE_EDITABLE) {
+            return CommonReorderableTextViewHolder(parent)
         }
         return super.createVH(parent, viewType)
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
-        if (holder is CommonTextViewHolder && item is FavoriteBaseItem) {
+        if (holder is BaseTextItemHolder && item is FavoriteBaseItem) {
             holder.title.text = item.title
             holder.accessory.visibility = if (item.isLeaf) View.GONE else View.VISIBLE
+            if (holder is CommonReorderableTextViewHolder) {
+                // Can reorder
+                holder.dragView.setOnLongClickListener {
+                    helper.startDrag(holder)
+                    return@setOnLongClickListener true
+                }
+            }
             if (item is MutableFavoriteBaseItem && item.supportedItemActions.isNotEmpty()) {
                 val actions = item.supportedItemActions
                 holder.itemView.setOnLongClickListener {
                     val popup = PopupMenu(it.context, it)
-                    for (i in actions.indices) {
-                        val action = actions[i]
-                        popup.menu.add(Menu.NONE, i, Menu.NONE, CelestiaString(action.toString(), ""))
-                    }
-                    popup.setOnMenuItemClickListener { menuItem ->
-                        when (actions[menuItem.itemId]) {
+                    setupPopupMenu(popup, actions) { menuItem ->
+                        when (menuItem) {
                             FavoriteItemAction.Delete -> {
                                 listener?.deleteFavoriteItem(children.indexOf(item))
                             }
@@ -186,9 +195,7 @@ class FavoriteItemRecyclerViewAdapter private constructor(
                                 listener?.renameFavoriteItem(item)
                             }
                         }
-                        return@setOnMenuItemClickListener true
                     }
-                    popup.show()
                     return@setOnLongClickListener true
                 }
             } else {
@@ -197,6 +204,18 @@ class FavoriteItemRecyclerViewAdapter private constructor(
             return
         }
         super.bindVH(holder, item)
+    }
+
+    private fun setupPopupMenu(menu: PopupMenu, actions: List<FavoriteItemAction>, handler: (FavoriteItemAction) -> Unit) {
+        for (i in actions.indices) {
+            val action = actions[i]
+            menu.menu.add(Menu.NONE, i, Menu.NONE, CelestiaString(action.toString(), ""))
+        }
+        menu.setOnMenuItemClickListener { menuItem ->
+            handler(actions[menuItem.itemId])
+            return@setOnMenuItemClickListener true
+        }
+        menu.show()
     }
 
     override fun swapItem(item1: RecyclerViewItem, item2: RecyclerViewItem): Boolean {
@@ -214,20 +233,27 @@ class FavoriteItemRecyclerViewAdapter private constructor(
         updateSectionsWithHeader(listOf(CommonSectionV2(children)))
     }
 
+    inner class CommonReorderableTextViewHolder(parent: ViewGroup):
+        RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.common_reorderable_text_list_item, parent, false)), BaseTextItemHolder {
+        override val title = itemView.title
+        override var accessory = itemView.accessory
+        val dragView = itemView.drag_accessory
+    }
+
     private companion object {
-        const val FAVORITE_TYPE = 0
-        const val FAVORITE_SCRIPT = 1
-        const val FAVORITE_BOOKMARK = 2
+        const val FAVORITE_CONST    = 0
+        const val FAVORITE_EDITABLE = 1
     }
 }
 
-class FavoriteItemItemTouchCallback(val adapter: FavoriteItemRecyclerViewAdapter):
+class FavoriteItemItemTouchCallback():
     ItemTouchHelper.Callback() {
     override fun getMovementFlags(
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder
     ): Int {
-        val dragFlags = if (adapter.editable && viewHolder is CommonTextViewHolder) ItemTouchHelper.UP or ItemTouchHelper.DOWN else 0
+        val adapter = recyclerView.adapter as FavoriteItemRecyclerViewAdapter
+        val dragFlags = if (adapter.editable && viewHolder is BaseTextItemHolder) ItemTouchHelper.UP or ItemTouchHelper.DOWN else 0
         return makeMovementFlags(dragFlags, 0)
     }
 
@@ -236,7 +262,8 @@ class FavoriteItemItemTouchCallback(val adapter: FavoriteItemRecyclerViewAdapter
         viewHolder: RecyclerView.ViewHolder,
         target: RecyclerView.ViewHolder
     ): Boolean {
-        if (viewHolder is CommonTextViewHolder && target is CommonTextViewHolder) {
+        if (viewHolder is BaseTextItemHolder && target is BaseTextItemHolder) {
+            val adapter = recyclerView.adapter as FavoriteItemRecyclerViewAdapter
             val fromPos = viewHolder.adapterPosition
             val toPos = target.adapterPosition
             return adapter.swapItem(fromPos, toPos)
@@ -247,4 +274,5 @@ class FavoriteItemItemTouchCallback(val adapter: FavoriteItemRecyclerViewAdapter
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
 
     override fun isItemViewSwipeEnabled(): Boolean { return false }
+    override fun isLongPressDragEnabled(): Boolean { return false }
 }

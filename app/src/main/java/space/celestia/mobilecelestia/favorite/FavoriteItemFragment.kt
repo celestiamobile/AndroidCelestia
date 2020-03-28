@@ -16,7 +16,8 @@ class FavoriteItemFragment : TitledFragment() {
     private var listener: Listener? = null
 
     var favoriteItem: FavoriteBaseItem? = null
-    private val listAdapter by lazy { FavoriteItemRecyclerViewAdapter(favoriteItem!!, listener) }
+    private val itemHelper by lazy { ItemTouchHelper(FavoriteItemItemTouchCallback()) }
+    private val listAdapter by lazy { FavoriteItemRecyclerViewAdapter(favoriteItem!!, listener, this.itemHelper) }
 
     override val title: String
         get() = favoriteItem!!.title
@@ -40,7 +41,7 @@ class FavoriteItemFragment : TitledFragment() {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
                 adapter = listAdapter
-                ItemTouchHelper(FavoriteItemItemTouchCallback(listAdapter)).attachToRecyclerView(this)
+                itemHelper.attachToRecyclerView(this)
             }
         }
         return view
