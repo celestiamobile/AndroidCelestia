@@ -35,7 +35,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
         super.finalize()
     }
 
-    private val core = CelestiaAppCore.shared()
+    private val core by lazy { CelestiaAppCore.shared() }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {

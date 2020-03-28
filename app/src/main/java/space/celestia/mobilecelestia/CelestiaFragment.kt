@@ -29,7 +29,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     // MARK: Celestia
     private var pathToLoad: String? = null
     private var cfgToLoad: String? = null
-    private var core = CelestiaAppCore.shared()
+    private val core by lazy { CelestiaAppCore.shared() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(),
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
     private val celestiaParentPath by lazy { this.filesDir.absolutePath }
 
-    private val core = CelestiaAppCore.shared()
+    private val core by lazy { CelestiaAppCore.shared() }
     private var currentSelection: CelestiaSelection? = null
 
     private var readyForUriInput = false
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun celestiaLoadingFailed() {
-        AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed...", ""))
+        AppStatusReporter.shared().updateStatus("Loading Celestia failed...")
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -216,7 +216,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun copyAssets() {
-        AppStatusReporter.shared().updateStatus(CelestiaString("Copying data...", ""))
+        AppStatusReporter.shared().updateStatus("Copying data...")
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
@@ -227,7 +227,7 @@ class MainActivity : AppCompatActivity(),
                 }
             } catch (exp: IOException) {
                 Log.e(TAG, "Copy data failed, ${exp.localizedMessage}")
-                AppStatusReporter.shared().updateStatus(CelestiaString("Copying data failed...", ""))
+                AppStatusReporter.shared().updateStatus("Copying data failed...")
             }
         }
     }
@@ -347,12 +347,23 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun copyAssetSuccess() {
-        // Add fragment
+        // Load library
+        AppStatusReporter.shared().updateStatus("Loading library...")
+        GlobalScope.launch(Dispatchers.IO) {
+            System.loadLibrary("celestia")
+            withContext(Dispatchers.Main) {
+                loadLibrarySuccess()
+            }
+        }
+    }
+
+    private fun loadLibrarySuccess() {
+        // Add gl fragment
         val celestiaFragment = CelestiaFragment.newInstance("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName")
         supportFragmentManager
-                    .beginTransaction()
-                    .add(R.id.celestia_fragment_container, celestiaFragment)
-                    .commitAllowingStateLoss()
+            .beginTransaction()
+            .add(R.id.celestia_fragment_container, celestiaFragment)
+            .commitAllowingStateLoss()
     }
 
     private fun showToolbar() {
@@ -752,9 +763,5 @@ class MainActivity : AppCompatActivity(),
     companion object {
         private const val CURRENT_DATA_VERSION = "1"
         private const val TAG = "MainActivity"
-
-        init {
-            System.loadLibrary("celestia")
-        }
     }
 }
