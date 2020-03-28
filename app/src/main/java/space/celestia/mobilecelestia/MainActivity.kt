@@ -412,21 +412,25 @@ class MainActivity : AppCompatActivity(),
             return
         }
 
-        if (action is InfoNormalActionItem) {
-            core.simulation.selection = selection
-            core.charEnter(action.item.value)
-        } else if (action is InfoSelectActionItem) {
-            core.simulation.selection = selection
-        } else if (action is InfoWebActionItem) {
-            val url = selection.webInfoURL
-            if (url == null) {
-                showAlert(CelestiaString("Cannot find URL", ""))
-                return
+        when (action) {
+            is InfoNormalActionItem -> {
+                core.simulation.selection = selection
+                core.charEnter(action.item.value)
             }
+            is InfoSelectActionItem -> {
+                core.simulation.selection = selection
+            }
+            is InfoWebActionItem -> {
+                val url = selection.webInfoURL
+                if (url == null) {
+                    showAlert(CelestiaString("Cannot find URL", ""))
+                    return
+                }
 
-            // show web info in browser
-            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(browserIntent)
+                // show web info in browser
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(browserIntent)
+            }
         }
     }
 
