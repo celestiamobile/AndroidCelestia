@@ -48,10 +48,20 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
         glViewContainer = view.findViewById(R.id.celestia_gl_view)
-        if (pathToLoad != null) {
-            setupGLView()
-        }
+        setupGLView()
         return view
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        glView?.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        glView?.onResume()
     }
 
     override fun onAttach(context: Context) {
@@ -71,6 +81,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         if (glView != null) { return }
 
         glView = CelestiaView(activity!!)
+        glView?.preserveEGLContextOnPause = true
         glView?.setEGLContextClientVersion(2)
         glView?.setRenderer(this)
         glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
