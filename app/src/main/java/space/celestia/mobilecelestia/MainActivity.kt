@@ -132,6 +132,9 @@ class MainActivity : AppCompatActivity(),
             // apply setting
             readSettings()
 
+            // show onboard
+            showWelcomeIfNeeded()
+
             // open url/script if present
             readyForUriInput = true
             runScriptOrOpenURLIfNeededOnMainThread()
@@ -140,6 +143,13 @@ class MainActivity : AppCompatActivity(),
 
     override fun celestiaLoadingFailed() {
         AppStatusReporter.shared().updateStatus("Loading Celestia failed...")
+    }
+
+    private fun showWelcomeIfNeeded() {
+        if (preferenceManager[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
+            preferenceManager[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
+            showHelp()
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {

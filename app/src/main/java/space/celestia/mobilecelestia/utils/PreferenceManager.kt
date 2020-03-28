@@ -13,7 +13,8 @@ class PreferenceManager(context: Context, private val name: String) {
     }
 
     enum class PredefinedKey : Key {
-        DataVersion;
+        DataVersion,
+        OnboardMessage;
 
         override val valueString: String
             get() = toString()
