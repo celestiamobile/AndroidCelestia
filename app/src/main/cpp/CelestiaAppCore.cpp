@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 #include <celestia/celestiacore.h>
-#include <celengine/gl.h>
+#include <celengine/glsupport.h>
 #include <celestia/helper.h>
 #include <celutil/util.h>
 #include <celutil/gettext.h>
@@ -195,7 +195,7 @@ private:
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1initGL(JNIEnv *env, jclass clazz) {
-    glInit();
+    celestia::gl::init();
     return JNI_TRUE;
 }
 

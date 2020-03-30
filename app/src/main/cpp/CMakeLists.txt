@@ -236,8 +236,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/galaxy.cpp
         ${CELESTIA_SRC_DIR}/celengine/galaxy.h
         ${CELESTIA_SRC_DIR}/celengine/geometry.h
-        ${CELESTIA_SRC_DIR}/celengine/gl.cpp
-        ${CELESTIA_SRC_DIR}/celengine/gl.h
+        ${CELESTIA_SRC_DIR}/celengine/glsupport.cpp
+        ${CELESTIA_SRC_DIR}/celengine/glsupport.h
         ${CELESTIA_SRC_DIR}/celengine/glmarker.cpp
         ${CELESTIA_SRC_DIR}/celengine/globular.cpp
         ${CELESTIA_SRC_DIR}/celengine/globular.h
