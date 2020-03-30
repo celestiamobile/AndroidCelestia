@@ -3,7 +3,9 @@ package space.celestia.mobilecelestia
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,6 +14,7 @@ import android.view.WindowManager
 import android.widget.DatePicker
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
@@ -68,12 +71,10 @@ class MainActivity : AppCompatActivity(),
     AboutFragment.Listener,
     AppStatusReporter.Listener {
 
-    private val celestiaFolderName = "CelestiaResources"
-    private val celestiaCfgName = "celestia.cfg"
-
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
     private val celestiaParentPath by lazy { this.filesDir.absolutePath }
+    private var addonPath: String? = null
 
     private val core by lazy { CelestiaAppCore.shared() }
     private var currentSelection: CelestiaSelection? = null
@@ -230,7 +231,7 @@ class MainActivity : AppCompatActivity(),
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                AssetUtils.copyFileOrDir(this@MainActivity, celestiaFolderName, celestiaParentPath)
+                AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_DATA_FOLDER_NAME, celestiaParentPath)
                 preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
                 withContext(Dispatchers.Main) {
                     copyAssetSuccess()
@@ -357,6 +358,43 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun copyAssetSuccess() {
+        // Check permission to create folder
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            requestPermissionCompleted()
+            return
+        }
+        // Requesting permission to create add-on folder
+        val permission = arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        ActivityCompat.requestPermissions(this, permission, WRITE_EXTERNAL_STROAGE_REQUEST)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != WRITE_EXTERNAL_STROAGE_REQUEST) { return }
+        // No matter what the result for permission request, proceed
+        requestPermissionCompleted()
+    }
+
+    private fun requestPermissionCompleted() {
+        // Check permission to create folder
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            createAddonFolderCompleted()
+            return
+        }
+
+        // Permission granted, create add-on directory if not exits
+        val folder = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
+        if (folder != null && (folder.exists() || folder.mkdir())) {
+            addonPath = folder.absolutePath
+        }
+        createAddonFolderCompleted()
+    }
+
+    private fun createAddonFolderCompleted() {
         // Load library
         AppStatusReporter.shared().updateStatus("Loading library...")
         GlobalScope.launch(Dispatchers.IO) {
@@ -369,7 +407,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun loadLibrarySuccess() {
         // Add gl fragment
-        val celestiaFragment = CelestiaFragment.newInstance("$celestiaParentPath/$celestiaFolderName", "$celestiaParentPath/$celestiaFolderName/$celestiaCfgName")
+        val celestiaFragment = CelestiaFragment.newInstance("$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME", "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME/$CELESTIA_CFG_NAME", addonPath)
         supportFragmentManager
             .beginTransaction()
             .add(R.id.celestia_fragment_container, celestiaFragment)
@@ -772,6 +810,13 @@ class MainActivity : AppCompatActivity(),
 
     companion object {
         private const val CURRENT_DATA_VERSION = "1"
+        private const val WRITE_EXTERNAL_STROAGE_REQUEST = 1
+
+        private const val CELESTIA_DATA_FOLDER_NAME = "CelestiaResources"
+        private const val CELESTIA_CFG_NAME = "celestia.cfg"
+        private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
+
+
         private const val TAG = "MainActivity"
     }
 }

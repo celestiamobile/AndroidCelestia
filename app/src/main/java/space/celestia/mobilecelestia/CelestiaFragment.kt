@@ -29,6 +29,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     // MARK: Celestia
     private var pathToLoad: String? = null
     private var cfgToLoad: String? = null
+    private var addonToLoad: String? = null
     private val core by lazy { CelestiaAppCore.shared() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +38,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         arguments?.let {
             pathToLoad = it.getString(ARG_DATA_DIR)
             cfgToLoad = it.getString(ARG_CFG_FILE)
+            addonToLoad = it.getString(ARG_ADDON_DIR)
         }
 
         retainInstance = true
@@ -87,12 +89,14 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
     }
 
-    private fun loadCelestia(path: String, cfg: String) {
+    private fun loadCelestia(path: String, cfg: String, addon: String?) {
         CelestiaAppCore.chdir(path)
 
         CelestiaAppCore.setLocaleDirectoryPath("$path/locale", Locale.getDefault().toString())
 
-        if (!core.startSimulation(cfg, null, AppStatusReporter.shared())) {
+        val extraDirs = if (addon != null) arrayOf(addon) else null
+
+        if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
             AppStatusReporter.shared().celestiaLoadResult(false)
             return
         }
@@ -124,7 +128,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         glView?.queueEvent {
             // Celestia initialization have to be called with an OpenGL context
             if (pathToLoad != null && cfgToLoad != null) {
-                loadCelestia(pathToLoad!!, cfgToLoad!!)
+                loadCelestia(pathToLoad!!, cfgToLoad!!, addonToLoad)
             }
         }
     }
@@ -145,14 +149,18 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     companion object {
         private const val ARG_DATA_DIR = "data"
         private const val ARG_CFG_FILE = "cfg"
+        private const val ARG_ADDON_DIR = "addon"
 
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance(data: String, cfg: String) =
+        fun newInstance(data: String, cfg: String, addon: String?) =
             CelestiaFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)
                     putString(ARG_CFG_FILE, cfg)
+                    if (addon != null) {
+                        putString(ARG_ADDON_DIR, addon)
+                    }
                 }
             }
     }
