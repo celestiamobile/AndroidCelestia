@@ -110,7 +110,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                     touchActive = false
                 } else if (touchLocations.size == 1) {
                     // Canceled convert to one finger tap
-                    val loc = touchLocations[0]!!
+                    val loc = touchLocations.map { it.value }[0]
                     Log.d(TAG, "One finger tap action")
                     val point = loc.point
                     queueEvent {
