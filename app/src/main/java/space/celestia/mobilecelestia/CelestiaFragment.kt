@@ -24,7 +24,6 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     private var glViewContainer: FrameLayout? = null
     private var glView: CelestiaView? = null
     private var glViewSize: Size? = null
-    private var isReady: Boolean = false
 
     // MARK: Celestia
     private var pathToLoad: String? = null
@@ -86,6 +85,7 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         glView?.preserveEGLContextOnPause = true
         glView?.setEGLContextClientVersion(2)
         glView?.setRenderer(this)
+        glView?.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
         glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
     }
 
@@ -115,7 +115,6 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         core.start()
 
         glView?.isReady = true
-        isReady = true
 
         Log.d(TAG, "Ready to display")
         AppStatusReporter.shared().celestiaLoadResult(true)
@@ -123,25 +122,25 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
 
     // Render
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
-        glView?.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+        val data = pathToLoad
+        val cfg = cfgToLoad
+        val addon = addonToLoad
 
-        glView?.queueEvent {
-            // Celestia initialization have to be called with an OpenGL context
-            if (pathToLoad != null && cfgToLoad != null) {
-                loadCelestia(pathToLoad!!, cfgToLoad!!, addonToLoad)
-            }
-        }
+        pathToLoad = null
+        cfgToLoad = null
+        addonToLoad = null
+
+        if (data == null || cfg == null) { return }
+        loadCelestia(data, cfg, addon)
     }
 
     override fun onSurfaceChanged(p0: GL10?, p1: Int, p2: Int) {
         glViewSize = Size(p1, p2)
         Log.d(TAG, "Resize to $p1 x $p2")
-        if (!isReady) { return }
         core.resize(p1, p2)
     }
 
     override fun onDrawFrame(p0: GL10?) {
-        if (!isReady) { return }
         core.draw()
         core.tick()
     }
