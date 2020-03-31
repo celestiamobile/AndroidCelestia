@@ -20,6 +20,9 @@ import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.kaopiz.kprogresshud.KProgressHUD
+import com.microsoft.appcenter.AppCenter
+import com.microsoft.appcenter.analytics.Analytics
+import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -84,6 +87,17 @@ class MainActivity : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        AppCenter.start(
+            application, "d1108985-aa25-4fb5-9269-31a70a87d28e",
+            Analytics::class.java, Crashes::class.java
+        )
+
+        Crashes.getMinidumpDirectory().thenAccept { path ->
+            if (path != null) {
+                CrashHandler.setupNativeCrashesListener(path)
+            }
+        }
 
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -816,7 +830,10 @@ class MainActivity : AppCompatActivity(),
         private const val CELESTIA_CFG_NAME = "celestia.cfg"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
 
-
         private const val TAG = "MainActivity"
+
+        init {
+            System.loadLibrary("nativecrashhandler")
+        }
     }
 }
