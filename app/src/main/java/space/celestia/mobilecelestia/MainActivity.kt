@@ -413,6 +413,7 @@ class MainActivity : AppCompatActivity(),
         AppStatusReporter.shared().updateStatus("Loading library...")
         GlobalScope.launch(Dispatchers.IO) {
             System.loadLibrary("celestia")
+            CelestiaAppCore.initGL()
             withContext(Dispatchers.Main) {
                 loadLibrarySuccess()
             }
