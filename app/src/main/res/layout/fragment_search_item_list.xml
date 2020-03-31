@@ -7,11 +7,21 @@
     android:orientation="vertical"
     style="@style/Background">
 
-    <space.celestia.mobilecelestia.search.SearchView
-        android:id="@+id/search"
+    <FrameLayout
+        android:id="@+id/search_container"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        style="@style/SearchView"/>
+        android:layout_height="wrap_content"
+        style="@style/Toolbar">
+
+        <SearchView
+            android:id="@+id/search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:queryBackground="@android:color/transparent"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            />
+
+    </FrameLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"

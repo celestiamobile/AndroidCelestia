@@ -77,10 +77,6 @@
         <item name="backgroundTint">@color/colorEditTextHairLine</item>
     </style>
 
-    <style name="SearchEditText" parent="EditText">
-        <item name="android:background">@null</item>
-    </style>
-
     <style name="Toolbar">
         <item name="android:background">@color/colorBarBackground</item>
         <item name="titleTextColor">@color/colorLabel</item>
@@ -95,10 +91,6 @@
         <item name="android:background">@color/colorBarBackground</item>
         <item name="itemTextColor">@color/bottom_nav_color</item>
         <item name="itemIconTint">@color/bottom_nav_color</item>
-    </style>
-
-    <style name="SearchView">
-        <item name="android:background">@color/colorBarBackground</item>
     </style>
 
     <style name="AppTheme" parent="@style/DefaultTheme">
