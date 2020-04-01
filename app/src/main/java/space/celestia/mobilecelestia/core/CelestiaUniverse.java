@@ -50,9 +50,9 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
 
         if (obj == null) { return null; }
         if (obj instanceof CelestiaStar)
-            return c_getChildrenForStar(obj.pointer);
+            return CelestiaBrowserItem.fromJsonString(c_getChildrenForStar(obj.pointer), this);
         if (obj instanceof CelestiaBody)
-            return c_getChildrenForBody(obj.pointer);
+            return CelestiaBrowserItem.fromJsonString(c_getChildrenForBody(obj.pointer), this);
 
         return null;
     }
@@ -64,7 +64,7 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
     // C functions
     private native long c_getStarCatalog();
     private native long c_getDSOCatalog();
-    private native Map<String, CelestiaBrowserItem> c_getChildrenForStar(long pointer);
-    private native Map<String, CelestiaBrowserItem> c_getChildrenForBody(long pointer);
+    private native String c_getChildrenForStar(long pointer);
+    private native String c_getChildrenForBody(long pointer);
     private native long c_findObject(String name);
 }

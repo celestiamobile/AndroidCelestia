@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 
+#include <json.hpp>
+
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getStarCatalog(JNIEnv *env,
@@ -35,21 +37,37 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1findObject(JNIEnv *e
 
 using namespace std;
 
-static jobject create_browser_item(JNIEnv *env, std::string name, map<string, jobject> mp) {
-    jobject hashmap = env->NewObject(hmClz, hmiMethodID);
-    map<string, jobject>::iterator iter;
+using json = nlohmann::json;
+
+const static std::string BROWSER_ITEM_NAME_KEY = "name";
+const static std::string BROWSER_ITEM_TYPE_KEY = "type";
+const static jint BROWSER_ITEM_TYPE_BODY = 0;
+const static jint BROWSER_ITEM_TYPE_LOCATION = 1;
+const static std::string BROWSER_ITEM_POINTER_KEY = "pointer";
+const static std::string BROWSER_ITEM_CHILDREN_KEY = "children";
+
+static json create_browser_item(std::string name, jint key, map<string, pair<jlong, string>> mp) {
+    json j;
+    j[BROWSER_ITEM_NAME_KEY] = name;
+    json items;
+    map<string, pair<jlong, string>>::iterator iter;
     for(iter = mp.begin(); iter != mp.end(); iter++) {
-        env->CallObjectMethod(hashmap, hmpMethodID, env->NewStringUTF(iter->first.c_str()), iter->second);
+        json item;
+        item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
+        item[BROWSER_ITEM_NAME_KEY] = iter->second.second;
+        item[BROWSER_ITEM_TYPE_KEY] = key;
+        items[iter->first] = item;
     }
-    return env->NewObject(cbiClz, cbii2MethodID, env->NewStringUTF(name.c_str()), hashmap);
+    j[BROWSER_ITEM_CHILDREN_KEY] = items;
+    return j;
 }
 
-static void create_browser_item_and_add(JNIEnv *env, jobject parent, std::string name, map<string, jobject> mp) {
-    env->CallObjectMethod(parent, hmpMethodID, env->NewStringUTF(name.c_str()), create_browser_item(env, name, mp));
+static void create_browser_item_and_add(json &parent, std::string name, int key,  map<string, pair<jlong, string>> mp) {
+    parent[name] = create_browser_item(name, key, mp);
 }
 
 extern "C"
-JNIEXPORT jobject JNICALL
+JNIEXPORT jstring JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(JNIEnv *env,
                                                                                jobject thiz,
                                                                                jlong pointer) {
@@ -59,17 +77,17 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(J
     PlanetarySystem* sys = NULL;
     if (ss) sys = ss->getPlanets();
 
-    jobject hashmap = env->NewObject(hmClz, hmiMethodID);
+    json j;
 
     if (sys) {
         int sysSize = sys->getSystemSize();
-        map<string, jobject> topLevel;
-        map<string, jobject> planets;
-        map<string, jobject> dwarfPlanets;
-        map<string, jobject> minorMoons;
-        map<string, jobject> asteroids;
-        map<string, jobject> comets;
-        map<string, jobject> spacecrafts;
+        map<string, pair<jlong, string>> topLevel;
+        map<string, pair<jlong, string>> planets;
+        map<string, pair<jlong, string>> dwarfPlanets;
+        map<string, pair<jlong, string>> minorMoons;
+        map<string, pair<jlong, string>> asteroids;
+        map<string, pair<jlong, string>> comets;
+        map<string, pair<jlong, string>> spacecrafts;
 
         for (int i = 0; i < sysSize; i++) {
             Body* body = sys->getBody(i);
@@ -77,8 +95,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(J
                 continue;
 
             string name = body->getName(true).c_str();
-            jobject jbody = env->NewObject(cbClz, cbiMethodID, (jlong)body);
-            jobject jitem = env->NewObject(cbiClz, cbii1MethodID, env->NewStringUTF(name.c_str()), jbody, thiz);
+            auto jitem = make_pair((jlong)body, name);
 
             int bodyClass  = body->getClassification();
 
@@ -114,34 +131,39 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(J
             }
         }
 
-        map<string, jobject>::iterator iter;
-        for(iter = topLevel.begin(); iter != topLevel.end(); iter++)
-            env->CallObjectMethod(hashmap, hmpMethodID, env->NewStringUTF(iter->first.c_str()), iter->second);
+        map<string, pair<jlong, string>>::iterator iter;
+        for(iter = topLevel.begin(); iter != topLevel.end(); iter++) {
+            json item;
+            item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
+            item[BROWSER_ITEM_NAME_KEY] = iter->second.second;
+            item[BROWSER_ITEM_TYPE_KEY] = BROWSER_ITEM_TYPE_BODY;
+            j[iter->first] = item;
+        }
 
         if (!planets.empty())
-            create_browser_item_and_add(env, hashmap, _("Planets"), planets);
+            create_browser_item_and_add(j, _("Planets"), BROWSER_ITEM_TYPE_BODY, planets);
 
         if (!dwarfPlanets.empty())
-            create_browser_item_and_add(env, hashmap, _("Dwarf Planets"), dwarfPlanets);
+            create_browser_item_and_add(j, _("Dwarf Planets"), BROWSER_ITEM_TYPE_BODY, dwarfPlanets);
 
         if (!minorMoons.empty())
-            create_browser_item_and_add(env, hashmap, _("Minor Moons"), minorMoons);
+            create_browser_item_and_add(j, _("Minor Moons"), BROWSER_ITEM_TYPE_BODY, minorMoons);
 
         if (!asteroids.empty())
-            create_browser_item_and_add(env, hashmap, _("Asteroids"), asteroids);
+            create_browser_item_and_add(j, _("Asteroids"), BROWSER_ITEM_TYPE_BODY, asteroids);
 
         if (!comets.empty())
-            create_browser_item_and_add(env, hashmap, _("Comets"), comets);
+            create_browser_item_and_add(j, _("Comets"), BROWSER_ITEM_TYPE_BODY, comets);
 
         if (!spacecrafts.empty())
-            create_browser_item_and_add(env, hashmap, _("Spacecrafts"), spacecrafts);
+            create_browser_item_and_add(j, _("Spacecrafts"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
     }
 
-    return hashmap;
+    return env->NewStringUTF(j.dump().c_str());
 }
 
 extern "C"
-JNIEXPORT jobject JNICALL
+JNIEXPORT jstring JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(JNIEnv *env,
                                                                                jobject thiz,
                                                                                jlong pointer) {
@@ -150,16 +172,16 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(J
     Body *b = (Body *)pointer;
     PlanetarySystem* sys = b->getSatellites();
 
-    jobject hashmap = env->NewObject(hmClz, hmiMethodID);
-    map<string, jobject> topLevel;
+    json j;
 
     if (sys)
     {
         int sysSize = sys->getSystemSize();
 
-        map<string, jobject> minorMoons;
-        map<string, jobject> comets;
-        map<string, jobject> spacecrafts;
+        map<string, pair<jlong, string>> topLevel;
+        map<string, pair<jlong, string>> minorMoons;
+        map<string, pair<jlong, string>> comets;
+        map<string, pair<jlong, string>> spacecrafts;
 
         int i;
         for (i = 0; i < sysSize; i++)
@@ -169,8 +191,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(J
                 continue;
 
             string name = body->getName(true).c_str();
-            jobject jbody = env->NewObject(cbClz, cbiMethodID, (jlong)body);
-            jobject jitem = env->NewObject(cbiClz, cbii1MethodID, env->NewStringUTF(name.c_str()), jbody, thiz);
+            auto jitem = make_pair((jlong)body, name);
 
             int bodyClass  = body->getClassification();
 
@@ -199,36 +220,39 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(J
             }
         }
 
+        map<string, pair<jlong, string>>::iterator iter;
+        for(iter = topLevel.begin(); iter != topLevel.end(); iter++) {
+            json item;
+            item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
+            item[BROWSER_ITEM_NAME_KEY] = iter->second.second;
+            item[BROWSER_ITEM_TYPE_KEY] = BROWSER_ITEM_TYPE_BODY;
+            j[iter->first] = item;
+        }
+
         if (!minorMoons.empty())
-            create_browser_item_and_add(env, hashmap, _("Minor Moons"), minorMoons);
+            create_browser_item_and_add(j, _("Minor Moons"), BROWSER_ITEM_TYPE_BODY, minorMoons);
 
         if (!comets.empty())
-            create_browser_item_and_add(env, hashmap, _("Comets"), comets);
+            create_browser_item_and_add(j, _("Comets"), BROWSER_ITEM_TYPE_BODY, comets);
 
         if (!spacecrafts.empty())
-            create_browser_item_and_add(env, hashmap, _("Spacecrafts"), spacecrafts);
+            create_browser_item_and_add(j, _("Spacecrafts"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
     }
-
-    map<string, jobject>::iterator iter;
-    for(iter = topLevel.begin(); iter != topLevel.end(); iter++)
-        env->CallObjectMethod(hashmap, hmpMethodID, env->NewStringUTF(iter->first.c_str()), iter->second);
 
     vector<Location *>* locations = b->getLocations();
     if (locations != nullptr)
     {
-        map<string, jobject> locationsMap;
+        map<string, pair<jlong, string>> locationsMap;
 
         vector<Location *>::iterator iter;
         for (iter = locations->begin(); iter != locations->end(); iter++)
         {
             string name = (*iter)->getName(true).c_str();
-            jobject jlocation = env->NewObject(clClz, cliMethodID, (jlong)*iter);
-            jobject jitem = env->NewObject(cbiClz, cbii1MethodID, env->NewStringUTF(name.c_str()), jlocation, thiz);
-            locationsMap[name] = jitem;
+            locationsMap[name] = make_pair((jlong)*iter, name);
         }
         if (!locationsMap.empty())
-            create_browser_item_and_add(env, hashmap, _("Locations"), locationsMap);
+            create_browser_item_and_add(j, _("Spacecrafts"), BROWSER_ITEM_TYPE_LOCATION, locationsMap);
     }
 
-    return hashmap;
+    return env->NewStringUTF(j.dump().c_str());
 }

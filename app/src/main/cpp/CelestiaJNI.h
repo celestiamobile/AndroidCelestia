@@ -23,10 +23,6 @@ extern jfieldID cdcPtrFieldID;
 extern jclass csbClz;
 extern jfieldID csbPtrFieldID;
 
-extern jclass cbiClz;
-extern jmethodID cbii1MethodID;
-extern jmethodID cbii2MethodID;
-
 extern jclass cbClz;
 extern jmethodID cbiMethodID;
 extern jclass clClz;

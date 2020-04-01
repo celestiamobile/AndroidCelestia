@@ -29,10 +29,6 @@ jfieldID cdcPtrFieldID = nullptr;
 jclass csbClz = nullptr;
 jfieldID csbPtrFieldID = nullptr;
 
-jclass cbiClz = nullptr;
-jmethodID cbii1MethodID = nullptr;
-jmethodID cbii2MethodID = nullptr;
-
 jclass cbClz = nullptr;
 jmethodID cbiMethodID = nullptr;
 jclass clClz = nullptr;
@@ -123,11 +119,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     jclass csb = env->FindClass("space/celestia/mobilecelestia/core/CelestiaStarBrowser");
     csbClz = (jclass)env->NewGlobalRef(csb);
     csbPtrFieldID = env->GetFieldID(csbClz, "pointer", "J");
-
-    jclass cbi = env->FindClass("space/celestia/mobilecelestia/core/CelestiaBrowserItem");
-    cbiClz = (jclass)env->NewGlobalRef(cbi);
-    cbii1MethodID = env->GetMethodID(cbiClz, "<init>", "(Ljava/lang/String;Lspace/celestia/mobilecelestia/core/CelestiaAstroObject;Lspace/celestia/mobilecelestia/core/CelestiaBrowserItem$ChildrenProvider;)V");
-    cbii2MethodID = env->GetMethodID(cbiClz, "<init>", "(Ljava/lang/String;Ljava/util/Map;)V");
 
     jclass cscript = env->FindClass("space/celestia/mobilecelestia/core/CelestiaScript");
     cscriptClz = (jclass)env->NewGlobalRef(cscript);

@@ -425,6 +425,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/jpeg
         ${THIRD_PARTY_INCLUDE_DIR}/libpng
         ${THIRD_PARTY_INCLUDE_DIR}/gl4es
+        ${THIRD_PARTY_INCLUDE_DIR}/json
 )
 
 add_library(cspice STATIC IMPORTED)
