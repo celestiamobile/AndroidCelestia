@@ -33,14 +33,19 @@ extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1completionForText(JNIEnv *env,
                                                                                 jobject thiz,
-                                                                                jstring text) {
+                                                                                jstring text,
+                                                                                jint limit) {
     Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
     const char *str = env->GetStringUTFChars(text, nullptr);
     std::vector<std::string> results = sim->getObjectCompletion(str);
     env->ReleaseStringUTFChars(text, str);
     jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)results.size());
+    int count = 0;
     for (auto result : results) {
+        if (count > limit)
+            break;
         env->CallBooleanMethod(arrayObject, alaMethodID, env->NewStringUTF(result.c_str()));
+        count += 1;
     }
     return arrayObject;
 }

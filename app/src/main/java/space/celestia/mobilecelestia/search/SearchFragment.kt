@@ -36,7 +36,7 @@ class SearchFragment : Fragment() {
             .map {
                 if (it.isEmpty()) { return@map listOf<String>() }
                 val core = CelestiaAppCore.shared()
-                return@map core.simulation.completionForText(it)
+                return@map core.simulation.completionForText(it, SEARCH_RESULT_LIMIT)
             }.distinctUntilChanged()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -72,6 +72,8 @@ class SearchFragment : Fragment() {
     }
 
     companion object {
+        const val SEARCH_RESULT_LIMIT = 20
+
         @JvmStatic
         fun newInstance() = SearchFragment()
     }
