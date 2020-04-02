@@ -251,7 +251,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(J
             locationsMap[name] = make_pair((jlong)*iter, name);
         }
         if (!locationsMap.empty())
-            create_browser_item_and_add(j, _("Spacecrafts"), BROWSER_ITEM_TYPE_LOCATION, locationsMap);
+            create_browser_item_and_add(j, _("Locations"), BROWSER_ITEM_TYPE_LOCATION, locationsMap);
     }
 
     return env->NewStringUTF(j.dump().c_str());
