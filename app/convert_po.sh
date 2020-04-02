@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export PATH="/usr/local/opt/gettext/bin:$PATH"
+
 cd `dirname $0`;
 
 DIDBUILD=0
@@ -8,8 +10,9 @@ CELESTIA_ROOT=`pwd`/src/main/assets/CelestiaResources
 CELESTIA_REPO_ROOT=`pwd`/../../Celestia
 
 LOCALE_ROOT=$CELESTIA_ROOT/locale
-PROJECT_TEMP_DIR=$1
+PROJECT_TEMP_DIR=`pwd`/temp
 
+mkdir -p $PROJECT_TEMP_DIR
 mkdir -p $LOCALE_ROOT
 
 POT=$CELESTIA_REPO_ROOT/po/celestia.pot
@@ -40,3 +43,4 @@ for po in $CELESTIA_REPO_ROOT/po2/*.po; do
     fi
 done
 
+rm -rf $PROJECT_TEMP_DIR

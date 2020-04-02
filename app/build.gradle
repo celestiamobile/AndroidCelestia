@@ -34,7 +34,6 @@ android {
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
-            version "3.10.2"
         }
     }
 
@@ -49,10 +48,11 @@ android {
         println "Converting PO"
         workingDir projectDir
         executable = '/bin/sh'
-        args = ["convert_po.sh", temporaryDir]
+        args = ["convert_po.sh"]
     }
 
-    convertPO.dependsOn copyGeneralData
+    convertPO.mustRunAfter copyGeneralData
+    preBuild.dependsOn copyGeneralData
     preBuild.dependsOn convertPO
 
     compileOptions {
