@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
+import space.celestia.mobilecelestia.browser.createAllBrowserItems
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import java.util.*
@@ -92,25 +93,32 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     private fun loadCelestia(path: String, cfg: String, addon: String?) {
         CelestiaAppCore.chdir(path)
 
+        // Set up locale
         CelestiaAppCore.setLocaleDirectoryPath("$path/locale", Locale.getDefault().toString())
 
         val extraDirs = if (addon != null) arrayOf(addon) else null
 
+        // Reading config, data
         if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
             AppStatusReporter.shared().celestiaLoadResult(false)
             return
         }
 
+        // Prepare renderer
         if (!core.startRenderer()) {
             AppStatusReporter.shared().celestiaLoadResult(false)
             return
         }
+
+        // Prepare for browser items
+        core.simulation.createAllBrowserItems()
 
         glViewSize?.let {
             core.resize(it.width, it.height)
             glViewSize = null
         }
 
+        // Display
         core.tick()
         core.start()
 

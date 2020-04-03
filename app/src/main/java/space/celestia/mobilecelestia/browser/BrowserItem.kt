@@ -8,6 +8,12 @@ private var solRoot: CelestiaBrowserItem? = null
 private var starRoot: CelestiaBrowserItem? = null
 private var dsoRoot: CelestiaBrowserItem? = null
 
+fun CelestiaSimulation.createAllBrowserItems() {
+    solRoot = universe.createSolBrowserRoot()
+    starRoot = createStarBrowserRoot()
+    dsoRoot = universe.createDSOBrowserRoot()
+}
+
 private fun CelestiaUniverse.createSolBrowserRoot(): CelestiaBrowserItem {
     val sol = findObject("Sol").star!!
     return CelestiaBrowserItem(starCatalog.getStarName(sol), sol, this)
