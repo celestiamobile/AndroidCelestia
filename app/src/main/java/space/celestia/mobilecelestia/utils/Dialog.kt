@@ -42,3 +42,10 @@ fun Activity.showAlert(title: String, handler: (() -> Unit)? = null) {
     }
     builder.show()
 }
+
+fun Activity.showError(error: Throwable) {
+    var message = error.message
+    if (message == null)
+        message = "Unknown error"
+    showAlert(message)
+}

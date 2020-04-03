@@ -1,11 +1,10 @@
 package space.celestia.mobilecelestia
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -14,7 +13,6 @@ import android.view.WindowManager
 import android.widget.DatePicker
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
@@ -23,10 +21,10 @@ import com.kaopiz.kprogresshud.KProgressHUD
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.tbruyelle.rxpermissions2.RxPermissions
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 import space.celestia.mobilecelestia.browser.BrowserCommonFragment
 import space.celestia.mobilecelestia.browser.BrowserFragment
@@ -53,6 +51,7 @@ import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.IOException
+import java.lang.RuntimeException
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -85,6 +84,7 @@ class MainActivity : AppCompatActivity(),
     private var readyForUriInput = false
     private var scriptOrURLPath: String? = null
 
+    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -120,13 +120,19 @@ class MainActivity : AppCompatActivity(),
             showToolbar()
         }
 
-        // Check if data is already copied
-        if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
-            // When version name does not match, copy the asset again
-            copyAssets()
-        } else {
-            copyAssetSuccess()
-        }
+        createCopyAssetObservable()
+            .concatWith(createPermissionObservable())
+            .concatWith(createLoadLibraryObservable())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe ({ status ->
+                AppStatusReporter.shared().updateStatus(status)
+            }, { error ->
+                Log.e(TAG, "Initialization failed, $error")
+                showError(error)
+            }, {
+                loadLibrarySuccess()
+            })
 
         handleIntent(intent)
     }
@@ -152,12 +158,43 @@ class MainActivity : AppCompatActivity(),
 
             // open url/script if present
             readyForUriInput = true
-            runScriptOrOpenURLIfNeededOnMainThread()
+            runScriptOrOpenURLIfNeeded()
         }
     }
 
     override fun celestiaLoadingFailed() {
         AppStatusReporter.shared().updateStatus("Loading Celestia failed...")
+    }
+
+    private fun createCopyAssetObservable(): Observable<String> {
+        return Observable.create {
+            it.onNext("Copying data...")
+            if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
+                // When version name does not match, copy the asset again
+                copyAssets()
+            }
+            it.onComplete()
+        }
+    }
+
+    private fun createPermissionObservable(): Observable<String> {
+        return RxPermissions(this).request(android.Manifest.permission.WRITE_EXTERNAL_STORAGE).compose {
+            it.buffer(1).flatMap { result ->
+                if (result.size >= 1 && result.first()) {
+                    createAddonFolder()
+                }
+                Observable.just("Requesting permission finished")
+            }
+        }
+    }
+
+    private fun createLoadLibraryObservable(): Observable<String> {
+        return Observable.create {
+            it.onNext("Loading library...")
+            System.loadLibrary("celestia")
+            CelestiaAppCore.initGL()
+            it.onComplete()
+        }
     }
 
     private fun showWelcomeIfNeeded() {
@@ -172,56 +209,67 @@ class MainActivity : AppCompatActivity(),
         handleIntent(intent)
     }
 
+    @SuppressLint("CheckResult")
     private fun handleIntent(intent: Intent?) {
-        val uri = intent?.data ?: return
+        val data = intent?.data ?: return
 
-        if (uri.scheme == "content") {
-            GlobalScope.launch(Dispatchers.IO) {
-                handleContentURI(uri)
+        val hud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).show()
+        Observable.just(data)
+            .map { uri ->
+                if (uri.scheme == "content") {
+                    return@map Pair(uri, true)
+                } else if (uri.scheme == "cel") {
+                    return@map Pair(uri, false)
+                }
+                throw RuntimeException("Unknown URI scheme ${uri.scheme}")
             }
-        } else if (uri.scheme == "cel") {
-            handleCelURI(uri)
-        }
-    }
+            .map { ob ->
+                if (ob.second) {
+                    // Content scheme, copy the resource to a temporary directory
 
-    private fun handleContentURI(uri: Uri) {
-        val itemName = uri.lastPathSegment ?: return
+                    val itemName = ob.first.lastPathSegment
+                        ?: throw RuntimeException("A filename needed to be present for ${ob.first.path}")
 
-        // check file type
-        if (!itemName.endsWith(".cel") && !itemName.endsWith(".celx")) {
-            runOnUiThread {
-                showAlert(CelestiaString("Wrong file type", ""))
+                    // Check file type
+                    if (!itemName.endsWith(".cel") && !itemName.endsWith(".celx")) {
+                        throw RuntimeException("Celestia does not know how to open $itemName")
+                    }
+
+                    // Copy to temporary directory
+                    val path = "${cacheDir.absolutePath}/$itemName"
+                    if (!FileUtils.copyUri(this, ob.first, path)) {
+                        throw RuntimeException("Failed to open $itemName")
+                    }
+                    return@map Pair(path, ob.second)
+                }
+                return@map Pair(ob.toString(), ob.second)
             }
-            return
-        }
-
-        val path = "${cacheDir.absolutePath}/$itemName"
-        if (!FileUtils.copyUri(this, uri, path)) { return }
-
-        requestRunScript(path)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ result ->
+                if (result.second) {
+                    requestRunScript(result.first)
+                } else {
+                    requestOpenURL(result.first)
+                }
+            }, { error ->
+                Log.e(TAG, "Handle URI failed, $error")
+                showError(error)
+            }, {
+                hud.dismiss()
+            })
     }
 
     private fun requestRunScript(path: String) {
         scriptOrURLPath = path
         if (readyForUriInput)
-            runScriptOrOpenURLIfNeededOnMainThread()
-    }
-
-    private fun handleCelURI(uri: Uri) {
-        val url = uri.toString()
-        requestOpenURL(url)
+            runScriptOrOpenURLIfNeeded()
     }
 
     private fun requestOpenURL(url: String) {
         scriptOrURLPath = url
         if (readyForUriInput)
-            runScriptOrOpenURLIfNeededOnMainThread()
-    }
-
-    private fun runScriptOrOpenURLIfNeededOnMainThread() {
-        runOnUiThread {
             runScriptOrOpenURLIfNeeded()
-        }
     }
 
     private fun runScriptOrOpenURLIfNeeded() {
@@ -240,21 +288,10 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    @Throws(IOException::class)
     private fun copyAssets() {
-        AppStatusReporter.shared().updateStatus("Copying data...")
-
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_DATA_FOLDER_NAME, celestiaParentPath)
-                preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
-                withContext(Dispatchers.Main) {
-                    copyAssetSuccess()
-                }
-            } catch (exp: IOException) {
-                Log.e(TAG, "Copy data failed, ${exp.localizedMessage}")
-                AppStatusReporter.shared().updateStatus("Copying data failed...")
-            }
-        }
+        AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_DATA_FOLDER_NAME, celestiaParentPath)
+        preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
     }
 
     private fun readSettings() {
@@ -367,57 +404,17 @@ class MainActivity : AppCompatActivity(),
                 map[key] = json[key]
             }
             return map
-        } catch (exp: Exception) {}
+        } catch (ignored: Throwable) {}
         return mapOf()
     }
 
-    private fun copyAssetSuccess() {
-        // Check permission to create folder
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            requestPermissionCompleted()
-            return
-        }
-        // Requesting permission to create add-on folder
-        val permission = arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        ActivityCompat.requestPermissions(this, permission, WRITE_EXTERNAL_STROAGE_REQUEST)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode != WRITE_EXTERNAL_STROAGE_REQUEST) { return }
-        // No matter what the result for permission request, proceed
-        requestPermissionCompleted()
-    }
-
-    private fun requestPermissionCompleted() {
-        // Check permission to create folder
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            createAddonFolderCompleted()
-            return
-        }
-
-        // Permission granted, create add-on directory if not exits
-        val folder = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
-        if (folder != null && (folder.exists() || folder.mkdir())) {
-            addonPath = folder.absolutePath
-        }
-        createAddonFolderCompleted()
-    }
-
-    private fun createAddonFolderCompleted() {
-        // Load library
-        AppStatusReporter.shared().updateStatus("Loading library...")
-        GlobalScope.launch(Dispatchers.IO) {
-            System.loadLibrary("celestia")
-            CelestiaAppCore.initGL()
-            withContext(Dispatchers.Main) {
-                loadLibrarySuccess()
+    private fun createAddonFolder() {
+        try {
+            val folder = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
+            if (folder != null && (folder.exists() || folder.mkdir())) {
+                addonPath = folder.absolutePath
             }
-        }
+        } catch (ignored: Throwable) {}
     }
 
     private fun loadLibrarySuccess() {
@@ -580,7 +577,7 @@ class MainActivity : AppCompatActivity(),
             val str = FileUtils.readFileToText("${filesDir.absolutePath}/favorites.json")
             val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
             favorites = decoded
-        } catch (exp: Exception) { }
+        } catch (ignored: Throwable) { }
         updateCurrentBookmarks(favorites)
     }
 
@@ -590,7 +587,7 @@ class MainActivity : AppCompatActivity(),
             val myType = object : TypeToken<List<BookmarkNode>>() {}.type
             val str = Gson().toJson(favorites, myType)
             FileUtils.writeTextToFile(str, "${filesDir.absolutePath}/favorites.json")
-        } catch (exp: Exception) { }
+        } catch (ignored: Throwable) { }
     }
 
     override fun onFavoriteItemSelected(item: FavoriteBaseItem) {
@@ -825,7 +822,6 @@ class MainActivity : AppCompatActivity(),
 
     companion object {
         private const val CURRENT_DATA_VERSION = "1"
-        private const val WRITE_EXTERNAL_STROAGE_REQUEST = 1
 
         private const val CELESTIA_DATA_FOLDER_NAME = "CelestiaResources"
         private const val CELESTIA_CFG_NAME = "celestia.cfg"

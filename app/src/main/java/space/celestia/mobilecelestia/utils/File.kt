@@ -22,6 +22,7 @@ object FileUtils {
         file.bufferedWriter().use { it.write(text) }
     }
 
+    @Throws(IOException::class)
     fun copyUri(context: Context, uri: Uri, path: String): Boolean {
         val input = context.contentResolver.openInputStream(uri) ?: return false
         val file = File(path)
