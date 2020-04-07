@@ -10,3 +10,9 @@ git clone https://github.com/eyvallah/Celestia
 
 # Install gettext, needed for translation
 brew install gettext
+
+# Install appcenter cli to upload symbols
+brew install node
+brew unlink node@6
+brew link --overwrite node
+npm install -g appcenter-cli
