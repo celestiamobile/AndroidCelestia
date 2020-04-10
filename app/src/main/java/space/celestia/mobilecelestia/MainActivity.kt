@@ -120,6 +120,13 @@ class MainActivity : AppCompatActivity(),
             showToolbar()
         }
 
+        if (!firstInstance) {
+            // TODO: handle recreation of Main Activity
+            AppStatusReporter.shared().updateStatus("Please restart Celestia")
+            return
+        }
+
+        firstInstance = false
         createCopyAssetObservable()
             .concatWith(createPermissionObservable())
             .concatWith(createLoadLibraryObservable())
@@ -828,6 +835,8 @@ class MainActivity : AppCompatActivity(),
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
 
         private const val TAG = "MainActivity"
+
+        private var firstInstance = true
 
         init {
             System.loadLibrary("nativecrashhandler")
