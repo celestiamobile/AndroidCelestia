@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity(),
     private val core by lazy { CelestiaAppCore.shared() }
     private var currentSelection: CelestiaSelection? = null
 
-    private var readyForUriInput = false
+    private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
 
     @SuppressLint("CheckResult")
@@ -164,7 +164,7 @@ class MainActivity : AppCompatActivity(),
             showWelcomeIfNeeded()
 
             // open url/script if present
-            readyForUriInput = true
+            readyForInteraction = true
             runScriptOrOpenURLIfNeeded()
         }
     }
@@ -269,13 +269,13 @@ class MainActivity : AppCompatActivity(),
 
     private fun requestRunScript(path: String) {
         scriptOrURLPath = path
-        if (readyForUriInput)
+        if (readyForInteraction)
             runScriptOrOpenURLIfNeeded()
     }
 
     private fun requestOpenURL(url: String) {
         scriptOrURLPath = url
-        if (readyForUriInput)
+        if (readyForInteraction)
             runScriptOrOpenURLIfNeeded()
     }
 

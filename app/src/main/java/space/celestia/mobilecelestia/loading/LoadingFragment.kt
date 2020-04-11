@@ -52,7 +52,7 @@ class LoadingFragment : Fragment(), AppStatusReporter.Listener {
     companion object {
         private const val TAG = "LoadingFragment"
 
-        public fun newInstance() = LoadingFragment()
+        fun newInstance() = LoadingFragment()
     }
 
 }
