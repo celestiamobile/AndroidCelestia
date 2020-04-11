@@ -9,8 +9,19 @@ CELESTIA_REPO_ROOT=`pwd`/../../Celestia
 
 mkdir -p $CELESTIA_ROOT
 
-for directory in 'data' 'extras' 'extras-standard' 'fonts' 'images' 'locale' 'models' 'scripts' 'shaders' 'textures';do
+CELESTIA_CONTENT_REPO_ROOT=$CELESTIA_REPO_ROOT/content
+
+for directory in 'fonts' 'images' 'locale' 'scripts' 'shaders';do
     f=$CELESTIA_REPO_ROOT/$directory
+    if [ $f -nt $CELESTIA_ROOT/$directory ];then
+        echo "rsync -rv --quiet --exclude=CMakeLists.txt $f $CELESTIA_ROOT"
+        rsync -rv --quiet --exclude=CMakeLists.txt $f $CELESTIA_ROOT
+        DIDCOPY=1
+    fi
+done
+
+for directory in 'data' 'extras' 'extras-standard' 'models' 'textures';do
+    f=$CELESTIA_CONTENT_REPO_ROOT/$directory
     if [ $f -nt $CELESTIA_ROOT/$directory ];then
         echo "rsync -rv --quiet --exclude=CMakeLists.txt $f $CELESTIA_ROOT"
         rsync -rv --quiet --exclude=CMakeLists.txt $f $CELESTIA_ROOT
@@ -25,4 +36,3 @@ for file in "celestia.cfg" "controls.txt" "demo.cel" "guide.cel" "start.cel" "CO
         cp $f $CELESTIA_ROOT/$file
     fi
 done
-
