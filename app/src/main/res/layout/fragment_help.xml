@@ -18,9 +18,9 @@
     style="@style/Background">
 
     <TextView
+        android:id="@+id/welcome_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/title_welcome_to_celestia"
         android:layout_margin="16dp"
         style="@style/LargeTitleLabel"/>
 

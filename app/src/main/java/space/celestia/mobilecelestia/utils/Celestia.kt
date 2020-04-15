@@ -22,14 +22,12 @@ val CelestiaAppCore.currentBookmark: BookmarkNode?
         return BookmarkNode(name, currentURL, null)
     }
 
-private fun Double.format(digits: Int) = "%.${digits}f".format(this)
-
 private val Float.radiusString: String
     get() {
         if (this < 1) {
-            return "${(this * 1000).toInt()} m"
+            return CelestiaString("%d m", "").format((this * 1000).toInt())
         }
-        return "${this.toInt()} km"
+        return CelestiaString("%d m", "").format(this.toInt())
     }
 
 public fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): String {
@@ -54,9 +52,9 @@ private fun CelestiaAppCore.getOverviewForBody(body: CelestiaBody): String {
     var str = ""
 
     str += if (body.isEllipsoid) {
-        "Equatorial radius: ${body.radius.radiusString}"
+        CelestiaString("Equatorial radius: %s", "").format(body.radius.radiusString)
     } else {
-        "Size: ${body.radius.radiusString}"
+        CelestiaString("Size: %s", "").format(body.radius.radiusString)
     }
 
     val time = simulation.time
@@ -76,31 +74,31 @@ private fun CelestiaAppCore.getOverviewForBody(body: CelestiaBody): String {
             }
         }
 
-        val unit: String
+        val unitTemplate: String
         if (rotPeriod < 2.0) {
             rotPeriod *= 24
             dayLength *= 24
 
-            unit = "hours"
+            unitTemplate = CelestiaString("%.2f hours", "")
         } else {
-            unit = "days"
+            unitTemplate = CelestiaString("%.2f days", "")
         }
         str += "\n"
-        str += "Sidereal rotation period: ${rotPeriod.format(2)} $unit"
+        str += CelestiaString("Sidereal rotation period: %s", "").format(rotPeriod, CelestiaString(unitTemplate, "").format(rotPeriod))
 
         if (dayLength != 0.0) {
             str += "\n"
-            str += "Length of day: ${dayLength.format(2)} $unit"
+            str += CelestiaString("Length of day: %s", "").format(rotPeriod, CelestiaString(unitTemplate, "").format(dayLength))
         }
 
         if (body.hasRings()) {
             str += "\n"
-            str += "Has rings"
+            str += CelestiaString("Has rings", "")
         }
 
         if (body.hasAtmosphere()) {
             str += "\n"
-            str += "Has atmosphere"
+            str += CelestiaString("Has atmosphere", "")
         }
     }
     return str
@@ -115,11 +113,11 @@ private fun CelestiaAppCore.getOverviewForStar(star: CelestiaStar): String {
     val sph = CelestiaUtils.rectToSpherical(eqPos)
 
     val hms = CelestiaDMS(sph.x)
-    str += "RA: ${hms.hours}h ${hms.minutes}m ${hms.seconds.format(2)}s"
+    str += CelestiaString("RA: %dh %dm %.2fs", "").format(hms.hours, hms.minutes, hms.seconds)
 
     str += "\n"
     val dms = CelestiaDMS(sph.y)
-    str += "DEC: ${dms.hours}° ${dms.minutes}′ ${dms.seconds.format(2)}″"
+    str += CelestiaString("DEC: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
 
     return str
 }
@@ -132,22 +130,22 @@ private fun CelestiaAppCore.getOverviewForDSO(dso: CelestiaDSO): String {
     var sph = CelestiaUtils.rectToSpherical(eqPos)
 
     val hms = CelestiaDMS(sph.x)
-    str += "RA: ${hms.hours}h ${hms.minutes}m ${hms.seconds.format(2)}s"
+    str += CelestiaString("RA: %dh %dm %.2fs", "").format(hms.hours, hms.minutes, hms.seconds)
 
     str += "\n"
     var dms = CelestiaDMS(sph.y)
-    str += "DEC: ${dms.hours}° ${dms.minutes}′ ${dms.seconds.format(2)}″"
+    str += CelestiaString("DEC: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
 
     val galPos = CelestiaUtils.equatorialToGalactic(eqPos)
     sph = CelestiaUtils.rectToSpherical(galPos)
 
     str += "\n"
     dms = CelestiaDMS(sph.x)
-    str += "L: ${dms.hours}° ${dms.minutes}′ ${dms.seconds.format(2)}″"
+    str += CelestiaString("L: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
 
     str += "\n"
     dms = CelestiaDMS(sph.y)
-    str += "B: ${dms.hours}° ${dms.minutes}′ ${dms.seconds.format(2)}″"
+    str += CelestiaString("B: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
 
     return str
 }
