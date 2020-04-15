@@ -38,6 +38,10 @@
         <item name="android:background">@color/colorSecondaryBackground</item>
     </style>
 
+    <style name="ControlViewBackground">
+        <item name="android:background">@drawable/control_view_background</item>
+    </style>
+
     <style name="ButtonBackground">
         <item name="android:background">@drawable/button_background_selector</item>
     </style>
@@ -49,11 +53,6 @@
     <style name="Separator">
         <item name="android:layout_marginStart">32dp</item>
         <item name="android:background">@color/colorSeparator</item>
-    </style>
-
-    <style name="ImageButton">
-        <item name="android:background">@android:color/transparent</item>
-        <item name="android:tint">@drawable/icon_tint_selector</item>
     </style>
 
     <style name="Image">

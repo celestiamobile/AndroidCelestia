@@ -19,7 +19,7 @@ import android.view.View.OnTouchListener
 import android.widget.LinearLayout
 import space.celestia.mobilecelestia.R
 
-class SteppeView(context: Context, attrs: AttributeSet): LinearLayout(context, attrs) {
+class StepperView(context: Context, attrs: AttributeSet): LinearLayout(context, attrs) {
     private val leftView by lazy { findViewById<View>(R.id.stepper_left) }
     private val rightView by lazy { findViewById<View>(R.id.stepper_right) }
 
@@ -45,7 +45,7 @@ class SteppeView(context: Context, attrs: AttributeSet): LinearLayout(context, a
     }
 
     interface Listener {
-        fun stepperTouchDown(view: SteppeView, left: Boolean)
-        fun stepperTouchUp(view: SteppeView, left: Boolean)
+        fun stepperTouchDown(view: StepperView, left: Boolean)
+        fun stepperTouchUp(view: StepperView, left: Boolean)
     }
 }

@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia
+package space.celestia.mobilecelestia.celestia
 
 import android.app.Activity
 import android.content.Context
@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.AppStatusReporter
@@ -29,7 +30,7 @@ import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
+class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.Listener {
     private var activity: Activity? = null
 
     // MARK: GL View
@@ -42,6 +43,12 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     private var cfgToLoad: String? = null
     private var addonToLoad: String? = null
     private val core by lazy { CelestiaAppCore.shared() }
+
+    interface Listener {
+        fun celestiaFragmentDidRequestActionMenu()
+    }
+
+    var listener: Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +69,8 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
         glViewContainer = view.findViewById(R.id.celestia_gl_view)
         setupGLView()
+
+        view.findViewById<CelestiaControlView>(R.id.control_view).listener = this
         return view
     }
 
@@ -80,12 +89,18 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
+        if (context is Listener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement CelestiaFragment.Listener")
+        }
         activity = context as? Activity
     }
 
     override fun onDetach() {
         super.onDetach()
 
+        listener = null
         activity = null
     }
 
@@ -162,6 +177,33 @@ class CelestiaFragment : Fragment(), GLSurfaceView.Renderer {
     override fun onDrawFrame(p0: GL10?) {
         core.draw()
         core.tick()
+    }
+
+    // Actions
+    override fun didTapAction(action: CelestiaControlAction) {
+        if (action == CelestiaControlAction.ShowMenu) {
+            listener?.celestiaFragmentDidRequestActionMenu()
+        }
+    }
+
+    override fun didToggleToMode(action: CelestiaControlAction) {
+        when (action) {
+            CelestiaControlAction.ToggleModeToRotate -> { glView?.setDragMode(CelestiaView.DragMode.Rotate) }
+            CelestiaControlAction.ToggleModeToMove -> { glView?.setDragMode(CelestiaView.DragMode.Move) }
+            else -> {}
+        }
+    }
+
+    override fun didStartPressingAction(action: CelestiaControlAction) {
+        when (action) {
+            CelestiaControlAction.ZoomIn -> { glView?.zoomMode = CelestiaView.ZoomMode.In }
+            CelestiaControlAction.ZoomOut -> { glView?.zoomMode = CelestiaView.ZoomMode.Out }
+            else -> {}
+        }
+    }
+
+    override fun didEndPressingAction(action: CelestiaControlAction) {
+        glView?.zoomMode = null
     }
 
     companion object {

@@ -40,6 +40,7 @@ import org.json.JSONObject
 import space.celestia.mobilecelestia.browser.BrowserCommonFragment
 import space.celestia.mobilecelestia.browser.BrowserFragment
 import space.celestia.mobilecelestia.browser.BrowserItem
+import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.control.BottomControlFragment
 import space.celestia.mobilecelestia.control.CameraControlAction
 import space.celestia.mobilecelestia.control.CameraControlFragment
@@ -82,7 +83,8 @@ class MainActivity : AppCompatActivity(),
     SettingsCurrentTimeFragment.Listener,
     DatePickerDialog.OnDateSetListener,
     AboutFragment.Listener,
-    AppStatusReporter.Listener {
+    AppStatusReporter.Listener,
+    CelestiaFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -125,10 +127,6 @@ class MainActivity : AppCompatActivity(),
         findViewById<View>(R.id.overlay_container).setOnTouchListener { _, _ ->
             hideOverlay()
             return@setOnTouchListener true
-        }
-
-        findViewById<ImageButton>(R.id.action_menu_button).setOnClickListener {
-            showToolbar()
         }
 
         if (!firstInstance) {
@@ -710,6 +708,10 @@ class MainActivity : AppCompatActivity(),
                 startActivity(intent)
             }
         }
+    }
+
+    override fun celestiaFragmentDidRequestActionMenu() {
+        showToolbar()
     }
 
     private fun reloadSettings() {

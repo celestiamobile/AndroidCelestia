@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
-  ~ icon_tint_selector.xml
+  ~ control_drag_mode_combined.xml
   ~
   ~ Copyright (C) 2001-2020, the Celestia Development Team
   ~
@@ -12,10 +11,10 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-<item android:state_pressed="true"
-    android:color="@color/colorImageIconSelected"/> <!-- pressed state -->
-<item android:state_focused="true"
-    android:color="@color/colorImageIconSelected"/> <!-- focused state -->
-<item android:color="@color/colorImageIconNormal"/> <!-- default state -->
-
+    <!-- NOTE: order is important (the first matching state(s) is what is rendered) -->
+    <item
+        android:state_selected="true"
+        android:drawable="@drawable/control_rotate_on" />
+    <item
+        android:drawable="@drawable/control_rotate_off" />
 </selector>

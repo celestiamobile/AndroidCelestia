@@ -48,15 +48,15 @@ private val controlSections by lazy {
 
 class CameraControlItemRecyclerViewAdapter(
     private val listener: CameraControlFragment.Listener?
-) : SeparatorHeaderRecyclerViewAdapter(controlSections), SteppeView.Listener {
+) : SeparatorHeaderRecyclerViewAdapter(controlSections), StepperView.Listener {
 
-    override fun stepperTouchUp(view: SteppeView, left: Boolean) {
+    override fun stepperTouchUp(view: StepperView, left: Boolean) {
         (view.tag as? CameraControlStepperItem)?.let {
             listener?.onCameraActionStepperTouchUp(if (left) it.left else it.right)
         }
     }
 
-    override fun stepperTouchDown(view: SteppeView, left: Boolean) {
+    override fun stepperTouchDown(view: StepperView, left: Boolean) {
         (view.tag as? CameraControlStepperItem)?.let {
             listener?.onCameraActionStepperTouchDown(if (left) it.left else it.right)
         }
@@ -105,7 +105,7 @@ class CameraControlItemRecyclerViewAdapter(
 
     inner class StepperViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val contentView: TextView = view.title
-        var stepper: SteppeView = view.stepper
+        var stepper: StepperView = view.stepper
     }
 
     companion object {

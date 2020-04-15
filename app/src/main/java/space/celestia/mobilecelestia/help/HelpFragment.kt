@@ -30,9 +30,7 @@ private val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
     DescriptionItem(
         CelestiaString("Tap to select an object.", ""), R.drawable.tutorial_gesture_tap),
     DescriptionItem(
-        CelestiaString("Drag with one finger to rotate around an object.", ""), R.drawable.tutorial_gesture_one_finger_pan),
-    DescriptionItem(
-        CelestiaString("Drag with two fingers to move around.", ""), R.drawable.tutorial_gesture_two_finger_pan),
+        CelestiaString("Drag with one finger to move/rotate around an object.", ""), R.drawable.tutorial_gesture_one_finger_pan),
     DescriptionItem(
         CelestiaString("Pinch to zoom in/out on an object.", ""), R.drawable.tutorial_gesture_pinch)
 ) }
