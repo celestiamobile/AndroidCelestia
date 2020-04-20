@@ -22,13 +22,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.DatePicker
-import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.kaopiz.kprogresshud.KProgressHUD
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -229,7 +228,7 @@ class MainActivity : AppCompatActivity(),
     private fun handleIntent(intent: Intent?) {
         val data = intent?.data ?: return
 
-        val hud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).show()
+        Toast.makeText(this, CelestiaString("Opening external file or URL...", ""), Toast.LENGTH_SHORT).show()
         Observable.just(data)
             .map { uri ->
                 if (uri.scheme == "content") {
@@ -271,8 +270,6 @@ class MainActivity : AppCompatActivity(),
             }, { error ->
                 Log.e(TAG, "Handle URI failed, $error")
                 showError(error)
-            }, {
-                hud.dismiss()
             })
     }
 
@@ -798,11 +795,9 @@ class MainActivity : AppCompatActivity(),
         val name = core.simulation.universe.getNameForSelection(sel)
 
         showTextInput(CelestiaString("Share", ""), name) { title ->
-            val hud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).show()
-
+            Toast.makeText(this, CelestiaString("Generating sharing link...", ""), Toast.LENGTH_SHORT).show()
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
             service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java, {
-                hud.dismiss()
                 ShareCompat.IntentBuilder
                     .from(this)
                     .setType("text/plain")
@@ -810,7 +805,6 @@ class MainActivity : AppCompatActivity(),
                     .setText(it.publicURL)
                     .startChooser()
             }, {
-                hud.dismiss()
                 showShareError()
             })
         }
