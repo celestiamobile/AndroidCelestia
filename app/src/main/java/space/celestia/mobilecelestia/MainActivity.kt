@@ -292,7 +292,7 @@ class MainActivity : AppCompatActivity(),
         scriptOrURLPath = null
 
         val isURL = uri.startsWith("cel://")
-        showAlert(CelestiaString(if (isURL) "Open URL?" else "Run Script?", "")) {
+        showAlert(if (isURL) CelestiaString("Open URL?", "") else CelestiaString("Run Script?", "")) {
             if (isURL) {
                 core.goToURL(uri)
             } else {
@@ -492,7 +492,7 @@ class MainActivity : AppCompatActivity(),
     override fun onInfoActionSelected(action: InfoActionItem) {
         val selection = currentSelection
         if (selection == null) {
-            showAlert(CelestiaString("Object not found.", ""))
+            showAlert(CelestiaString("Object not found", ""))
             return
         }
 
@@ -505,12 +505,7 @@ class MainActivity : AppCompatActivity(),
                 core.simulation.selection = selection
             }
             is InfoWebActionItem -> {
-                val url = selection.webInfoURL
-                if (url == null) {
-                    showAlert(CelestiaString("Cannot find URL", ""))
-                    return
-                }
-
+                val url = selection.webInfoURL!!
                 // show web info in browser
                 val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 startActivity(browserIntent)
@@ -576,7 +571,7 @@ class MainActivity : AppCompatActivity(),
         if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
             val bookmark = core.currentBookmark
             if (bookmark == null) {
-                showAlert(CelestiaString("Object not found", ""))
+                showAlert(CelestiaString("Cannot add object", ""))
                 return
             }
             frag.add(FavoriteBookmarkItem(bookmark))
