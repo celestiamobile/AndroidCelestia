@@ -158,6 +158,8 @@ class MainActivity : AppCompatActivity(),
         super.onDestroy()
     }
 
+    override fun onBackPressed() {}
+
     override fun celestiaLoadingProgress(status: String) {}
 
     override fun celestiaLoadingSucceeded() {
