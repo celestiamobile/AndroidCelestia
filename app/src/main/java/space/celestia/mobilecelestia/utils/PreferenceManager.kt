@@ -25,7 +25,9 @@ class PreferenceManager(context: Context, private val name: String) {
 
     enum class PredefinedKey : Key {
         DataVersion,
-        OnboardMessage;
+        OnboardMessage,
+        DataDirPath,
+        ConfigFilePath;
 
         override val valueString: String
             get() = toString()

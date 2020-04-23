@@ -17,6 +17,7 @@ import android.app.TimePickerDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -83,7 +84,8 @@ class MainActivity : AppCompatActivity(),
     DatePickerDialog.OnDateSetListener,
     AboutFragment.Listener,
     AppStatusReporter.Listener,
-    CelestiaFragment.Listener {
+    CelestiaFragment.Listener,
+    SettingsDataLocationFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -96,14 +98,30 @@ class MainActivity : AppCompatActivity(),
     private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
 
+    private val celestiaConfigFilePath: String
+        get() {
+            val custom = customConfigFilePath
+            if (custom != null)
+                return custom
+            return "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME/$CELESTIA_CFG_NAME"
+        }
+
+    private val celestiaDataDirPath: String
+        get() {
+            val custom = customDataDirPath
+            if (custom != null)
+                return custom
+            return "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME"
+        }
+
     @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        AppCenter.start(
-            application, "d1108985-aa25-4fb5-9269-31a70a87d28e",
-            Analytics::class.java, Crashes::class.java
-        )
+//        AppCenter.start(
+//            application, "d1108985-aa25-4fb5-9269-31a70a87d28e",
+//            Analytics::class.java, Crashes::class.java
+//        )
 
         Crashes.getMinidumpDirectory().thenAccept { path ->
             if (path != null) {
@@ -181,6 +199,27 @@ class MainActivity : AppCompatActivity(),
 
     override fun celestiaLoadingFailed() {
         AppStatusReporter.shared().updateStatus("Loading Celestia failed...")
+        if (customDataDirPath != null || customConfigFilePath != null) {
+            // Fallback to default
+            setConfigFilePath(null)
+            setDataDirectoryPath(null)
+            runOnUiThread {
+                removeCelestiaFragment()
+                showAlert(CelestiaString("Error loading data, fallback to original configuration.", "")) {
+                    loadLibrarySuccess()
+                }
+            }
+        } else {
+            runOnUiThread {
+                removeCelestiaFragment()
+            }
+        }
+    }
+
+    private fun removeCelestiaFragment() {
+        supportFragmentManager.findFragmentById(R.id.celestia_fragment_container)?.let {
+            supportFragmentManager.beginTransaction().remove(it).commitAllowingStateLoss()
+        }
     }
 
     private fun createCopyAssetObservable(): Observable<String> {
@@ -208,8 +247,14 @@ class MainActivity : AppCompatActivity(),
     private fun createLoadLibraryObservable(): Observable<String> {
         return Observable.create {
             it.onNext("Loading library...")
+
             System.loadLibrary("celestia")
             CelestiaAppCore.initGL()
+
+            // Also read custom paths here
+            customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
+            customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
+
             it.onComplete()
         }
     }
@@ -434,7 +479,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun loadLibrarySuccess() {
         // Add gl fragment
-        val celestiaFragment = CelestiaFragment.newInstance("$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME", "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME/$CELESTIA_CFG_NAME", addonPath)
+        val celestiaFragment = CelestiaFragment.newInstance(celestiaDataDirPath, celestiaConfigFilePath, addonPath)
         supportFragmentManager
             .beginTransaction()
             .add(R.id.celestia_fragment_container, celestiaFragment)
@@ -704,6 +749,52 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onDataLocationNeedReset() {
+        setConfigFilePath(null)
+        setDataDirectoryPath(null)
+        reloadSettings()
+    }
+
+    override fun onDataLocationRequested(dataType: DataType) {
+        if (!RxPermissions(this).isGranted(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            // No permission to read
+            return
+        }
+        when (dataType) {
+            DataType.Config -> {
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                intent.type = "*/*"
+                startActivityForResult(intent, CONFIG_FILE_REQUEST)
+            }
+            DataType.DataDirectory -> {
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                startActivityForResult(intent, DATA_DIR_REQUEST)
+            }
+        }
+    }
+
+    private fun setDataDirectoryPath(path: String?) {
+        preferenceManager[PreferenceManager.PredefinedKey.DataDirPath] = path
+        customDataDirPath = path
+    }
+
+    private fun setConfigFilePath(path: String?) {
+        preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath] = path
+        customConfigFilePath = null
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data
+        if (uri == null) { return }
+        if (requestCode == CONFIG_FILE_REQUEST) {
+            reloadSettings()
+        } else if (requestCode == DATA_DIR_REQUEST) {
+            val docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
+            reloadSettings()
+        }
+    }
+
     override fun celestiaFragmentDidRequestActionMenu() {
         showToolbar()
     }
@@ -838,9 +929,15 @@ class MainActivity : AppCompatActivity(),
         private const val CELESTIA_CFG_NAME = "celestia.cfg"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
 
+        private const val DATA_DIR_REQUEST = 1
+        private const val CONFIG_FILE_REQUEST = 2
+
         private const val TAG = "MainActivity"
 
         private var firstInstance = true
+
+        var customDataDirPath: String? = null
+        var customConfigFilePath: String? = null
 
         init {
             System.loadLibrary("nativecrashhandler")

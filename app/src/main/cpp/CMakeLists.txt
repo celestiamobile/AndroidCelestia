@@ -229,6 +229,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/dsoname.h
         ${CELESTIA_SRC_DIR}/celengine/dsooctree.cpp
         ${CELESTIA_SRC_DIR}/celengine/dsooctree.h
+        ${CELESTIA_SRC_DIR}/celengine/dsorenderer.cpp
+        ${CELESTIA_SRC_DIR}/celengine/dsorenderer.h
         ${CELESTIA_SRC_DIR}/celengine/frame.cpp
         ${CELESTIA_SRC_DIR}/celengine/frame.h
         ${CELESTIA_SRC_DIR}/celengine/framebuffer.cpp

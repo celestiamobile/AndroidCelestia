@@ -74,6 +74,9 @@ class SettingsFragment : Fragment() {
             is SettingsAboutItem -> {
                 push(AboutFragment.newInstance(), item.name)
             }
+            is SettingsDataLocationItem -> {
+                push(SettingsDataLocationFragment.newInstance(), item.name)
+            }
         }
     }
 

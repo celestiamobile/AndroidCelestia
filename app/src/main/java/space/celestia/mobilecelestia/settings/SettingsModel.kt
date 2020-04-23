@@ -308,7 +308,12 @@ private val staticTimeItems: List<SettingsItem> = listOf(
     SettingsCurrentTimeItem()
 )
 
-private val staticAdvancedItems: List<SettingsSingleSelectionItem> = listOf(
+class SettingsDataLocationItem : SettingsItem {
+    override val name: String
+        get() = CelestiaString("Data Location", "")
+}
+
+private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsSingleSelectionItem(SettingsKey.Resolution, listOf(
         SettingsSingleSelectionItem.Selection("Low", 0),
         SettingsSingleSelectionItem.Selection("Medium", 1),
@@ -323,7 +328,8 @@ private val staticAdvancedItems: List<SettingsSingleSelectionItem> = listOf(
         SettingsSingleSelectionItem.Selection("None", 0),
         SettingsSingleSelectionItem.Selection("Terse", 1),
         SettingsSingleSelectionItem.Selection("Verbose", 2)
-    ))
+    )),
+    SettingsDataLocationItem()
 )
 
 class SettingsRenderInfoItem : SettingsItem {
