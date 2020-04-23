@@ -77,7 +77,6 @@ class SettingsDataLocationRecyclerViewAdapter(
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (item is DataLocationItem && holder is CommonTextViewHolder) {
-            val core = CelestiaAppCore.shared()
             holder.title.text = item.title
             holder.detail.visibility = View.VISIBLE
             holder.detail.text = item.subtitle

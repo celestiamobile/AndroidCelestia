@@ -44,6 +44,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
     private var addonToLoad: String? = null
     private val core by lazy { CelestiaAppCore.shared() }
 
+    private var loadSuccess = false
+
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
     }
@@ -150,6 +152,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
         glView?.isReady = true
 
+        loadSuccess = true
+
         Log.d(TAG, "Ready to display")
         AppStatusReporter.shared().celestiaLoadResult(true)
     }
@@ -169,12 +173,16 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
     }
 
     override fun onSurfaceChanged(p0: GL10?, p1: Int, p2: Int) {
+        if (!loadSuccess) { return }
+
         glViewSize = Size(p1, p2)
         Log.d(TAG, "Resize to $p1 x $p2")
         core.resize(p1, p2)
     }
 
     override fun onDrawFrame(p0: GL10?) {
+        if (!loadSuccess) { return }
+
         core.draw()
         core.tick()
     }

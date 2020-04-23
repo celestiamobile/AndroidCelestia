@@ -200,12 +200,12 @@ class MainActivity : AppCompatActivity(),
     override fun celestiaLoadingFailed() {
         AppStatusReporter.shared().updateStatus("Loading Celestia failed...")
         if (customDataDirPath != null || customConfigFilePath != null) {
-            // Fallback to default
-            setConfigFilePath(null)
-            setDataDirectoryPath(null)
             runOnUiThread {
                 removeCelestiaFragment()
                 showAlert(CelestiaString("Error loading data, fallback to original configuration.", "")) {
+                    // Fallback to default
+                    setConfigFilePath(null)
+                    setDataDirectoryPath(null)
                     loadLibrarySuccess()
                 }
             }
@@ -218,7 +218,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun removeCelestiaFragment() {
         supportFragmentManager.findFragmentById(R.id.celestia_fragment_container)?.let {
-            supportFragmentManager.beginTransaction().remove(it).commitAllowingStateLoss()
+            supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
         }
     }
 
@@ -780,17 +780,19 @@ class MainActivity : AppCompatActivity(),
 
     private fun setConfigFilePath(path: String?) {
         preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath] = path
-        customConfigFilePath = null
+        customConfigFilePath = path
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val uri = data?.data
-        if (uri == null) { return }
+        val uri = data?.data ?: return
         if (requestCode == CONFIG_FILE_REQUEST) {
+            val path = RealPathUtils.getRealPath(this, uri)
+            setConfigFilePath(path)
             reloadSettings()
         } else if (requestCode == DATA_DIR_REQUEST) {
-            val docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
+            val path = RealPathUtils.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
+            setDataDirectoryPath(path)
             reloadSettings()
         }
     }
