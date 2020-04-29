@@ -23,7 +23,6 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class SettingsDataLocationFragment : SettingsBaseFragment() {
-    
     private var listener: Listener? = null
 
     private val listAdapter by lazy { SettingsDataLocationRecyclerViewAdapter(listener) }

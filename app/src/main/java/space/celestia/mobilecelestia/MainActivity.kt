@@ -118,10 +118,10 @@ class MainActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-//        AppCenter.start(
-//            application, "d1108985-aa25-4fb5-9269-31a70a87d28e",
-//            Analytics::class.java, Crashes::class.java
-//        )
+        AppCenter.start(
+            application, "d1108985-aa25-4fb5-9269-31a70a87d28e",
+            Analytics::class.java, Crashes::class.java
+        )
 
         Crashes.getMinidumpDirectory().thenAccept { path ->
             if (path != null) {
