@@ -15,12 +15,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.fragment_search_item_list.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.search.model.RxSearchObservable
@@ -31,7 +33,8 @@ class SearchFragment : Fragment() {
     private var listener: Listener? = null
     private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
 
-    @SuppressLint("CheckResult")
+    private var searchView: SearchView? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -43,6 +46,20 @@ class SearchFragment : Fragment() {
         searchView.setOnClickListener {
             searchView.isIconified = false
         }
+        this.searchView = searchView
+        setupSearchSearchView()
+
+        // Set the adapter
+        with(view.findViewById<RecyclerView>(R.id.list)) {
+            layoutManager = LinearLayoutManager(context)
+            adapter = listAdapter
+        }
+        return view
+    }
+
+    @SuppressLint("CheckResult")
+    private fun setupSearchSearchView() {
+        val searchView = this.searchView ?: return
         RxSearchObservable.fromView(searchView)
             .debounce(300, TimeUnit.MILLISECONDS)
             .distinctUntilChanged()
@@ -53,17 +70,15 @@ class SearchFragment : Fragment() {
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+            .subscribe({
                 listAdapter.updateSearchResults(it)
                 listAdapter.notifyDataSetChanged()
-            }
-
-        // Set the adapter
-        with(view.findViewById<RecyclerView>(R.id.list)) {
-            layoutManager = LinearLayoutManager(context)
-            adapter = listAdapter
-        }
-        return view
+            }, {}, {
+                // Submit, clear focus
+                searchView.clearFocus()
+                (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(searchView.windowToken, 0)
+                setupSearchSearchView()
+            })
     }
 
     override fun onAttach(context: Context) {
