@@ -14,9 +14,7 @@ package space.celestia.mobilecelestia.search
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,13 +40,17 @@ class SearchFragment : Fragment() {
 
         view.findViewById<View>(R.id.search_container).setOnTouchListener { _, _ -> true }
         val searchView = view.findViewById<SearchView>(R.id.search)
+        searchView.setOnClickListener {
+            searchView.isIconified = false
+        }
         RxSearchObservable.fromView(searchView)
             .debounce(300, TimeUnit.MILLISECONDS)
+            .distinctUntilChanged()
             .map {
                 if (it.isEmpty()) { return@map listOf<String>() }
                 val core = CelestiaAppCore.shared()
                 return@map core.simulation.completionForText(it, SEARCH_RESULT_LIMIT)
-            }.distinctUntilChanged()
+            }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
