@@ -764,10 +764,12 @@ class MainActivity : AppCompatActivity(),
             DataType.Config -> {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                 intent.type = "*/*"
+                intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
                 startActivityForResult(intent, CONFIG_FILE_REQUEST)
             }
             DataType.DataDirectory -> {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
                 startActivityForResult(intent, DATA_DIR_REQUEST)
             }
         }
