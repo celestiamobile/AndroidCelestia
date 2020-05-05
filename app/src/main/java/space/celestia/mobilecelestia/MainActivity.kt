@@ -148,14 +148,14 @@ class MainActivity : AppCompatActivity(),
 
         if (!firstInstance) {
             // TODO: handle recreation of Main Activity
-            AppStatusReporter.shared().updateStatus("Please restart Celestia")
+            AppStatusReporter.shared().updateStatus(CelestiaString("Please restart Celestia", ""))
             return
         }
 
         firstInstance = false
         createCopyAssetObservable()
             .concatWith(createPermissionObservable())
-            .concatWith(createLoadLibraryObservable())
+            .concatWith(createLoadConfigObservable())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe ({ status ->
@@ -164,7 +164,7 @@ class MainActivity : AppCompatActivity(),
                 Log.e(TAG, "Initialization failed, $error")
                 showError(error)
             }, {
-                loadLibrarySuccess()
+                loadConfigSuccess()
             })
 
         handleIntent(intent)
@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun celestiaLoadingFailed() {
-        AppStatusReporter.shared().updateStatus("Loading Celestia failed...")
+        AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed...", ""))
         if (customDataDirPath != null || customConfigFilePath != null) {
             runOnUiThread {
                 removeCelestiaFragment()
@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity(),
                     // Fallback to default
                     setConfigFilePath(null)
                     setDataDirectoryPath(null)
-                    loadLibrarySuccess()
+                    loadConfigSuccess()
                 }
             }
         } else {
@@ -239,19 +239,18 @@ class MainActivity : AppCompatActivity(),
                 if (result.size >= 1 && result.first()) {
                     createAddonFolder()
                 }
-                Observable.just("Requesting permission finished")
+                Observable.just(CelestiaString("Requesting permission finished", ""))
             }
         }
     }
 
-    private fun createLoadLibraryObservable(): Observable<String> {
+    private fun createLoadConfigObservable(): Observable<String> {
         return Observable.create {
-            it.onNext("Loading library...")
+            it.onNext(CelestiaString("Loading configuration...", ""))
 
-            System.loadLibrary("celestia")
             CelestiaAppCore.initGL()
 
-            // Also read custom paths here
+            // Read custom paths here
             customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
             customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
 
@@ -477,7 +476,7 @@ class MainActivity : AppCompatActivity(),
         } catch (ignored: Throwable) {}
     }
 
-    private fun loadLibrarySuccess() {
+    private fun loadConfigSuccess() {
         // Add gl fragment
         val celestiaFragment = CelestiaFragment.newInstance(celestiaDataDirPath, celestiaConfigFilePath, addonPath)
         supportFragmentManager
@@ -944,6 +943,7 @@ class MainActivity : AppCompatActivity(),
         var customConfigFilePath: String? = null
 
         init {
+            System.loadLibrary("celestia")
             System.loadLibrary("nativecrashhandler")
         }
     }
