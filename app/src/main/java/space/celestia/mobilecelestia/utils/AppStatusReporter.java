@@ -49,7 +49,8 @@ public class AppStatusReporter implements CelestiaAppCore.ProgressWatcher {
 
     @Override
     public void onCelestiaProgress(@NonNull String progress) {
-        updateStatus(progress);
+        String result = String.format(CelestiaAppCore.getLocalizedString("Loading: %s"), progress);
+        updateStatus(result);
     }
 
     public void celestiaLoadResult(boolean success) {
