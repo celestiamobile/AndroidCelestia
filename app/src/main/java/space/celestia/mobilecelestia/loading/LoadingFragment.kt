@@ -52,7 +52,7 @@ class LoadingFragment : Fragment(), AppStatusReporter.Listener {
 
     override fun celestiaLoadingProgress(status: String) {
         activity?.runOnUiThread {
-            Log.d(TAG, "Loading $status")
+            Log.d(TAG, status)
             loadingLabel?.text = status
         }
     }
