@@ -31,19 +31,20 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data
                     android:scheme="content"
-                    android:host="*"
-                    android:pathPattern=".*\\.cel"
-                    android:mimeType="*/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:scheme="content"
-                    android:host="*"
-                    android:pathPattern=".*\\.celx"
-                    android:mimeType="*/*" />
+                    android:mimeType="*/*"
+                    android:host="*" />
+                <data android:pathPattern=".*\\.cel" />
+                <data android:pathPattern=".*\\..*\\.cel" />
+                <data android:pathPattern=".*\\..*\\..*\\.cel" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.cel" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.cel" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.cel" />
+                <data android:pathPattern=".*\\.celx" />
+                <data android:pathPattern=".*\\..*\\.celx" />
+                <data android:pathPattern=".*\\..*\\..*\\.celx" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.celx" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.celx" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.celx" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
