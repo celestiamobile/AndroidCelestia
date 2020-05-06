@@ -119,7 +119,8 @@ public class CelestiaAppCore {
 
     // Locale
     public static void setLocaleDirectoryPath(@NonNull String localeDirectoryPath, @NonNull String locale) { c_setLocaleDirectoryPath(localeDirectoryPath, locale); }
-    public static @NonNull String getLocalizedString(@NonNull String string) { return c_getLocalizedString(string); }
+    public static @NonNull String getLocalizedString(@NonNull String string) { return getLocalizedString(string, "celestia_ui"); }
+    public static @NonNull String getLocalizedString(@NonNull String string, @NonNull String domain) { return c_getLocalizedString(string, domain); }
     public static @NonNull String getLocalizedFilename(@NonNull String filename) { return c_getLocalizedFilename(filename); }
 
     public CelestiaSimulation getSimulation() {
@@ -161,7 +162,7 @@ public class CelestiaAppCore {
 
     // Locale
     private static native void c_setLocaleDirectoryPath(String path, String locale);
-    private static native String c_getLocalizedString(String string);
+    private static native String c_getLocalizedString(String string, String domain);
     private static native String c_getLocalizedFilename(String filename);
 
     private native String c_getRenderInfo();

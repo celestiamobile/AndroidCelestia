@@ -472,6 +472,8 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setLocaleDirectoryPat
     bind_textdomain_codeset("celestia", "UTF-8");
     bindtextdomain("celestia_constellations", str);
     bind_textdomain_codeset("celestia_constellations", "UTF-8");
+    bindtextdomain("celestia_ui", str);
+    bind_textdomain_codeset("celestia_ui", "UTF-8");
     textdomain("celestia");
     env->ReleaseStringUTFChars(path, str);
 }
@@ -480,10 +482,13 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getLocalizedString(JNIEnv *env,
                                                                               jclass clazz,
-                                                                              jstring string) {
-    const char *str = env->GetStringUTFChars(string, nullptr);
-    jstring localized = env->NewStringUTF(_(str));
-    env->ReleaseStringUTFChars(string, str);
+                                                                              jstring string,
+                                                                              jstring domain) {
+    const char *c_str = env->GetStringUTFChars(string, nullptr);
+    const char *c_dom = env->GetStringUTFChars(domain, nullptr);
+    jstring localized = env->NewStringUTF(dgettext(c_dom, c_str));
+    env->ReleaseStringUTFChars(string, c_str);
+    env->ReleaseStringUTFChars(domain, c_dom);
     return localized;
 }
 

@@ -84,11 +84,11 @@ private fun CelestiaAppCore.getOverviewForBody(body: CelestiaBody): String {
             unitTemplate = CelestiaString("%.2f days", "")
         }
         str += "\n"
-        str += CelestiaString("Sidereal rotation period: %s", "").format(rotPeriod, CelestiaString(unitTemplate, "").format(rotPeriod))
+        str += CelestiaString("Sidereal rotation period: %s", "").format(CelestiaString(unitTemplate, "").format(rotPeriod))
 
         if (dayLength != 0.0) {
             str += "\n"
-            str += CelestiaString("Length of day: %s", "").format(rotPeriod, CelestiaString(unitTemplate, "").format(dayLength))
+            str += CelestiaString("Length of day: %s", "").format(CelestiaString(unitTemplate, "").format(dayLength))
         }
 
         if (body.hasRings()) {
