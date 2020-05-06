@@ -32,8 +32,8 @@
                 <data
                     android:scheme="content"
                     android:host="*"
-                    android:pathPattern="/.*\.cel"
-                    android:mimeType="text/plain" />
+                    android:pathPattern=".*\\.cel"
+                    android:mimeType="*/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -42,8 +42,8 @@
                 <data
                     android:scheme="content"
                     android:host="*"
-                    android:pathPattern="/.*\.celx"
-                    android:mimeType="text/plain" />
+                    android:pathPattern=".*\\.celx"
+                    android:mimeType="*/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
