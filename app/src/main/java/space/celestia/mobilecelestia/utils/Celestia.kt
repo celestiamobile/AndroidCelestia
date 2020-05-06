@@ -27,7 +27,7 @@ private val Float.radiusString: String
         if (this < 1) {
             return CelestiaString("%d m", "").format((this * 1000).toInt())
         }
-        return CelestiaString("%d m", "").format(this.toInt())
+        return CelestiaString("%d km", "").format(this.toInt())
     }
 
 public fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): String {
