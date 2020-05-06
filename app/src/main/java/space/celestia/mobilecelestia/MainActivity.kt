@@ -91,6 +91,7 @@ class MainActivity : AppCompatActivity(),
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
     private val celestiaParentPath by lazy { this.filesDir.absolutePath }
     private var addonPath: String? = null
+    private var extraScriptPath: String? = null
 
     private val core by lazy { CelestiaAppCore.shared() }
     private var currentSelection: CelestiaSelection? = null
@@ -469,9 +470,13 @@ class MainActivity : AppCompatActivity(),
 
     private fun createAddonFolder() {
         try {
-            val folder = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
+            var folder = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
             if (folder != null && (folder.exists() || folder.mkdir())) {
                 addonPath = folder.absolutePath
+            }
+            folder = getExternalFilesDir(CELESTIA_SCRIPT_FOLDER_NAME)
+            if (folder != null && (folder.exists() || folder.mkdir())) {
+                extraScriptPath = folder.absolutePath
             }
         } catch (ignored: Throwable) {}
     }
@@ -870,7 +875,11 @@ class MainActivity : AppCompatActivity(),
 
     private fun showFavorite() {
         readFavorites()
-        updateCurrentScripts(CelestiaScript.getScriptsInDirectory("scripts", true))
+        val scripts = CelestiaScript.getScriptsInDirectory("scripts", true)
+        extraScriptPath?.let { path ->
+            scripts.addAll(CelestiaScript.getScriptsInDirectory(path, true))
+        }
+        updateCurrentScripts(scripts)
         showRightFragment(FavoriteFragment.newInstance())
     }
 
@@ -931,6 +940,7 @@ class MainActivity : AppCompatActivity(),
         private const val CELESTIA_DATA_FOLDER_NAME = "CelestiaResources"
         private const val CELESTIA_CFG_NAME = "celestia.cfg"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
+        private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"
 
         private const val DATA_DIR_REQUEST = 1
         private const val CONFIG_FILE_REQUEST = 2
