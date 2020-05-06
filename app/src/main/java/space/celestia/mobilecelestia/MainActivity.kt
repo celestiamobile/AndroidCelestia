@@ -117,7 +117,8 @@ class MainActivity : AppCompatActivity(),
 
     @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        // We don't need to recover when we get killed
+        super.onCreate(null)
 
         AppCenter.start(
             application, "d1108985-aa25-4fb5-9269-31a70a87d28e",

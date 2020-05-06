@@ -29,8 +29,6 @@ class LoadingFragment : Fragment(), AppStatusReporter.Listener {
         super.onCreate(savedInstanceState)
 
         AppStatusReporter.shared().register(this)
-
-        retainInstance = true
     }
 
     override fun onDestroy() {

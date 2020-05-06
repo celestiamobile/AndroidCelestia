@@ -60,8 +60,6 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
             cfgToLoad = it.getString(ARG_CFG_FILE)
             addonToLoad = it.getString(ARG_ADDON_DIR)
         }
-
-        retainInstance = true
     }
 
     override fun onCreateView(
