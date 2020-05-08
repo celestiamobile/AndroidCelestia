@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun celestiaLoadingFailed() {
-        AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed...", ""))
+        AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed…", ""))
         if (customDataDirPath != null || customConfigFilePath != null) {
             runOnUiThread {
                 removeCelestiaFragment()
@@ -226,7 +226,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun createCopyAssetObservable(): Observable<String> {
         return Observable.create {
-            it.onNext("Copying data...")
+            it.onNext(CelestiaString("Copying data…", ""))
             if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
                 // When version name does not match, copy the asset again
                 copyAssets()
@@ -248,7 +248,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun createLoadConfigObservable(): Observable<String> {
         return Observable.create {
-            it.onNext(CelestiaString("Loading configuration...", ""))
+            it.onNext(CelestiaString("Loading configuration…", ""))
 
             CelestiaAppCore.initGL()
 
@@ -276,7 +276,7 @@ class MainActivity : AppCompatActivity(),
     private fun handleIntent(intent: Intent?) {
         val data = intent?.data ?: return
 
-        Toast.makeText(this, CelestiaString("Opening external file or URL...", ""), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT).show()
         Observable.just(data)
             .map { uri ->
                 if (uri.scheme == "content") {
@@ -896,7 +896,7 @@ class MainActivity : AppCompatActivity(),
         val name = core.simulation.universe.getNameForSelection(sel)
 
         showTextInput(CelestiaString("Share", ""), name) { title ->
-            Toast.makeText(this, CelestiaString("Generating sharing link...", ""), Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT).show()
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
             service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java, {
                 ShareCompat.IntentBuilder
