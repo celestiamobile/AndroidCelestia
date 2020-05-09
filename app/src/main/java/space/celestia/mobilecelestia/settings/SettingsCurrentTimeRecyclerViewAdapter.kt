@@ -21,6 +21,9 @@ import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.createDateFromJulianDay
+import java.text.DateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 enum class CurrentTimeAction {
     PickDate, SetToCurrentTime;
@@ -56,6 +59,7 @@ private fun createSections(): List<CommonSectionV2> {
 class SettingsCurrentTimeRecyclerViewAdapter(
     private val listener: SettingsCurrentTimeFragment.Listener?
 ) : SeparatorHeaderRecyclerViewAdapter(createSections()) {
+    private val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is CurrentTimeItem) {
@@ -86,7 +90,7 @@ class SettingsCurrentTimeRecyclerViewAdapter(
             val core = CelestiaAppCore.shared()
             holder.title.text = item.title
             holder.detail.visibility = View.VISIBLE
-            holder.detail.text = createDateFromJulianDay(core.simulation.time).toString()
+            holder.detail.text = formatter.format(createDateFromJulianDay(core.simulation.time))
             return
         }
         super.bindVH(holder, item)
