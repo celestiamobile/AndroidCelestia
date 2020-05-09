@@ -11,6 +11,7 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="44dp"
     android:orientation="horizontal"
@@ -18,29 +19,36 @@
     android:focusable="true"
     style="@style/ListItemGrouped">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:textAppearance="?attr/textAppearanceListItem"
-        android:lines="1"
-        style="@style/PrimaryLabel"/>
-
-    <TextView
-        android:id="@+id/detail"
+    <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|end"
-        android:layout_weight="1"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="textEnd"
-        android:textAppearance="?attr/textAppearanceListItem"
-        android:lines="1"
-        android:ellipsize="end"
-        style="@style/SecondaryLabel"/>
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:lines="1"
+            android:ellipsize="end"
+            style="@style/PrimaryLabel"/>
+
+        <TextView
+            android:id="@+id/detail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:textAlignment="textEnd"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:lines="1"
+            android:ellipsize="end"
+            style="@style/SecondaryLabel"
+            tools:ignore="NestedWeights" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/accessory"
