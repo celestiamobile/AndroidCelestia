@@ -167,7 +167,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(J
             create_browser_item_and_add(j, _("Comets"), BROWSER_ITEM_TYPE_BODY, comets);
 
         if (!spacecrafts.empty())
-            create_browser_item_and_add(j, _("Spacecrafts"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
+            create_browser_item_and_add(j, _("Spacecraft"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
     }
 
     return env->NewStringUTF(j.dump().c_str());
@@ -247,7 +247,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(J
             create_browser_item_and_add(j, _("Comets"), BROWSER_ITEM_TYPE_BODY, comets);
 
         if (!spacecrafts.empty())
-            create_browser_item_and_add(j, _("Spacecrafts"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
+            create_browser_item_and_add(j, _("Spacecraft"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
     }
 
     vector<Location *>* locations = b->getLocations();
