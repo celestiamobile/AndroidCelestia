@@ -117,8 +117,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celscript/lua/celx.cpp
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_frame.cpp
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_frame.h
-        ${CELESTIA_SRC_DIR}/celscript/lua/celx_gl.cpp
-        ${CELESTIA_SRC_DIR}/celscript/lua/celx_gl.h
         ${CELESTIA_SRC_DIR}/celscript/lua/celx.h
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_internal.h
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_misc.cpp
