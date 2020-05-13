@@ -66,7 +66,7 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
         val nav = view.findViewById<BottomNavigationView>(R.id.navigation)
         for (i in 0 until browserItemMenu.count()) {
             val item = browserItemMenu[i]
-            nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.name).setIcon(item.icon)
+            nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.alternativeName ?: item.item.name).setIcon(item.icon)
         }
         toolbar.setNavigationOnClickListener {
             popItem()
@@ -82,7 +82,7 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
 
     private fun replaceItem(browserItem: CelestiaBrowserItem) {
         toolbar.navigationIcon = null
-        toolbar.title = browserItem.name
+        toolbar.title = browserItem.alternativeName ?: browserItem.name
         currentPath = browserItem.name
         browserMap[currentPath] = browserItem
         replace(BrowserCommonFragment.newInstance(currentPath), R.id.browser_container)

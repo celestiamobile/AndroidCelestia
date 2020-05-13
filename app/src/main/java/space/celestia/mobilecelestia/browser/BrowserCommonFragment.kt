@@ -28,7 +28,7 @@ class BrowserCommonFragment : TitledFragment() {
     private var browserItem: CelestiaBrowserItem? = null
 
     override val title: String
-        get() = browserItem!!.name
+        get() = browserItem!!.alternativeName ?: browserItem!!.name
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

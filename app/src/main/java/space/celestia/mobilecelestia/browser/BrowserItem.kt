@@ -27,7 +27,7 @@ fun CelestiaSimulation.createAllBrowserItems() {
 
 private fun CelestiaUniverse.createSolBrowserRoot(): CelestiaBrowserItem {
     val sol = findObject("Sol").star!!
-    return CelestiaBrowserItem(starCatalog.getStarName(sol), sol, this)
+    return CelestiaBrowserItem(starCatalog.getStarName(sol), CelestiaString("Solar System", ""), sol, this)
 }
 
 fun CelestiaUniverse.solBrowserRoot(): CelestiaBrowserItem {
@@ -41,18 +41,18 @@ private fun CelestiaSimulation.createStarBrowserRoot(): CelestiaBrowserItem {
         val map = HashMap<String, CelestiaBrowserItem>()
         for (item in this) {
             val name = universe.starCatalog.getStarName(item)
-            map[name] = CelestiaBrowserItem(name, item, universe)
+            map[name] = CelestiaBrowserItem(name, null, item, universe)
         }
         return map
     }
     val nearest = getStarBrowser(CelestiaStarBrowser.KIND_NEAREST).stars.createBrowserMap()
     val brightest = getStarBrowser(CelestiaStarBrowser.KIND_BRIGHTEST).stars.createBrowserMap()
     val hasPlanets = getStarBrowser(CelestiaStarBrowser.KIND_WITH_PLANETS).stars.createBrowserMap()
-    val nearestItem = CelestiaBrowserItem(CelestiaString("Nearest Stars", ""), nearest)
-    val brightestItem = CelestiaBrowserItem(CelestiaString("Brightest Stars",""), brightest)
-    val hasPlanetItem = CelestiaBrowserItem(CelestiaString("Stars with Planets",""), hasPlanets)
+    val nearestItem = CelestiaBrowserItem(CelestiaString("Nearest Stars", ""), null, nearest)
+    val brightestItem = CelestiaBrowserItem(CelestiaString("Brightest Stars",""), null,  brightest)
+    val hasPlanetItem = CelestiaBrowserItem(CelestiaString("Stars with Planets",""), null, hasPlanets)
 
-    return CelestiaBrowserItem(CelestiaString("Stars", ""), mapOf(
+    return CelestiaBrowserItem(CelestiaString("Stars", ""), null, mapOf(
         nearestItem.name to nearestItem,
         brightestItem.name to brightestItem,
         hasPlanetItem.name to hasPlanetItem
@@ -87,7 +87,7 @@ private fun CelestiaUniverse.createDSOBrowserRoot(): CelestiaBrowserItem {
             matchType = "Unknown"
 
         val name = dsoCatalog.getDSOName(dso)
-        val item = CelestiaBrowserItem(name, dso, this)
+        val item = CelestiaBrowserItem(name, null, dso, this)
 
         if (tempMap[matchType] != null)
             tempMap[matchType]!![name] = item
@@ -98,10 +98,10 @@ private fun CelestiaUniverse.createDSOBrowserRoot(): CelestiaBrowserItem {
     val results = HashMap<String, CelestiaBrowserItem>()
     for (map in tempMap) {
         val fullName = typeMap[map.key] ?: error("${map.key} not found")
-        results[fullName] = CelestiaBrowserItem(fullName, map.value)
+        results[fullName] = CelestiaBrowserItem(fullName, null, map.value)
     }
 
-    return CelestiaBrowserItem(CelestiaString("Deep Sky Objects", ""), results)
+    return CelestiaBrowserItem(CelestiaString("Deep Sky Objects", ""), CelestiaString("DSOs", ""), results)
 }
 
 fun CelestiaUniverse.dsoBrowserRoot(): CelestiaBrowserItem {

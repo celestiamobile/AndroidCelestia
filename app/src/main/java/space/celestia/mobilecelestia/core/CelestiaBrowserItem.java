@@ -26,6 +26,7 @@ import java.util.Map;
 
 public class CelestiaBrowserItem {
     private final static String NAME_KEY = "name";
+    private final static String ALTERNATIVE_NAME_KEY = "alternative_name";
     private final static String TYPE_KEY = "type";
     private final static int TYPE_BODY = 0;
     private final static int TYPE_LOCATION = 1;
@@ -37,36 +38,43 @@ public class CelestiaBrowserItem {
     }
 
     private String _name;
+    private String _alternativeName;
     private CelestiaAstroObject _object;
     private ArrayList<String> childrenKeys;
     private ArrayList<CelestiaBrowserItem> childrenValues;
     private ChildrenProvider provider;
 
-    public CelestiaBrowserItem(@Nullable String name, @NonNull CelestiaAstroObject object, @Nullable ChildrenProvider provider) {
+    public CelestiaBrowserItem(@NonNull String name, @Nullable String alternativeName, @NonNull CelestiaAstroObject object, @Nullable ChildrenProvider provider) {
         _name = name;
+        _alternativeName = alternativeName;
         _object = object;
         this.provider = provider;
     }
 
-    public CelestiaBrowserItem(@Nullable String name, @NonNull Map<String, CelestiaBrowserItem> children) {
+    public CelestiaBrowserItem(@NonNull String name, @Nullable String alternativeName, @NonNull Map<String, CelestiaBrowserItem> children) {
         _name = name;
+        _alternativeName = alternativeName;
         setChildren(children);
     }
 
-    private static CelestiaBrowserItem fromJson(@NonNull JSONObject js, @Nullable ChildrenProvider provider) throws JSONException, NullPointerException {
+    private static CelestiaBrowserItem fromJson(@NonNull JSONObject js, @Nullable ChildrenProvider provider) throws JSONException, RuntimeException {
         String name = js.getString(NAME_KEY);
+        String alternativeName = null;
+        if (js.has(ALTERNATIVE_NAME_KEY)) {
+            alternativeName = js.getString(ALTERNATIVE_NAME_KEY);
+        }
         if (js.has(POINTER_KEY) && js.has(TYPE_KEY)) {
             int type = js.getInt(TYPE_KEY);
             long ptr = js.getLong(POINTER_KEY);
-            CelestiaAstroObject object = null;
+            CelestiaAstroObject object;
             if (type == TYPE_BODY) {
                 object = new CelestiaBody(ptr);
             } else if (type == TYPE_LOCATION) {
                 object = new CelestiaLocation(ptr);
             } else {
-                // unknown type
+                throw new RuntimeException(String.format("Unknown type found: %d.", type));
             }
-            return new CelestiaBrowserItem(name, object, provider);
+            return new CelestiaBrowserItem(name, alternativeName, object, provider);
         }
         HashMap<String, CelestiaBrowserItem> items = new HashMap<>();
         if (js.has(CHILDREN_KEY)) {
@@ -77,7 +85,7 @@ public class CelestiaBrowserItem {
                 items.put(key, fromJson(children.getJSONObject(key), provider));
             }
         }
-        return new CelestiaBrowserItem(name, items);
+        return new CelestiaBrowserItem(name, alternativeName, items);
     }
 
     static Map<String, CelestiaBrowserItem> fromJsonString(@NonNull String string, @Nullable ChildrenProvider provider) {
@@ -98,9 +106,12 @@ public class CelestiaBrowserItem {
         return _object;
     }
 
+    public @Nullable
+    String getAlternativeName() {
+        return _alternativeName;
+    }
+
     public @NonNull String getName() {
-        if (_name == null)
-            return "";
         return _name;
     }
 
@@ -133,8 +144,8 @@ public class CelestiaBrowserItem {
 
     private void setChildren(Map<String, CelestiaBrowserItem> children) {
         if (children == null) {
-            childrenKeys = new ArrayList<String>();
-            childrenValues = new ArrayList<CelestiaBrowserItem>();
+            childrenKeys = new ArrayList<>();
+            childrenValues = new ArrayList<>();
             return;
         }
         childrenKeys = new ArrayList<>(children.keySet());
