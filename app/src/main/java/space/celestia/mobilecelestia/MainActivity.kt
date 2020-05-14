@@ -492,24 +492,12 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun showToolbar() {
-        // Show info action only when selection is not null
-        currentSelection = core.simulation.selection
-        var actions: List<List<ToolbarAction>> = listOf()
-        if (!currentSelection!!.isEmpty) {
-            actions = listOf(
-                listOf(ToolbarAction.Celestia)
-            )
-        }
-
-        showRightFragment(ToolbarFragment.newInstance(actions), R.id.toolbar_right_container)
+        showRightFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_right_container)
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
         hideOverlay()
         when (action) {
-            ToolbarAction.Celestia -> {
-                showInfo(currentSelection!!)
-            }
             ToolbarAction.Search -> {
                 showSearch()
             }
@@ -542,12 +530,7 @@ class MainActivity : AppCompatActivity(),
 
     // Listeners...
     override fun onInfoActionSelected(action: InfoActionItem) {
-        val selection = currentSelection
-        if (selection == null) {
-            showAlert(CelestiaString("Object not found", ""))
-            return
-        }
-
+        val selection = currentSelection ?: return
         when (action) {
             is InfoNormalActionItem -> {
                 core.simulation.selection = selection
@@ -572,7 +555,6 @@ class MainActivity : AppCompatActivity(),
             return
         }
         hideOverlay()
-        currentSelection = sel
         showInfo(sel)
     }
 
@@ -591,8 +573,7 @@ class MainActivity : AppCompatActivity(),
             if (obj != null) {
                 val selection = CelestiaSelection.create(obj)
                 if (selection != null) {
-                    currentSelection = selection
-                    showInfo(currentSelection!!)
+                    showInfo(selection)
                 } else {
                     showAlert(CelestiaString("Object not found", ""))
                 }
@@ -808,6 +789,13 @@ class MainActivity : AppCompatActivity(),
         showToolbar()
     }
 
+    override fun celestiaFragmentDidRequestObjectInfo() {
+        val selection = core.simulation.selection
+        if (selection.isEmpty) { return }
+
+        showInfo(selection)
+    }
+
     private fun reloadSettings() {
         val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
         if (frag is SettingsFragment) {
@@ -828,6 +816,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun showInfo(selection: CelestiaSelection) {
+        currentSelection = selection
         showRightFragment(
             InfoFragment.newInstance(
                 InfoDescriptionItem(

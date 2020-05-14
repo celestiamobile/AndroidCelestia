@@ -25,12 +25,11 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
 enum class ToolbarAction : Serializable {
-    Celestia, Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite;
+    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite;
 
     val title: String
         get() {
             val orig = when (this) {
-                Celestia -> "Information"
                 Time -> "Time Control"
                 Script -> "Script Control"
                 Camera -> "Camera Control"

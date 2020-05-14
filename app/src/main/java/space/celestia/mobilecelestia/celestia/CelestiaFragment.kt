@@ -48,6 +48,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
+        fun celestiaFragmentDidRequestObjectInfo()
     }
 
     var listener: Listener? = null
@@ -187,8 +188,14 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
     // Actions
     override fun didTapAction(action: CelestiaControlAction) {
-        if (action == CelestiaControlAction.ShowMenu) {
-            listener?.celestiaFragmentDidRequestActionMenu()
+        when (action) {
+            CelestiaControlAction.ShowMenu -> {
+                listener?.celestiaFragmentDidRequestActionMenu()
+            }
+            CelestiaControlAction.Info -> {
+                listener?.celestiaFragmentDidRequestObjectInfo()
+            }
+            else -> {}
         }
     }
 
