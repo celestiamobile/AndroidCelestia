@@ -86,8 +86,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     StarStyle("Star Style"),
     HudDetail("Info Display"),
     // Double values
-    FaintestVisible("Faintest Visible"),
-    AmbientLightLevel("Ambient Light Level"),
+    FaintestVisible("Faintest Stars"),
+    AmbientLightLevel("Ambient Light"),
     GalaxyBrightness("Galaxy Brightness"),
     MinimumFeatureSize("Minimum FeatureSize");
 
@@ -203,7 +203,18 @@ class SettingsMultiSelectionItem(
     }
 }
 
-private val staticDisplayItems: List<SettingsMultiSelectionItem> = listOf(
+class SettingsSliderItem(
+    private val internalKey: SettingsKey,
+    val minValue: Double = 0.0,
+    val maxValue: Double = 1.0
+) : SettingsItem, Serializable {
+    val key: String = internalKey.valueString
+
+    override val name: String
+        get() = CelestiaString(internalKey.displayName, "")
+}
+
+private val staticDisplayItems: List<SettingsItem> = listOf(
     SettingsMultiSelectionItem("Objects", listOf(
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowStars),
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowPlanets),
@@ -329,6 +340,8 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         SettingsSingleSelectionItem.Selection("Terse", 1),
         SettingsSingleSelectionItem.Selection("Verbose", 2)
     )),
+    SettingsSliderItem(SettingsKey.AmbientLightLevel),
+    SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0),
     SettingsDataLocationItem()
 )
 

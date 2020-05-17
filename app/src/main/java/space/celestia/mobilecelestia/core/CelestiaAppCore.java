@@ -219,6 +219,17 @@ public class CelestiaAppCore {
         }
     }
 
+    public double getDoubleValueForField(@NonNull String field) {
+        try {
+            Method method = getClass().getDeclaredMethod("get" + field);
+            Object value = method.invoke(this);
+            return (double)value;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get field " + field);
+        }
+        return 0.0;
+    }
+
     public boolean getShowStars() { return c_getShowStars(); }
     public void setShowStars(boolean showStars) { c_setShowStars(showStars); }
     private native void c_setShowStars(boolean showStars);

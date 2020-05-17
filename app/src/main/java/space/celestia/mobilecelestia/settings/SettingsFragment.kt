@@ -65,6 +65,9 @@ class SettingsFragment : Fragment() {
             is SettingsSingleSelectionItem -> {
                 push(SettingsSingleSelectionFragment.newInstance(item), item.name)
             }
+            is SettingsSliderItem -> {
+                push(SettingsSliderFragment.newInstance(item), item.name)
+            }
             is SettingsCurrentTimeItem -> {
                 push(SettingsCurrentTimeFragment.newInstance(), item.name)
             }
