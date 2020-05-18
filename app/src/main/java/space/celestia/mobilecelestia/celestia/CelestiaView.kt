@@ -218,6 +218,18 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
         holder.setFixedSize((width / density).toInt(), (height / density).toInt())
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        sharedView = this
+    }
+
+    override fun onDetachedFromWindow() {
+        sharedView = null
+
+        super.onDetachedFromWindow()
+    }
+
     override fun doFrame(p0: Long) {
         if (isReady) {
             requestRender()
@@ -234,7 +246,13 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
         Choreographer.getInstance().postFrameCallback(this)
     }
 
-    private companion object {
-        const val TAG = "CelestiaView"
+    companion object {
+        private const val TAG = "CelestiaView"
+        private var sharedView: CelestiaView? = null
+
+        // Call on render thread to avoid concurrency issue.
+        fun callOnRenderThread(block: () -> Unit) {
+            sharedView?.queueEvent(block)
+        }
     }
 }

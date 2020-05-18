@@ -41,6 +41,7 @@ import space.celestia.mobilecelestia.browser.BrowserCommonFragment
 import space.celestia.mobilecelestia.browser.BrowserFragment
 import space.celestia.mobilecelestia.browser.BrowserItem
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
+import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.control.BottomControlFragment
 import space.celestia.mobilecelestia.control.CameraControlAction
 import space.celestia.mobilecelestia.control.CameraControlFragment
@@ -535,7 +536,7 @@ class MainActivity : AppCompatActivity(),
         when (action) {
             is InfoNormalActionItem -> {
                 core.simulation.selection = selection
-                core.charEnter(action.item.value)
+                CelestiaView.callOnRenderThread { core.charEnter(action.item.value) }
             }
             is InfoSelectActionItem -> {
                 core.simulation.selection = selection
@@ -560,7 +561,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onActionSelected(item: CelestiaAction) {
-        core.charEnter(item.value)
+        CelestiaView.callOnRenderThread { core.charEnter(item.value) }
     }
 
     override fun onBrowserItemSelected(item: BrowserItem) {
@@ -589,15 +590,15 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onCameraActionStepperTouchDown(action: CameraControlAction) {
-        core.keyDown(action.value)
+        CelestiaView.callOnRenderThread { core.keyDown(action.value) }
     }
 
     override fun onCameraActionStepperTouchUp(action: CameraControlAction) {
-        core.keyUp(action.value)
+        CelestiaView.callOnRenderThread { core.keyUp(action.value) }
     }
 
     override fun onHelpActionSelected(action: HelpAction) {
-        core.charEnter(CelestiaAction.RunDemo.value)
+        CelestiaView.callOnRenderThread { core.charEnter(CelestiaAction.RunDemo.value) }
     }
 
     override fun addFavoriteItem(item: MutableFavoriteBaseItem) {
@@ -694,7 +695,7 @@ class MainActivity : AppCompatActivity(),
     override fun onCurrentTimeActionRequested(action: CurrentTimeAction) {
         when (action) {
             CurrentTimeAction.SetToCurrentTime -> {
-                core.charEnter(CelestiaAction.CurrentTime.value)
+                CelestiaView.callOnRenderThread { core.charEnter(CelestiaAction.CurrentTime.value) }
                 reloadSettings()
             }
             CurrentTimeAction.PickDate -> {
