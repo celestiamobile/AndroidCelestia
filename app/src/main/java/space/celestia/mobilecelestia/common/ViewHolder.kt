@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.common
 
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -29,4 +30,10 @@ class CommonTextViewHolder(parent: ViewGroup):
     override val title = itemView.title
     override var accessory = itemView.accessory
     val detail = itemView.detail
+
+    fun configure(title: String?, detail: String? = null, accessory: Drawable? = null) {
+        this.title.text = title
+        this.detail.text = detail
+        this.accessory.setImageDrawable(accessory)
+    }
 }

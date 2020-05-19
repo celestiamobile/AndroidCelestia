@@ -1,5 +1,5 @@
 /*
- * SettingsSliderFragment.kt
+ * SettingsCommonFragment.kt
  *
  * Copyright (C) 2001-2020, the Celestia Development Team
  *
@@ -13,7 +13,6 @@ package space.celestia.mobilecelestia.settings
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
@@ -21,8 +20,8 @@ import android.view.View
 import android.view.ViewGroup
 import space.celestia.mobilecelestia.R
 
-class SettingsSliderFragment : SettingsBaseFragment() {
-    private var item: SettingsSliderItem? = null
+class SettingsCommonFragment : SettingsBaseFragment() {
+    private var item: SettingsCommonItem? = null
     private var listener: Listener? = null
 
     override val title: String
@@ -32,7 +31,7 @@ class SettingsSliderFragment : SettingsBaseFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            item = it.getSerializable(ARG_ITEM) as SettingsSliderItem
+            item = it.getSerializable(ARG_ITEM) as SettingsCommonItem
         }
     }
 
@@ -40,10 +39,10 @@ class SettingsSliderFragment : SettingsBaseFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_settings_slider_list, container, false)
+        val view = inflater.inflate(R.layout.fragment_settings_common_list, container, false)
         (view as? RecyclerView)?.let {
             it.layoutManager = LinearLayoutManager(context)
-            it.adapter = SettingsSliderRecyclerViewAdapter(item!!, listener)
+            it.adapter = SettingsCommonRecyclerViewAdapter(item!!, listener)
         }
         return view
     }
@@ -53,7 +52,7 @@ class SettingsSliderFragment : SettingsBaseFragment() {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement SettingsSliderFragment.Listener")
+            throw RuntimeException("$context must implement SettingsCommonFragment.Listener")
         }
     }
 
@@ -63,15 +62,16 @@ class SettingsSliderFragment : SettingsBaseFragment() {
     }
 
     interface Listener {
-        fun onSliderSettingItemChange(field: String, value: Double)
+        fun onCommonSettingSliderItemChange(field: String, value: Double)
+        fun onCommonSettingActionItemSelected(action: Int)
     }
 
     companion object {
         const val ARG_ITEM = "item"
 
         @JvmStatic
-        fun newInstance(item: SettingsSliderItem) =
-            SettingsSliderFragment().apply {
+        fun newInstance(item: SettingsCommonItem) =
+            SettingsCommonFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, item)
                 }
