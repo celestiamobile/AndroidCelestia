@@ -349,12 +349,16 @@ static int convert_modifier_to_celestia_modifier(jint buttons, jint modifiers)
 {
     // TODO: other modifier
     int cModifiers = 0;
-    if (buttons & 1)
+    if (buttons & 0x01)
         cModifiers |= CelestiaCore::LeftButton;
-    if (buttons & 2)
+    if (buttons & 0x02)
         cModifiers |= CelestiaCore::MiddleButton;
-    if (buttons & 4)
+    if (buttons & 0x04)
         cModifiers |= CelestiaCore::RightButton;
+    if (modifiers & 0x08)
+        cModifiers |= CelestiaCore::ShiftKey;
+    if (modifiers & 0x10)
+        cModifiers |= CelestiaCore::ControlKey;
     return cModifiers;
 }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ control_drag_mode_combined.xml
+  ~ control_mode_combined.xml
   ~
   ~ Copyright (C) 2001-2020, the Celestia Development Team
   ~
@@ -14,7 +14,7 @@
     <!-- NOTE: order is important (the first matching state(s) is what is rendered) -->
     <item
         android:state_selected="true"
-        android:drawable="@drawable/control_rotate_on" />
+        android:drawable="@drawable/control_mode_object" />
     <item
-        android:drawable="@drawable/control_rotate_off" />
+        android:drawable="@drawable/control_mode_camera" />
 </selector>
