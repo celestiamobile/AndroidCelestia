@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity(),
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
     SettingsDataLocationFragment.Listener,
-    SettingsSliderFragment.Listener {
+    SettingsCommonFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -685,11 +685,15 @@ class MainActivity : AppCompatActivity(),
         reloadSettings()
     }
 
-    override fun onSliderSettingItemChange(field: String, value: Double) {
+    override fun onCommonSettingSliderItemChange(field: String, value: Double) {
         val core = CelestiaAppCore.shared()
         core.setDoubleValueForField(field, value)
         settingManager[PreferenceManager.CustomKey(field)] = value.toString()
         reloadSettings()
+    }
+
+    override fun onCommonSettingActionItemSelected(action: Int) {
+        CelestiaView.callOnRenderThread { core.charEnter(action) }
     }
 
     override fun onCurrentTimeActionRequested(action: CurrentTimeAction) {

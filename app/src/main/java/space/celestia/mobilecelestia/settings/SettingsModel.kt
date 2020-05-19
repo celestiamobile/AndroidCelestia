@@ -319,7 +319,7 @@ private val staticTimeItems: List<SettingsItem> = listOf(
     SettingsCurrentTimeItem()
 )
 
-class SettingsDataLocationItem : SettingsItem {
+class SettingsDataLocationItem : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString("Data Location", "")
 }
@@ -340,23 +340,36 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         SettingsSingleSelectionItem.Selection("Terse", 1),
         SettingsSingleSelectionItem.Selection("Verbose", 2)
     )),
-    SettingsSliderItem(SettingsKey.AmbientLightLevel),
-    SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0),
+    SettingsCommonItem.create(SettingsKey.AmbientLightLevel.displayName, listOf(
+        SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0)
+    )),
+    SettingsCommonItem.create(SettingsKey.FaintestVisible.displayName, listOf(
+        SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0)
+    )),
     SettingsDataLocationItem()
 )
 
-class SettingsRenderInfoItem : SettingsItem {
+class SettingsRenderInfoItem : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString("Render Info", "")
 }
 
-class SettingsAboutItem : SettingsItem {
+class SettingsAboutItem : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString("About", "")
 }
 
+class SettingsActionItem(override val name: String, val action: Int): SettingsItem, Serializable
+
 private val staticOtherItems: List<SettingsItem> = listOf(
     SettingsRenderInfoItem(),
+    SettingsCommonItem.create(
+        CelestiaString("Debug", ""),
+        listOf(
+            SettingsActionItem(CelestiaString("Toggle FPS Display", ""), 0x60),
+            SettingsActionItem(CelestiaString("Toggle Console Display", ""), 0x7E)
+        )
+    ),
     SettingsAboutItem()
 )
 
@@ -366,6 +379,16 @@ val mainSettingSections: List<CommonSectionV2> = listOf(
     CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "")),
     CommonSectionV2(staticOtherItems, CelestiaString("Other", ""))
 )
+
+class SettingsCommonItem(override val name: String, val sections: List<Section>) : SettingsItem, Serializable {
+    class Section(val rows: List<SettingsItem>, val header: String? = "") : Serializable
+
+    companion object {
+        fun create(name: String, items: List<SettingsItem>): SettingsCommonItem {
+            return SettingsCommonItem(name, listOf(Section(items)))
+        }
+    }
+}
 
 open class SettingsBaseFragment: TitledFragment() {
     open fun reload() {}

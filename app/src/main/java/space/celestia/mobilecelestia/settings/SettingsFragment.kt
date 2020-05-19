@@ -24,6 +24,7 @@ import space.celestia.mobilecelestia.common.pop
 import space.celestia.mobilecelestia.common.push
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.core.CelestiaAppCore
+import java.lang.RuntimeException
 
 class SettingsFragment : Fragment() {
 
@@ -65,8 +66,8 @@ class SettingsFragment : Fragment() {
             is SettingsSingleSelectionItem -> {
                 push(SettingsSingleSelectionFragment.newInstance(item), item.name)
             }
-            is SettingsSliderItem -> {
-                push(SettingsSliderFragment.newInstance(item), item.name)
+            is SettingsCommonItem -> {
+                push(SettingsCommonFragment.newInstance(item), item.name)
             }
             is SettingsCurrentTimeItem -> {
                 push(SettingsCurrentTimeFragment.newInstance(), item.name)
@@ -79,6 +80,9 @@ class SettingsFragment : Fragment() {
             }
             is SettingsDataLocationItem -> {
                 push(SettingsDataLocationFragment.newInstance(), item.name)
+            }
+            else -> {
+                throw RuntimeException("SettingsFragment cannot handle item $item")
             }
         }
     }
