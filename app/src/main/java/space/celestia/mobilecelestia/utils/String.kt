@@ -13,7 +13,11 @@ package space.celestia.mobilecelestia.utils
 
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 
+var celestiaLibraryLoaded = false
+
 @Suppress("FunctionName")
 fun CelestiaString(key: String, @Suppress("UNUSED_PARAMETER") comment: String): String {
+    if (!celestiaLibraryLoaded)
+        return key
     return CelestiaAppCore.getLocalizedString(key)
 }

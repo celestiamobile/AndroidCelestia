@@ -252,6 +252,9 @@ class MainActivity : AppCompatActivity(),
         return Observable.create {
             it.onNext(CelestiaString("Loading configuration…", ""))
 
+            System.loadLibrary("celestia")
+            celestiaLibraryLoaded = true
+
             CelestiaAppCore.initGL()
 
             // Read custom paths here
@@ -956,7 +959,6 @@ class MainActivity : AppCompatActivity(),
         var customConfigFilePath: String? = null
 
         init {
-            System.loadLibrary("celestia")
             System.loadLibrary("nativecrashhandler")
         }
     }
