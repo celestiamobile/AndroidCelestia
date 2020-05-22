@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import space.celestia.mobilecelestia.R
 
 enum class CelestiaControlAction {
-    ZoomIn, ZoomOut, ShowMenu, ToggleModeToRotate, ToggleModeToMove, Info
+    ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info
 }
 
 interface CelestiaControlButton {}
@@ -108,7 +108,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet): LinearLayout(c
 
     companion object {
         private val items: List<CelestiaControlButton> = listOf(
-            CelestiaToggleButton(R.drawable.control_drag_mode_combined, CelestiaControlAction.ToggleModeToMove, CelestiaControlAction.ToggleModeToRotate),
+            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToCamera, CelestiaControlAction.ToggleModeToObject),
             CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn),
             CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
             CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),

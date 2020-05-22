@@ -21,9 +21,11 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 public class CelestiaAppCore {
-    public static final int MOUSE_BUTTON_LEFT       = 0x1;
-    public static final int MOUSE_BUTTON_MIDDLE     = 0x2;
-    public static final int MOUSE_BUTTON_RIGHT      = 0x4;
+    public static final int MOUSE_BUTTON_LEFT       = 0x01;
+    public static final int MOUSE_BUTTON_MIDDLE     = 0x02;
+    public static final int MOUSE_BUTTON_RIGHT      = 0x04;
+    public static final int SHIFT_KEY               = 0x08;
+    public static final int CONTROL_KEY             = 0x10;
 
     public interface ProgressWatcher {
         void onCelestiaProgress(@NonNull String progress);

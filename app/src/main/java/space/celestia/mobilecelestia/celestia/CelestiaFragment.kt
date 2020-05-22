@@ -201,8 +201,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
     override fun didToggleToMode(action: CelestiaControlAction) {
         when (action) {
-            CelestiaControlAction.ToggleModeToRotate -> { glView?.setDragMode(CelestiaView.DragMode.Rotate) }
-            CelestiaControlAction.ToggleModeToMove -> { glView?.setDragMode(CelestiaView.DragMode.Move) }
+            CelestiaControlAction.ToggleModeToCamera -> { glView?.setInteractionMode(CelestiaView.InteractionMode.Camera) }
+            CelestiaControlAction.ToggleModeToObject -> { glView?.setInteractionMode(CelestiaView.InteractionMode.Object) }
             else -> {}
         }
     }

@@ -20,6 +20,7 @@ import android.opengl.GLSurfaceView
 import android.util.Log
 import android.view.Choreographer
 import android.view.MotionEvent
+import kotlinx.android.synthetic.main.fragment_help_action_item.view.*
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import java.util.*
 import kotlin.collections.HashMap
@@ -27,13 +28,13 @@ import kotlin.math.abs
 import kotlin.math.hypot
 
 class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.FrameCallback {
-    enum class DragMode {
-        Move, Rotate;
+    enum class InteractionMode {
+        Object, Camera;
 
         val button: Int
             get() = when (this) {
-                Move -> CelestiaAppCore.MOUSE_BUTTON_LEFT
-                Rotate -> CelestiaAppCore.MOUSE_BUTTON_RIGHT
+                Camera -> CelestiaAppCore.MOUSE_BUTTON_LEFT
+                Object -> CelestiaAppCore.MOUSE_BUTTON_RIGHT
             }
     }
 
@@ -62,10 +63,10 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
     var zoomMode: ZoomMode? = null
 
-    private var internalDragMode = DragMode.Move
+    private var internalInteractionMode = InteractionMode.Camera
 
-    fun setDragMode(dragMode: DragMode) {
-        queueEvent { internalDragMode = dragMode }
+    fun setInteractionMode(interactionMode: InteractionMode) {
+        queueEvent { internalInteractionMode = interactionMode }
     }
 
     override fun finalize() {
@@ -126,7 +127,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                             // Stop 1 finger action
                             Log.d(TAG, "One finger action stopped")
                             val pt = prev.point
-                            queueEvent { core.mouseButtonUp(internalDragMode.button, pt, 0) }
+                            queueEvent { core.mouseButtonUp(internalInteractionMode.button, pt, 0) }
                         }
                     }
                     touchLocations[id] =
@@ -142,7 +143,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                     if (touchLocations.size == 1) {
                         Log.d(TAG, "One finger action stopped")
                         val point = centerPoint()
-                        queueEvent { core.mouseButtonUp(internalDragMode.button, point, 0) }
+                        queueEvent { core.mouseButtonUp(internalInteractionMode.button, point, 0) }
                     }
                     touchActive = false
                 } else if (touchLocations.size == 1) {
@@ -179,7 +180,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                         // FIXME: 8 is a magic number
                         val deltaY = (1 - delta) * prevLength / 8
                         Log.d(TAG, "Two finger pinch $deltaY")
-                        queueEvent { core.mouseWheel(deltaY, 0) }
+                        queueEvent { callZoom(deltaY) }
                     }
                 } else if (touchLocations.size == 1)  {
                     val point = PointF(
@@ -195,14 +196,14 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                         // Start one finger pan
                         Log.d(TAG, "One finger action started")
                         val pt = it.point
-                        queueEvent { core.mouseButtonDown(internalDragMode.button, pt, 0) }
+                        queueEvent { core.mouseButtonDown(internalInteractionMode.button, pt, 0) }
                     }
                     if (it.action) {
                         val offset = PointF(point.x - it.point.x, point.y - it.point.y)
 
                         // One finger pan
                         Log.d(TAG, "One finger move $offset")
-                        queueEvent { core.mouseMove(internalDragMode.button, offset, 0) }
+                        queueEvent { core.mouseMove(internalInteractionMode.button, offset, 0) }
                     }
                     it.point = point
                 }
@@ -237,9 +238,17 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
         val mode = zoomMode
         if (mode != null) {
-            queueEvent { core.mouseWheel(mode.distance, 0) }
+            queueEvent { callZoom(mode.distance) }
         }
         Choreographer.getInstance().postFrameCallback(this)
+    }
+
+    private fun callZoom(deltaY: Float) {
+        if (internalInteractionMode == InteractionMode.Camera) {
+            core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), CelestiaAppCore.SHIFT_KEY)
+        } else {
+            core.mouseWheel(deltaY, 0)
+        }
     }
 
     init {
