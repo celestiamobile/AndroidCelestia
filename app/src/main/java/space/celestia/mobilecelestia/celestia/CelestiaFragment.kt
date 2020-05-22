@@ -21,11 +21,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.AppStatusReporter
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -201,8 +203,18 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
     override fun didToggleToMode(action: CelestiaControlAction) {
         when (action) {
-            CelestiaControlAction.ToggleModeToCamera -> { glView?.setInteractionMode(CelestiaView.InteractionMode.Camera) }
-            CelestiaControlAction.ToggleModeToObject -> { glView?.setInteractionMode(CelestiaView.InteractionMode.Object) }
+            CelestiaControlAction.ToggleModeToCamera -> {
+                glView?.setInteractionMode(CelestiaView.InteractionMode.Camera)
+                activity?.let {
+                    Toast.makeText(it, CelestiaString("Switched to camera mode", ""), Toast.LENGTH_SHORT).show()
+                }
+            }
+            CelestiaControlAction.ToggleModeToObject -> {
+                glView?.setInteractionMode(CelestiaView.InteractionMode.Object)
+                activity?.let {
+                    Toast.makeText(it, CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT).show()
+                }
+            }
             else -> {}
         }
     }
