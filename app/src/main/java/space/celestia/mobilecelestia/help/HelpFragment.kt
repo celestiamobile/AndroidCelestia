@@ -29,11 +29,11 @@ enum class HelpAction {
 
 private val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
     DescriptionItem(
-        CelestiaString("Tap to select an object.", ""), R.drawable.tutorial_gesture_tap),
+        CelestiaString("Tap the mode button on the sidebar to switch between object mode and camera mode.", ""), R.drawable.tutorial_switch_mode),
     DescriptionItem(
-        CelestiaString("Drag with one finger to move/rotate around an object.", ""), R.drawable.tutorial_gesture_one_finger_pan),
+        CelestiaString("In object mode, drag to rotate around an object.\n\nPinch to zoom in/out on an object.", ""), R.drawable.tutorial_mode_object),
     DescriptionItem(
-        CelestiaString("Pinch to zoom in/out on an object.", ""), R.drawable.tutorial_gesture_pinch)
+        CelestiaString("In camera mode, drag to move field of view.\n\nPinch to zoom in/out field of view.", ""), R.drawable.tutorial_mode_camera)
 ) }
 private val staticHelpActionItems: List<ActionItem> by lazy { listOf( ActionItem(CelestiaString("Run Demo", ""), HelpAction.RunDemo) ) }
 

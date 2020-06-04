@@ -14,7 +14,7 @@
     <!-- NOTE: order is important (the first matching state(s) is what is rendered) -->
     <item
         android:state_selected="true"
-        android:drawable="@drawable/control_mode_object" />
-    <item
         android:drawable="@drawable/control_mode_camera" />
+    <item
+        android:drawable="@drawable/control_mode_object" />
 </selector>

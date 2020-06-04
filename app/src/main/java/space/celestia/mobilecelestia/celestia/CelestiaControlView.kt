@@ -108,7 +108,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet): LinearLayout(c
 
     companion object {
         private val items: List<CelestiaControlButton> = listOf(
-            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToCamera, CelestiaControlAction.ToggleModeToObject),
+            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera),
             CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn),
             CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
             CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),

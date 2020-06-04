@@ -63,7 +63,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
     var zoomMode: ZoomMode? = null
 
-    private var internalInteractionMode = InteractionMode.Camera
+    private var internalInteractionMode = InteractionMode.Object
 
     fun setInteractionMode(interactionMode: InteractionMode) {
         queueEvent { internalInteractionMode = interactionMode }
