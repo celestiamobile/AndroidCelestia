@@ -14,14 +14,18 @@ package space.celestia.mobilecelestia.celestia
 import android.app.Activity
 import android.content.Context
 import android.opengl.GLSurfaceView
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
+import android.view.DisplayCutout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
@@ -39,6 +43,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
     private var glViewContainer: FrameLayout? = null
     private var glView: CelestiaView? = null
     private var glViewSize: Size? = null
+
+    private var controlViewContainer: View? = null
 
     // MARK: Celestia
     private var pathToLoad: String? = null
@@ -73,6 +79,17 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         glViewContainer = view.findViewById(R.id.celestia_gl_view)
         setupGLView()
 
+        controlViewContainer = view.findViewById(R.id.control_view_container)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            view.setOnApplyWindowInsetsListener { v, insets ->
+                insets.displayCutout?.let {
+                    applyCutout(it)
+                }
+                return@setOnApplyWindowInsetsListener insets
+            }
+        }
+
         view.findViewById<CelestiaControlView>(R.id.control_view).listener = this
         return view
     }
@@ -105,6 +122,31 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
         listener = null
         activity = null
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun applyCutout(cutout: DisplayCutout) {
+        if (!loadSuccess) { return }
+
+        val density = resources.displayMetrics.density
+
+        CelestiaView.callOnRenderThread {
+            core.setSafeAreaInsets(
+                (cutout.safeInsetLeft / density).toInt(),
+                (cutout.safeInsetTop / density).toInt(),
+                (cutout.safeInsetRight / density).toInt(),
+                (cutout.safeInsetBottom / density).toInt());
+        }
+
+        activity?.runOnUiThread {
+            controlViewContainer?.let {
+                val params = it.layoutParams as? ConstraintLayout.LayoutParams
+                if (params != null) {
+                    params.marginEnd = (8 * density).toInt() + cutout.safeInsetRight
+                    it.layoutParams = params
+                }
+            }
+        }
     }
 
     private fun setupGLView() {
@@ -154,6 +196,12 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         glView?.isReady = true
 
         loadSuccess = true
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            view?.rootWindowInsets?.displayCutout?.let {
+                applyCutout(it)
+            }
+        }
 
         Log.d(TAG, "Ready to display")
         AppStatusReporter.shared().celestiaLoadResult(true)

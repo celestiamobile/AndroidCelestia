@@ -15,8 +15,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.PointF
+import android.graphics.Rect
 import android.graphics.RectF
 import android.opengl.GLSurfaceView
+import android.os.Build
 import android.util.Log
 import android.view.Choreographer
 import android.view.MotionEvent
@@ -84,6 +86,20 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
         val density = Resources.getSystem().displayMetrics.density
 
+        var insetLeft = 16 * density
+        var insetTop = 16 * density
+        var insetRight = 16 * density
+        var insetBottom = 16 * density
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            rootWindowInsets.displayCutout?.let {
+                insetLeft += it.safeInsetLeft
+                insetTop += it.safeInsetTop
+                insetRight += it.safeInsetRight
+                insetBottom += it.safeInsetBottom
+            }
+        }
+
         val id = event.actionIndex
 
         fun centerPoint(): PointF {
@@ -113,8 +129,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                 )
 
                 // Avoid edge gesture
-                val viewRect = RectF(0.toFloat(), 0.toFloat(), width / density,  height / density)
-                viewRect.inset(16f, 16f)
+                val viewRect = RectF(insetLeft / density, insetTop / density, (width - insetRight) / density,  (height - insetBottom) / density)
 
                 // we don't allow a third finger
                 if (viewRect.contains(point.x, point.y) && touchLocations.count() < 2) {

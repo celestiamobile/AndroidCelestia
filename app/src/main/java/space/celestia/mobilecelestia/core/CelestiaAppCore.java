@@ -81,6 +81,10 @@ public class CelestiaAppCore {
         c_resize(w, h);
     }
 
+    public void setSafeAreaInsets(int left, int top, int right, int bottom) {
+        c_setSafeAreaInsets(left, top, right, bottom);
+    }
+
     // Control
     public void mouseButtonUp(int buttons, PointF point, int modifiers) {
         c_mouseButtonUp(buttons, point.x, point.y, modifiers);
@@ -144,6 +148,7 @@ public class CelestiaAppCore {
     private native void c_draw();
     private native void c_tick();
     private native void c_resize(int w, int h);
+    private native void c_setSafeAreaInsets(int left, int top, int right, int bottom);
     private native long c_getSimulation();
 
     // Control

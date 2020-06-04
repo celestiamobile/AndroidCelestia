@@ -16,15 +16,19 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
+import android.view.DisplayCutout
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.DatePicker
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
@@ -117,7 +121,7 @@ class MainActivity : AppCompatActivity(),
             return "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME"
         }
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         // We don't need to recover when we get killed
         super.onCreate(null)
@@ -133,11 +137,34 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
+        // Real fullscreen
+        val decorView = window.decorView
+        var systemUIVisibility = decorView.systemUiVisibility
+        systemUIVisibility = systemUIVisibility or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN
+        decorView.systemUiVisibility = systemUIVisibility
+
+        // Handle notch
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val lp = window.attributes
+            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            window.attributes = lp
+        }
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         AppStatusReporter.shared().register(this)
 
         setContentView(R.layout.activity_main)
+
+        // Handle notch
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val rootView = findViewById<View>(android.R.id.content).rootView
+            rootView.setOnApplyWindowInsetsListener { v, insets ->
+                insets.displayCutout?.let {
+                    applyCutout(it)
+                }
+                return@setOnApplyWindowInsetsListener insets
+            }
+        }
 
         // Add fragments
         supportFragmentManager
@@ -217,6 +244,56 @@ class MainActivity : AppCompatActivity(),
             runOnUiThread {
                 removeCelestiaFragment()
             }
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val rootView = findViewById<View>(android.R.id.content).rootView
+            rootView.rootWindowInsets.displayCutout?.let {
+                applyCutout(it)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun applyCutout(cutout: DisplayCutout) {
+        val density = resources.displayMetrics.density
+
+        val rightView = findViewById<View>(R.id.normal_right_container)
+        val toolbarView = findViewById<View>(R.id.toolbar_right_container)
+        val bottomView = findViewById<View>(R.id.toolbar_bottom_container)
+
+        val rightNotch = findViewById<View>(R.id.right_notch)
+        val bottomNotch = findViewById<View>(R.id.bottom_notch)
+
+        (rightView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.width = (300 * density).toInt() + cutout.safeInsetRight
+            rightView.layoutParams = it
+        }
+        rightView.setPadding(0, 0, cutout.safeInsetRight, 0)
+
+        (toolbarView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.width = (220 * density).toInt() + cutout.safeInsetRight
+            toolbarView.layoutParams = it
+        }
+        toolbarView.setPadding(0, 0, cutout.safeInsetRight, 0)
+
+        (bottomView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.height = (60 * density).toInt() + cutout.safeInsetBottom
+            bottomView.layoutParams = it
+        }
+        bottomView.setPadding(0, 0, 0, cutout.safeInsetBottom)
+
+        (bottomNotch.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.height = cutout.safeInsetBottom
+            bottomNotch.layoutParams = it
+        }
+        (rightNotch.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.width = cutout.safeInsetRight
+            rightNotch.layoutParams = it
         }
     }
 
@@ -829,6 +906,8 @@ class MainActivity : AppCompatActivity(),
             }
         }
         overlay.visibility = View.INVISIBLE
+        findViewById<View>(R.id.right_notch).visibility = View.INVISIBLE
+        findViewById<View>(R.id.bottom_notch).visibility = View.INVISIBLE
     }
 
     private fun showInfo(selection: CelestiaSelection) {
@@ -923,6 +1002,7 @@ class MainActivity : AppCompatActivity(),
     private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
+        findViewById<View>(R.id.right_notch).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
             .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
@@ -933,6 +1013,7 @@ class MainActivity : AppCompatActivity(),
     private fun showBottomFragment(fragment: Fragment, containerID: Int = R.id.toolbar_bottom_container) {
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
+        findViewById<View>(R.id.bottom_notch).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
             .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top, R.anim.enter_from_top, R.anim.exit_to_bottom)

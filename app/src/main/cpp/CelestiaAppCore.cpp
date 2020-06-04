@@ -328,6 +328,18 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1resize(JNIEnv *env, j
 }
 
 extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setSafeAreaInsets(JNIEnv *env,
+                                                                             jobject thiz,
+                                                                             jint left, jint top,
+                                                                             jint right,
+                                                                             jint bottom) {
+    CelestiaCore *core = (CelestiaCore *) env->GetLongField(thiz, cacPtrFieldID);
+
+    core->setSafeAreaInsets(left, top, right, bottom);
+}
+
+extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getSimulation(JNIEnv *env,
                                                                          jobject thiz) {

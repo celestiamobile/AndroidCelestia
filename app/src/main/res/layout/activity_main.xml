@@ -69,6 +69,22 @@
             android:clickable="true"
             android:focusable="true"
             style="@style/Container"/>
+
+        <FrameLayout
+            android:id="@+id/right_notch"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/Background"/>
+
+        <FrameLayout
+            android:id="@+id/bottom_notch"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            style="@style/Background"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <FrameLayout
