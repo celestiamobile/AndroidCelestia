@@ -61,7 +61,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet): LinearLayout(c
 
             val button = Button(context)
             button.background = null
-            button.setColorFilter(ContextCompat.getColor(context, R.color.colorBackground))
+            button.setColorFilter(ContextCompat.getColor(context, R.color.colorSecondaryLabel))
 
             val size = (44 * density).toInt()
             button.layoutParams = LayoutParams(size, size)
