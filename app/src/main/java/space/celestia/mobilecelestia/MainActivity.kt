@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity(),
         // Handle notch
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val rootView = findViewById<View>(android.R.id.content).rootView
-            rootView.setOnApplyWindowInsetsListener { v, insets ->
+            rootView.setOnApplyWindowInsetsListener { _, insets ->
                 insets.displayCutout?.let {
                     applyCutout(it)
                 }

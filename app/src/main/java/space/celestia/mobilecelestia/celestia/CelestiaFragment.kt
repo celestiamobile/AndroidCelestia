@@ -82,7 +82,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         controlViewContainer = view.findViewById(R.id.control_view_container)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            view.setOnApplyWindowInsetsListener { v, insets ->
+            view.setOnApplyWindowInsetsListener { _, insets ->
                 insets.displayCutout?.let {
                     applyCutout(it)
                 }
