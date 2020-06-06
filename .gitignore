@@ -1,0 +1,10 @@
+.DS_Store
+build
+*.iml
+.cxx
+release
+debug
+local.properties
+.idea
+.gradle
+CelestiaResources
