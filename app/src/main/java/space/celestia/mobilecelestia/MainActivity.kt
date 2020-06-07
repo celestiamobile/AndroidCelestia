@@ -72,7 +72,7 @@ import java.lang.RuntimeException
 import java.util.*
 import kotlin.collections.HashMap
 
-class MainActivity : AppCompatActivity(),
+class MainActivity : AppCompatActivity(R.layout.activity_main),
     ToolbarFragment.Listener,
     InfoFragment.Listener,
     SearchFragment.Listener,
@@ -137,12 +137,6 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-        // Real fullscreen
-        val decorView = window.decorView
-        var systemUIVisibility = decorView.systemUiVisibility
-        systemUIVisibility = systemUIVisibility or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN
-        decorView.systemUiVisibility = systemUIVisibility
-
         // Handle notch
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val lp = window.attributes
@@ -152,8 +146,6 @@ class MainActivity : AppCompatActivity(),
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         AppStatusReporter.shared().register(this)
-
-        setContentView(R.layout.activity_main)
 
         // Handle notch
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -208,6 +200,32 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onBackPressed() {}
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideSystemUI()
+    }
+
+    private fun hideSystemUI() {
+        // Enables sticky immersive mode.
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                // Set the content to appear under the system bars so that the
+                // content doesn't resize when the system bars hide and show.
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                // Hide the nav bar and status bar
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN)
+    }
+
+    // Shows the system bars by removing all the flags
+    // except for the ones that make the content appear under the system bars.
+    private fun showSystemUI() {
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+    }
 
     override fun celestiaLoadingProgress(status: String) {}
 
