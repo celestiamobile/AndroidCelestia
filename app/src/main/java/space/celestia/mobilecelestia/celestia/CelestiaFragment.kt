@@ -191,12 +191,13 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         }
 
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
-        val font = FontHelper.getFontForLocale(locale)
-        if (font != null) {
+        val font = FontHelper.getFontForLocale(locale, 400)
+        val boldFont = FontHelper.getFontForLocale(locale, 700)
+        if (font != null && boldFont != null) {
             core.setFont(font.filePath, font.collectionIndex, 9)
-            core.setTitleFont(font.filePath, font.collectionIndex, 15)
+            core.setTitleFont(boldFont.filePath, boldFont.collectionIndex, 15)
             core.setRendererFont(font.filePath, font.collectionIndex, 9, CelestiaAppCore.RENDER_FONT_STYLE_NORMAL)
-            core.setRendererFont(font.filePath, font.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
+            core.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
         }
 
         // Display

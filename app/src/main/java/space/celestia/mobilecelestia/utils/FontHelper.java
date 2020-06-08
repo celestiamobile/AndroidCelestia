@@ -70,7 +70,7 @@ public class FontHelper {
 
         private static native void c_setFamilyVariant(long ptr, int familyVariant);
 
-        private static native long c_setStyle(long ptr, int weight, boolean italic);
+        private static native void c_setStyle(long ptr, int weight, boolean italic);
 
         private static native long c_match(long ptr, String familyName, String text);
 
@@ -126,7 +126,7 @@ public class FontHelper {
         }
     }
 
-    public static @Nullable FontCompat getFontForLocale(@NonNull String locale) {
+    public static @Nullable FontCompat getFontForLocale(@NonNull String locale, int weight) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // Finding font using SystemFont
             String probeText = "a";
@@ -135,6 +135,7 @@ public class FontHelper {
             else if (locale.equals("ko"))
                 probeText = "가";
             Matcher matcher = Matcher.create();
+            matcher.setStyle(weight, false);
             return new FontCompat(matcher.match("sans-serif", probeText));
         }
 
@@ -144,7 +145,7 @@ public class FontHelper {
             language = "zh-Hans";
         else if (language.equals("zh_TW"))
             language = "zh-Hant";
-        return LegacyFontConfig.getFontFallback(language);
+        return LegacyFontConfig.getFontFallback(language, weight);
     }
 
     static class LegacyFontConfig {
@@ -315,7 +316,7 @@ public class FontHelper {
         }
 
         public static synchronized @Nullable
-        FontCompat getFontFallback(String language) {
+        FontCompat getFontFallback(String language, int expectedWeight) {
             if (!initialized)
                 init();
 
@@ -328,7 +329,6 @@ public class FontHelper {
 
             FontFamily family = families.get(0);
 
-            int expectedWeight = 400;
             FontFace closestFace = null;
             int difference = Integer.MAX_VALUE;
 

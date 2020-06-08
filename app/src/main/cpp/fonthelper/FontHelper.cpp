@@ -37,7 +37,7 @@ Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1create(JNIEn
     if (!libHandle)
     {
         // Getting handle
-        libHandle = dlopen("libandroid.so", RTLD_NOW);
+        libHandle = dlopen("libandroid.so", RTLD_LAZY);
         // Finding methods
         AFontMatcher_create = (void *(*)())dlsym(libHandle, "AFontMatcher_create");
         AFontMatcher_setLocales = (void (*)(void *, const char *))dlsym(libHandle, "AFontMatcher_setLocales");
@@ -100,17 +100,16 @@ Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1setFamilyVar
                                                                                      jclass clazz,
                                                                                      jlong ptr,
                                                                                      jint family_variant) {
-    AFontMatcher_setFamilyVariant((void *)ptr, family_variant);
+    AFontMatcher_setFamilyVariant((void *)ptr, (uint32_t)family_variant);
 }
 
 extern "C"
-JNIEXPORT jlong JNICALL
+JNIEXPORT void JNICALL
 Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1setStyle(JNIEnv *env,
                                                                              jclass clazz,
-                                                                             jlong ptr,
-                                                                             jint weight,
+                                                                             jlong ptr, jint weight,
                                                                              jboolean italic) {
-    AFontMatcher_setStyle((void *)ptr, weight, italic);
+    AFontMatcher_setStyle((void *)ptr, (uint16_t)weight, italic == JNI_TRUE);
 }
 
 extern "C"
