@@ -32,6 +32,7 @@ import space.celestia.mobilecelestia.browser.createAllBrowserItems
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.FontHelper
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -187,6 +188,15 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         glViewSize?.let {
             core.resize(it.width, it.height)
             glViewSize = null
+        }
+
+        val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
+        val font = FontHelper.getFontForLocale(locale)
+        if (font != null) {
+            core.setFont(font.filePath, font.collectionIndex, 9)
+            core.setTitleFont(font.filePath, font.collectionIndex, 15)
+            core.setRendererFont(font.filePath, font.collectionIndex, 9, CelestiaAppCore.RENDER_FONT_STYLE_NORMAL)
+            core.setRendererFont(font.filePath, font.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
         }
 
         // Display

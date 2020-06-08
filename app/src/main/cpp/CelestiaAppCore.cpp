@@ -828,3 +828,41 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1geMinimumFeatureSize(
     CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
     return core->getRenderer()->getMinimumFeatureSize();
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setFont(JNIEnv *env, jobject thiz,
+                                                                   jstring font_path,
+                                                                   jint collection_index,
+                                                                   jint font_size) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    const char *c_path = env->GetStringUTFChars(font_path, nullptr);
+    core->setFont(c_path, collection_index, font_size);
+    env->ReleaseStringUTFChars(font_path, c_path);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setTitleFont(JNIEnv *env, jobject thiz,
+                                                                        jstring font_path,
+                                                                        jint collection_index,
+                                                                        jint font_size) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    const char *c_path = env->GetStringUTFChars(font_path, nullptr);
+    core->setTitleFont(c_path, collection_index, font_size);
+    env->ReleaseStringUTFChars(font_path, c_path);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setRendererFont(JNIEnv *env,
+                                                                           jobject thiz,
+                                                                           jstring font_path,
+                                                                           jint collection_index,
+                                                                           jint font_size,
+                                                                           jint font_style) {
+    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    const char *c_path = env->GetStringUTFChars(font_path, nullptr);
+    core->setRendererFont(c_path, collection_index, font_size, (Renderer::FontStyle)font_style);
+    env->ReleaseStringUTFChars(font_path, c_path);
+}

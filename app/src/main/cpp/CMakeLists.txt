@@ -6,6 +6,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 add_subdirectory( crash )
+add_subdirectory( fonthelper )
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -40,8 +41,8 @@ set(CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
-        ${CELESTIA_SRC_DIR}/celtxf/texturefont.cpp
-        ${CELESTIA_SRC_DIR}/celtxf/texturefont.h
+        ${CELESTIA_SRC_DIR}/celttf/truetypefont.cpp
+        ${CELESTIA_SRC_DIR}/celttf/truetypefont.h
         )
 
 list(APPEND CELESTIA_SOURCES
@@ -408,7 +409,6 @@ set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_definitions(-DNO_TTF)
 add_definitions(-DENABLE_NLS)
 add_definitions(-DUSE_SPICE)
 add_definitions(-DEIGEN_NO_DEBUG)
@@ -427,6 +427,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/libpng
         ${THIRD_PARTY_INCLUDE_DIR}/gl4es
         ${THIRD_PARTY_INCLUDE_DIR}/json
+        ${THIRD_PARTY_INCLUDE_DIR}/freetype/freetype2
 )
 
 add_library(cspice STATIC IMPORTED)
@@ -455,6 +456,9 @@ set_target_properties(libpng PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}
 
 add_library(jpeg STATIC IMPORTED)
 set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libjpeg.a)
+
+add_library(freetype STATIC IMPORTED)
+set_target_properties(freetype PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libfreetype.a)
 
 add_library( # Sets the name of the library.
         celestia
@@ -492,6 +496,7 @@ target_link_libraries( # Specifies the target library.
         gl4es
         gettext
         jpeg
+        freetype
         lua
         libpng
         theora

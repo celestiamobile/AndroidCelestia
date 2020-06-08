@@ -27,6 +27,9 @@ public class CelestiaAppCore {
     public static final int SHIFT_KEY               = 0x08;
     public static final int CONTROL_KEY             = 0x10;
 
+    public static final int RENDER_FONT_STYLE_NORMAL    = 0;
+    public static final int RENDER_FONT_STYLE_LARGE     = 1;
+
     public interface ProgressWatcher {
         void onCelestiaProgress(@NonNull String progress);
     }
@@ -118,6 +121,18 @@ public class CelestiaAppCore {
     public @NonNull String getCurrentURL() { return c_getCurrentURL(); }
     public void goToURL(@NonNull String url) { c_goToURL(url); }
 
+    public void setFont(@NonNull String fontPath, int collectionIndex, int fontSize) {
+        c_setFont(fontPath, collectionIndex, fontSize);
+    }
+
+    public void setTitleFont(@NonNull String fontPath, int collectionIndex, int fontSize) {
+        c_setTitleFont(fontPath, collectionIndex, fontSize);
+    }
+
+    public void setRendererFont(@NonNull String fontPath, int collectionIndex, int fontSize, int fontStyle) {
+        c_setRendererFont(fontPath, collectionIndex, fontSize, fontStyle);
+    }
+
     public static boolean initGL() {
         return c_initGL();
     }
@@ -163,6 +178,10 @@ public class CelestiaAppCore {
     private native void c_runScript(String path);
     private native String c_getCurrentURL();
     private native void c_goToURL(String url);
+
+    public native void c_setFont(String fontPath, int collectionIndex, int fontSize);
+    public native void c_setTitleFont(String fontPath, int collectionIndex, int fontSize);
+    public native void c_setRendererFont(String fontPath, int collectionIndex, int fontSize, int fontStyle);
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);
