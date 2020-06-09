@@ -78,7 +78,11 @@ class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
             }
         }
     override val title: String
-        get() = CelestiaString(type.toString(), "")
+    get() = when (type) {
+        FavoriteType.Script -> {
+            CelestiaString("Scripts", "")
+        }
+    }
     override val isLeaf: Boolean
         get() = false
 }
@@ -144,7 +148,7 @@ fun updateCurrentBookmarks(nodes: List<BookmarkNode>) {
 }
 
 private var currentScripts: List<CelestiaScript> = listOf()
-private var currentBookmarkRoot: BookmarkNode = BookmarkNode("Bookmarks", "", arrayListOf())
+private var currentBookmarkRoot: BookmarkNode = BookmarkNode(CelestiaString("Bookmarks", "") , "", arrayListOf())
 
 class FavoriteItemRecyclerViewAdapter private constructor(
     private val item: FavoriteBaseItem,

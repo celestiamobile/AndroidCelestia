@@ -29,11 +29,11 @@ fun Activity.showTextInput(title: String, placeholder: String?, handler: (String
         editText.setText(placeholder)
     builder.setView(customView)
 
-    builder.setPositiveButton("OK") { _, _ ->
+    builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->
         handler(editText.text.toString())
     }
 
-    builder.setNegativeButton("Cancel") { dialog, _ ->
+    builder.setNegativeButton(CelestiaString("Cancel", "")) { dialog, _ ->
         dialog.cancel()
     }
     builder.show()
@@ -42,12 +42,12 @@ fun Activity.showTextInput(title: String, placeholder: String?, handler: (String
 fun Activity.showAlert(title: String, handler: (() -> Unit)? = null) {
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
-    builder.setPositiveButton("OK") { _, _ ->
+    builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->
         if (handler != null)
             handler()
     }
     if (handler != null) {
-        builder.setNegativeButton("Cancel") { dialog, _ ->
+        builder.setNegativeButton(CelestiaString("Cancel", "")) { dialog, _ ->
             dialog.cancel()
         }
     }
