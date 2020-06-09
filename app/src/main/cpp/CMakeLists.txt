@@ -412,7 +412,6 @@ set(CMAKE_CXX_STANDARD 11)
 add_definitions(-DENABLE_NLS)
 add_definitions(-DUSE_SPICE)
 add_definitions(-DEIGEN_NO_DEBUG)
-add_definitions(-DNO_GL_INIT)
 add_definitions(-DGL_ES)
 
 include_directories(
