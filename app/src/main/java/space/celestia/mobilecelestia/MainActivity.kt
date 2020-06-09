@@ -126,14 +126,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // We don't need to recover when we get killed
         super.onCreate(null)
 
-        AppCenter.start(
-            application, "d1108985-aa25-4fb5-9269-31a70a87d28e",
-            Analytics::class.java, Crashes::class.java
-        )
+        if (!AppCenter.isConfigured()) {
+            AppCenter.start(
+                application, "d1108985-aa25-4fb5-9269-31a70a87d28e",
+                Analytics::class.java, Crashes::class.java
+            )
 
-        Crashes.getMinidumpDirectory().thenAccept { path ->
-            if (path != null) {
-                CrashHandler.setupNativeCrashesListener(path)
+            Crashes.getMinidumpDirectory().thenAccept { path ->
+                if (path != null) {
+                    CrashHandler.setupNativeCrashesListener(path)
+                }
             }
         }
 
