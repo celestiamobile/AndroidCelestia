@@ -156,6 +156,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
             glViewContainer?.addView(it, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
             it.preserveEGLContextOnPause = true
             it.setEGLContextClientVersion(2)
+            glView?.setEGLConfigChooser(CelestiaEGLChooser())
             it.setRenderer(this)
             it.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
         }
