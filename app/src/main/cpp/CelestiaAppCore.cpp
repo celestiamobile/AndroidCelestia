@@ -340,6 +340,15 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setSafeAreaInsets(JNI
 }
 
 extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setDPI(JNIEnv *env, jobject thiz,
+                                                                  jint dpi) {
+    CelestiaCore *core = (CelestiaCore *) env->GetLongField(thiz, cacPtrFieldID);
+
+    core->setScreenDpi(dpi);
+}
+
+extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getSimulation(JNIEnv *env,
                                                                          jobject thiz) {

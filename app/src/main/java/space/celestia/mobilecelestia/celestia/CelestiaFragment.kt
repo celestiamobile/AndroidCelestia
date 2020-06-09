@@ -133,10 +133,10 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
         CelestiaView.callOnRenderThread {
             core.setSafeAreaInsets(
-                (cutout.safeInsetLeft / density).toInt(),
-                (cutout.safeInsetTop / density).toInt(),
-                (cutout.safeInsetRight / density).toInt(),
-                (cutout.safeInsetBottom / density).toInt());
+                cutout.safeInsetLeft,
+                cutout.safeInsetTop,
+                cutout.safeInsetRight,
+                cutout.safeInsetBottom);
         }
 
         activity?.runOnUiThread {
@@ -189,6 +189,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
             core.resize(it.width, it.height)
             glViewSize = null
         }
+
+        core.setDPI((96 * resources.displayMetrics.density).toInt())
 
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
         val font = FontHelper.getFontForLocale(locale, 400)

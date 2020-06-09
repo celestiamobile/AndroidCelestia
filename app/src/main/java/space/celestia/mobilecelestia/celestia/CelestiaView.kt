@@ -124,12 +124,12 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
         when (event.actionMasked) {
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_DOWN -> {
                 val point = PointF(
-                    event.getX(id) / density,
-                    event.getY(id) / density
+                    event.getX(id),
+                    event.getY(id)
                 )
 
                 // Avoid edge gesture
-                val viewRect = RectF(insetLeft / density, insetTop / density, (width - insetRight) / density,  (height - insetBottom) / density)
+                val viewRect = RectF(insetLeft, insetTop, width - insetRight,  height - insetBottom)
 
                 // we don't allow a third finger
                 if (viewRect.contains(point.x, point.y) && touchLocations.count() < 2) {
@@ -181,8 +181,8 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                     // Update all point locations
                     for (kv in touchLocations) {
                         val point = PointF(
-                            event.getX(kv.key) / density,
-                            event.getY(kv.key) / density
+                            event.getX(kv.key),
+                            event.getY(kv.key)
                         )
                         kv.value.point = point
                     }
@@ -199,8 +199,8 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                     }
                 } else if (touchLocations.size == 1)  {
                     val point = PointF(
-                        event.x / density,
-                        event.y / density
+                        event.x,
+                        event.y
                     )
                     val it = touchLocations.map { it.value }[0]
                     if (!it.action && Date().time - it.time.time > threshHold) {
@@ -230,8 +230,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
 
-        val density = Resources.getSystem().displayMetrics.density
-        holder.setFixedSize((width / density).toInt(), (height / density).toInt())
+        holder.setFixedSize(width, height)
     }
 
     override fun onAttachedToWindow() {
