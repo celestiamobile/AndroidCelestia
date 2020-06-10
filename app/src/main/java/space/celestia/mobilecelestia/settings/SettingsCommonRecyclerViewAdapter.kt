@@ -16,8 +16,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import android.widget.Switch
 import android.widget.TextView
 import kotlinx.android.synthetic.main.common_text_list_with_slider_item.view.*
+import kotlinx.android.synthetic.main.common_text_list_with_slider_item.view.title
+import kotlinx.android.synthetic.main.common_text_list_with_switch_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
@@ -33,7 +36,7 @@ fun SettingsCommonItem.createSections(): List<CommonSectionV2> {
         for (row in section.rows) {
             sectionResults.add(row)
         }
-        results.add(CommonSectionV2(sectionResults, section.header))
+        results.add(CommonSectionV2(sectionResults, section.header, section.footer))
     }
     return results
 }
@@ -48,6 +51,9 @@ class SettingsCommonRecyclerViewAdapter(
 
         if (item is SettingsActionItem)
             return ITEM_ACTION
+
+        if (item is SettingsPreferenceSwitchItem)
+            return ITEM_PREF_SWITCH
 
         return super.itemViewType(item)
     }
@@ -72,6 +78,12 @@ class SettingsCommonRecyclerViewAdapter(
             }
             return
         }
+        if (holder is PreferenceSwitchViewHolder && item is SettingsPreferenceSwitchItem) {
+            holder.configure(item.name, listener?.commonSettingPreferenceSwitchState(item.key) ?: false) { checked ->
+                listener?.onCommonSettingPreferenceSwitchStateChanged(item.key, checked)
+            }
+            return
+        }
         super.bindVH(holder, item)
     }
 
@@ -82,6 +94,10 @@ class SettingsCommonRecyclerViewAdapter(
         }
         if (viewType == ITEM_ACTION) {
             return CommonTextViewHolder(parent)
+        }
+        if (viewType == ITEM_PREF_SWITCH) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_switch_item, parent,false)
+            return PreferenceSwitchViewHolder(view)
         }
         return super.createVH(parent, viewType)
     }
@@ -112,8 +128,22 @@ class SettingsCommonRecyclerViewAdapter(
         }
     }
 
+    inner class PreferenceSwitchViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        val title: TextView = view.title
+        val switch: Switch = view.accessory
+
+        fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
+            title.text = text
+            switch.isChecked = isChecked
+            switch.setOnCheckedChangeListener { _, isChecked ->
+                stateChangeCallback(isChecked)
+            }
+        }
+    }
+
     private companion object {
-        const val ITEM_SLIDER     = 0
-        const val ITEM_ACTION     = 1
+        const val ITEM_SLIDER           = 0
+        const val ITEM_ACTION           = 1
+        const val ITEM_PREF_SWITCH      = 2
     }
 }

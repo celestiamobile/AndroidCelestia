@@ -20,7 +20,7 @@ import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_settings_multi_selection_master_item.view.*
+import kotlinx.android.synthetic.main.common_text_list_with_switch_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
@@ -77,7 +77,7 @@ class SettingsMultiSelectionRecyclerViewAdapter(
             return holder
         }
         if (viewType == SETTING_MASTER) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_settings_multi_selection_master_item, parent,false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_switch_item, parent,false)
             return MasterViewHolder(view)
         }
         return super.createVH(parent, viewType)

@@ -214,6 +214,14 @@ class SettingsSliderItem(
         get() = CelestiaString(internalKey.displayName, "")
 }
 
+class SettingsPreferenceSwitchItem(
+    val key: PreferenceManager.PredefinedKey,
+    private val displayName: String
+) : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString(displayName, "")
+}
+
 private val staticDisplayItems: List<SettingsItem> = listOf(
     SettingsMultiSelectionItem("Objects", listOf(
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowStars),
@@ -340,11 +348,16 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         SettingsSingleSelectionItem.Selection("Terse", 1),
         SettingsSingleSelectionItem.Selection("Verbose", 2)
     )),
-    SettingsCommonItem.create(SettingsKey.AmbientLightLevel.displayName, listOf(
-        SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0)
-    )),
-    SettingsCommonItem.create(SettingsKey.FaintestVisible.displayName, listOf(
-        SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0)
+
+    SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(
+        SettingsCommonItem.Section(listOf(
+            SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0),
+            SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0)
+        )),
+        SettingsCommonItem.Section(listOf(
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI"),
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
+        ), "", CelestiaString("Configuration will take effect after a restart.", ""))
     )),
     SettingsDataLocationItem()
 )
@@ -381,7 +394,7 @@ val mainSettingSections: List<CommonSectionV2> = listOf(
 )
 
 class SettingsCommonItem(override val name: String, val sections: List<Section>) : SettingsItem, Serializable {
-    class Section(val rows: List<SettingsItem>, val header: String? = "") : Serializable
+    class Section(val rows: List<SettingsItem>, val header: String? = "", val footer: String? = null) : Serializable
 
     companion object {
         fun create(name: String, items: List<SettingsItem>): SettingsCommonItem {

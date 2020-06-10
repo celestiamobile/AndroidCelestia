@@ -27,7 +27,9 @@ class PreferenceManager(context: Context, private val name: String) {
         DataVersion,
         OnboardMessage,
         DataDirPath,
-        ConfigFilePath;
+        ConfigFilePath,
+        FullDPI,
+        MSAA;
 
         override val valueString: String
             get() = toString()

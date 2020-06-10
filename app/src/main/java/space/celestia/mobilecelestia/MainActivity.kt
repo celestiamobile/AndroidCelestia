@@ -586,7 +586,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun loadConfigSuccess() {
         // Add gl fragment
-        val celestiaFragment = CelestiaFragment.newInstance(celestiaDataDirPath, celestiaConfigFilePath, addonPath)
+        val celestiaFragment = CelestiaFragment.newInstance(
+            celestiaDataDirPath,
+            celestiaConfigFilePath,
+            addonPath,
+            preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true",
+            preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true"
+        )
         supportFragmentManager
             .beginTransaction()
             .add(R.id.celestia_fragment_container, celestiaFragment)
@@ -794,6 +800,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onCommonSettingActionItemSelected(action: Int) {
         CelestiaView.callOnRenderThread { core.charEnter(action) }
+    }
+
+    override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean {
+        return preferenceManager[key] == "true"
+    }
+
+    override fun onCommonSettingPreferenceSwitchStateChanged(
+        key: PreferenceManager.PredefinedKey,
+        value: Boolean
+    ) {
+        preferenceManager[key] = if (value) "true" else "false"
     }
 
     override fun onCurrentTimeActionRequested(action: CurrentTimeAction) {

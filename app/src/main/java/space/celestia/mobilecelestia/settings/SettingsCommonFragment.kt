@@ -19,6 +19,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.utils.PreferenceManager
 
 class SettingsCommonFragment : SettingsBaseFragment() {
     private var item: SettingsCommonItem? = null
@@ -64,6 +65,10 @@ class SettingsCommonFragment : SettingsBaseFragment() {
     interface Listener {
         fun onCommonSettingSliderItemChange(field: String, value: Double)
         fun onCommonSettingActionItemSelected(action: Int)
+
+        // Preference switch
+        fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean
+        fun onCommonSettingPreferenceSwitchStateChanged(key: PreferenceManager.PredefinedKey, value: Boolean)
     }
 
     companion object {

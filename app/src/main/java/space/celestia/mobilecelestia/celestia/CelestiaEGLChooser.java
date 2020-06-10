@@ -173,7 +173,7 @@ class SimpleEGLConfigChooser extends ComponentSizeChooser {
 }
 
 public class CelestiaEGLChooser extends SimpleEGLConfigChooser {
-    public CelestiaEGLChooser() {
-        super(4, 0);
+    public CelestiaEGLChooser(boolean multisampleEnabled) {
+        super(multisampleEnabled ? 4 : 0, 0);
     }
 }
