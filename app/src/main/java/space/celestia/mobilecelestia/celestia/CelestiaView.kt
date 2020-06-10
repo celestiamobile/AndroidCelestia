@@ -15,21 +15,19 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.PointF
-import android.graphics.Rect
 import android.graphics.RectF
 import android.opengl.GLSurfaceView
 import android.os.Build
 import android.util.Log
 import android.view.Choreographer
 import android.view.MotionEvent
-import kotlinx.android.synthetic.main.fragment_help_action_item.view.*
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.hypot
 
-class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.FrameCallback {
+class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(context), Choreographer.FrameCallback {
     enum class InteractionMode {
         Object, Camera;
 
@@ -123,13 +121,10 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
         when (event.actionMasked) {
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_DOWN -> {
-                val point = PointF(
-                    event.getX(id),
-                    event.getY(id)
-                )
+                val point = PointF(event.getX(id), event.getY(id)).scaleBy(scaleFactor)
 
                 // Avoid edge gesture
-                val viewRect = RectF(insetLeft, insetTop, width - insetRight,  height - insetBottom)
+                val viewRect = RectF(insetLeft, insetTop, width - insetRight,  height - insetBottom).scaleBy(scaleFactor)
 
                 // we don't allow a third finger
                 if (viewRect.contains(point.x, point.y) && touchLocations.count() < 2) {
@@ -180,10 +175,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
 
                     // Update all point locations
                     for (kv in touchLocations) {
-                        val point = PointF(
-                            event.getX(kv.key),
-                            event.getY(kv.key)
-                        )
+                        val point = PointF(event.getX(kv.key), event.getY(kv.key)).scaleBy(scaleFactor)
                         kv.value.point = point
                     }
 
@@ -198,10 +190,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
                         queueEvent { callZoom(deltaY) }
                     }
                 } else if (touchLocations.size == 1)  {
-                    val point = PointF(
-                        event.x,
-                        event.y
-                    )
+                    val point = PointF(event.x, event.y).scaleBy(scaleFactor)
                     val it = touchLocations.map { it.value }[0]
                     if (!it.action && Date().time - it.time.time > threshHold) {
                         it.action = true
@@ -230,7 +219,7 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
 
-        holder.setFixedSize(width, height)
+        holder.setFixedSize((width * scaleFactor).toInt(), (height * scaleFactor).toInt())
     }
 
     override fun onAttachedToWindow() {
@@ -278,4 +267,12 @@ class CelestiaView(context: Context) : GLSurfaceView(context), Choreographer.Fra
             sharedView?.queueEvent(block)
         }
     }
+}
+
+fun PointF.scaleBy(factor: Float): PointF {
+    return PointF(x * factor, y * factor)
+}
+
+fun RectF.scaleBy(factor: Float): RectF {
+    return RectF(left * factor, top * factor, right * factor, bottom * factor)
 }

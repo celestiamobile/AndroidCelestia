@@ -53,6 +53,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
     private var addonToLoad: String? = null
     private val core by lazy { CelestiaAppCore.shared() }
 
+    private val scaleFactor: Float = 1.0f
+
     private var loadSuccess = false
 
     interface Listener {
@@ -132,11 +134,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         val density = resources.displayMetrics.density
 
         CelestiaView.callOnRenderThread {
-            core.setSafeAreaInsets(
-                cutout.safeInsetLeft,
-                cutout.safeInsetTop,
-                cutout.safeInsetRight,
-                cutout.safeInsetBottom);
+            core.setSafeAreaInsets(cutout.safeInsets().scaleBy(scaleFactor))
         }
 
         activity?.runOnUiThread {
@@ -151,15 +149,16 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
     }
 
     private fun setupGLView() {
-        if (activity == null) { return }
-        if (glView != null) { return }
+        val activity = this.activity ?: return
 
-        glView = CelestiaView(activity!!)
-        glView?.preserveEGLContextOnPause = true
-        glView?.setEGLContextClientVersion(2)
-        glView?.setRenderer(this)
-        glView?.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
-        glViewContainer?.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+        glView = CelestiaView(activity, scaleFactor)
+        glView?.let {
+            glViewContainer?.addView(it, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+            it.preserveEGLContextOnPause = true
+            it.setEGLContextClientVersion(2)
+            it.setRenderer(this)
+            it.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+        }
     }
 
     private fun loadCelestia(path: String, cfg: String, addon: String?) {
@@ -190,7 +189,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
             glViewSize = null
         }
 
-        core.setDPI((96 * resources.displayMetrics.density).toInt())
+        core.setDPI((96 * resources.displayMetrics.density * scaleFactor).toInt())
 
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
         val font = FontHelper.getFontForLocale(locale, 400)
@@ -310,4 +309,24 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
                 }
             }
     }
+}
+
+class Insets(val left: Int, val top: Int, val right: Int, val bottom: Int) {
+    fun scaleBy(factor: Float): Insets {
+        return Insets(
+            (left * factor).toInt(),
+            (top * factor).toInt(),
+            (right * factor).toInt(),
+            (bottom * factor).toInt()
+         )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.P)
+fun DisplayCutout.safeInsets(): Insets {
+    return Insets(safeInsetLeft, safeInsetTop, safeInsetRight, safeInsetBottom)
+}
+
+fun CelestiaAppCore.setSafeAreaInsets(insets: Insets) {
+    setSafeAreaInsets(insets.left, insets.top, insets.right, insets.bottom)
 }
