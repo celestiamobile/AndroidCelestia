@@ -424,7 +424,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/gettext
         ${THIRD_PARTY_INCLUDE_DIR}/jpeg
         ${THIRD_PARTY_INCLUDE_DIR}/libpng
-        ${THIRD_PARTY_INCLUDE_DIR}/gl4es
+        ${THIRD_PARTY_INCLUDE_DIR}/libepoxy
         ${THIRD_PARTY_INCLUDE_DIR}/json
         ${THIRD_PARTY_INCLUDE_DIR}/freetype/freetype2
 )
@@ -441,8 +441,8 @@ set_target_properties(fmt PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${
 add_library(gettext STATIC IMPORTED)
 set_target_properties(gettext PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libintl.a)
 
-add_library(gl4es STATIC IMPORTED)
-set_target_properties(gl4es PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libGL.a)
+add_library(libepoxy STATIC IMPORTED)
+set_target_properties(libepoxy PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libGL.a)
 
 add_library(libogg STATIC IMPORTED)
 set_target_properties(libogg PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libogg.a)
@@ -492,7 +492,7 @@ target_link_libraries( # Specifies the target library.
         # included in the NDK.
         z
         fmt
-        gl4es
+        libepoxy
         gettext
         jpeg
         freetype

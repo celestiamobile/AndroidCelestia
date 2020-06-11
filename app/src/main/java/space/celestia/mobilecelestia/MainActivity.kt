@@ -352,8 +352,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             System.loadLibrary("celestia")
             celestiaLibraryLoaded = true
 
-            CelestiaAppCore.initGL()
-
             // Read custom paths here
             customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
             customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]

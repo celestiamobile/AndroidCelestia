@@ -236,6 +236,9 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         addonToLoad = null
 
         if (data == null || cfg == null) { return }
+
+        CelestiaAppCore.initGL()
+
         loadCelestia(data, cfg, addon)
     }
 

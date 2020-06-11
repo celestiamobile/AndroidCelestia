@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.TitledFragment
 import space.celestia.mobilecelestia.common.pop
 import space.celestia.mobilecelestia.common.push
@@ -73,7 +74,12 @@ class SettingsFragment : Fragment() {
                 push(SettingsCurrentTimeFragment.newInstance(), item.name)
             }
             is SettingsRenderInfoItem -> {
-                push(SimpleTextFragment.newInstance(item.name, CelestiaAppCore.shared().renderInfo), item.name)
+                CelestiaView.callOnRenderThread {
+                    val renderInfo = CelestiaAppCore.shared().renderInfo
+                    activity?.runOnUiThread {
+                        push(SimpleTextFragment.newInstance(item.name, renderInfo), item.name)
+                    }
+                }
             }
             is SettingsAboutItem -> {
                 push(AboutFragment.newInstance(), item.name)
