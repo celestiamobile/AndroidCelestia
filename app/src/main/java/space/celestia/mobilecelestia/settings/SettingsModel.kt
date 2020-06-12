@@ -89,7 +89,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     FaintestVisible("Faintest Stars"),
     AmbientLightLevel("Ambient Light"),
     GalaxyBrightness("Galaxy Brightness"),
-    MinimumFeatureSize("Minimum FeatureSize");
+    MinimumFeatureSize("Minimum Labelled Feature Size");
 
     val displayName: String
         get() = CelestiaString(rawDisplayName, "")
@@ -352,7 +352,9 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(
         SettingsCommonItem.Section(listOf(
             SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0),
-            SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0)
+            SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0),
+            SettingsSliderItem(SettingsKey.MinimumFeatureSize, 0.0, 999.0),
+            SettingsSliderItem(SettingsKey.GalaxyBrightness, 0.0, 1.0)
         )),
         SettingsCommonItem.Section(listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI"),
