@@ -20,14 +20,18 @@ import android.opengl.GLSurfaceView
 import android.os.Build
 import android.util.Log
 import android.view.Choreographer
+import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.hypot
 
-class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(context), Choreographer.FrameCallback {
+@SuppressLint("ViewConstructor")
+class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(context), Choreographer.FrameCallback,
+    ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -61,6 +65,8 @@ class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(con
     private var touchLocations = HashMap<Int, Touch>()
     private var touchActive = false
 
+    private var currentSpan: Float? = null
+
     var zoomMode: ZoomMode? = null
 
     private var internalInteractionMode = InteractionMode.Object
@@ -82,137 +88,72 @@ class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(con
         if (event == null) { return true }
         if (!isReady) { return true }
 
-        val density = Resources.getSystem().displayMetrics.density
-
-        var insetLeft = 16 * density
-        var insetTop = 16 * density
-        var insetRight = 16 * density
-        var insetBottom = 16 * density
-
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-            rootWindowInsets.displayCutout?.let {
-                insetLeft += it.safeInsetLeft
-                insetTop += it.safeInsetTop
-                insetRight += it.safeInsetRight
-                insetBottom += it.safeInsetBottom
-            }
+        if (!canInteract) {
+            // Enable interaction back when last finger is lifted
+            if (event.actionMasked == MotionEvent.ACTION_UP)
+                canInteract = true
+            return true
         }
 
-        val id = event.actionIndex
+        // Check first finger location before proceed
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            val point = PointF(event.x, event.y)
 
-        fun centerPoint(): PointF {
-            var x = 0.toFloat()
-            var y = 0.toFloat()
-            for (kv in touchLocations) {
-                x += kv.value.point.x
-                y += kv.value.point.y
-            }
-            return PointF(x / touchLocations.size, y / touchLocations.size)
-        }
+            val density = Resources.getSystem().displayMetrics.density
 
-        fun length(): Float {
-            if (touchLocations.size != 2) { return 0.toFloat() }
-            val locations = touchLocations.map { it.value }
-            return hypot(
-                abs(locations[0].point.x - locations[1].point.x),
-                abs(locations[0].point.y - locations[1].point.y)
-            )
-        }
+            var insetLeft = 16 * density
+            var insetTop = 16 * density
+            var insetRight = 16 * density
+            var insetBottom = 16 * density
 
-        when (event.actionMasked) {
-            MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_DOWN -> {
-                val point = PointF(event.getX(id), event.getY(id)).scaleBy(scaleFactor)
-
-                // Avoid edge gesture
-                val viewRect = RectF(insetLeft, insetTop, width - insetRight,  height - insetBottom).scaleBy(scaleFactor)
-
-                // we don't allow a third finger
-                if (viewRect.contains(point.x, point.y) && touchLocations.count() < 2) {
-                    Log.d(TAG, "Down $point")
-                    if (touchLocations.size == 1) {
-                        touchActive = true
-                        // 1 finger to 2 fingers, check if should stop previous
-                        val prev = touchLocations.values.map{ it }[0]
-                        if (prev.action) {
-                            // Stop 1 finger action
-                            Log.d(TAG, "One finger action stopped")
-                            val pt = prev.point
-                            queueEvent { core.mouseButtonUp(internalInteractionMode.button, pt, 0) }
-                        }
-                    }
-                    touchLocations[id] =
-                        Touch(
-                            point,
-                            Date()
-                        )
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                rootWindowInsets.displayCutout?.let {
+                    insetLeft += it.safeInsetLeft
+                    insetTop += it.safeInsetTop
+                    insetRight += it.safeInsetRight
+                    insetBottom += it.safeInsetBottom
                 }
             }
-            MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                if (touchActive) {
-                    // Stop touch
-                    if (touchLocations.size == 1) {
-                        Log.d(TAG, "One finger action stopped")
-                        val point = centerPoint()
-                        queueEvent { core.mouseButtonUp(internalInteractionMode.button, point, 0) }
-                    }
-                    touchActive = false
-                } else if (touchLocations.size == 1) {
-                    // Canceled convert to one finger tap
-                    val loc = touchLocations.map { it.value }[0]
-                    Log.d(TAG, "One finger tap action")
-                    val point = loc.point
-                    queueEvent {
-                        core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_LEFT, point, 0)
-                        core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_LEFT, point, 0)
-                    }
-                }
-                touchLocations.clear()
-            }
-            MotionEvent.ACTION_MOVE -> {
-                if (touchLocations.size == 2) {
-                    // Two finger pinch
-                    val prevLength = length()
 
-                    // Update all point locations
-                    for (kv in touchLocations) {
-                        val point = PointF(event.getX(kv.key), event.getY(kv.key)).scaleBy(scaleFactor)
-                        kv.value.point = point
-                    }
-
-                    // Calculate new values
-                    val currLength = length()
-
-                    if (prevLength > 0.2 && currLength > 0.2) {
-                        val delta = currLength / prevLength
-                        // FIXME: 8 is a magic number
-                        val deltaY = (1 - delta) * prevLength / 8
-                        Log.d(TAG, "Two finger pinch $deltaY")
-                        queueEvent { callZoom(deltaY) }
-                    }
-                } else if (touchLocations.size == 1)  {
-                    val point = PointF(event.x, event.y).scaleBy(scaleFactor)
-                    val it = touchLocations.map { it.value }[0]
-                    if (!it.action && Date().time - it.time.time > threshHold) {
-                        it.action = true
-
-                        touchActive = true
-
-                        // Start one finger pan
-                        Log.d(TAG, "One finger action started")
-                        val pt = it.point
-                        queueEvent { core.mouseButtonDown(internalInteractionMode.button, pt, 0) }
-                    }
-                    if (it.action) {
-                        val offset = PointF(point.x - it.point.x, point.y - it.point.y)
-
-                        // One finger pan
-                        Log.d(TAG, "One finger move $offset")
-                        queueEvent { core.mouseMove(internalInteractionMode.button, offset, 0) }
-                    }
-                    it.point = point
-                }
+            val interactionRect = RectF(insetLeft, insetTop, width - insetRight,  height - insetBottom)
+            if (!interactionRect.contains(point.x, point.y)) {
+                Log.d(TAG, "$interactionRect does not contain $point, interaction blocked")
+                canInteract = false
+                return true
             }
         }
+
+        // First test if scaling is in progress
+        scaleGestureDetector.onTouchEvent(event)
+        if (isScaling) {
+            if (event.actionMasked == MotionEvent.ACTION_UP) {
+                // Only mark scaling as ended when last finger is lifted
+                isScaling = false
+                canScroll = true
+            }
+            return true
+        }
+
+        if (event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
+            // Before detected as a scale, we might receiver ACTION_POINTER_DOWN, disable scrolling in advance
+            canScroll = false
+            return true
+        }
+
+        // Handle scroll and tap
+        if (gestureDetector.onTouchEvent(event))
+            return true
+
+        if (event.actionMasked == MotionEvent.ACTION_UP && isScrolling) {
+            // Last finger is lifted while scrolling
+            Log.d(TAG, "on scroll end")
+
+            stopScrolling()
+            return true
+        }
+
+        // Other events
+        Log.d(TAG, "unhandled event, ${event.actionMasked}")
         return true
     }
 
@@ -254,7 +195,136 @@ class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(con
         }
     }
 
+    private val scaleGestureDetector = ScaleGestureDetector(context, this)
+    private val gestureDetector = GestureDetector(context, this)
+    private var lastPoint: PointF? = null
+    private val isScrolling: Boolean
+        get() = lastPoint != null
+    private var canScroll = true
+    private var canInteract = true
+    private var isScaling = false
+
+    override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
+        val det = detector ?: return true
+
+        if (isScrolling)
+            stopScrolling()
+
+        Log.d(TAG, "on scale begin")
+
+        currentSpan = det.currentSpan
+        isScaling = true
+
+        return true
+    }
+
+    override fun onScaleEnd(detector: ScaleGestureDetector?) {
+        Log.d(TAG, "on scale end")
+    }
+
+    override fun onScale(detector: ScaleGestureDetector?): Boolean {
+        val det = detector ?: return true
+        val previousSpan = currentSpan ?: return true
+        val currentSpan = det.currentSpan
+
+        Log.d(TAG, "on scale")
+
+        val delta = det.currentSpan / previousSpan
+        // FIXME: 8 is a magic number
+        val deltaY = (1 - delta) * previousSpan / 8 * scaleFactor
+
+        Log.d(TAG, "Pinch with deltaY: $deltaY")
+
+        callOnRenderThread {
+            callZoom(deltaY)
+        }
+
+        this.currentSpan = currentSpan
+
+        return true
+    }
+
+    override fun onSingleTapUp(e: MotionEvent?): Boolean {
+        val event = e ?: return true
+
+        Log.d(TAG, "on single tap up")
+
+        val point = PointF(event.x, event.y).scaleBy(scaleFactor)
+        callOnRenderThread {
+            core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_LEFT, point, 0)
+            core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_LEFT, point, 0)
+        }
+
+        return true
+    }
+
+    override fun onFling(
+        e1: MotionEvent?,
+        e2: MotionEvent?,
+        velocityX: Float,
+        velocityY: Float
+    ): Boolean {
+        Log.d(TAG, "on fling")
+        return false
+    }
+
+    override fun onScroll(
+        e1: MotionEvent?,
+        e2: MotionEvent?,
+        distanceX: Float,
+        distanceY: Float
+    ): Boolean {
+        if (!canScroll) return false
+
+        val event1 = e1 ?: return true
+        val event2 = e2 ?: return true
+
+        Log.d(TAG, "on scroll")
+
+        val offset = PointF(-distanceX, -distanceY).scaleBy(scaleFactor)
+        val originalPoint = PointF(event1.x, event1.y).scaleBy(scaleFactor)
+        val newPoint = PointF(event2.x, event2.y).scaleBy(scaleFactor)
+
+        val button = internalInteractionMode.button
+        lastPoint = newPoint
+        if (!isScrolling) {
+            callOnRenderThread {
+                core.mouseButtonDown(button, originalPoint, 0)
+                core.mouseMove(button, offset, 0)
+            }
+        } else {
+            callOnRenderThread {
+                core.mouseMove(button, offset, 0)
+            }
+        }
+        return true
+    }
+
+    override fun onShowPress(e: MotionEvent?) {}
+
+    override fun onLongPress(e: MotionEvent?) {}
+
+    override fun onDown(e: MotionEvent?): Boolean {
+        val event = e ?: return true
+
+        Log.d(TAG, "on down")
+        return true
+    }
+
+    private fun stopScrolling() {
+        Log.d(TAG, "stop scrolling")
+
+        val button = internalInteractionMode.button
+        val lp = lastPoint!!
+
+        callOnRenderThread {
+            core.mouseButtonUp(button, lp, 0)
+        }
+        lastPoint = null
+    }
+
     init {
+        gestureDetector.setIsLongpressEnabled(false)
         Choreographer.getInstance().postFrameCallback(this)
     }
 
