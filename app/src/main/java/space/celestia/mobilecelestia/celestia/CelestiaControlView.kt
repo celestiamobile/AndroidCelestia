@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import space.celestia.mobilecelestia.R
 
 enum class CelestiaControlAction {
-    ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info
+    ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Hide, Show
 }
 
 interface CelestiaControlButton {}
@@ -29,8 +29,8 @@ class CelestiaToggleButton(val image: Int, val offAction: CelestiaControlAction,
 class CelestiaTapButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton
 class CelestiaPressButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton
 
-class CelestiaControlView(context: Context, attrs: AttributeSet): LinearLayout(context, attrs) {
-
+@SuppressLint("ViewConstructor")
+class CelestiaControlView(context: Context, private val items: List<CelestiaControlButton>): LinearLayout(context) {
     class Button(context: Context): androidx.appcompat.widget.AppCompatImageButton(context) {
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -104,15 +104,5 @@ class CelestiaControlView(context: Context, attrs: AttributeSet): LinearLayout(c
         fun didStartPressingAction(action: CelestiaControlAction)
         fun didEndPressingAction(action: CelestiaControlAction)
         fun didToggleToMode(action: CelestiaControlAction)
-    }
-
-    companion object {
-        private val items: List<CelestiaControlButton> = listOf(
-            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera),
-            CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn),
-            CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
-            CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),
-            CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu)
-        )
     }
 }

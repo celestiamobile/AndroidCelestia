@@ -60,6 +60,10 @@ android {
         targetCompatibility = "8"
         sourceCompatibility = "8"
     }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
 }
 
 dependencies {

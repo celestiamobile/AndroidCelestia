@@ -135,8 +135,8 @@ class SettingsCommonRecyclerViewAdapter(
         fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
             title.text = text
             switch.isChecked = isChecked
-            switch.setOnCheckedChangeListener { _, isChecked ->
-                stateChangeCallback(isChecked)
+            switch.setOnCheckedChangeListener { _, checked ->
+                stateChangeCallback(checked)
             }
         }
     }
