@@ -23,9 +23,11 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
+import java.util.*
+import kotlin.collections.ArrayList
 
 enum class ToolbarAction : Serializable {
-    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite;
+    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home;
 
     val title: String
         get() {
@@ -36,6 +38,7 @@ enum class ToolbarAction : Serializable {
                 Browse -> "Browser"
                 Favorite -> "Favorites"
                 Setting -> "Settings"
+                Home -> "Home (Sol)"
                 else -> this.toString()
             }
             return CelestiaString(orig, "")
@@ -43,13 +46,13 @@ enum class ToolbarAction : Serializable {
 
     val imageName: String
         get() {
-            return "toolbar_" + toString().toLowerCase()
+            return "toolbar_" + toString().toLowerCase(Locale.ENGLISH)
         }
 
     companion object {
         val persistentAction: List<List<ToolbarAction>>
             get() = listOf(
-                listOf(Share, Search),
+                listOf(Share, Search, Home),
                 listOf(Camera, Time, Script),
                 listOf(Browse, Favorite),
                 listOf(Help),

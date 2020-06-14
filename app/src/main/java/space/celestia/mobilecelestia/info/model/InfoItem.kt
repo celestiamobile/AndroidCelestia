@@ -26,7 +26,8 @@ enum class CelestiaAction(val value: Int) : Serializable {
     Chase(34),
     Follow(102),
     RunDemo(100),
-    CancelScript(27);
+    CancelScript(27),
+    Home(104);
 
     val title: String
         get() {
@@ -37,6 +38,7 @@ enum class CelestiaAction(val value: Int) : Serializable {
                 SyncOrbit -> "Sync Orbit"
                 RunDemo -> "Run Demo"
                 CancelScript -> "Cancel Script"
+                Home -> "Home (Sol)"
                 else -> this.toString()
             }
             return CelestiaString(orig, "")

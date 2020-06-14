@@ -631,6 +631,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ToolbarAction.Share -> {
                 showShare()
             }
+            ToolbarAction.Home -> {
+                CelestiaView.callOnRenderThread {
+                    core.charEnter(CelestiaAction.Home.value)
+                }
+            }
         }
     }
 
