@@ -353,7 +353,7 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         SettingsCommonItem.Section(listOf(
             SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0),
             SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0),
-            SettingsSliderItem(SettingsKey.MinimumFeatureSize, 0.0, 999.0),
+            SettingsSliderItem(SettingsKey.MinimumFeatureSize, 0.0, 99.0),
             SettingsSliderItem(SettingsKey.GalaxyBrightness, 0.0, 1.0)
         )),
         SettingsCommonItem.Section(listOf(

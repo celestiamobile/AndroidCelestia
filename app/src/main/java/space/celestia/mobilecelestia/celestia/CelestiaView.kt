@@ -305,8 +305,6 @@ class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(con
     override fun onLongPress(e: MotionEvent?) {}
 
     override fun onDown(e: MotionEvent?): Boolean {
-        val event = e ?: return true
-
         Log.d(TAG, "on down")
         return true
     }
