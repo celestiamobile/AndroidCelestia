@@ -14,7 +14,7 @@
     android:layout_width="match_parent"
     android:layout_height="44dp"
     android:orientation="horizontal"
-    style="@style/ListItem">
+    style="@style/ListItemGrouped">
 
     <ImageView
         android:id="@+id/image"

@@ -19,4 +19,4 @@
     android:layout_height="match_parent"
     app:layoutManager="LinearLayoutManager"
     tools:context=".toolbar.ToolbarFragment"
-    style="@style/Background" />
+    style="@style/SecondaryBackground" />
