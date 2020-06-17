@@ -405,7 +405,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     }
                     return@map Pair(path, ob.second)
                 }
-                return@map Pair(ob.toString(), ob.second)
+                return@map Pair(ob.first.toString(), ob.second)
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
