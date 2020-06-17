@@ -975,9 +975,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomFragment(
             BottomControlFragment.newInstance(
                 listOf(
-                    CelestiaAction.Backward,
+                    CelestiaAction.Slower,
                     CelestiaAction.PlayPause,
-                    CelestiaAction.Forward
+                    CelestiaAction.Faster,
+                    CelestiaAction.Reverse
                 )))
     }
 

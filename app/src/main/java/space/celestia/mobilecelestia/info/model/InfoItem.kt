@@ -18,8 +18,9 @@ enum class CelestiaAction(val value: Int) : Serializable {
     GoTo(103),
     Center(99),
     PlayPause(32),
-    Backward(107),
-    Forward(108),
+    Reverse(106),
+    Slower(107),
+    Faster(108),
     CurrentTime(33),
     SyncOrbit(121),
     Lock(58),
@@ -39,6 +40,7 @@ enum class CelestiaAction(val value: Int) : Serializable {
                 RunDemo -> "Run Demo"
                 CancelScript -> "Cancel Script"
                 Home -> "Home (Sol)"
+                Reverse -> "Reverse Time"
                 else -> this.toString()
             }
             return CelestiaString(orig, "")

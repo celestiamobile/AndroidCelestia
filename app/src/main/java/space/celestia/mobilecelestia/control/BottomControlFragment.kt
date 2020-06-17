@@ -24,17 +24,20 @@ import space.celestia.mobilecelestia.info.model.CelestiaAction
 
 fun CelestiaAction.imageName(): String? {
     return when (this) {
-        CelestiaAction.Forward -> {
-            "time_forward"
+        CelestiaAction.Faster -> {
+            "time_faster"
         }
-        CelestiaAction.Backward -> {
-            "time_backward"
+        CelestiaAction.Slower -> {
+            "time_slower"
         }
         CelestiaAction.PlayPause -> {
             "time_playpause"
         }
         CelestiaAction.CancelScript -> {
             "time_stop"
+        }
+        CelestiaAction.Reverse -> {
+            "time_reverse"
         }
         else -> {
             null

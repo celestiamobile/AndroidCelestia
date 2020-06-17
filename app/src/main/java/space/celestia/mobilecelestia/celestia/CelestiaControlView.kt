@@ -13,11 +13,11 @@ package space.celestia.mobilecelestia.celestia
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.StandardImageButton
 
 enum class CelestiaControlAction {
     ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Hide, Show
@@ -31,23 +31,6 @@ class CelestiaPressButton(val image: Int, val action: CelestiaControlAction): Ce
 
 @SuppressLint("ViewConstructor")
 class CelestiaControlView(context: Context, private val items: List<CelestiaControlButton>): LinearLayout(context) {
-    class Button(context: Context): androidx.appcompat.widget.AppCompatImageButton(context) {
-        @SuppressLint("ClickableViewAccessibility")
-        override fun onTouchEvent(event: MotionEvent?): Boolean {
-            if (event != null) {
-                when (event.actionMasked) {
-                    MotionEvent.ACTION_DOWN -> {
-                        alpha = 0.3f
-                    }
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        alpha = 1f
-                    }
-                }
-            }
-            return super.onTouchEvent(event)
-        }
-    }
-
     init {
         setup()
     }
@@ -59,8 +42,7 @@ class CelestiaControlView(context: Context, private val items: List<CelestiaCont
 
         for (item in items) {
 
-            val button = Button(context)
-            button.background = null
+            val button = StandardImageButton(context)
             button.setColorFilter(ContextCompat.getColor(context, R.color.colorSecondaryLabel))
 
             val size = (44 * density).toInt()

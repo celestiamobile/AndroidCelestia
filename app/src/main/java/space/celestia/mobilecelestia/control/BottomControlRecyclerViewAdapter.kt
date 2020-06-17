@@ -14,10 +14,10 @@ package space.celestia.mobilecelestia.control
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_bottom_control_item.view.*
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.StandardImageButton
 import space.celestia.mobilecelestia.control.BottomControlFragment.Listener
 
 class BottomControlRecyclerViewAdapter(
@@ -43,9 +43,9 @@ class BottomControlRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
 
-        holder.imageView.setImageResource(item.image)
+        holder.imageButton.setImageResource(item.image)
 
-        with(holder.view) {
+        with(holder.imageButton) {
             tag = item
             setOnClickListener(mOnClickListener)
         }
@@ -54,6 +54,6 @@ class BottomControlRecyclerViewAdapter(
     override fun getItemCount(): Int = values.size
 
     inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val imageView: ImageView = view.image
+        val imageButton: StandardImageButton = view.button
     }
 }
