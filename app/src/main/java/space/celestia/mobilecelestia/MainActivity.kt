@@ -41,16 +41,16 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
-import space.celestia.mobilecelestia.browser.BrowserCommonFragment
-import space.celestia.mobilecelestia.browser.BrowserFragment
-import space.celestia.mobilecelestia.browser.BrowserItem
+import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaView
+import space.celestia.mobilecelestia.common.Cleanable
 import space.celestia.mobilecelestia.common.PoppableFragment
 import space.celestia.mobilecelestia.control.BottomControlFragment
 import space.celestia.mobilecelestia.control.CameraControlAction
 import space.celestia.mobilecelestia.control.CameraControlFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.CelestiaBrowserItem
 import space.celestia.mobilecelestia.core.CelestiaScript
 import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.favorite.*
@@ -689,6 +689,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 startActivity(browserIntent)
             }
+            is SubsystemActionItem -> {
+                addToBackStack()
+                hideOverlay()
+                val entry = selection.`object` ?: return
+                val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, entry, core.simulation.universe)
+                showRightFragment(SubsystemBrowserFragment.newInstance(browserItem))
+                return
+            }
         }
     }
 
@@ -710,7 +718,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onBrowserItemSelected(item: BrowserItem) {
         if (!item.isLeaf) {
             val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
-            if (frag is BrowserFragment) {
+            if (frag is BrowserRootFragment) {
                 frag.pushItem(item.item)
             }
         } else {
@@ -718,7 +726,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             if (obj != null) {
                 val selection = CelestiaSelection.create(obj)
                 if (selection != null) {
-                    addToBackStack()
+                    clearBackStack()
                     hideOverlay()
                     showInfo(selection)
                 } else {
@@ -977,6 +985,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         for (i in 0 until overlay.childCount) {
             val child = overlay.getChildAt(i)
             supportFragmentManager.findFragmentById(child.id)?.let {
+                if (!backStack.contains(it) && it is Cleanable) {
+                    it.cleanUp()
+                }
                 child.visibility = View.INVISIBLE
                 supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
             }

@@ -22,10 +22,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.info.model.InfoActionItem
-import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
-import space.celestia.mobilecelestia.info.model.InfoItem
-import space.celestia.mobilecelestia.info.model.InfoWebActionItem
+import space.celestia.mobilecelestia.info.model.*
 
 class InfoFragment : Fragment() {
 
@@ -58,6 +55,7 @@ class InfoFragment : Fragment() {
                 if (descriptionItem!!.hasWebInfo) {
                     otherActions.add(InfoWebActionItem())
                 }
+                otherActions.add(SubsystemActionItem())
                 actions.addAll(otherActions)
                 adapter = InfoRecyclerViewAdapter(actions, listener)
                 addItemDecoration(SpaceItemDecoration())

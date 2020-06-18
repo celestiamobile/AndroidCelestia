@@ -52,3 +52,7 @@ abstract class PoppableFragment: Fragment(), Poppable {
     abstract override fun canPop(): Boolean
     abstract override fun popLast()
 }
+
+interface Cleanable {
+    fun cleanUp()
+}

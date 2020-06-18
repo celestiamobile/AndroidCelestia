@@ -35,7 +35,8 @@ class BrowserCommonFragment : TitledFragment() {
 
         arguments?.let {
             val path = it.getString(ARG_PATH)!!
-            browserItem = BrowserFragment.browserMap[path]
+            val rootPath = it.getString(ARG_ROOT)
+            browserItem = if (rootPath != null) SubsystemBrowserFragment.browserMap[rootPath]!![path] else BrowserFragment.browserMap[path]
         }
     }
 
@@ -75,12 +76,14 @@ class BrowserCommonFragment : TitledFragment() {
 
     companion object {
         const val ARG_PATH = "path"
+        const val ARG_ROOT = "root"
 
         @JvmStatic
-        fun newInstance(path: String) =
+        fun newInstance(path: String, rootPath: String? = null) =
             BrowserCommonFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PATH, path)
+                    putString(ARG_ROOT, rootPath)
                 }
             }
     }

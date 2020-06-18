@@ -78,4 +78,8 @@ class InfoWebActionItem : InfoActionItem {
     override val title: String
         get() = CelestiaString("Web Info", "")
 }
+class SubsystemActionItem : InfoActionItem {
+    override val title: String
+        get() = CelestiaString("Subsystem", "")
+}
 class InfoDescriptionItem(val name: String, val overview: String, val hasWebInfo: Boolean) : InfoItem, Serializable

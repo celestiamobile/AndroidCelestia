@@ -14,45 +14,39 @@ package space.celestia.mobilecelestia.browser
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.Toolbar
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
-import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
 
-
-abstract class BrowserRootFragment: PoppableFragment() {
-    abstract fun pushItem(browserItem: CelestiaBrowserItem)
-}
-
-class BrowserFragment : BrowserRootFragment(), BottomNavigationView.OnNavigationItemSelectedListener {
-    private val browserItemMenu by lazy {
-        val sim = CelestiaAppCore.shared().simulation
-        listOf(
-            BrowserItemMenu(sim.universe.solBrowserRoot(), R.drawable.browser_tab_sso),
-            BrowserItemMenu(sim.starBrowserRoot(), R.drawable.browser_tab_star),
-            BrowserItemMenu(sim.universe.dsoBrowserRoot(), R.drawable.browser_tab_dso)
-        )
-    }
-
+class SubsystemBrowserFragment : BrowserRootFragment(), Cleanable {
     private val toolbar get() = view!!.findViewById<Toolbar>(R.id.toolbar)
     private var currentPath = ""
+    private var rootPath = ""
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        arguments?.let {
+            val path = it.getString(ARG_ROOT_PATH, SUBSYSTEM_DEFAULT_PREFIX)
+            rootPath = path
+            currentPath = path
+        }
+    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
         if (savedInstanceState != null) {
-            val p = savedInstanceState.getString("path")
-            if (p != null) {
-                currentPath = p
-            }
+            rootPath = savedInstanceState.getString(ARG_ROOT_PATH, SUBSYSTEM_DEFAULT_PREFIX)
+            currentPath = savedInstanceState.getString(ARG_CURR_PATH, rootPath)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putString("path", currentPath)
+        outState.putString(ARG_CURR_PATH, currentPath)
+        outState.putString(ARG_ROOT_PATH, rootPath)
     }
 
     override fun onCreateView(
@@ -60,41 +54,25 @@ class BrowserFragment : BrowserRootFragment(), BottomNavigationView.OnNavigation
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_browser, container, false)
+        return inflater.inflate(R.layout.fragment_subsystem_browser, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val nav = view.findViewById<BottomNavigationView>(R.id.navigation)
-        for (i in 0 until browserItemMenu.count()) {
-            val item = browserItemMenu[i]
-            nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.alternativeName ?: item.item.name).setIcon(item.icon)
-        }
         toolbar.setNavigationOnClickListener {
             popLast()
         }
-        nav.setOnNavigationItemSelectedListener(this)
-        replaceItem(browserItemMenu[0].item)
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        replaceItem(browserItemMenu[item.itemId].item)
-        return true
-    }
-
-    private fun replaceItem(browserItem: CelestiaBrowserItem) {
         toolbar.navigationIcon = null
+        val browserItem = browserMap[rootPath]!![currentPath]!!
         toolbar.title = browserItem.alternativeName ?: browserItem.name
-        currentPath = browserItem.name
-        browserMap[currentPath] = browserItem
-        replace(BrowserCommonFragment.newInstance(currentPath), R.id.browser_container)
+        replace(BrowserCommonFragment.newInstance(currentPath, rootPath), R.id.browser_container)
     }
 
     override fun pushItem(browserItem: CelestiaBrowserItem) {
         toolbar.title = browserItem.name
         toolbar.setNavigationIcon(R.drawable.ic_action_arrow_back)
         currentPath = "$currentPath/${browserItem.name}"
-        browserMap[currentPath] = browserItem
-        val frag = BrowserCommonFragment.newInstance(currentPath)
+        browserMap[rootPath]!![currentPath] = browserItem
+        val frag = BrowserCommonFragment.newInstance(currentPath, rootPath)
         push(frag, R.id.browser_container)
     }
 
@@ -112,11 +90,25 @@ class BrowserFragment : BrowserRootFragment(), BottomNavigationView.OnNavigation
         toolbar.title = (childFragmentManager.fragments[index] as TitledFragment).title
     }
 
-    companion object {
-        @JvmStatic
-        fun newInstance() =
-            BrowserFragment()
+    override fun cleanUp() {
+        browserMap.remove(currentPath)
+    }
 
-        val browserMap = HashMap<String, CelestiaBrowserItem>()
+    companion object {
+        private const val ARG_ROOT_PATH = "root"
+        private const val ARG_CURR_PATH = "current"
+        private const val SUBSYSTEM_DEFAULT_PREFIX = "subsystem"
+
+        @JvmStatic
+        fun newInstance(browserItem: CelestiaBrowserItem) =
+            SubsystemBrowserFragment().apply {
+                val root = "$SUBSYSTEM_DEFAULT_PREFIX/${browserItem.name}"
+                browserMap[root] = hashMapOf(root to browserItem)
+                arguments = Bundle().apply {
+                    putString(ARG_ROOT_PATH, root)
+                }
+            }
+
+        val browserMap = HashMap<String, HashMap<String, CelestiaBrowserItem>>()
     }
 }
