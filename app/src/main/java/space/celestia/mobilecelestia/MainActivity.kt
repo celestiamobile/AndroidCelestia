@@ -673,9 +673,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
     }
 
-    override fun onNewIntent(intent: Intent) {
+    override public fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleIntent(intent)
+        runOnUiThread {
+            handleIntent(intent)
+        }
     }
 
     private fun handleIntent(intent: Intent) {
@@ -1558,6 +1560,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun celestiaFragmentDidRequestObjectInfo() {
+        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.hideControlViewIfNeeded()
         lifecycleScope.launch {
             val selection =
                 withContext(executor.asCoroutineDispatcher()) { appCore.simulation.selection }

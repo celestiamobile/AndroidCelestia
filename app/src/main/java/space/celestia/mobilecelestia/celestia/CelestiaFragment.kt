@@ -732,7 +732,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    private fun hideControlViewIfNeeded() {
+    fun hideControlViewIfNeeded() {
         if (isControlViewVisible) {
             hideControlView()
         }

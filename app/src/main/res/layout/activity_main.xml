@@ -100,7 +100,8 @@
                             android:layout_height="match_parent"
                             android:padding="@dimen/sheet_close_button_padding"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            style="@style/SecondaryImage"/>
+                            style="@style/SecondaryImage"
+                            android:contentDescription="Close"/>
                         <FrameLayout
                             android:layout_width="@dimen/sheet_handle_width"
                             android:layout_height="@dimen/sheet_handle_height"
