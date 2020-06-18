@@ -35,6 +35,9 @@ class SearchFragment : Fragment() {
 
     private var searchView: SearchView? = null
 
+    private var lastSearchText: String = ""
+    private var lastSearchResultCount: Int = 0
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -64,20 +67,35 @@ class SearchFragment : Fragment() {
             .debounce(300, TimeUnit.MILLISECONDS)
             .distinctUntilChanged()
             .map {
-                if (it.isEmpty()) { return@map listOf<String>() }
+                if (it.isEmpty()) { return@map null }
                 val core = CelestiaAppCore.shared()
-                return@map core.simulation.completionForText(it, SEARCH_RESULT_LIMIT)
+                return@map Pair(it, core.simulation.completionForText(it, SEARCH_RESULT_LIMIT))
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                listAdapter.updateSearchResults(it)
+                if (it != null) {
+                    lastSearchText = it.first
+                    lastSearchResultCount = it.second.size
+                    listAdapter.updateSearchResults(it.second)
+                } else {
+                    lastSearchText = ""
+                    lastSearchResultCount = 0
+                    listAdapter.updateSearchResults(listOf())
+                }
                 listAdapter.notifyDataSetChanged()
             }, {}, {
                 // Submit, clear focus
                 searchView.clearFocus()
                 (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(searchView.windowToken, 0)
                 setupSearchSearchView()
+
+                if (!lastSearchText.isEmpty() && lastSearchResultCount == 0) {
+                    listener?.onSearchItemSubmit(lastSearchText)
+                }
+
+                lastSearchText = ""
+                lastSearchResultCount = 0
             })
     }
 
@@ -97,6 +115,7 @@ class SearchFragment : Fragment() {
 
     interface Listener {
         fun onSearchItemSelected(text: String)
+        fun onSearchItemSubmit(text: String)
     }
 
     companion object {

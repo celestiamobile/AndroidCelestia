@@ -711,6 +711,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showInfo(sel)
     }
 
+    override fun onSearchItemSubmit(text: String) {
+        onSearchItemSelected(text)
+    }
+
     override fun onActionSelected(item: CelestiaAction) {
         CelestiaView.callOnRenderThread { core.charEnter(item.value) }
     }
