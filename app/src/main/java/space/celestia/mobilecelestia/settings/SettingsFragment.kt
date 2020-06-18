@@ -20,14 +20,11 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaView
-import space.celestia.mobilecelestia.common.TitledFragment
-import space.celestia.mobilecelestia.common.pop
-import space.celestia.mobilecelestia.common.push
-import space.celestia.mobilecelestia.common.replace
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import java.lang.RuntimeException
 
-class SettingsFragment : Fragment() {
+class SettingsFragment : PoppableFragment() {
 
     private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
 
@@ -41,7 +38,7 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         toolbar.setNavigationOnClickListener {
-            popItem()
+            popLast()
         }
         val main = SettingsItemFragment.newInstance()
         replace(main, main.title)
@@ -99,7 +96,11 @@ class SettingsFragment : Fragment() {
             frag.reload()
     }
 
-    private fun popItem() {
+    override fun canPop(): Boolean {
+        return childFragmentManager.backStackEntryCount > 0
+    }
+
+    override fun popLast() {
         pop()
         val index = childFragmentManager.backStackEntryCount - 1
         if (index == 0) {

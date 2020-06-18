@@ -42,3 +42,13 @@ open class TitledFragment : Fragment() {
     open val title: String
         get() = ""
 }
+
+interface Poppable {
+    fun canPop(): Boolean
+    fun popLast()
+}
+
+abstract class PoppableFragment: Fragment(), Poppable {
+    abstract override fun canPop(): Boolean
+    abstract override fun popLast()
+}

@@ -17,14 +17,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.TitledFragment
-import space.celestia.mobilecelestia.common.pop
-import space.celestia.mobilecelestia.common.push
-import space.celestia.mobilecelestia.common.replace
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
 
-class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelectedListener {
+class BrowserFragment : PoppableFragment(), BottomNavigationView.OnNavigationItemSelectedListener {
     private val browserItemMenu by lazy {
         val sim = CelestiaAppCore.shared().simulation
         listOf(
@@ -69,7 +66,7 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
             nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.alternativeName ?: item.item.name).setIcon(item.icon)
         }
         toolbar.setNavigationOnClickListener {
-            popItem()
+            popLast()
         }
         nav.setOnNavigationItemSelectedListener(this)
         replaceItem(browserItemMenu[0].item)
@@ -97,7 +94,11 @@ class BrowserFragment : Fragment(), BottomNavigationView.OnNavigationItemSelecte
         push(frag, R.id.browser_container)
     }
 
-    private fun popItem() {
+    override fun canPop(): Boolean {
+        return childFragmentManager.backStackEntryCount > 0
+    }
+
+    override fun popLast() {
         pop()
         val index = childFragmentManager.backStackEntryCount - 1
         if (index == 0) {

@@ -67,7 +67,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1findObject(JNIEnv 
                                                                          jstring name) {
     Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
     const char *str = env->GetStringUTFChars(name, nullptr);
-    Selection *sel = new Selection(sim->findObject(str));
+    Selection *sel = new Selection(sim->findObject(str, true));
     env->ReleaseStringUTFChars(name, str);
     return (jlong)sel;
 }

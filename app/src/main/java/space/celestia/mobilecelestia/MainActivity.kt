@@ -15,6 +15,8 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.graphics.PointF
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -30,6 +32,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ShareCompat
+import androidx.core.graphics.contains
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -46,6 +49,7 @@ import space.celestia.mobilecelestia.browser.BrowserFragment
 import space.celestia.mobilecelestia.browser.BrowserItem
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaView
+import space.celestia.mobilecelestia.common.PoppableFragment
 import space.celestia.mobilecelestia.control.BottomControlFragment
 import space.celestia.mobilecelestia.control.CameraControlAction
 import space.celestia.mobilecelestia.control.CameraControlFragment
@@ -165,9 +169,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .beginTransaction()
             .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
             .commitAllowingStateLoss()
-        
+
         findViewById<View>(R.id.overlay_container).setOnTouchListener { _, _ ->
             hideOverlay()
+            return@setOnTouchListener true
+        }
+
+        findViewById<View>(R.id.interaction_filter).setOnTouchListener { v, e ->
+            val point = PointF(e.x, e.y)
+            val safeAreaParam = v.resources.displayMetrics.density * 16 // reserve 16 DP on each side for system gestures
+            val safeArea = RectF(safeAreaParam, safeAreaParam, v.width - safeAreaParam, v.height - safeAreaParam)
+            if (safeArea.contains(point)) {
+                // Pass through
+                return@setOnTouchListener false
+            }
+            // Excluded
             return@setOnTouchListener true
         }
 
@@ -201,7 +217,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onDestroy()
     }
 
-    override fun onBackPressed() {}
+    override fun onBackPressed() {
+        val overlay = findViewById<ViewGroup>(R.id.overlay_container)
+        if (overlay.visibility == View.VISIBLE) {
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container) ?: return
+            if (frag is PoppableFragment && frag.canPop()) {
+                frag.popLast()
+            } else {
+                hideOverlay()
+            }
+        }
+    }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)

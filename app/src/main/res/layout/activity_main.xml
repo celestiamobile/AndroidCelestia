@@ -89,4 +89,9 @@
         android:focusable="true"
         style="@style/Container" />
 
+    <View
+        android:id="@+id/interaction_filter"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
 </FrameLayout>
