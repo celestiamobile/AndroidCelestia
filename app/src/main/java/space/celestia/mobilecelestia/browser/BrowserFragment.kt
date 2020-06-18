@@ -31,7 +31,7 @@ class BrowserFragment : PoppableFragment(), BottomNavigationView.OnNavigationIte
         )
     }
 
-    private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
+    private val toolbar get() = view!!.findViewById<Toolbar>(R.id.toolbar)
     private var currentPath = ""
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

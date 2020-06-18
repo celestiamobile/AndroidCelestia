@@ -22,10 +22,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
-import android.view.DisplayCutout
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -74,6 +71,7 @@ import space.celestia.mobilecelestia.utils.*
 import java.io.IOException
 import java.lang.RuntimeException
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 class MainActivity : AppCompatActivity(R.layout.activity_main),
@@ -105,6 +103,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val core by lazy { CelestiaAppCore.shared() }
     private var currentSelection: CelestiaSelection? = null
+
+    private val backStack: MutableList<Fragment> = ArrayList<Fragment>()
 
     private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
@@ -170,8 +170,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
             .commitAllowingStateLoss()
 
-        findViewById<View>(R.id.overlay_container).setOnTouchListener { _, _ ->
-            hideOverlay()
+        findViewById<View>(R.id.overlay_container).setOnTouchListener { _, e ->
+            if (e.actionMasked == MotionEvent.ACTION_UP) {
+                hideOverlay()
+                popLastFromBackStackAndShow()
+            }
             return@setOnTouchListener true
         }
 
@@ -225,6 +228,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 frag.popLast()
             } else {
                 hideOverlay()
+                popLastFromBackStackAndShow()
             }
         }
     }
@@ -670,13 +674,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val selection = currentSelection ?: return
         when (action) {
             is InfoNormalActionItem -> {
+                clearBackStack()
                 core.simulation.selection = selection
                 CelestiaView.callOnRenderThread { core.charEnter(action.item.value) }
             }
             is InfoSelectActionItem -> {
+                clearBackStack()
                 core.simulation.selection = selection
             }
             is InfoWebActionItem -> {
+                clearBackStack()
                 val url = selection.webInfoURL!!
                 // show web info in browser
                 val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
@@ -691,6 +698,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             showAlert(CelestiaString("Object not found", ""))
             return
         }
+        addToBackStack()
         hideOverlay()
         showInfo(sel)
     }
@@ -710,6 +718,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             if (obj != null) {
                 val selection = CelestiaSelection.create(obj)
                 if (selection != null) {
+                    addToBackStack()
+                    hideOverlay()
                     showInfo(selection)
                 } else {
                     showAlert(CelestiaString("Object not found", ""))
@@ -1086,6 +1096,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top, R.anim.enter_from_top, R.anim.exit_to_bottom)
             .add(containerID, fragment)
             .commitAllowingStateLoss()
+    }
+
+    private fun addToBackStack() {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container) ?: return
+        backStack.add(frag)
+    }
+
+    private fun clearBackStack() {
+        backStack.clear()
+    }
+
+    private fun popLastFromBackStackAndShow() {
+        if (backStack.size == 0) return
+        val frag = backStack.last()
+        backStack.removeAt(backStack.size - 1)
+        showRightFragment(frag)
     }
 
     companion object {
