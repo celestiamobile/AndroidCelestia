@@ -67,22 +67,16 @@ class SearchFragment : Fragment() {
             .debounce(300, TimeUnit.MILLISECONDS)
             .distinctUntilChanged()
             .map {
-                if (it.isEmpty()) { return@map null }
+                if (it.isEmpty()) { return@map Pair("", listOf<String>()) }
                 val core = CelestiaAppCore.shared()
                 return@map Pair(it, core.simulation.completionForText(it, SEARCH_RESULT_LIMIT))
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                if (it != null) {
-                    lastSearchText = it.first
-                    lastSearchResultCount = it.second.size
-                    listAdapter.updateSearchResults(it.second)
-                } else {
-                    lastSearchText = ""
-                    lastSearchResultCount = 0
-                    listAdapter.updateSearchResults(listOf())
-                }
+                lastSearchText = it.first
+                lastSearchResultCount = it.second.size
+                listAdapter.updateSearchResults(it.second)
                 listAdapter.notifyDataSetChanged()
             }, {}, {
                 // Submit, clear focus
