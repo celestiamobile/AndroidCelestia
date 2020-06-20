@@ -175,11 +175,14 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         }
 
         activity?.runOnUiThread {
+            val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+            val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
+
             val controlView = view?.findViewById<FrameLayout>(currentControlViewID)
             if (controlView != null) {
                 val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
                 if (params != null) {
-                    params.marginEnd = controlContainerTrailingMargin + cutout.safeInsetRight
+                    params.marginEnd = controlContainerTrailingMargin + safeInsetEnd
                     controlView.layoutParams = params
                 }
             }
@@ -313,17 +316,22 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         val current = view?.findViewById<FrameLayout>(currentControlViewID) ?: return
         val new = view?.findViewById<FrameLayout>(anotherView) ?: return
 
+        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+
         val density = resources.displayMetrics.density
 
         if (current == new) { return }
 
         var maxValue = current.width + controlContainerTrailingMargin
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            maxValue += current.rootWindowInsets.displayCutout?.safeInsetRight ?: 0
+            if (ltr)
+                maxValue += current.rootWindowInsets.displayCutout?.safeInsetRight ?: 0
+            else
+                maxValue += current.rootWindowInsets.displayCutout?.safeInsetLeft ?: 0
         }
 
         // Reserve 1 dp to ensure it does not completely fall off the screen
-        val hideAnimator = ObjectAnimator.ofFloat(current, "translationX", 0f, (maxValue - density).toFloat())
+        val hideAnimator = ObjectAnimator.ofFloat(current, "translationX", 0f, (if (ltr) 1 else -1) * (maxValue - density).toFloat())
         hideAnimator.setDuration(200)
         hideAnimator.start()
 
@@ -340,12 +348,15 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
                 newLayoutParams.startToEnd = ConstraintLayout.LayoutParams.UNSET
                 newLayoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
 
-                var insetRight = 0
+                var insetEnd = 0
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    insetRight = new.rootWindowInsets.displayCutout?.safeInsetRight ?: 0
+                    if (ltr)
+                        insetEnd = new.rootWindowInsets.displayCutout?.safeInsetRight ?: 0
+                    else
+                        insetEnd = new.rootWindowInsets.displayCutout?.safeInsetLeft ?: 0
                 }
 
-                newLayoutParams.marginEnd = insetRight + controlContainerTrailingMargin
+                newLayoutParams.marginEnd = insetEnd + controlContainerTrailingMargin
                 new.layoutParams = newLayoutParams
                 new.translationX = 0f
             }

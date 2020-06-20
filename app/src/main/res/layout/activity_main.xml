@@ -28,26 +28,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="invisible"
-        tools:ignore="RtlHardcoded"
         style="@style/DimmingBackground">
 
         <FrameLayout
-            android:id="@+id/normal_right_container"
+            android:id="@+id/normal_end_container"
             android:layout_width="300dp"
             android:layout_height="match_parent"
-            android:layout_marginRight="0dp"
-            android:layout_gravity="right"
+            android:layout_marginEnd="0dp"
+            android:layout_gravity="end"
             android:visibility="invisible"
             android:clickable="true"
             android:focusable="true"
             style="@style/Container" />
 
         <FrameLayout
-            android:id="@+id/toolbar_right_container"
+            android:id="@+id/toolbar_end_container"
             android:layout_width="220dp"
             android:layout_height="match_parent"
-            android:layout_marginRight="0dp"
-            android:layout_gravity="right"
+            android:layout_marginEnd="0dp"
+            android:layout_gravity="end"
             android:visibility="invisible"
             android:clickable="true"
             android:focusable="true"
@@ -65,11 +64,11 @@
             style="@style/Container"/>
 
         <FrameLayout
-            android:id="@+id/right_notch"
+            android:id="@+id/end_notch"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:visibility="invisible"
-            android:layout_gravity="right"
+            android:layout_gravity="end"
             style="@style/Background"/>
 
         <FrameLayout

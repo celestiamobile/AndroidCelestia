@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onBackPressed() {
         val overlay = findViewById<ViewGroup>(R.id.overlay_container)
         if (overlay.visibility == View.VISIBLE) {
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container) ?: return
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) ?: return
             if (frag is PoppableFragment && frag.canPop()) {
                 frag.popLast()
             } else {
@@ -312,24 +312,33 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun applyCutout(cutout: DisplayCutout) {
         val density = resources.displayMetrics.density
 
-        val rightView = findViewById<View>(R.id.normal_right_container)
-        val toolbarView = findViewById<View>(R.id.toolbar_right_container)
+        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+        val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
+
+        val endView = findViewById<View>(R.id.normal_end_container)
+        val toolbarView = findViewById<View>(R.id.toolbar_end_container)
         val bottomView = findViewById<View>(R.id.toolbar_bottom_container)
 
-        val rightNotch = findViewById<View>(R.id.right_notch)
+        val endNotch = findViewById<View>(R.id.end_notch)
         val bottomNotch = findViewById<View>(R.id.bottom_notch)
 
-        (rightView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
-            it.width = (300 * density).toInt() + cutout.safeInsetRight
-            rightView.layoutParams = it
+        (endView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.width = (300 * density).toInt() + safeInsetEnd
+            endView.layoutParams = it
         }
-        rightView.setPadding(0, 0, cutout.safeInsetRight, 0)
+        if (ltr)
+            endView.setPadding(0, 0, safeInsetEnd, 0)
+        else
+            endView.setPadding(safeInsetEnd, 0, 0, 0)
 
         (toolbarView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
-            it.width = (220 * density).toInt() + cutout.safeInsetRight
+            it.width = (220 * density).toInt() + safeInsetEnd
             toolbarView.layoutParams = it
         }
-        toolbarView.setPadding(0, 0, cutout.safeInsetRight, 0)
+        if (ltr)
+            toolbarView.setPadding(0, 0, safeInsetEnd, 0)
+        else
+            toolbarView.setPadding(safeInsetEnd, 0, 0, 0)
 
         (bottomView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
             it.height = (60 * density).toInt() + cutout.safeInsetBottom
@@ -341,9 +350,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             it.height = cutout.safeInsetBottom
             bottomNotch.layoutParams = it
         }
-        (rightNotch.layoutParams as? ConstraintLayout.LayoutParams)?.let {
-            it.width = cutout.safeInsetRight
-            rightNotch.layoutParams = it
+        (endNotch.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.width = safeInsetEnd
+            endNotch.layoutParams = it
         }
     }
 
@@ -628,7 +637,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbar() {
-        showRightFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_right_container)
+        showEndFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_end_container)
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
@@ -694,7 +703,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 hideOverlay()
                 val entry = selection.`object` ?: return
                 val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, entry, core.simulation.universe)
-                showRightFragment(SubsystemBrowserFragment.newInstance(browserItem))
+                showEndFragment(SubsystemBrowserFragment.newInstance(browserItem))
                 return
             }
         }
@@ -721,7 +730,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onBrowserItemSelected(item: BrowserItem) {
         if (!item.isLeaf) {
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
             if (frag is BrowserRootFragment) {
                 frag.pushItem(item.item)
             }
@@ -759,7 +768,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun addFavoriteItem(item: MutableFavoriteBaseItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
         if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
             val bookmark = core.currentBookmark
             if (bookmark == null) {
@@ -798,7 +807,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 core.goToURL(item.bookmark.url)
             }
         } else {
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
             if (frag is FavoriteFragment) {
                 frag.pushItem(item)
             }
@@ -806,7 +815,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun deleteFavoriteItem(index: Int) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
         if (frag is FavoriteFragment) {
             frag.remove(index)
         }
@@ -814,7 +823,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun renameFavoriteItem(item: MutableFavoriteBaseItem) {
         showTextInput(CelestiaString("Rename", ""), item.title) { text ->
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
             if (frag is FavoriteFragment) {
                 frag.rename(item, text)
             }
@@ -822,7 +831,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onMainSettingItemSelected(item: SettingsItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
         if (frag is SettingsFragment) {
             frag.pushMainSettingItem(item)
         }
@@ -978,7 +987,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun reloadSettings() {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
         if (frag is SettingsFragment) {
             frag.reload()
         }
@@ -997,13 +1006,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
         overlay.visibility = View.INVISIBLE
-        findViewById<View>(R.id.right_notch).visibility = View.INVISIBLE
+        findViewById<View>(R.id.end_notch).visibility = View.INVISIBLE
         findViewById<View>(R.id.bottom_notch).visibility = View.INVISIBLE
     }
 
     private fun showInfo(selection: CelestiaSelection) {
         currentSelection = selection
-        showRightFragment(
+        showEndFragment(
             InfoFragment.newInstance(
                 InfoDescriptionItem(
                     core.simulation.universe.getNameForSelection(selection),
@@ -1015,11 +1024,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showSearch() {
-        showRightFragment(SearchFragment.newInstance())
+        showEndFragment(SearchFragment.newInstance())
     }
 
     private fun showBrowser() {
-        showRightFragment(BrowserFragment.newInstance())
+        showEndFragment(BrowserFragment.newInstance())
     }
 
     private fun showTimeControl() {
@@ -1043,11 +1052,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showCameraControl() {
-        showRightFragment(CameraControlFragment.newInstance())
+        showEndFragment(CameraControlFragment.newInstance())
     }
 
     private fun showHelp() {
-        showRightFragment(HelpFragment.newInstance())
+        showEndFragment(HelpFragment.newInstance())
     }
 
     private fun showFavorite() {
@@ -1057,11 +1066,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             scripts.addAll(CelestiaScript.getScriptsInDirectory(path, true))
         }
         updateCurrentScripts(scripts)
-        showRightFragment(FavoriteFragment.newInstance())
+        showEndFragment(FavoriteFragment.newInstance())
     }
 
     private fun showSettings() {
-        showRightFragment(SettingsFragment.newInstance())
+        showEndFragment(SettingsFragment.newInstance())
     }
 
     private fun showShare() {
@@ -1091,13 +1100,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showAlert(CelestiaString("Cannot share URL", ""))
     }
 
-    private fun showRightFragment(fragment: Fragment, containerID: Int = R.id.normal_right_container) {
+    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
-        findViewById<View>(R.id.right_notch).visibility = View.VISIBLE
+        findViewById<View>(R.id.end_notch).visibility = View.VISIBLE
+
+        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+
+        val ani1 = if (ltr) R.anim.enter_from_right else R.anim.enter_from_left
+        val ani2 = if (ltr) R.anim.exit_to_left else R.anim.exit_to_right
+        val ani3 = if (ltr) R.anim.enter_from_left else R.anim.enter_from_right
+        val ani4 = if (ltr) R.anim.exit_to_right else R.anim.exit_to_left
+
         supportFragmentManager
             .beginTransaction()
-            .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+            .setCustomAnimations(ani1, ani2, ani3, ani4)
             .add(containerID, fragment)
             .commitAllowingStateLoss()
     }
@@ -1114,7 +1131,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun addToBackStack() {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_right_container) ?: return
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) ?: return
         backStack.add(frag)
     }
 
@@ -1126,7 +1143,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (backStack.size == 0) return
         val frag = backStack.last()
         backStack.removeAt(backStack.size - 1)
-        showRightFragment(frag)
+        showEndFragment(frag)
     }
 
     companion object {
