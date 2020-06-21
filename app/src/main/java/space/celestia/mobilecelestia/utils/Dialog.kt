@@ -18,7 +18,7 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import space.celestia.mobilecelestia.R
 
-fun Activity.showTextInput(title: String, placeholder: String?, handler: (String) -> Unit) {
+fun Activity.showTextInput(title: String, placeholder: String? = null, handler: (String) -> Unit) {
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
     val customView = LayoutInflater.from(this).inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)

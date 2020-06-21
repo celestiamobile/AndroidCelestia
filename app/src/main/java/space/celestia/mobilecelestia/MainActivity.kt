@@ -12,8 +12,6 @@
 package space.celestia.mobilecelestia
 
 import android.annotation.SuppressLint
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.content.Intent
 import android.graphics.PointF
 import android.graphics.RectF
@@ -23,7 +21,6 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
 import android.view.*
-import android.widget.DatePicker
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -69,7 +66,9 @@ import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.IOException
+import java.lang.Exception
 import java.lang.RuntimeException
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -88,7 +87,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsMultiSelectionFragment.Listener,
     SettingsSingleSelectionFragment.Listener,
     SettingsCurrentTimeFragment.Listener,
-    DatePickerDialog.OnDateSetListener,
     AboutFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
@@ -881,35 +879,27 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             CurrentTimeAction.PickDate -> {
                 val current = createDateFromJulianDay(core.simulation.time)
-                val ca = Calendar.getInstance()
-                ca.time = current
-                val year = ca.get(Calendar.YEAR)
-                val month = ca.get(Calendar.MONTH)
-                val day = ca.get(Calendar.DAY_OF_MONTH)
-                val dialog = DatePickerDialog(this, this, year, month, day)
-                dialog.show()
+                val format = "yyyy/MM/dd HH:mm:ss"
+                showTextInput(CelestiaString("Please enter the time in \"$format\" format.", "")) { input ->
+                    val dateFormatter = SimpleDateFormat(format, Locale.US)
+                    try {
+                        val date = dateFormatter.parse(input)
+                        if (date == null) {
+                            showAlert(CelestiaString("Unrecognized time string.", ""))
+                            return@showTextInput
+                        }
+                        CelestiaView.callOnRenderThread {
+                            core.simulation.time = date.julianDay
+                            runOnUiThread {
+                                reloadSettings()
+                            }
+                        }
+                    } catch (_: Exception) {
+                        showAlert(CelestiaString("Unrecognized time string.", ""))
+                    }
+                }
             }
         }
-    }
-
-    override fun onDateSet(p0: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
-        val current = createDateFromJulianDay(core.simulation.time)
-        val ca = Calendar.getInstance()
-        ca.time = current
-        val h = ca.get(Calendar.HOUR_OF_DAY)
-        val m = ca.get(Calendar.MINUTE)
-
-        val dialog = TimePickerDialog(this, { _, hourOfDay, minute ->
-            val nca = Calendar.getInstance()
-            nca.set(Calendar.YEAR, year)
-            nca.set(Calendar.MONTH, month)
-            nca.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            nca.set(Calendar.HOUR_OF_DAY, hourOfDay)
-            nca.set(Calendar.MINUTE, minute)
-            core.simulation.time = nca.time.julianDay
-            reloadSettings()
-        }, h, m, true)
-        dialog.show()
     }
 
     override fun onAboutActionSelected(action: AboutAction) {
