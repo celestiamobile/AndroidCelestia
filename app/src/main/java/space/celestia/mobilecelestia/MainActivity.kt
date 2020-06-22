@@ -707,8 +707,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 clearBackStack()
                 val url = selection.webInfoURL!!
                 // show web info in browser
-                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                startActivity(browserIntent)
+                openURL(url)
             }
             is SubsystemActionItem -> {
                 addToBackStack()
@@ -919,12 +918,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onAboutActionSelected(action: AboutAction) {
         when (action) {
             AboutAction.VisitOfficialWebsite -> {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://celestia.space"))
-                startActivity(intent)
+                openURL("https://celestia.space")
             }
             AboutAction.VisitOfficialForum -> {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://celestia.space/forum"))
-                startActivity(intent)
+                openURL("https://celestia.space/forum")
             }
         }
     }
@@ -1006,6 +1003,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (selection.isEmpty) { return }
 
         showInfo(selection)
+    }
+
+    private fun openURL(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
     }
 
     private fun reloadSettings() {
