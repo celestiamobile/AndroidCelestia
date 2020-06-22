@@ -16,7 +16,12 @@ import android.app.AlertDialog
 import android.text.InputType
 import android.view.LayoutInflater
 import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.Spinner
 import space.celestia.mobilecelestia.R
+import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
 
 fun Activity.showTextInput(title: String, placeholder: String? = null, handler: (String) -> Unit) {
     val builder = AlertDialog.Builder(this)
@@ -37,6 +42,56 @@ fun Activity.showTextInput(title: String, placeholder: String? = null, handler: 
         dialog.cancel()
     }
     builder.show()
+}
+
+fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Unit) {
+    val formatter = SimpleDateFormat(format, Locale.US)
+    val builder = AlertDialog.Builder(this)
+    builder.setTitle(title)
+    val customView = LayoutInflater.from(this).inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
+
+    val editText = customView.findViewById<EditText>(R.id.input)
+    editText.inputType = InputType.TYPE_CLASS_TEXT
+    builder.setView(customView)
+
+    builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->
+        try {
+            val date = formatter.parse(editText.text.toString())
+            handler(date)
+        } catch (_: Exception) {
+            handler(null)
+        }
+    }
+
+    builder.setNegativeButton(CelestiaString("Cancel", "")) { dialog, _ ->
+        dialog.cancel()
+    }
+    builder.show()
+}
+
+fun Activity.showSingleSelection(title: String, selections: List<String>, checkedIndex: Int, handler: (Int) -> Unit) {
+    val builder = AlertDialog.Builder(this)
+    builder.setTitle(title)
+    builder.setSingleChoiceItems(selections.toTypedArray(), checkedIndex) { _, index ->
+        handler(index)
+    }
+
+    builder.show()
+}
+
+fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): AlertDialog {
+    val builder = AlertDialog.Builder(this)
+    builder.setTitle(title)
+    if (cancelHandler != null) {
+        builder.setCancelable(true)
+        builder.setNegativeButton(CelestiaString("Cancel", "")) { dialog, _ ->
+            dialog.cancel()
+            cancelHandler()
+        }
+    } else {
+        builder.setCancelable(false)
+    }
+    return builder.show()
 }
 
 fun Activity.showAlert(title: String, handler: (() -> Unit)? = null) {

@@ -14,6 +14,7 @@ package space.celestia.mobilecelestia.core;
 import androidx.annotation.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 public class CelestiaSimulation {
     private long pointer;
@@ -59,6 +60,20 @@ public class CelestiaSimulation {
     public double getTime() { return c_getTime(); }
     public void setTime(double time) { c_setTime(time); }
 
+    public void goToEclipse(CelestiaEclipseFinder.Eclipse eclipse) {
+        CelestiaPlanetarySystem system = eclipse.receiver.getSystem();
+        if (system == null)
+             return;
+        CelestiaStar star = system.getStar();
+        if (star == null)
+            return;
+        CelestiaSelection target = CelestiaSelection.create(eclipse.receiver);
+        CelestiaSelection ref = CelestiaSelection.create(star);
+        if (target == null || ref == null)
+            return;
+        c_goToEclipse(eclipse.startTimeJulian, ref.pointer, target.pointer);
+    }
+
     // C functions
     private native long c_getSelection();
     private native void c_setSelection(long ptr);
@@ -69,4 +84,5 @@ public class CelestiaSimulation {
     private native void c_reverseObserverOrientation();
     private native double c_getTime();
     private native void c_setTime(double time);
+    private native void c_goToEclipse(double time, long ref, long target);
 }

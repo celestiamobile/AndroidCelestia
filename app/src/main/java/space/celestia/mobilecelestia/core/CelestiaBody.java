@@ -65,6 +65,14 @@ public class CelestiaBody extends CelestiaAstroObject {
         return new CelestiaRotationModel(c_getRotationModelAtTime(julianDay));
     }
 
+    @Nullable
+    public CelestiaPlanetarySystem getSystem() {
+        long ptr = c_getPlanetarySystem();
+        if (ptr == 0)
+            return null;
+        return new CelestiaPlanetarySystem(ptr);
+    }
+
     // C functions
     private native int c_getType();
     private native String c_getName();
@@ -77,4 +85,5 @@ public class CelestiaBody extends CelestiaAstroObject {
 
     private native long c_getOrbitAtTime(double julianDay);
     private native long c_getRotationModelAtTime(double julianDay);
+    private native long c_getPlanetarySystem();
 }

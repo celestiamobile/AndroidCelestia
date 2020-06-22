@@ -43,13 +43,9 @@ import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.Cleanable
 import space.celestia.mobilecelestia.common.PoppableFragment
-import space.celestia.mobilecelestia.control.BottomControlFragment
-import space.celestia.mobilecelestia.control.CameraControlAction
-import space.celestia.mobilecelestia.control.CameraControlFragment
-import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.core.CelestiaBrowserItem
-import space.celestia.mobilecelestia.core.CelestiaScript
-import space.celestia.mobilecelestia.core.CelestiaSelection
+import space.celestia.mobilecelestia.control.*
+import space.celestia.mobilecelestia.core.*
+import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.favorite.*
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
@@ -66,7 +62,6 @@ import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.IOException
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -91,7 +86,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsDataLocationFragment.Listener,
     SettingsCommonFragment.Listener,
     SettingsFontSelectionFragment.Listener,
-    SettingsFontSelectionFragment.DataSource {
+    SettingsFontSelectionFragment.DataSource,
+    EventFinderInputFragment.Listener,
+    EventFinderResultFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -687,6 +684,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     core.charEnter(CelestiaAction.Home.value)
                 }
             }
+            ToolbarAction.Event -> {
+                showEventFinder()
+            }
         }
     }
 
@@ -893,22 +893,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             CurrentTimeAction.PickDate -> {
                 val current = createDateFromJulianDay(core.simulation.time)
                 val format = "yyyy/MM/dd HH:mm:ss"
-                showTextInput(CelestiaString("Please enter the time in \"$format\" format.", "")) { input ->
-                    val dateFormatter = SimpleDateFormat(format, Locale.US)
-                    try {
-                        val date = dateFormatter.parse(input)
-                        if (date == null) {
-                            showAlert(CelestiaString("Unrecognized time string.", ""))
-                            return@showTextInput
-                        }
-                        CelestiaView.callOnRenderThread {
-                            core.simulation.time = date.julianDay
-                            runOnUiThread {
-                                reloadSettings()
-                            }
-                        }
-                    } catch (_: Exception) {
+                showDateInput(CelestiaString("Please enter the time in \"$format\" format.", ""), format) { date ->
+                    if (date == null) {
                         showAlert(CelestiaString("Unrecognized time string.", ""))
+                        return@showDateInput
+                    }
+                    CelestiaView.callOnRenderThread {
+                        core.simulation.time = date.julianDay
+                        runOnUiThread {
+                            reloadSettings()
+                        }
                     }
                 }
             }
@@ -969,6 +963,35 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override val currentFont: FontHelper.FontCompat?
         get() = if (overrideFont != null) overrideFont else defaultSystemFont
+
+    override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
+        val body = core.simulation.findObject(objectName).`object` as? CelestiaBody
+        if (body == null) {
+            showAlert(CelestiaString("Object not found", ""))
+            return
+        }
+        val finder = CelestiaEclipseFinder(body)
+        val alert = showLoading(CelestiaString("Calculating astronomy events…", "")) {
+            finder.abort()
+        }
+        CelestiaView.callOnRenderThread {
+            val results = finder.search(startDate.julianDay, endDate.julianDay, CelestiaEclipseFinder.ECLIPSE_KIND_LUNAR or CelestiaEclipseFinder.ECLIPSE_KIND_SOLAR)
+            EventFinderResultFragment.eclipses = results
+            runOnUiThread {
+                alert.dismiss()
+                val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+                if (frag is EventFinderContainerFragment) {
+                    frag.showResult()
+                }
+            }
+        }
+    }
+
+    override fun onEclipseChosen(eclipse: CelestiaEclipseFinder.Eclipse) {
+        CelestiaView.callOnRenderThread {
+            core.simulation.goToEclipse(eclipse)
+        }
+    }
 
     private fun setDataDirectoryPath(path: String?) {
         preferenceManager[PreferenceManager.PredefinedKey.DataDirPath] = path
@@ -1120,6 +1143,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showShareError()
             })
         }
+    }
+
+    private fun showEventFinder() {
+        showEndFragment(EventFinderContainerFragment.newInstance())
     }
 
     private fun showShareError() {
