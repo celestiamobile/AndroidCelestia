@@ -77,3 +77,11 @@ Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getRotationModelAtTime(J
     Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
     return (jlong)(body->getRotationModel(julian_day));
 }
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getPlanetarySystem(JNIEnv *env,
+                                                                           jobject thiz) {
+    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+    return (jlong)(body->getSystem());
+}

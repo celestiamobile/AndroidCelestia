@@ -13,6 +13,7 @@
 #include <celengine/simulation.h>
 #include <celengine/selection.h>
 #include <celengine/starbrowser.h>
+#include <celmath/geomutil.h>
 
 extern "C"
 JNIEXPORT jlong JNICALL
@@ -102,4 +103,21 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1setTime(JNIEnv *en
                                                                       jdouble time) {
     Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
     sim->setTime(time);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToEclipse(JNIEnv *env, jobject thiz,
+                                                                          jdouble time,
+                                                                          jlong ref,
+                                                                          jlong target) {
+    using namespace celmath;
+    auto *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+    sim->setTime(time);
+    sim->setFrame(ObserverFrame::PhaseLock, *(Selection *)target, *(Selection *)ref);
+    sim->update(0);
+    double distance = ((Selection *)target)->radius() * 4.0;
+    sim->gotoLocation(UniversalCoord::Zero().offsetKm(Eigen::Vector3d::UnitX() * distance),
+                      YRotation(-0.5 * PI) * XRotation(-0.5 * PI),
+                      2.5);
 }
