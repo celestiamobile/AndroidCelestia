@@ -332,6 +332,11 @@ class SettingsDataLocationItem : SettingsItem, Serializable {
         get() = CelestiaString("Data Location", "")
 }
 
+class SettingsFontItem : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString("Font", "")
+}
+
 private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsSingleSelectionItem(SettingsKey.Resolution, listOf(
         SettingsSingleSelectionItem.Selection("Low", 0),
@@ -361,6 +366,7 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
         ), "", CelestiaString("Configuration will take effect after a restart.", ""))
     )),
+    SettingsFontItem(),
     SettingsDataLocationItem()
 )
 

@@ -1,5 +1,6 @@
 package space.celestia.mobilecelestia.utils;
 
+import android.graphics.fonts.Font;
 import android.os.Build;
 import android.util.Log;
 import android.util.Xml;
@@ -18,12 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class FontHelper {
     private static final String TAG = "FontHelper";
+    private static final String systemFontPath = "/system/fonts/";
+
+    private static final Map<FontCompat, FontCompat> fontReplacements = new HashMap<FontCompat, FontCompat>() {{}};
 
     @RequiresApi(Build.VERSION_CODES.Q)
     public static class Matcher {
@@ -55,6 +61,17 @@ public class FontHelper {
             return new Font(c_match(pointer, familyName, text));
         }
 
+        public static Set<FontCompat> getAvailableFonts() {
+            long iterPtr = c_openIterator();
+            HashSet<FontCompat> nativeFonts = new HashSet<>();
+            for (long fontPtr = c_getNext(iterPtr); fontPtr != 0; fontPtr = c_getNext(iterPtr)) {
+                Font font = new Font(fontPtr);
+                nativeFonts.add(new FontCompat(font.getFilePath(), font.getCollectionIndex()));
+            }
+            c_closeIterator(iterPtr);
+            return nativeFonts;
+        }
+
         @Override
         protected void finalize() throws Throwable {
             c_destroy(pointer);
@@ -73,6 +90,12 @@ public class FontHelper {
         private static native void c_setStyle(long ptr, int weight, boolean italic);
 
         private static native long c_match(long ptr, String familyName, String text);
+
+        private static native long c_openIterator();
+
+        private static native void c_closeIterator(long iterator);
+
+        private static native long c_getNext(long iterator);
 
         static {
             System.loadLibrary("fonthelper");
@@ -111,32 +134,60 @@ public class FontHelper {
     }
 
     public static class FontCompat {
-        final public String filePath;
+        final public @NonNull File file;
         final public int collectionIndex;
+
+        public @NonNull String getFilePath() {
+            return file.getPath();
+        }
 
         @RequiresApi(Build.VERSION_CODES.Q)
         private FontCompat(Font font) {
-            filePath = font.getFilePath();
+            file = new File(font.getFilePath());
             collectionIndex = font.getCollectionIndex();
         }
 
-        private FontCompat(String filePath, int collectionIndex) {
-            this.filePath = filePath;
+        public FontCompat(String filePath, int collectionIndex) {
+            this.file = new File(filePath);
             this.collectionIndex = collectionIndex;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            FontCompat that = (FontCompat) o;
+            return collectionIndex == that.collectionIndex &&
+                    getFilePath().equals(that.getFilePath());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getFilePath(), collectionIndex);
         }
     }
 
     public static @Nullable FontCompat getFontForLocale(@NonNull String locale, int weight) {
+        FontCompat compat;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // Finding font using SystemFont
             String probeText = "a";
-            if (locale.equals("zh_CN") || locale.equals("zh_TW") || locale.equals("ja"))
-                probeText = "一";
-            else if (locale.equals("ko"))
-                probeText = "가";
+            switch (locale) {
+                case "zh_CN":
+                case "zh_TW":
+                case "ja":
+                    probeText = "一";
+                    break;
+                case "ko":
+                    probeText = "가";
+                    break;
+                case "ar":
+                    probeText = "ئ";
+                    break;
+            }
             Matcher matcher = Matcher.create();
             matcher.setStyle(weight, false);
-            return new FontCompat(matcher.match("sans-serif", probeText));
+            compat = new FontCompat(matcher.match("sans-serif", probeText));
         }
 
         // Finding font according to the legacy fonts.xml
@@ -145,7 +196,15 @@ public class FontHelper {
             language = "zh-Hans";
         else if (language.equals("zh_TW"))
             language = "zh-Hant";
-        return LegacyFontConfig.getFontFallback(language, weight);
+        compat = LegacyFontConfig.getFontFallback(language, weight);
+
+        if (compat == null)
+            return compat;
+
+        FontCompat replacement = fontReplacements.get(compat);
+        if (replacement == null || !replacement.file.exists())
+            return compat;
+        return replacement;
     }
 
     static class LegacyFontConfig {
@@ -182,7 +241,6 @@ public class FontHelper {
         private static boolean initialized = false;
         private static Map<String, List<FontFamily>> allFonts;
 
-        private static final String systemFontPath = "/system/fonts/";
         private static final String fontXMLPath = "/system/etc/fonts.xml";
 
         private LegacyFontConfig() {}

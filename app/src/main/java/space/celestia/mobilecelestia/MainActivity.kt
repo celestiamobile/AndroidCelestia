@@ -66,8 +66,6 @@ import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.IOException
-import java.lang.Exception
-import java.lang.RuntimeException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -91,7 +89,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
     SettingsDataLocationFragment.Listener,
-    SettingsCommonFragment.Listener {
+    SettingsCommonFragment.Listener,
+    SettingsFontSelectionFragment.Listener,
+    SettingsFontSelectionFragment.DataSource {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -385,6 +385,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun createLoadConfigObservable(): Observable<String> {
         return Observable.create {
             it.onNext(CelestiaString("Loading configuration…", ""))
+
+            val customFont = preferenceManager[PreferenceManager.PredefinedKey.CustomFont]
+            if (customFont != null) {
+                try {
+                    val json = JSONObject(customFont)
+                    val path = json.getString(CUSTOM_FONT_PATH_KEY)
+                    val index = json.getInt(CUSTOM_FONT_INDEX_KEY)
+                    overrideFont = FontHelper.FontCompat(path, index)
+                } catch (_: Exception) {}
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                availableSystemFonts = FontHelper.Matcher.getAvailableFonts().map { it }
+            }
 
             System.loadLibrary("celestia")
             celestiaLibraryLoaded = true
@@ -941,6 +955,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun onFontReset() {
+        preferenceManager[PreferenceManager.PredefinedKey.CustomFont] = null
+        overrideFont = null
+        reloadSettings()
+    }
+
+    override fun onCustomFontProvided(font: FontHelper.FontCompat) {
+        val json = JSONObject()
+        json.put(CUSTOM_FONT_PATH_KEY, font.filePath)
+        json.put(CUSTOM_FONT_INDEX_KEY, font.collectionIndex)
+        preferenceManager[PreferenceManager.PredefinedKey.CustomFont] = json.toString()
+        overrideFont = font
+        reloadSettings()
+    }
+
+    override val currentFont: FontHelper.FontCompat?
+        get() = if (overrideFont != null) overrideFont else defaultSystemFont
+
     private fun setDataDirectoryPath(path: String?) {
         preferenceManager[PreferenceManager.PredefinedKey.DataDirPath] = path
         customDataDirPath = path
@@ -1143,6 +1175,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CELESTIA_CFG_NAME = "celestia.cfg"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"
+        private const val CUSTOM_FONT_PATH_KEY = "path"
+        private const val CUSTOM_FONT_INDEX_KEY = "index"
 
         private const val DATA_DIR_REQUEST = 1
         private const val CONFIG_FILE_REQUEST = 2
@@ -1153,6 +1187,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
+
+        var overrideFont: FontHelper.FontCompat? = null
+        var defaultSystemFont: FontHelper.FontCompat? = null
+        var defaultSystemBoldFont: FontHelper.FontCompat? = null
+        var availableSystemFonts: List<FontHelper.FontCompat> = listOf()
 
         init {
             System.loadLibrary("nativecrashhandler")

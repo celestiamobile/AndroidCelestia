@@ -12,15 +12,12 @@
 package space.celestia.mobilecelestia.celestia
 
 import android.animation.Animator
-import android.animation.LayoutTransition
 import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.opengl.GLSurfaceView
 import android.os.Build
 import android.os.Bundle
-import android.transition.TransitionManager
 import android.util.Log
 import android.util.Size
 import android.view.DisplayCutout
@@ -31,10 +28,9 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.animation.addListener
-import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
+import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
 import space.celestia.mobilecelestia.core.CelestiaAppCore
@@ -233,14 +229,25 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
         core.setDPI((96 * resources.displayMetrics.density * scaleFactor).toInt())
 
+        // Get system font
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
         val font = FontHelper.getFontForLocale(locale, 400)
         val boldFont = FontHelper.getFontForLocale(locale, 700)
-        if (font != null && boldFont != null) {
+
+        val fontOverride = MainActivity.overrideFont
+        if (fontOverride != null) {
+            val font = fontOverride
+            core.setFont(font.filePath, font.collectionIndex, 9)
+            core.setTitleFont(font.filePath, font.collectionIndex, 15)
+            core.setRendererFont(font.filePath, font.collectionIndex, 9, CelestiaAppCore.RENDER_FONT_STYLE_NORMAL)
+            core.setRendererFont(font.filePath, font.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
+        } else if (font != null && boldFont != null) {
             core.setFont(font.filePath, font.collectionIndex, 9)
             core.setTitleFont(boldFont.filePath, boldFont.collectionIndex, 15)
             core.setRendererFont(font.filePath, font.collectionIndex, 9, CelestiaAppCore.RENDER_FONT_STYLE_NORMAL)
             core.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
+            MainActivity.defaultSystemFont = font
+            MainActivity.defaultSystemBoldFont = boldFont
         }
 
         // Display

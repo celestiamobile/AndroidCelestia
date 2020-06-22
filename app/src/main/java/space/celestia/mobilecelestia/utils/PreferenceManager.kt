@@ -29,7 +29,8 @@ class PreferenceManager(context: Context, private val name: String) {
         DataDirPath,
         ConfigFilePath,
         FullDPI,
-        MSAA;
+        MSAA,
+        CustomFont;
 
         override val valueString: String
             get() = toString()

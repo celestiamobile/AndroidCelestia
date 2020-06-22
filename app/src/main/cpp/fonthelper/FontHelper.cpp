@@ -29,11 +29,12 @@ static void (*AFontMatcher_destroy)(void *) = nullptr;
 static const char *(*AFont_getFontFilePath)(void *) = nullptr;
 static size_t (*AFont_getCollectionIndex)(void *) = nullptr;
 static void (*AFont_close)(void *) = nullptr;
+static void *(*ASystemFontIterator_open)() = nullptr;
+static void (*ASystemFontIterator_close)(void *) = nullptr;
+static void *(*ASystemFontIterator_next)(void *) = nullptr;
 
-extern "C"
-JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1create(JNIEnv *env,
-                                                                           jclass thiz) {
+static void loadSystemFontLibraryIfNeeded()
+{
     if (!libHandle)
     {
         // Getting handle
@@ -48,7 +49,17 @@ Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1create(JNIEn
         AFont_getFontFilePath = (const char *(*)(void *))dlsym(libHandle, "AFont_getFontFilePath");
         AFont_getCollectionIndex = (size_t (*)(void *))dlsym(libHandle, "AFont_getCollectionIndex");
         AFont_close = (void (*)(void *))dlsym(libHandle, "AFont_close");
+        ASystemFontIterator_open = (void *(*)())dlsym(libHandle, "ASystemFontIterator_open");
+        ASystemFontIterator_close = (void (*)(void *))dlsym(libHandle, "ASystemFontIterator_close");
+        ASystemFontIterator_next = (void *(*)(void *))dlsym(libHandle, "ASystemFontIterator_next");
     }
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1create(JNIEnv *env,
+                                                                           jclass thiz) {
+    loadSystemFontLibraryIfNeeded();
     return (jlong)AFontMatcher_create();
 }
 
@@ -129,4 +140,28 @@ Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1match(JNIEnv
     env->ReleaseStringChars(text, str2);
 
     return (jlong)resultFont;
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1openIterator(JNIEnv *env,
+                                                                                 jclass clazz) {
+    loadSystemFontLibraryIfNeeded();
+    return (jlong)ASystemFontIterator_open();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1closeIterator(JNIEnv *env,
+                                                                                  jclass clazz,
+                                                                                  jlong iterator) {
+    ASystemFontIterator_close((void *)iterator);
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_mobilecelestia_utils_FontHelper_00024Matcher_c_1getNext(JNIEnv *env,
+                                                                            jclass clazz,
+                                                                            jlong iterator) {
+    return (jlong)ASystemFontIterator_next((void *)iterator);
 }
