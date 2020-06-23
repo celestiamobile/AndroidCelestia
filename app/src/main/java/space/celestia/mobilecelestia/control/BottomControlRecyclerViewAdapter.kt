@@ -41,6 +41,14 @@ class BottomControlRecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        if (position == values.size) {
+            holder.imageButton.setImageResource(R.drawable.bottom_control_hide)
+            holder.imageButton.setOnClickListener {
+                listener?.onBottomControlHide()
+            }
+            return
+        }
+
         val item = values[position]
 
         holder.imageButton.setImageResource(item.image)
@@ -51,7 +59,7 @@ class BottomControlRecyclerViewAdapter(
         }
     }
 
-    override fun getItemCount(): Int = values.size
+    override fun getItemCount(): Int = values.size + 1
 
     inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val imageButton: StandardImageButton = view.button

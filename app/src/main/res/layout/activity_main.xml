@@ -53,31 +53,31 @@
             style="@style/Container"/>
 
         <FrameLayout
-            android:id="@+id/toolbar_bottom_container"
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="8dp"
-            android:layout_gravity="bottom|start"
-            android:visibility="invisible"
-            android:clickable="true"
-            android:focusable="true"/>
-
-        <FrameLayout
             android:id="@+id/end_notch"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:visibility="invisible"
             android:layout_gravity="end"
             style="@style/Background"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/bottom_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        style="@style/Container">
 
         <FrameLayout
-            android:id="@+id/bottom_notch"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:id="@+id/toolbar_bottom_container"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp"
+            android:layout_gravity="bottom|start"
             android:visibility="invisible"
-            android:layout_gravity="bottom"
-            style="@style/Background"/>
+            android:clickable="true"
+            android:focusable="true"/>
     </FrameLayout>
 
     <FrameLayout

@@ -67,18 +67,20 @@ class BottomControlFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_bottom_control_list, container, false)
 
+        val recyclerView = view.findViewById<RecyclerView>(R.id.list)
         // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
-                val manager = LinearLayoutManager(context)
-                manager.orientation = LinearLayoutManager.HORIZONTAL
-                layoutManager = manager
-                adapter = BottomControlRecyclerViewAdapter(
-                    items!!.map { CelestiaActionItem(
+        with(recyclerView) {
+            val manager = LinearLayoutManager(context)
+            manager.orientation = LinearLayoutManager.HORIZONTAL
+            layoutManager = manager
+            adapter = BottomControlRecyclerViewAdapter(
+                items!!.map {
+                    CelestiaActionItem(
                         it,
                         resources.getIdentifier(it.imageName(), "drawable", activity!!.packageName)
-                ) }, listener)
-            }
+                    )
+                }, listener
+            )
         }
         return view
     }
@@ -99,6 +101,7 @@ class BottomControlFragment : Fragment() {
 
     interface Listener {
         fun onActionSelected(item: CelestiaAction)
+        fun onBottomControlHide()
     }
 
     companion object {

@@ -319,7 +319,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val bottomView = findViewById<View>(R.id.toolbar_bottom_container)
 
         val endNotch = findViewById<View>(R.id.end_notch)
-        val bottomNotch = findViewById<View>(R.id.bottom_notch)
 
         (endView.layoutParams as? FrameLayout.LayoutParams)?.let {
             it.width = (300 * density).toInt() + safeInsetEnd
@@ -345,10 +344,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             bottomView.layoutParams = it
         }
 
-        (bottomNotch.layoutParams as? FrameLayout.LayoutParams)?.let {
-            it.height = cutout.safeInsetBottom
-            bottomNotch.layoutParams = it
-        }
         (endNotch.layoutParams as? FrameLayout.LayoutParams)?.let {
             it.width = safeInsetEnd
             endNotch.layoutParams = it
@@ -750,6 +745,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         CelestiaView.callOnRenderThread { core.charEnter(item.value) }
     }
 
+    override fun onBottomControlHide() {
+        hideBottomControl()
+    }
+
     override fun onBrowserItemSelected(item: BrowserItem) {
         if (!item.isLeaf) {
             val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
@@ -1053,6 +1052,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    private fun hideBottomControl() {
+        val bottom = findViewById<ViewGroup>(R.id.bottom_container)
+        for (i in 0 until bottom.childCount) {
+            val child = bottom.getChildAt(i)
+            supportFragmentManager.findFragmentById(child.id)?.let {
+                if (!backStack.contains(it) && it is Cleanable) {
+                    it.cleanUp()
+                }
+                child.visibility = View.INVISIBLE
+                supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
+            }
+        }
+        bottom.visibility = View.INVISIBLE
+    }
+
     private fun hideOverlay() {
         val overlay = findViewById<ViewGroup>(R.id.overlay_container)
         for (i in 0 until overlay.childCount) {
@@ -1067,7 +1081,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         overlay.visibility = View.INVISIBLE
         findViewById<View>(R.id.end_notch).visibility = View.INVISIBLE
-        findViewById<View>(R.id.bottom_notch).visibility = View.INVISIBLE
     }
 
     private fun showInfo(selection: CelestiaSelection) {
@@ -1165,6 +1178,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
+        hideBottomControl()
+
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
         findViewById<View>(R.id.end_notch).visibility = View.VISIBLE
@@ -1184,9 +1199,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showBottomFragment(fragment: Fragment, containerID: Int = R.id.toolbar_bottom_container) {
-        findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
+        hideBottomControl()
+        findViewById<View>(R.id.bottom_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
-        findViewById<View>(R.id.bottom_notch).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
             .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top, R.anim.enter_from_top, R.anim.exit_to_bottom)
