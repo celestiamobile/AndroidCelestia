@@ -32,11 +32,15 @@ interface FontRecyclerViewItem: RecyclerViewItem {
     val detail: String?
 }
 
+private fun FontHelper.FontCompat.displayName(): String {
+    return name ?: "${file.nameWithoutExtension} $collectionIndex"
+}
+
 class CurrentFontItem(val font: FontHelper.FontCompat?): FontRecyclerViewItem {
     override val title: String
         get() = CelestiaString("Current Font", "")
 
-    override val detail: String? = if (font == null) CelestiaString("Unknown", "") else "${font.file.nameWithoutExtension} ${font.collectionIndex}"
+    override val detail: String? = if (font == null) CelestiaString("Unknown", "") else font.displayName()
 }
 
 class ResetFontItem: FontRecyclerViewItem {
@@ -49,11 +53,7 @@ class ResetFontItem: FontRecyclerViewItem {
 
 class CustomFontItem(val font: FontHelper.FontCompat): FontRecyclerViewItem {
     override val title: String
-        get() {
-            val filename = font.file.nameWithoutExtension
-            return "$filename ${font.collectionIndex}"
-        }
-
+        get() = font.displayName()
     override val detail: String?
         get() = null
 }

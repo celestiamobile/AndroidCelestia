@@ -120,6 +120,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME"
         }
 
+    private val fontDirPath: String
+        get() = "$celestiaParentPath/$CELESTIA_FONT_FOLDER_NAME"
+
     @SuppressLint("CheckResult", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         // We don't need to recover when we get killed
@@ -389,13 +392,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     val json = JSONObject(customFont)
                     val path = json.getString(CUSTOM_FONT_PATH_KEY)
                     val index = json.getInt(CUSTOM_FONT_INDEX_KEY)
-                    overrideFont = FontHelper.FontCompat(path, index)
+                    val font = FontHelper.FontCompat(path, index)
+                    if (font.file.exists())
+                        overrideFont = font
                 } catch (_: Exception) {}
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                availableSystemFonts = FontHelper.Matcher.getAvailableFonts().map { it }
-            }
+            val notoSansCJKPath = "$fontDirPath/NotoSansCJK-Regular.ttc"
+            availableSystemFonts = listOf(
+                FontHelper.FontCompat(notoSansCJKPath, 0, "NotoSansCJK (Japanese)"),
+                FontHelper.FontCompat(notoSansCJKPath, 1, "NotoSansCJK (Korean)"),
+                FontHelper.FontCompat(notoSansCJKPath, 2, "NotoSansCJK (Simplified Chinese)"),
+                FontHelper.FontCompat(notoSansCJKPath, 3, "NotoSansCJK (Traditional Chinese)")
+                ).filter { it.file.exists() }
 
             System.loadLibrary("celestia")
             celestiaLibraryLoaded = true
@@ -500,6 +509,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @Throws(IOException::class)
     private fun copyAssets() {
         AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_DATA_FOLDER_NAME, celestiaParentPath)
+        AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_FONT_FOLDER_NAME, celestiaParentPath)
         preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
     }
 
@@ -1203,6 +1213,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CURRENT_DATA_VERSION = "3"
 
         private const val CELESTIA_DATA_FOLDER_NAME = "CelestiaResources"
+        private const val CELESTIA_FONT_FOLDER_NAME = "fonts"
         private const val CELESTIA_CFG_NAME = "celestia.cfg"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"

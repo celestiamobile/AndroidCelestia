@@ -136,6 +136,7 @@ public class FontHelper {
     public static class FontCompat {
         final public @NonNull File file;
         final public int collectionIndex;
+        final public @Nullable String name;
 
         public @NonNull String getFilePath() {
             return file.getPath();
@@ -145,11 +146,17 @@ public class FontHelper {
         private FontCompat(Font font) {
             file = new File(font.getFilePath());
             collectionIndex = font.getCollectionIndex();
+            this.name = null;
         }
 
-        public FontCompat(String filePath, int collectionIndex) {
+        public FontCompat(@NonNull String filePath, int collectionIndex, @Nullable String name) {
             this.file = new File(filePath);
             this.collectionIndex = collectionIndex;
+            this.name = name;
+        }
+
+        public FontCompat(@NonNull String filePath, int collectionIndex) {
+            this(filePath, collectionIndex, null);
         }
 
         @Override
