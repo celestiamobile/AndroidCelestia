@@ -312,6 +312,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
         val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
+        val safeInsetStart = if (ltr) cutout.safeInsetLeft else cutout.safeInsetRight
 
         val endView = findViewById<View>(R.id.normal_end_container)
         val toolbarView = findViewById<View>(R.id.toolbar_end_container)
@@ -339,10 +340,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             toolbarView.setPadding(safeInsetEnd, 0, 0, 0)
 
         (bottomView.layoutParams as? FrameLayout.LayoutParams)?.let {
-            it.height = (60 * density).toInt() + cutout.safeInsetBottom
+            it.marginStart = safeInsetStart + (16 * density).toInt()
+            it.bottomMargin = cutout.safeInsetBottom + (8 * density).toInt()
             bottomView.layoutParams = it
         }
-        bottomView.setPadding(0, 0, 0, cutout.safeInsetBottom)
 
         (bottomNotch.layoutParams as? FrameLayout.LayoutParams)?.let {
             it.height = cutout.safeInsetBottom
