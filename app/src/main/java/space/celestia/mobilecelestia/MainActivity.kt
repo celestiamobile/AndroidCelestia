@@ -21,10 +21,10 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
 import android.view.*
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.contains
 import androidx.fragment.app.Fragment
@@ -320,7 +320,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val endNotch = findViewById<View>(R.id.end_notch)
         val bottomNotch = findViewById<View>(R.id.bottom_notch)
 
-        (endView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+        (endView.layoutParams as? FrameLayout.LayoutParams)?.let {
             it.width = (300 * density).toInt() + safeInsetEnd
             endView.layoutParams = it
         }
@@ -329,7 +329,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         else
             endView.setPadding(safeInsetEnd, 0, 0, 0)
 
-        (toolbarView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+        (toolbarView.layoutParams as? FrameLayout.LayoutParams)?.let {
             it.width = (220 * density).toInt() + safeInsetEnd
             toolbarView.layoutParams = it
         }
@@ -338,17 +338,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         else
             toolbarView.setPadding(safeInsetEnd, 0, 0, 0)
 
-        (bottomView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+        (bottomView.layoutParams as? FrameLayout.LayoutParams)?.let {
             it.height = (60 * density).toInt() + cutout.safeInsetBottom
             bottomView.layoutParams = it
         }
         bottomView.setPadding(0, 0, 0, cutout.safeInsetBottom)
 
-        (bottomNotch.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+        (bottomNotch.layoutParams as? FrameLayout.LayoutParams)?.let {
             it.height = cutout.safeInsetBottom
             bottomNotch.layoutParams = it
         }
-        (endNotch.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+        (endNotch.layoutParams as? FrameLayout.LayoutParams)?.let {
             it.width = safeInsetEnd
             endNotch.layoutParams = it
         }
