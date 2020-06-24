@@ -231,8 +231,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
 
-        var font: FontHelper.FontCompat? = null
-        var boldFont: FontHelper.FontCompat? = null
+        val font: FontHelper.FontCompat?
+        val boldFont: FontHelper.FontCompat?
         // Use installed font
         val preferredInstalledFont = MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
         if (preferredInstalledFont != null) {

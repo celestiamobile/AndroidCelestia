@@ -21,6 +21,8 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
 import android.view.*
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -99,6 +101,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val backStack: MutableList<Fragment> = ArrayList<Fragment>()
 
+    private var interactionBlocked = false
+
     private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
 
@@ -168,13 +172,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         findViewById<View>(R.id.overlay_container).setOnTouchListener { _, e ->
             if (e.actionMasked == MotionEvent.ACTION_UP) {
-                hideOverlay()
                 popLastFromBackStackAndShow()
             }
             return@setOnTouchListener true
         }
 
         findViewById<View>(R.id.interaction_filter).setOnTouchListener { v, e ->
+            if (interactionBlocked) { return@setOnTouchListener true }
+
             val point = PointF(e.x, e.y)
             val safeAreaParam = v.resources.displayMetrics.density * 16 // reserve 16 DP on each side for system gestures
             val safeArea = RectF(safeAreaParam, safeAreaParam, v.width - safeAreaParam, v.height - safeAreaParam)
@@ -217,15 +222,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBackPressed() {
-        val overlay = findViewById<ViewGroup>(R.id.overlay_container)
-        if (overlay.visibility == View.VISIBLE) {
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) ?: return
-            if (frag is PoppableFragment && frag.canPop()) {
-                frag.popLast()
-            } else {
-                hideOverlay()
-                popLastFromBackStackAndShow()
-            }
+        var frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        if (frag == null)
+            frag = supportFragmentManager.findFragmentById(R.id.toolbar_end_container)
+
+        if (frag is PoppableFragment && frag.canPop()) {
+            frag.popLast()
+        } else {
+            popLastFromBackStackAndShow()
         }
     }
 
@@ -661,7 +665,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
-        hideOverlay()
+        executeToolbarAction(action)
+    }
+
+    fun executeToolbarAction(action: ToolbarAction) {
         when (action) {
             ToolbarAction.Search -> {
                 showSearch()
@@ -722,7 +729,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             is SubsystemActionItem -> {
                 addToBackStack()
-                hideOverlay()
                 val entry = selection.`object` ?: return
                 val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, entry, core.simulation.universe)
                 showEndFragment(SubsystemBrowserFragment.newInstance(browserItem))
@@ -738,7 +744,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
         addToBackStack()
-        hideOverlay()
         showInfo(sel)
     }
 
@@ -751,7 +756,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBottomControlHide() {
-        hideBottomControl()
+        hideOverlay(true)
     }
 
     override fun onBrowserItemSelected(item: BrowserItem) {
@@ -766,7 +771,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val selection = CelestiaSelection.create(obj)
                 if (selection != null) {
                     clearBackStack()
-                    hideOverlay()
                     showInfo(selection)
                 } else {
                     showAlert(CelestiaString("Object not found", ""))
@@ -906,7 +910,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 reloadSettings()
             }
             CurrentTimeAction.PickDate -> {
-                val current = createDateFromJulianDay(core.simulation.time)
                 val format = "yyyy/MM/dd HH:mm:ss"
                 showDateInput(CelestiaString("Please enter the time in \"$format\" format.", ""), format) { date ->
                     if (date == null) {
@@ -1039,35 +1042,54 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun hideBottomControl() {
-        val bottom = findViewById<ViewGroup>(R.id.bottom_container)
-        for (i in 0 until bottom.childCount) {
-            val child = bottom.getChildAt(i)
-            supportFragmentManager.findFragmentById(child.id)?.let {
-                if (!backStack.contains(it) && it is Cleanable) {
-                    it.cleanUp()
+    private fun hideOverlay(animated: Boolean = false, callback: (() -> Unit)? = null) {
+        hideFragment(animated, R.id.normal_end_container, R.anim.exit_to_right) {
+            hideFragment(animated, R.id.toolbar_end_container, R.anim.exit_to_right) {
+                findViewById<View>(R.id.overlay_container).visibility = View.INVISIBLE
+                findViewById<View>(R.id.end_notch).visibility = View.INVISIBLE
+                hideFragment(animated, R.id.toolbar_bottom_container, R.anim.exit_to_bottom) {
+                    findViewById<View>(R.id.bottom_container).visibility = View.INVISIBLE
+                    if (callback != null)
+                        callback()
                 }
-                child.visibility = View.INVISIBLE
-                supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
             }
         }
-        bottom.visibility = View.INVISIBLE
     }
 
-    private fun hideOverlay() {
-        val overlay = findViewById<ViewGroup>(R.id.overlay_container)
-        for (i in 0 until overlay.childCount) {
-            val child = overlay.getChildAt(i)
-            supportFragmentManager.findFragmentById(child.id)?.let {
-                if (!backStack.contains(it) && it is Cleanable) {
-                    it.cleanUp()
-                }
-                child.visibility = View.INVISIBLE
-                supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
-            }
+    private fun hideFragment(animated: Boolean, containerID: Int, animationID: Int, completion: (() -> Unit)?) {
+        val frag = supportFragmentManager.findFragmentById(containerID)
+        val view = findViewById<View>(containerID)
+        if (view == null || frag == null) {
+            if (completion != null)
+                completion()
+            return
         }
-        overlay.visibility = View.INVISIBLE
-        findViewById<View>(R.id.end_notch).visibility = View.INVISIBLE
+
+        val fragView = frag.view
+        val executionBlock = {
+            supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
+            view.visibility = View.INVISIBLE
+            if (completion != null)
+                completion()
+        }
+
+        if (fragView == null || !animated) {
+            executionBlock()
+        } else {
+            val animation = AnimationUtils.loadAnimation(this, animationID)
+            animation.setAnimationListener(object: Animation.AnimationListener {
+                override fun onAnimationRepeat(animation: Animation?) {}
+                override fun onAnimationStart(animation: Animation?) {
+                    interactionBlocked = true
+                }
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    interactionBlocked = false
+                    executionBlock()
+                }
+            })
+            fragView.startAnimation(animation)
+        }
     }
 
     private fun showInfo(selection: CelestiaSelection) {
@@ -1165,8 +1187,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
-        hideBottomControl()
+        hideOverlay(true) {
+            showEndFragmentDirect(fragment, containerID)
+        }
+    }
 
+    private fun showEndFragmentDirect(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
         findViewById<View>(R.id.end_notch).visibility = View.VISIBLE
@@ -1185,14 +1211,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .commitAllowingStateLoss()
     }
 
-    private fun showBottomFragment(fragment: Fragment, containerID: Int = R.id.toolbar_bottom_container) {
-        hideBottomControl()
+    private fun showBottomFragment(fragment: Fragment) {
+        hideOverlay(true) {
+            showBottomFragmentDirect(fragment)
+        }
+    }
+
+    private fun showBottomFragmentDirect(fragment: Fragment) {
         findViewById<View>(R.id.bottom_container).visibility = View.VISIBLE
-        findViewById<View>(containerID).visibility = View.VISIBLE
+        findViewById<View>(R.id.toolbar_bottom_container).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
             .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top, R.anim.enter_from_top, R.anim.exit_to_bottom)
-            .add(containerID, fragment)
+            .add(R.id.toolbar_bottom_container, fragment)
             .commitAllowingStateLoss()
     }
 
@@ -1206,7 +1237,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun popLastFromBackStackAndShow() {
-        if (backStack.size == 0) return
+        if (backStack.size == 0) {
+            hideOverlay(true)
+            return
+        }
         val frag = backStack.last()
         backStack.removeAt(backStack.size - 1)
         showEndFragment(frag)
