@@ -971,7 +971,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
         val finder = CelestiaEclipseFinder(body)
-        val alert = showLoading(CelestiaString("Calculating astronomy events…", "")) {
+        val alert = showLoading(CelestiaString("Calculating…", "")) {
             finder.abort()
         }
         CelestiaView.callOnRenderThread {

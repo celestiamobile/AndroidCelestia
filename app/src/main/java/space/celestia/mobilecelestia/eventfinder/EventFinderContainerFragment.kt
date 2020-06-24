@@ -37,7 +37,7 @@ class EventFinderContainerFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar.title = CelestiaString("Event Finder", "")
+        toolbar.title = CelestiaString("Eclipse Finder", "")
 
         replace(EventFinderInputFragment.newInstance(), R.id.event_finder_container)
     }

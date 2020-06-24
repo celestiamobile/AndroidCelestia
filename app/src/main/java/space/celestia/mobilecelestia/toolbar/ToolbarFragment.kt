@@ -39,7 +39,7 @@ enum class ToolbarAction : Serializable {
                 Favorite -> "Favorites"
                 Setting -> "Settings"
                 Home -> "Home (Sol)"
-                Event -> "Event Finder"
+                Event -> "Eclipse Finder"
                 else -> this.toString()
             }
             return CelestiaString(orig, "")

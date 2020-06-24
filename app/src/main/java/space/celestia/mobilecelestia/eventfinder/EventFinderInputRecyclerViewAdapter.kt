@@ -31,7 +31,7 @@ class EventFinderInputRecyclerViewAdapter(
     private val chooseObjectCallback: (String) -> Unit,
     private val proceedCallback: () -> Unit,
     var objectName: String = "Earth",
-    var startDate: Date = Date(),
+    var startDate: Date = Date(Date().time - DEFAULT_SEARCHING_INTERVAL),
     var endDate: Date = Date()
 ) : SeparatorHeaderRecyclerViewAdapter(createSections(objectName, startDate, endDate)) {
     private val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
@@ -95,6 +95,8 @@ class EventFinderInputRecyclerViewAdapter(
         const val DATE_ITEM      = 0
         const val OBJECT_ITEM    = 1
         const val PROCEED_BUTTON = 2
+
+        const val DEFAULT_SEARCHING_INTERVAL: Long = 365L * 24 * 60 * 60 * 1000
 
         fun createSections(objectName: String, startDate: Date, endDate: Date): List<CommonSectionV2> {
             return listOf(
