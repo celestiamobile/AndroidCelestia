@@ -121,3 +121,11 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToEclipse(JNIEnv
                       YRotation(-0.5 * PI) * XRotation(-0.5 * PI),
                       2.5);
 }
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getActiveObserver(JNIEnv *env,
+                                                                                jobject thiz) {
+    auto *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+    return (jlong)sim->getActiveObserver();
+}

@@ -82,4 +82,8 @@ class SubsystemActionItem : InfoActionItem {
     override val title: String
         get() = CelestiaString("Subsystem", "")
 }
-class InfoDescriptionItem(val name: String, val overview: String, val hasWebInfo: Boolean) : InfoItem, Serializable
+class AlternateSurfacesItem : InfoActionItem {
+    override val title: String
+        get() = CelestiaString("Alternate Surfaces", "")
+}
+class InfoDescriptionItem(val name: String, val overview: String, val hasWebInfo: Boolean, val hasAlternateSurfaces: Boolean) : InfoItem, Serializable

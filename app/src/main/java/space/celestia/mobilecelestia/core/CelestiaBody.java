@@ -14,6 +14,9 @@ package space.celestia.mobilecelestia.core;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Collections;
+import java.util.List;
+
 public class CelestiaBody extends CelestiaAstroObject {
     public final static int BODY_TYPE_PLANET            = 0x00001;
     public final static int BODY_TYPE_MOON              = 0x00002;
@@ -73,6 +76,13 @@ public class CelestiaBody extends CelestiaAstroObject {
         return new CelestiaPlanetarySystem(ptr);
     }
 
+    public @NonNull List<String> getAlternateSurfaceNames() {
+        List<String> results = c_getAlternateSurfaceNames();
+        if (results == null)
+            return Collections.emptyList();
+        return results;
+    }
+
     // C functions
     private native int c_getType();
     private native String c_getName();
@@ -86,4 +96,5 @@ public class CelestiaBody extends CelestiaAstroObject {
     private native long c_getOrbitAtTime(double julianDay);
     private native long c_getRotationModelAtTime(double julianDay);
     private native long c_getPlanetarySystem();
+    private native List<String> c_getAlternateSurfaceNames();
 }

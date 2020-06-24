@@ -1,5 +1,5 @@
 /*
- * CelestiaLocation.cpp
+ * CelestiaPlanetarySystem.cpp
  *
  * Copyright (C) 2001-2020, the Celestia Development Team
  *

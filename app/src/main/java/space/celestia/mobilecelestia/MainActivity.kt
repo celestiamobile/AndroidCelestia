@@ -734,6 +734,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showEndFragment(SubsystemBrowserFragment.newInstance(browserItem))
                 return
             }
+            is AlternateSurfacesItem -> {
+                val alternateSurfaces = selection.body?.alternateSurfaceNames ?: return
+                val current = core.simulation.activeObserver.displayedSurface
+                var currentIndex = 0
+                if (current != "") {
+                    val index = alternateSurfaces.indexOf(current)
+                    if (index >= 0)
+                        currentIndex = index + 1
+                }
+                val surfaces = ArrayList<String>()
+                surfaces.add(CelestiaString("Default", ""))
+                surfaces.addAll(alternateSurfaces)
+                showSingleSelection(CelestiaString("Alternate Surfaces", ""), surfaces, currentIndex) { index ->
+                    if (index == 0)
+                        core.simulation.activeObserver.displayedSurface = ""
+                    else
+                        core.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
+                }
+            }
         }
     }
 
@@ -1060,6 +1079,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val frag = supportFragmentManager.findFragmentById(containerID)
         val view = findViewById<View>(containerID)
         if (view == null || frag == null) {
+            if (frag is Cleanable)
+                frag.cleanUp()
+
             if (completion != null)
                 completion()
             return
@@ -1067,6 +1089,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val fragView = frag.view
         val executionBlock = {
+            if (frag is Cleanable)
+                frag.cleanUp()
             supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
             view.visibility = View.INVISIBLE
             if (completion != null)
@@ -1099,7 +1123,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 InfoDescriptionItem(
                     core.simulation.universe.getNameForSelection(selection),
                     core.getOverviewForSelection(selection),
-                    selection.webInfoURL != null
+                    selection.webInfoURL != null,
+                    (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
                 )
             )
         )
@@ -1247,7 +1272,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "3"
+        private const val CURRENT_DATA_VERSION = "5"
 
         private const val CELESTIA_DATA_FOLDER_NAME = "CelestiaResources"
         private const val CELESTIA_FONT_FOLDER_NAME = "fonts"

@@ -85,3 +85,18 @@ Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getPlanetarySystem(JNIEn
     Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
     return (jlong)(body->getSystem());
 }
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getAlternateSurfaceNames(JNIEnv *env,
+                                                                                 jobject thiz) {
+    auto body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+    std::vector<std::string> *altSurfaces = body->getAlternateSurfaceNames();
+    if (!altSurfaces || altSurfaces->empty())
+        return  nullptr;
+
+    jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)altSurfaces->size());
+    for (auto &altSurface : *altSurfaces)
+        env->CallBooleanMethod(arrayObject, alaMethodID, env->NewStringUTF(altSurface.c_str()));
+    return arrayObject;
+}

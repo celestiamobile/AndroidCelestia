@@ -52,9 +52,10 @@ class InfoFragment : Fragment() {
                 val actions = ArrayList<InfoItem>()
                 actions.add(descriptionItem!!)
                 val otherActions = ArrayList(InfoActionItem.infoActions)
-                if (descriptionItem!!.hasWebInfo) {
+                if (descriptionItem!!.hasWebInfo)
                     otherActions.add(InfoWebActionItem())
-                }
+                if (descriptionItem!!.hasAlternateSurfaces)
+                    otherActions.add(AlternateSurfacesItem())
                 otherActions.add(SubsystemActionItem())
                 actions.addAll(otherActions)
                 adapter = InfoRecyclerViewAdapter(actions, listener)

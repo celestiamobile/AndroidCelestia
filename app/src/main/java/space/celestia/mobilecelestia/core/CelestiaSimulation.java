@@ -74,6 +74,10 @@ public class CelestiaSimulation {
         c_goToEclipse(eclipse.startTimeJulian, ref.pointer, target.pointer);
     }
 
+    public @NonNull CelestiaObserver getActiveObserver() {
+        return new CelestiaObserver(c_getActiveObserver());
+    }
+
     // C functions
     private native long c_getSelection();
     private native void c_setSelection(long ptr);
@@ -85,4 +89,5 @@ public class CelestiaSimulation {
     private native double c_getTime();
     private native void c_setTime(double time);
     private native void c_goToEclipse(double time, long ref, long target);
+    private native long c_getActiveObserver();
 }

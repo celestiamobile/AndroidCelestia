@@ -403,6 +403,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaVector.cpp
         ${CELESTIA_JNI_DIR}/CelestiaEclipseFinder.cpp
         ${CELESTIA_JNI_DIR}/CelestiaPlanetarySystem.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaObserver.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/libs")
