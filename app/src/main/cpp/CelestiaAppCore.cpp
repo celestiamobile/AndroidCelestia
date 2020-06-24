@@ -202,16 +202,16 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1initGL(JNIEnv *env, j
 }
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1init(JNIEnv *env, jobject thiz) {
-    CelestiaCore *core = new CelestiaCore;
-    env->SetLongField(thiz, cacPtrFieldID, (jlong)core);
+JNIEXPORT jlong JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1init(JNIEnv *env, jclass clazz) {
+    return (jlong)new CelestiaCore;
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1startRenderer(JNIEnv *env, jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
+                                                                         jlong ptr) {
+    auto core = (CelestiaCore *)ptr;
 
     if (!core->initRenderer())
         return JNI_FALSE;
@@ -242,13 +242,12 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1startRenderer(JNIEnv 
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1startSimulation(JNIEnv *env,
-                                                                           jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1startSimulation(JNIEnv *env, jclass clazz,
+                                                                           jlong ptr,
                                                                            jstring config_file_name,
                                                                            jobjectArray extra_directories,
                                                                            jobject wc) {
-    jfieldID initFieldID = env->GetFieldID(cacClz, "initialized", "Z");
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
 
     jmethodID jWcMethod = nullptr;
     if (wc)
@@ -281,78 +280,80 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1startSimulation(JNIEn
     if (!core->initSimulation(configFile, extras, &watcher))
         return JNI_FALSE;
 
-    env->SetBooleanField(thiz, initFieldID, JNI_TRUE);
     return JNI_TRUE;
 }
 
+
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1start__(JNIEnv *env, jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1start__J(JNIEnv *env, jclass clazz,
+                                                                    jlong ptr) {
+    auto *core = (CelestiaCore *)ptr;
 
     core->start();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1start__D(JNIEnv *env, jobject thiz,
-                                                                    jdouble seconds_since_epoch) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1start__JD(JNIEnv *env, jclass clazz,
+                                                                     jlong ptr,
+                                                                     jdouble seconds_since_epoch) {
+    auto *core = (CelestiaCore *)ptr;
 
     core->start(seconds_since_epoch);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1draw(JNIEnv *env, jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
-
-    core->draw();
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1draw(JNIEnv *env, jclass clazz,
+                                                                jlong ptr) {
+    ((CelestiaCore *)ptr)->draw();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1tick(JNIEnv *env, jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
-
-    core->tick();
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1tick(JNIEnv *env, jclass clazz,
+                                                                jlong ptr) {
+    ((CelestiaCore *)ptr)->tick();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1resize(JNIEnv *env, jobject thiz, jint w,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1resize(JNIEnv *env, jclass clazz,
+                                                                  jlong ptr, jint w,
                                                                   jint h) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto *core = (CelestiaCore *)ptr;
 
     core->resize(w, h);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setSafeAreaInsets(JNIEnv *env,
-                                                                             jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setSafeAreaInsets(JNIEnv *env, jclass clazz,
+                                                                             jlong ptr,
                                                                              jint left, jint top,
                                                                              jint right,
                                                                              jint bottom) {
-    CelestiaCore *core = (CelestiaCore *) env->GetLongField(thiz, cacPtrFieldID);
+    auto *core = (CelestiaCore *)ptr;
 
     core->setSafeAreaInsets(left, top, right, bottom);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setDPI(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setDPI(JNIEnv *env, jclass clazz,
+                                                                  jlong ptr,
                                                                   jint dpi) {
-    CelestiaCore *core = (CelestiaCore *) env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
 
     core->setScreenDpi(dpi);
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getSimulation(JNIEnv *env,
-                                                                         jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getSimulation(JNIEnv *env, jclass clazz,
+                                                                         jlong ptr) {
+    auto *core = (CelestiaCore *)ptr;
 
     return (jlong)core->getSimulation();
 }
@@ -385,72 +386,79 @@ static int convert_modifier_to_celestia_modifier(jint buttons, jint modifiers)
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseButtonUp(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseButtonUp(JNIEnv *env, jclass clazz,
+                                                                         jlong ptr,
                                                                          jint buttons, jfloat x,
                                                                          jfloat y, jint modifiers) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     core->mouseButtonUp(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseButtonDown(JNIEnv *env,
-                                                                           jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseButtonDown(JNIEnv *env, jclass clazz,
+                                                                           jlong ptr,
                                                                            jint buttons, jfloat x,
                                                                            jfloat y,
                                                                            jint modifiers) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     core->mouseButtonDown(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseMove(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseMove(JNIEnv *env, jclass clazz,
+                                                                     jlong ptr,
                                                                      jint buttons, jfloat x,
                                                                      jfloat y, jint modifiers) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     core->mouseMove(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseWheel(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseWheel(JNIEnv *env, jclass clazz,
+                                                                      jlong ptr,
                                                                       jfloat motion,
                                                                       jint modifiers) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     core->mouseWheel(motion, convert_modifier_to_celestia_modifier(0, modifiers));
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1keyUp(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1keyUp(JNIEnv *env, jclass clazz,
+                                                                 jlong ptr,
                                                                  jint input) {
 
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     core->keyUp(input, 0);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1keyDown(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1keyDown(JNIEnv *env, jclass clazz,
+                                                                   jlong ptr,
                                                                    jint input) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     core->keyDown(input, 0);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1charEnter(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1charEnter(JNIEnv *env, jclass clazz,
+                                                                     jlong ptr,
                                                                      jint input) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     core->charEntered((char)input, 0);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1runScript(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1runScript(JNIEnv *env, jclass clazz,
+                                                                     jlong ptr,
                                                                      jstring path) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     const char *str = env->GetStringUTFChars(path, nullptr);
     core->runScript(str);
     env->ReleaseStringUTFChars(path, str);
@@ -458,9 +466,9 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1runScript(JNIEnv *env
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getCurrentURL(JNIEnv *env,
-                                                                         jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getCurrentURL(JNIEnv *env, jclass clazz,
+                                                                         jlong ptr) {
+    auto core = (CelestiaCore *)ptr;
     CelestiaState appState;
     appState.captureState(core);
 
@@ -470,9 +478,10 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getCurrentURL(JNIEnv 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1goToURL(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1goToURL(JNIEnv *env, jclass clazz,
+                                                                   jlong ptr,
                                                                    jstring url) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     const char *str = env->GetStringUTFChars(url, nullptr);
     core->goToUrl(str);
     env->ReleaseStringUTFChars(url, str);
@@ -751,9 +760,9 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getStarStyle(JNIEnv *
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getRenderInfo(JNIEnv *env,
-                                                                         jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getRenderInfo(JNIEnv *env, jclass clazz,
+                                                                         jlong ptr) {
+    auto core = (CelestiaCore *)ptr;
     return env->NewStringUTF(Helper::getRenderInfo(core->getRenderer()).c_str());
 }
 
@@ -840,11 +849,12 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1geMinimumFeatureSize(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setFont(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setFont(JNIEnv *env, jclass clazz,
+                                                                   jlong ptr,
                                                                    jstring font_path,
                                                                    jint collection_index,
                                                                    jint font_size) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
     core->setFont(c_path, collection_index, font_size);
     env->ReleaseStringUTFChars(font_path, c_path);
@@ -852,11 +862,12 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setFont(JNIEnv *env, 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setTitleFont(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setTitleFont(JNIEnv *env, jclass clazz,
+                                                                        jlong ptr,
                                                                         jstring font_path,
                                                                         jint collection_index,
                                                                         jint font_size) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
     core->setTitleFont(c_path, collection_index, font_size);
     env->ReleaseStringUTFChars(font_path, c_path);
@@ -864,13 +875,13 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setTitleFont(JNIEnv *
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setRendererFont(JNIEnv *env,
-                                                                           jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setRendererFont(JNIEnv *env, jclass clazz,
+                                                                           jlong ptr,
                                                                            jstring font_path,
                                                                            jint collection_index,
                                                                            jint font_size,
                                                                            jint font_style) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)ptr;
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
     core->setRendererFont(c_path, collection_index, font_size, (Renderer::FontStyle)font_style);
     env->ReleaseStringUTFChars(font_path, c_path);

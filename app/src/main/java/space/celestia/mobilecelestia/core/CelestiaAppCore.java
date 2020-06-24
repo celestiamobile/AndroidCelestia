@@ -51,90 +51,91 @@ public class CelestiaAppCore {
     }
 
     public CelestiaAppCore() {
-        c_init();
+        this.pointer = c_init();
         this.initialized = false;
         this.simulation = null;
     }
 
     public boolean startRenderer() {
-        return c_startRenderer();
+        return c_startRenderer(pointer);
     }
 
     public boolean startSimulation(@Nullable String configFileName, @Nullable String[] extraDirectories, @Nullable ProgressWatcher watcher) {
-        return c_startSimulation(configFileName, extraDirectories, watcher);
+        initialized = c_startSimulation(pointer, configFileName, extraDirectories, watcher);
+        return initialized;
     }
 
     public void start() {
-        c_start();
+        c_start(pointer);
     }
 
     public void start(@NonNull Date date) {
-        c_start((double)date.getTime() / 1000);
+        c_start(pointer, (double)date.getTime() / 1000);
     }
 
     public void draw() {
-        c_draw();
+        c_draw(pointer);
     }
 
     public void tick() {
-        c_tick();
+        c_tick(pointer);
     }
 
     public void resize(int w, int h) {
-        c_resize(w, h);
+        c_resize(pointer, w, h);
     }
 
     public void setSafeAreaInsets(int left, int top, int right, int bottom) {
-        c_setSafeAreaInsets(left, top, right, bottom);
+        c_setSafeAreaInsets(pointer, left, top, right, bottom);
     }
 
     public void setDPI(int dpi) {
-        c_setDPI(dpi);
+        c_setDPI(pointer, dpi);
     }
 
     // Control
     public void mouseButtonUp(int buttons, PointF point, int modifiers) {
-        c_mouseButtonUp(buttons, point.x, point.y, modifiers);
+        c_mouseButtonUp(pointer, buttons, point.x, point.y, modifiers);
     }
 
     public void mouseButtonDown(int buttons, PointF point, int modifiers) {
-        c_mouseButtonDown(buttons, point.x, point.y, modifiers);
+        c_mouseButtonDown(pointer, buttons, point.x, point.y, modifiers);
     }
 
     public void mouseMove(int buttons, PointF offset, int modifiers) {
-        c_mouseMove(buttons, offset.x, offset.y, modifiers);
+        c_mouseMove(pointer, buttons, offset.x, offset.y, modifiers);
     }
 
     public void mouseWheel(float motion, int modifiers) {
-        c_mouseWheel(motion, modifiers);
+        c_mouseWheel(pointer, motion, modifiers);
     }
 
     public void keyUp(int input) {
-        c_keyUp(input);
+        c_keyUp(pointer, input);
     }
 
     public void keyDown(int input) {
-        c_keyDown(input);
+        c_keyDown(pointer, input);
     }
 
     public void charEnter(int input) {
-        c_charEnter(input);
+        c_charEnter(pointer, input);
     }
 
-    public void runScript(@NonNull String scriptPath) { c_runScript(scriptPath); }
-    public @NonNull String getCurrentURL() { return c_getCurrentURL(); }
-    public void goToURL(@NonNull String url) { c_goToURL(url); }
+    public void runScript(@NonNull String scriptPath) { c_runScript(pointer, scriptPath); }
+    public @NonNull String getCurrentURL() { return c_getCurrentURL(pointer); }
+    public void goToURL(@NonNull String url) { c_goToURL(pointer, url); }
 
     public void setFont(@NonNull String fontPath, int collectionIndex, int fontSize) {
-        c_setFont(fontPath, collectionIndex, fontSize);
+        c_setFont(pointer, fontPath, collectionIndex, fontSize);
     }
 
     public void setTitleFont(@NonNull String fontPath, int collectionIndex, int fontSize) {
-        c_setTitleFont(fontPath, collectionIndex, fontSize);
+        c_setTitleFont(pointer, fontPath, collectionIndex, fontSize);
     }
 
     public void setRendererFont(@NonNull String fontPath, int collectionIndex, int fontSize, int fontStyle) {
-        c_setRendererFont(fontPath, collectionIndex, fontSize, fontStyle);
+        c_setRendererFont(pointer, fontPath, collectionIndex, fontSize, fontStyle);
     }
 
     public static boolean initGL() {
@@ -150,43 +151,43 @@ public class CelestiaAppCore {
 
     public CelestiaSimulation getSimulation() {
         if (simulation == null)
-            simulation = new CelestiaSimulation(c_getSimulation());
+            simulation = new CelestiaSimulation(c_getSimulation(pointer));
         return simulation;
     }
 
     public @NonNull String getRenderInfo() {
-        return c_getRenderInfo();
+        return c_getRenderInfo(pointer);
     }
 
     // C function
-    private native void c_init();
-    private native boolean c_startRenderer();
-    private native boolean c_startSimulation(String configFileName, String[] extraDirectories, ProgressWatcher watcher);
-    private native void c_start();
-    private native void c_start(double secondsSinceEpoch);
-    private native void c_draw();
-    private native void c_tick();
-    private native void c_resize(int w, int h);
-    private native void c_setSafeAreaInsets(int left, int top, int right, int bottom);
-    private native void c_setDPI(int dpi);
-    private native long c_getSimulation();
+    private static native long c_init();
+    private static native boolean c_startRenderer(long ptr);
+    private static native boolean c_startSimulation(long ptr, String configFileName, String[] extraDirectories, ProgressWatcher watcher);
+    private static native void c_start(long ptr);
+    private static native void c_start(long ptr, double secondsSinceEpoch);
+    private static native void c_draw(long ptr);
+    private static native void c_tick(long ptr);
+    private static native void c_resize(long ptr, int w, int h);
+    private static native void c_setSafeAreaInsets(long ptr, int left, int top, int right, int bottom);
+    private static native void c_setDPI(long ptr, int dpi);
+    private static native long c_getSimulation(long ptr);
 
     // Control
-    private native void c_mouseButtonUp(int buttons, float x, float y, int modifiers);
-    private native void c_mouseButtonDown(int buttons, float x, float y, int modifiers);
-    private native void c_mouseMove(int buttons, float x, float y, int modifiers);
-    private native void c_mouseWheel(float motion, int modifiers);
-    private native void c_keyUp(int input);
-    private native void c_keyDown(int input);
-    private native void c_charEnter(int input);
+    private static native void c_mouseButtonUp(long ptr, int buttons, float x, float y, int modifiers);
+    private static native void c_mouseButtonDown(long ptr, int buttons, float x, float y, int modifiers);
+    private static native void c_mouseMove(long ptr, int buttons, float x, float y, int modifiers);
+    private static native void c_mouseWheel(long ptr, float motion, int modifiers);
+    private static native void c_keyUp(long ptr, int input);
+    private static native void c_keyDown(long ptr, int input);
+    private static native void c_charEnter(long ptr, int input);
 
-    private native void c_runScript(String path);
-    private native String c_getCurrentURL();
-    private native void c_goToURL(String url);
+    private static native void c_runScript(long ptr, String path);
+    private static native String c_getCurrentURL(long ptr);
+    private static native void c_goToURL(long ptr, String url);
 
-    public native void c_setFont(String fontPath, int collectionIndex, int fontSize);
-    public native void c_setTitleFont(String fontPath, int collectionIndex, int fontSize);
-    public native void c_setRendererFont(String fontPath, int collectionIndex, int fontSize, int fontStyle);
+    public static native void c_setFont(long ptr, String fontPath, int collectionIndex, int fontSize);
+    public static native void c_setTitleFont(long ptr, String fontPath, int collectionIndex, int fontSize);
+    public static native void c_setRendererFont(long ptr, String fontPath, int collectionIndex, int fontSize, int fontStyle);
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);
@@ -196,7 +197,7 @@ public class CelestiaAppCore {
     private static native String c_getLocalizedString(String string, String domain);
     private static native String c_getLocalizedFilename(String filename);
 
-    private native String c_getRenderInfo();
+    private static native String c_getRenderInfo(long ptr);
 
     private final static String TAG = "CelestiaAppCore";
 
