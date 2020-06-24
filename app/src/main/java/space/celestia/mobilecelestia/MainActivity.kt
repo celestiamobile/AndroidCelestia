@@ -85,8 +85,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     CelestiaFragment.Listener,
     SettingsDataLocationFragment.Listener,
     SettingsCommonFragment.Listener,
-    SettingsFontSelectionFragment.Listener,
-    SettingsFontSelectionFragment.DataSource,
     EventFinderInputFragment.Listener,
     EventFinderResultFragment.Listener {
 
@@ -382,25 +380,32 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         return Observable.create {
             it.onNext(CelestiaString("Loading configuration…", ""))
 
-            val customFont = preferenceManager[PreferenceManager.PredefinedKey.CustomFont]
-            if (customFont != null) {
-                try {
-                    val json = JSONObject(customFont)
-                    val path = json.getString(CUSTOM_FONT_PATH_KEY)
-                    val index = json.getInt(CUSTOM_FONT_INDEX_KEY)
-                    val font = FontHelper.FontCompat(path, index)
-                    if (font.file.exists())
-                        overrideFont = font
-                } catch (_: Exception) {}
-            }
-
-            val notoSansCJKPath = "$fontDirPath/NotoSansCJK-Regular.ttc"
-            availableSystemFonts = listOf(
-                FontHelper.FontCompat(notoSansCJKPath, 0, "NotoSansCJK (Japanese)"),
-                FontHelper.FontCompat(notoSansCJKPath, 1, "NotoSansCJK (Korean)"),
-                FontHelper.FontCompat(notoSansCJKPath, 2, "NotoSansCJK (Simplified Chinese)"),
-                FontHelper.FontCompat(notoSansCJKPath, 3, "NotoSansCJK (Traditional Chinese)")
-                ).filter { it.file.exists() }
+            availableInstalledFonts = mapOf(
+                "ja" to Pair(
+                    FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
+                    FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
+                ),
+                "ko" to Pair(
+                    FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
+                    FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
+                ),
+                "zh_CN" to Pair(
+                    FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
+                    FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
+                ),
+                "zh_TW" to Pair(
+                    FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
+                    FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
+                ),
+                "ar" to Pair(
+                    FontHelper.FontCompat("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
+                    FontHelper.FontCompat("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
+                )
+            )
+            defaultInstalledFont = Pair(
+                FontHelper.FontCompat("$fontDirPath/NotoSans-Regular.ttf", 0),
+                FontHelper.FontCompat("$fontDirPath/NotoSans-Bold.ttf", 0)
+            )
 
             System.loadLibrary("celestia")
             celestiaLibraryLoaded = true
@@ -956,24 +961,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onFontReset() {
-        preferenceManager[PreferenceManager.PredefinedKey.CustomFont] = null
-        overrideFont = null
-        reloadSettings()
-    }
-
-    override fun onCustomFontProvided(font: FontHelper.FontCompat) {
-        val json = JSONObject()
-        json.put(CUSTOM_FONT_PATH_KEY, font.filePath)
-        json.put(CUSTOM_FONT_INDEX_KEY, font.collectionIndex)
-        preferenceManager[PreferenceManager.PredefinedKey.CustomFont] = json.toString()
-        overrideFont = font
-        reloadSettings()
-    }
-
-    override val currentFont: FontHelper.FontCompat?
-        get() = if (overrideFont != null) overrideFont else defaultSystemFont
-
     override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
         val body = core.simulation.findObject(objectName).`object` as? CelestiaBody
         if (body == null) {
@@ -1233,8 +1220,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CELESTIA_CFG_NAME = "celestia.cfg"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"
-        private const val CUSTOM_FONT_PATH_KEY = "path"
-        private const val CUSTOM_FONT_INDEX_KEY = "index"
 
         private const val DATA_DIR_REQUEST = 1
         private const val CONFIG_FILE_REQUEST = 2
@@ -1246,10 +1231,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
 
-        var overrideFont: FontHelper.FontCompat? = null
-        var defaultSystemFont: FontHelper.FontCompat? = null
-        var defaultSystemBoldFont: FontHelper.FontCompat? = null
-        var availableSystemFonts: List<FontHelper.FontCompat> = listOf()
+        var availableInstalledFonts: Map<String, Pair<FontHelper.FontCompat, FontHelper.FontCompat>> = mapOf()
+        var defaultInstalledFont: Pair<FontHelper.FontCompat, FontHelper.FontCompat>? = null
 
         init {
             System.loadLibrary("nativecrashhandler")

@@ -84,9 +84,6 @@ class SettingsFragment : PoppableFragment() {
             is SettingsDataLocationItem -> {
                 push(SettingsDataLocationFragment.newInstance(), item.name)
             }
-            is SettingsFontItem -> {
-                push(SettingsFontSelectionFragment.newInstance(), item.name)
-            }
             else -> {
                 throw RuntimeException("SettingsFragment cannot handle item $item")
             }

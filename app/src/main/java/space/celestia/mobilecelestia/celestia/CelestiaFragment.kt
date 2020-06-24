@@ -229,25 +229,24 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
         core.setDPI((96 * resources.displayMetrics.density * scaleFactor).toInt())
 
-        // Get system font
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
-        val font = FontHelper.getFontForLocale(locale, 400)
-        val boldFont = FontHelper.getFontForLocale(locale, 700)
 
-        val fontOverride = MainActivity.overrideFont
-        if (fontOverride != null) {
-            val font = fontOverride
-            core.setFont(font.filePath, font.collectionIndex, 9)
-            core.setTitleFont(font.filePath, font.collectionIndex, 15)
-            core.setRendererFont(font.filePath, font.collectionIndex, 9, CelestiaAppCore.RENDER_FONT_STYLE_NORMAL)
-            core.setRendererFont(font.filePath, font.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
-        } else if (font != null && boldFont != null) {
+        var font: FontHelper.FontCompat? = null
+        var boldFont: FontHelper.FontCompat? = null
+        // Use installed font
+        val preferredInstalledFont = MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
+        if (preferredInstalledFont != null) {
+            font = preferredInstalledFont.first
+            boldFont = preferredInstalledFont.second
+        } else {
+            font = FontHelper.getFontForLocale(locale, 400)
+            boldFont = FontHelper.getFontForLocale(locale, 700)
+        }
+        if (font != null && boldFont != null) {
             core.setFont(font.filePath, font.collectionIndex, 9)
             core.setTitleFont(boldFont.filePath, boldFont.collectionIndex, 15)
             core.setRendererFont(font.filePath, font.collectionIndex, 9, CelestiaAppCore.RENDER_FONT_STYLE_NORMAL)
             core.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
-            MainActivity.defaultSystemFont = font
-            MainActivity.defaultSystemBoldFont = boldFont
         }
 
         // Display
