@@ -37,7 +37,7 @@ class EventFinderInputFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_event_finder_input, container, false)
+        val view = inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
 
         val recView = view.findViewById<RecyclerView>(R.id.list)
         recView.layoutManager = LinearLayoutManager(context)

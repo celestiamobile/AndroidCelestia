@@ -86,7 +86,7 @@ class BrowserFragment : BrowserRootFragment(), BottomNavigationView.OnNavigation
         toolbar.title = browserItem.alternativeName ?: browserItem.name
         currentPath = browserItem.name
         browserMap[currentPath] = browserItem
-        replace(BrowserCommonFragment.newInstance(currentPath), R.id.browser_container)
+        replace(BrowserCommonFragment.newInstance(currentPath), R.id.fragment_container)
     }
 
     override fun pushItem(browserItem: CelestiaBrowserItem) {
@@ -95,7 +95,7 @@ class BrowserFragment : BrowserRootFragment(), BottomNavigationView.OnNavigation
         currentPath = "$currentPath/${browserItem.name}"
         browserMap[currentPath] = browserItem
         val frag = BrowserCommonFragment.newInstance(currentPath)
-        push(frag, R.id.browser_container)
+        push(frag, R.id.fragment_container)
     }
 
     override fun canPop(): Boolean {

@@ -56,7 +56,7 @@ class SubsystemBrowserFragment : BrowserRootFragment(), Cleanable {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_subsystem_browser, container, false)
+        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -66,7 +66,7 @@ class SubsystemBrowserFragment : BrowserRootFragment(), Cleanable {
         toolbar.navigationIcon = null
         val browserItem = browserMap[rootPath]!![currentPath]!!
         toolbar.title = browserItem.alternativeName ?: browserItem.name
-        replace(BrowserCommonFragment.newInstance(currentPath, rootPath), R.id.browser_container)
+        replace(BrowserCommonFragment.newInstance(currentPath, rootPath), R.id.fragment_container)
     }
 
     override fun pushItem(browserItem: CelestiaBrowserItem) {
@@ -75,7 +75,7 @@ class SubsystemBrowserFragment : BrowserRootFragment(), Cleanable {
         currentPath = "$currentPath/${browserItem.name}"
         browserMap[rootPath]!![currentPath] = browserItem
         val frag = BrowserCommonFragment.newInstance(currentPath, rootPath)
-        push(frag, R.id.browser_container)
+        push(frag, R.id.fragment_container)
     }
 
     override fun canPop(): Boolean {

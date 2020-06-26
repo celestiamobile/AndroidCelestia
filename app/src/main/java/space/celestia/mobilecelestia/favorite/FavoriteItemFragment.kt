@@ -45,7 +45,7 @@ class FavoriteItemFragment : TitledFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_favorite_item_list, container, false)
+        val view = inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
 
         // Set the adapter
         if (view is RecyclerView) {

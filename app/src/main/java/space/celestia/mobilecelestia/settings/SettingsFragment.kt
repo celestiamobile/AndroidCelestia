@@ -32,7 +32,7 @@ class SettingsFragment : PoppableFragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_settings, container, false)
+        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -44,13 +44,13 @@ class SettingsFragment : PoppableFragment() {
     }
 
     fun replace(fragment: Fragment, title: String) {
-        replace(fragment, R.id.settings_container)
+        replace(fragment, R.id.fragment_container)
         toolbar.title = title
         toolbar.navigationIcon = null
     }
 
     fun push(fragment: Fragment, title: String) {
-        push(fragment, R.id.settings_container)
+        push(fragment, R.id.fragment_container)
         toolbar.title = title
         toolbar.navigationIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null)
     }
@@ -90,7 +90,7 @@ class SettingsFragment : PoppableFragment() {
     }
 
     fun reload() {
-        val frag = childFragmentManager.findFragmentById(R.id.settings_container)
+        val frag = childFragmentManager.findFragmentById(R.id.fragment_container)
         if (frag is SettingsBaseFragment)
             frag.reload()
     }

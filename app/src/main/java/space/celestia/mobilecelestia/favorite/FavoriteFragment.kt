@@ -35,7 +35,7 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_favorite, container, false)
+        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,14 +47,14 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun replaceItem(item: FavoriteBaseItem) {
-        replace(FavoriteItemFragment.newInstance(item), R.id.favorite_container)
+        replace(FavoriteItemFragment.newInstance(item), R.id.fragment_container)
         toolbar.navigationIcon = null
         toolbar.title = item.title
     }
 
     fun pushItem(item: FavoriteBaseItem) {
         val frag = FavoriteItemFragment.newInstance(item)
-        push(frag, R.id.favorite_container)
+        push(frag, R.id.fragment_container)
         toolbar.title = item.title
         toolbar.navigationIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null)
         reloadMenu(item)

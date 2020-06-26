@@ -42,7 +42,7 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_settings_common_list, container, false)
+        val view = inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
         (view as? RecyclerView)?.let {
             it.layoutManager = LinearLayoutManager(context)
             adapter = SettingsCommonRecyclerViewAdapter(item!!, listener, dataSource)

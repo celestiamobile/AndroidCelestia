@@ -34,7 +34,7 @@ class SettingsCurrentTimeFragment : SettingsBaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view =
-            inflater.inflate(R.layout.fragment_settings_current_time_list, container, false)
+            inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
 
         // Set the adapter
         if (view is RecyclerView) {

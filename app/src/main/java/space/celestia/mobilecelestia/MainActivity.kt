@@ -1238,7 +1238,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showCameraControl() {
-        showEndFragment(CameraControlFragment.newInstance())
+        showEndFragment(CameraControlContainerFragment.newInstance())
     }
 
     private fun showHelp() {

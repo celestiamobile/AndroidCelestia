@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ fragment_settings_current_time_list.xml
+  ~ fragment_general_grouped_list.xml
   ~
   ~ Copyright (C) 2001-2020, the Celestia Development Team
   ~
@@ -12,7 +12,6 @@
 
 <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/list"
-    android:name="space.celestia.MobileCelestia.Settings.SettingsCurrentTimeFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/Background"/>

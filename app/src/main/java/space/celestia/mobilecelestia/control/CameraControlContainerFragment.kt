@@ -1,5 +1,5 @@
 /*
- * CameraControlFragment.kt
+ * CameraControlContainerFragment.kt
  *
  * Copyright (C) 2001-2020, the Celestia Development Team
  *
@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.eventfinder
+package space.celestia.mobilecelestia.control
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,13 +18,10 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.push
 import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.control.EventFinderInputFragment
-import space.celestia.mobilecelestia.control.EventFinderResultFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-class EventFinderContainerFragment : Fragment() {
+class CameraControlContainerFragment : Fragment() {
     private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
 
     override fun onCreateView(
@@ -36,18 +33,14 @@ class EventFinderContainerFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar.title = CelestiaString("Eclipse Finder", "")
+        toolbar.title = CelestiaString("Camera Control", "")
 
-        replace(EventFinderInputFragment.newInstance(), R.id.fragment_container)
-    }
-
-    public fun showResult() {
-        push(EventFinderResultFragment.newInstance(), R.id.fragment_container)
+        replace(CameraControlFragment.newInstance(), R.id.fragment_container)
     }
 
     companion object {
         @JvmStatic
         fun newInstance() =
-            EventFinderContainerFragment()
+            CameraControlContainerFragment()
     }
 }

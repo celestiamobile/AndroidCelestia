@@ -22,16 +22,12 @@
 
     <color name="colorSeparator">#99545458</color>
 
-    <color name="colorImageIconNormal">#FFFFFF</color>
-    <color name="colorImageIconSelected">#AAAAAA</color>
-
     <color name="colorThemeBackground">#114477</color>
     <color name="colorSelectedThemeBackground">#80114477</color>
     <color name="colorThemeLabel">#6699CC</color>
     <color name="colorThemeSecondaryLabel">#114477</color>
 
     <color name="colorEditTextHairLine">#808080</color>
-
     <color name="colorDimmingBackground">#99000000</color>
 
     <color name="colorPrimary">@color/colorThemeLabel</color>

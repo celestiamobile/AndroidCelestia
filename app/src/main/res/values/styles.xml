@@ -104,6 +104,12 @@
         <item name="itemIconTint">@color/bottom_nav_color</item>
     </style>
 
+    <style name="BarSeparator">
+        <item name="android:background">@color/colorSeparator</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0.5dp</item>
+    </style>
+
     <style name="AppTheme" parent="@style/DefaultTheme">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>

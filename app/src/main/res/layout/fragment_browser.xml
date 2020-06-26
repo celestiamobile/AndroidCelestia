@@ -19,17 +19,13 @@
     tools:context=".browser.BrowserFragment"
     style="@style/Background">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/Toolbar"/>
-
-    <FrameLayout
-        android:id="@+id/browser_container"
+    <include
+        layout="@layout/fragment_general_container_with_toolbar"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"/>
+
+    <View style="@style/BarSeparator"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"

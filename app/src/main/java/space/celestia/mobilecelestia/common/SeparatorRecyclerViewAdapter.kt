@@ -160,6 +160,7 @@ private class FooterRecyclerViewItem(val title: String?): RecyclerViewItem
 
 fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     val innerSections = ArrayList<CommonSection>()
+    var lastSectionHasFooter = size == 0
     for (section in this) {
         if (section.header != null) {
             innerSections.add(
@@ -177,8 +178,11 @@ fun List<CommonSectionV2>.transformed(): List<CommonSection> {
                     showSectionSeparator = false, showRowSeparator = false
                 )
             )
+            lastSectionHasFooter = true
         }
     }
+    if (!lastSectionHasFooter)
+        innerSections.add(CommonSection(listOf(FooterRecyclerViewItem(null)), showRowSeparator = false ,showSectionSeparator = false))
     return innerSections
 }
 
