@@ -886,3 +886,29 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setRendererFont(JNIEn
     core->setRendererFont(c_path, collection_index, font_size, (Renderer::FontStyle)font_style);
     env->ReleaseStringUTFChars(font_path, c_path);
 }
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getReferenceMarkEnabled(JNIEnv *env,
+                                                                                   jclass clazz,
+                                                                                   jlong ptr,
+                                                                                   jstring str) {
+    auto core = (CelestiaCore *)ptr;
+    const char *c_str = env->GetStringUTFChars(str, nullptr);
+    bool enabled = core->referenceMarkEnabled(c_str);
+    env->ReleaseStringUTFChars(str, c_str);
+
+    return enabled ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1toggleReferenceMarkEnabled(JNIEnv *env,
+                                                                                      jclass clazz,
+                                                                                      jlong ptr,
+                                                                                      jstring str) {
+    auto core = (CelestiaCore *)ptr;
+    const char *c_str = env->GetStringUTFChars(str, nullptr);
+    core->toggleReferenceMark(c_str);
+    env->ReleaseStringUTFChars(str, c_str);
+}

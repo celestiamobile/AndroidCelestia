@@ -644,4 +644,25 @@ public class CelestiaAppCore {
     public double getMinimumFeatureSize() { return c_geMinimumFeatureSize(); }
     private native void c_setMinimumFeatureSize(double minimumFeatureSize);
     private native double c_geMinimumFeatureSize();
+
+    public boolean getShowBodyAxes() { return c_getReferenceMarkEnabled(pointer, "body axes"); }
+    public void setShowBodyAxes(boolean value) { c_toggleReferenceMarkEnabled(pointer, "body axes"); }
+
+    public boolean getShowFrameAxes() { return c_getReferenceMarkEnabled(pointer, "frame axes"); }
+    public void setShowFrameAxes(boolean value) { c_toggleReferenceMarkEnabled(pointer, "frame axes"); }
+
+    public boolean getShowSunDirection() { return c_getReferenceMarkEnabled(pointer, "sun direction"); }
+    public void setShowSunDirection(boolean value) { c_toggleReferenceMarkEnabled(pointer, "sun direction"); }
+
+    public boolean getShowVelocityVector() { return c_getReferenceMarkEnabled(pointer, "velocity vector"); }
+    public void setShowVelocityVector(boolean value) { c_toggleReferenceMarkEnabled(pointer, "velocity vector"); }
+
+    public boolean getShowPlanetographicGrid() { return c_getReferenceMarkEnabled(pointer, "planetographic grid"); }
+    public void setShowPlanetographicGrid(boolean value) { c_toggleReferenceMarkEnabled(pointer, "planetographic grid"); }
+
+    public boolean getShowTerminator() { return c_getReferenceMarkEnabled(pointer, "terminator"); }
+    public void setShowTerminator(boolean value) { c_toggleReferenceMarkEnabled(pointer, "terminator"); }
+
+    private static native boolean c_getReferenceMarkEnabled(long ptr, String str);
+    private static native void c_toggleReferenceMarkEnabled(long ptr, String str);
 }

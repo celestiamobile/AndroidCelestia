@@ -229,6 +229,7 @@ class SettingsPreferenceSwitchItem(
 class SettingsSwitchItem(
     val key: String,
     private val displayName: String,
+    val volatile: Boolean,
     val representation: Representation = Representation.Checkmark
 ) : SettingsItem, Serializable {
     enum class Representation {
@@ -238,7 +239,7 @@ class SettingsSwitchItem(
     override val name: String
         get() = displayName
 
-    constructor(key: SettingsKey, representation: Representation = Representation.Checkmark) : this(key.valueString, key.displayName, representation)
+    constructor(key: SettingsKey, representation: Representation = Representation.Checkmark) : this(key.valueString, key.displayName, false, representation)
 }
 
 private val staticDisplayItems: List<SettingsItem> = listOf(
@@ -315,7 +316,23 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(CelestiaString("Markers", ""), listOf(
         SettingsSwitchItem(SettingsKey.ShowMarkers, SettingsSwitchItem.Representation.Switch),
         SettingsUnknownTextItem(CelestiaString("Unmark All", ""), settingUnmarkAllID)
-    ))
+    )),
+    SettingsCommonItem(
+        CelestiaString("Reference Vectors", ""),
+        listOf(
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsSwitchItem("ShowBodyAxes", CelestiaString("Show Body Axes", ""), true),
+                    SettingsSwitchItem("ShowFrameAxes", CelestiaString("Show Frame Axes", ""), true),
+                    SettingsSwitchItem("ShowSunDirection", CelestiaString("Show Sun Direction", ""), true),
+                    SettingsSwitchItem("ShowVelocityVector", CelestiaString("Show Velocity Vector", ""), true),
+                    SettingsSwitchItem("ShowPlanetographicGrid", CelestiaString("Show Planetographic Grid", ""), true),
+                    SettingsSwitchItem("ShowTerminator", CelestiaString("Show Terminator", ""), true)
+                ),
+                footer = CelestiaString("Reference vectors are only visible for the current selected solar system object.", "")
+            )
+        )
+    )
 )
 
 class SettingsSingleSelectionItem(

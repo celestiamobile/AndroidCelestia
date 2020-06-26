@@ -25,6 +25,7 @@ class SettingsCommonFragment : SettingsBaseFragment() {
     private var item: SettingsCommonItem? = null
     private var listener: Listener? = null
     private var dataSource: DataSource? = null
+    private var adapter: SettingsCommonRecyclerViewAdapter? = null
 
     override val title: String
         get() = item!!.name
@@ -44,7 +45,8 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         val view = inflater.inflate(R.layout.fragment_settings_common_list, container, false)
         (view as? RecyclerView)?.let {
             it.layoutManager = LinearLayoutManager(context)
-            it.adapter = SettingsCommonRecyclerViewAdapter(item!!, listener, dataSource)
+            adapter = SettingsCommonRecyclerViewAdapter(item!!, listener, dataSource)
+            it.adapter = adapter
         }
         return view
     }
@@ -65,11 +67,17 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         dataSource = null
     }
 
+    override fun reload() {
+        super.reload()
+
+        adapter?.notifyDataSetChanged()
+    }
+
     interface Listener {
         fun onCommonSettingSliderItemChange(field: String, value: Double)
         fun onCommonSettingActionItemSelected(action: Int)
         fun onCommonSettingPreferenceSwitchStateChanged(key: PreferenceManager.PredefinedKey, value: Boolean)
-        fun onCommonSettingSwitchStateChanged(field: String, value: Boolean)
+        fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean)
         fun onCommonSettingUnknownAction(id: String)
     }
 

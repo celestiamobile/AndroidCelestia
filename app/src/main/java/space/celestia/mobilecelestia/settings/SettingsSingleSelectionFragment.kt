@@ -71,7 +71,6 @@ class SettingsSingleSelectionFragment : SettingsBaseFragment() {
     }
 
     override fun reload() {
-        listAdapter.reload()
         listAdapter.notifyDataSetChanged()
     }
 

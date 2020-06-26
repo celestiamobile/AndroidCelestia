@@ -69,10 +69,6 @@ class SettingsSingleSelectionRecyclerViewAdapter(
         super.bindVH(holder, item)
     }
 
-    fun reload() {
-        updateSectionsWithHeader(item.createSections())
-    }
-
     private companion object {
         const val SETTING_ITEM = 0
     }

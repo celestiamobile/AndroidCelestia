@@ -904,22 +904,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onMultiSelectionSettingItemChange(field: String, on: Boolean) {
-        val core = CelestiaAppCore.shared()
-        core.setBooleanValueForField(field, on)
-        settingManager[PreferenceManager.CustomKey(field)] = if (on) "1" else "0"
-        reloadSettings()
+        applyBooleanValue(on, field, true)
     }
 
     override fun onSingleSelectionSettingItemChange(field: String, value: Int) {
-        core.setIntValueForField(field, value)
-        settingManager[PreferenceManager.CustomKey(field)] = value.toString()
-        reloadSettings()
+        applyIntValue(value, field, true)
     }
 
     override fun onCommonSettingSliderItemChange(field: String, value: Double) {
-        core.setDoubleValueForField(field, value)
-        settingManager[PreferenceManager.CustomKey(field)] = value.toString()
-        reloadSettings()
+        applyDoubleValue(value, field, true)
     }
 
     override fun onCommonSettingActionItemSelected(action: Int) {
@@ -931,10 +924,44 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             core.simulation.universe.unmarkAll()
     }
 
-    override fun onCommonSettingSwitchStateChanged(field: String, value: Boolean) {
-        core.setBooleanValueForField(field, value)
-        settingManager[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
-        reloadSettings()
+    override fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean) {
+        applyBooleanValue(value, field, true, volatile)
+    }
+
+    private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
+        CelestiaView.callOnRenderThread {
+            core.setBooleanValueForField(field, value)
+            runOnUiThread {
+                if (!volatile)
+                    settingManager[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
+                if (reloadSettings)
+                    reloadSettings()
+            }
+        }
+    }
+
+    private fun applyIntValue(value: Int, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
+        CelestiaView.callOnRenderThread {
+            core.setIntValueForField(field, value)
+            runOnUiThread {
+                if (!volatile)
+                    settingManager[PreferenceManager.CustomKey(field)] = value.toString()
+                if (reloadSettings)
+                    reloadSettings()
+            }
+        }
+    }
+
+    private fun applyDoubleValue(value: Double, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
+        CelestiaView.callOnRenderThread {
+            core.setDoubleValueForField(field, value)
+            runOnUiThread {
+                if (!volatile)
+                    settingManager[PreferenceManager.CustomKey(field)] = value.toString()
+                if (reloadSettings)
+                    reloadSettings()
+            }
+        }
     }
 
     override fun onCommonSettingPreferenceSwitchStateChanged(

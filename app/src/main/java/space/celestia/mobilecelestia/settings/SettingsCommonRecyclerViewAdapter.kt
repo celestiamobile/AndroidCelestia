@@ -74,7 +74,7 @@ class SettingsCommonRecyclerViewAdapter(
             listener?.onCommonSettingUnknownAction(item.id)
         else if (item is SettingsSwitchItem && item.representation == SettingsSwitchItem.Representation.Checkmark) {
             val on = dataSource?.commonSettingSwitchState(item.key) ?: false
-            listener?.onCommonSettingSwitchStateChanged(item.key, !on)
+            listener?.onCommonSettingSwitchStateChanged(item.key, !on, item.volatile)
         }
     }
 
@@ -108,7 +108,7 @@ class SettingsCommonRecyclerViewAdapter(
             } else if (item is SettingsSwitchItem) {
                 val on = dataSource?.commonSettingSwitchState(item.key) ?: false
                 holder.configure(item.name, on) { newValue ->
-                    listener?.onCommonSettingSwitchStateChanged(item.key, newValue)
+                    listener?.onCommonSettingSwitchStateChanged(item.key, newValue, item.volatile)
                 }
             }
             return
@@ -121,7 +121,7 @@ class SettingsCommonRecyclerViewAdapter(
             val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_slider_item, parent,false)
             return SliderViewHolder(view)
         }
-        if (viewType == ITEM_ACTION || viewType == ITEM_UNKNOWN_TEXT || viewType == ITEM_CHECKMARK) {
+        if (viewType == ITEM_ACTION || viewType == ITEM_UNKNOWN_TEXT) {
             return CommonTextViewHolder(parent)
         }
         if (viewType == ITEM_PREF_SWITCH || viewType == ITEM_SWITCH) {
