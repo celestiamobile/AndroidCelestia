@@ -18,7 +18,6 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class DataType {
@@ -89,7 +88,7 @@ class SettingsDataLocationRecyclerViewAdapter(
         val sections = ArrayList<CommonSectionV2>()
         sections.add(CommonSectionV2(listOf(SpecificDataLocationItem(customConfig, DataType.Config),
             SpecificDataLocationItem(customDataDir, DataType.DataDirectory)
-        ), "", CelestiaString("Configuration will take effect after a restart.", "")))
+        ), footer =  CelestiaString("Configuration will take effect after a restart.", "")))
         sections.add(CommonSectionV2(listOf(ResetDataLocationItem()), null))
         updateSectionsWithHeader(sections)
     }

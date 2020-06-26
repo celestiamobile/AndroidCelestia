@@ -16,10 +16,7 @@ import android.app.AlertDialog
 import android.text.InputType
 import android.view.LayoutInflater
 import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.Spinner
 import space.celestia.mobilecelestia.R
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 

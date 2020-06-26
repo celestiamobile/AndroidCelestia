@@ -14,7 +14,6 @@ package space.celestia.mobilecelestia.control
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,9 +21,11 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.utils.*
+import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.showAlert
+import space.celestia.mobilecelestia.utils.showDateInput
+import space.celestia.mobilecelestia.utils.showSingleSelection
 import java.util.*
 
 class EventFinderInputFragment : Fragment() {

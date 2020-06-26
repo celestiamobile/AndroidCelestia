@@ -16,7 +16,10 @@ import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.*
+import space.celestia.mobilecelestia.common.CommonSectionV2
+import space.celestia.mobilecelestia.common.CommonTextViewHolder
+import space.celestia.mobilecelestia.common.RecyclerViewItem
+import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.text.DateFormat

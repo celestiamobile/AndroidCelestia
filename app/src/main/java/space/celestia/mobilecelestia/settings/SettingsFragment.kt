@@ -22,7 +22,6 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.core.CelestiaAppCore
-import java.lang.RuntimeException
 
 class SettingsFragment : PoppableFragment() {
 

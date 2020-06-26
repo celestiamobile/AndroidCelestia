@@ -35,7 +35,7 @@ class ActionItem(val title: String, val action: HelpAction) : HelpItem()
 class HelpRecyclerViewAdapter(
     values: List<List<HelpItem>>,
     private val listener: Listener?
-) : SeparatorRecyclerViewAdapter(1, 0, values.map { CommonSection(it,
+) : SeparatorRecyclerViewAdapter(sections = values.map { CommonSection(it,
     showSectionSeparator = false,
     showRowSeparator = false
 ) }) {

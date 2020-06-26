@@ -29,10 +29,10 @@ import space.celestia.mobilecelestia.toolbar.model.ToolbarListItem
 class ToolbarRecyclerViewAdapter(
     values: List<List<ToolbarListItem>>,
     private val listener: Listener?
-) : SeparatorRecyclerViewAdapter(6, 32, values.map { CommonSection(it,
+) : SeparatorRecyclerViewAdapter(separatorHeight = 6, separatorLeft = 32, sections = values.map { CommonSection(it,
     showSectionSeparator = true,
     showRowSeparator = false
-) }, false) {
+) }, fullSection = false) {
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is ToolbarActionItem) {

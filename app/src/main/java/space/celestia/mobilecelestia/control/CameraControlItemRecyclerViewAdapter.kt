@@ -41,7 +41,7 @@ class CameraControlReverseDirectionItem : RecyclerViewItem {
 
 private val controlSections by lazy {
     listOf(
-        CommonSectionV2(CameraControlStepperItem.staticItems, "", CelestiaString("Long press on stepper to change orientation.", "")),
+        CommonSectionV2(CameraControlStepperItem.staticItems, footer =  CelestiaString("Long press on stepper to change orientation.", "")),
         CommonSectionV2(listOf(CameraControlReverseDirectionItem()), null)
     )
 }

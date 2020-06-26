@@ -20,7 +20,10 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
-import android.view.*
+import android.view.DisplayCutout
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
@@ -36,8 +39,10 @@ import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import com.tbruyelle.rxpermissions2.RxPermissions
+import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 import space.celestia.mobilecelestia.browser.*
@@ -97,6 +102,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var addonPath: String? = null
     private var extraScriptPath: String? = null
 
+    private val compositeDisposable = CompositeDisposable()
+
     private val core by lazy { CelestiaAppCore.shared() }
     private var currentSelection: CelestiaSelection? = null
 
@@ -126,7 +133,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val fontDirPath: String
         get() = "$celestiaParentPath/$CELESTIA_FONT_FOLDER_NAME"
 
-    @SuppressLint("CheckResult", "ClickableViewAccessibility")
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         // We don't need to recover when we get killed
         super.onCreate(null)
@@ -199,7 +206,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         firstInstance = false
-        createCopyAssetObservable()
+        val disposable = createCopyAssetObservable()
             .concatWith(createPermissionObservable())
             .concatWith(createLoadConfigObservable())
             .subscribeOn(Schedulers.io())
@@ -213,11 +220,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 loadConfigSuccess()
             })
 
+        compositeDisposable.add(disposable)
+
         handleIntent(intent)
     }
 
     override fun onDestroy() {
         AppStatusReporter.shared().unregister(this)
+        compositeDisposable.dispose()
 
         super.onDestroy()
     }
@@ -435,12 +445,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         handleIntent(intent)
     }
 
-    @SuppressLint("CheckResult")
     private fun handleIntent(intent: Intent?) {
         val data = intent?.data ?: return
 
         Toast.makeText(this, CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT).show()
-        Observable.just(data)
+        val disposable = Observable.just(data)
             .map { uri ->
                 if (uri.scheme == "content") {
                     return@map Pair(uri, true)
@@ -482,6 +491,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 Log.e(TAG, "Handle URI failed, $error")
                 showError(error)
             })
+        compositeDisposable.add(disposable)
     }
 
     private fun requestRunScript(path: String) {
@@ -1123,57 +1133,65 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun hideOverlay(animated: Boolean = false, callback: (() -> Unit)? = null) {
-        hideFragment(animated, R.id.normal_end_container, R.anim.exit_to_right) {
-            hideFragment(animated, R.id.toolbar_end_container, R.anim.exit_to_right) {
+        val disposable = hideFragment(animated, R.id.normal_end_container, R.anim.exit_to_right)
+            .concatWith(hideFragment(animated, R.id.toolbar_end_container, R.anim.exit_to_right))
+            .concatWith {
                 findViewById<View>(R.id.overlay_container).visibility = View.INVISIBLE
                 findViewById<View>(R.id.end_notch).visibility = View.INVISIBLE
-                hideFragment(animated, R.id.toolbar_bottom_container, R.anim.exit_to_bottom) {
-                    findViewById<View>(R.id.bottom_container).visibility = View.INVISIBLE
-                    if (callback != null)
-                        callback()
-                }
+                it.onComplete()
             }
-        }
+            .concatWith(hideFragment(animated, R.id.toolbar_bottom_container, R.anim.exit_to_bottom))
+            .concatWith {
+                findViewById<View>(R.id.bottom_container).visibility = View.INVISIBLE
+                it.onComplete()
+            }
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                if (callback != null)
+                    callback()
+            }
+        compositeDisposable.add(disposable)
     }
 
-    private fun hideFragment(animated: Boolean, containerID: Int, animationID: Int, completion: (() -> Unit)?) {
-        val frag = supportFragmentManager.findFragmentById(containerID)
-        val view = findViewById<View>(containerID)
-        if (view == null || frag == null) {
-            if (frag is Cleanable)
-                frag.cleanUp()
+    private fun hideFragment(animated: Boolean, containerID: Int, animationID: Int): Completable {
+        return Completable.create { emitter ->
+            val frag = supportFragmentManager.findFragmentById(containerID)
+            val view = findViewById<View>(containerID)
+            if (view == null || frag == null) {
+                if (frag is Cleanable)
+                    frag.cleanUp()
 
-            if (completion != null)
-                completion()
-            return
-        }
+                emitter.onComplete()
+                return@create
+            }
 
-        val fragView = frag.view
-        val executionBlock = {
-            if (frag is Cleanable)
-                frag.cleanUp()
-            supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
-            view.visibility = View.INVISIBLE
-            if (completion != null)
-                completion()
-        }
+            val fragView = frag.view
+            val executionBlock = {
+                if (frag is Cleanable)
+                    frag.cleanUp()
+                supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
+                view.visibility = View.INVISIBLE
+                emitter.onComplete()
+            }
 
-        if (fragView == null || !animated) {
-            executionBlock()
-        } else {
-            val animation = AnimationUtils.loadAnimation(this, animationID)
-            animation.setAnimationListener(object: Animation.AnimationListener {
-                override fun onAnimationRepeat(animation: Animation?) {}
-                override fun onAnimationStart(animation: Animation?) {
-                    interactionBlocked = true
-                }
+            if (fragView == null || !animated) {
+                executionBlock()
+            } else {
+                val animation = AnimationUtils.loadAnimation(this, animationID)
+                animation.setAnimationListener(object: Animation.AnimationListener {
+                    override fun onAnimationRepeat(animation: Animation?) {}
+                    override fun onAnimationStart(animation: Animation?) {
+                        interactionBlocked = true
+                    }
 
-                override fun onAnimationEnd(animation: Animation?) {
-                    interactionBlocked = false
-                    executionBlock()
-                }
-            })
-            fragView.startAnimation(animation)
+                    override fun onAnimationEnd(animation: Animation?) {
+                        interactionBlocked = false
+                        executionBlock()
+                    }
+                })
+                fragView.startAnimation(animation)
+            }
         }
     }
 
@@ -1251,7 +1269,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showTextInput(CelestiaString("Share", ""), name) { title ->
             Toast.makeText(this, CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT).show()
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
-            service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java, {
+            val disposable = service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java, {
                 ShareCompat.IntentBuilder
                     .from(this)
                     .setType("text/plain")
@@ -1261,6 +1279,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }, {
                 showShareError()
             })
+            compositeDisposable.add(disposable)
         }
     }
 

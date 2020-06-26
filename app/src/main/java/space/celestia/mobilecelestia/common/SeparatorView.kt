@@ -19,12 +19,14 @@ import android.widget.FrameLayout
 import space.celestia.mobilecelestia.R
 
 @SuppressLint("ViewConstructor")
-class SeparatorView(context: Context, height: Int, left: Int): FrameLayout(context) {
+class SeparatorView(context: Context, height: Int, left: Int, backgroundColor: Int): FrameLayout(context) {
     init {
         val density = resources.displayMetrics.density
 
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, (height * density).toInt())
         setPadding((left * density).toInt(), 0, 0, 0)
+
+        setBackgroundResource(backgroundColor)
 
         val view = View(context)
         view.setBackgroundResource(R.color.colorSeparator)

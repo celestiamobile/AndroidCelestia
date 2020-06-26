@@ -14,7 +14,6 @@ package space.celestia.mobilecelestia.core;
 import androidx.annotation.NonNull;
 
 import java.util.List;
-import java.util.Objects;
 
 public class CelestiaSimulation {
     private long pointer;

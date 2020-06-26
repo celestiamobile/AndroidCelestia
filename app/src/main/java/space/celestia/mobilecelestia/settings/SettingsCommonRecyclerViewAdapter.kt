@@ -12,7 +12,6 @@
 package space.celestia.mobilecelestia.settings
 
 import android.content.res.ColorStateList
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,13 +20,13 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.common_text_list_with_slider_item.view.*
 import kotlinx.android.synthetic.main.common_text_list_with_slider_item.view.title
 import kotlinx.android.synthetic.main.common_text_list_with_switch_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
-
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 

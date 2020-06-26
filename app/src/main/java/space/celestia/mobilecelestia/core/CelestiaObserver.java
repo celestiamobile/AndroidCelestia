@@ -1,7 +1,6 @@
 package space.celestia.mobilecelestia.core;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class CelestiaObserver {
     private final long pointer;

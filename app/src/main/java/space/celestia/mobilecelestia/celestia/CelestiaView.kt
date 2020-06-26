@@ -26,8 +26,6 @@ import android.view.ScaleGestureDetector
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import java.util.*
 import kotlin.collections.HashMap
-import kotlin.math.abs
-import kotlin.math.hypot
 
 @SuppressLint("ViewConstructor")
 class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(context), Choreographer.FrameCallback,

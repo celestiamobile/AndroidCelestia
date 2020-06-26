@@ -12,7 +12,9 @@
 package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*

@@ -1,7 +1,6 @@
 package space.celestia.mobilecelestia.celestia;
 
 import android.opengl.EGL14;
-import android.opengl.EGLExt;
 import android.opengl.GLSurfaceView;
 
 import javax.microedition.khronos.egl.EGL10;

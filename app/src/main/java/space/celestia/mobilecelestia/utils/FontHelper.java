@@ -1,6 +1,5 @@
 package space.celestia.mobilecelestia.utils;
 
-import android.graphics.fonts.Font;
 import android.os.Build;
 import android.util.Log;
 import android.util.Xml;

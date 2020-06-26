@@ -14,6 +14,7 @@ package space.celestia.mobilecelestia.common
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import space.celestia.mobilecelestia.R
 
 interface ViewItem
 
@@ -28,6 +29,7 @@ open class CommonSection(val items: List<RecyclerViewItem>,
 
 open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
                                         private val separatorLeft: Int = 16,
+                                        private val separatorBackgroundColor: Int = R.color.colorSecondaryBackground,
                                         sections: List<CommonSection> = listOf(),
                                         private val fullSection: Boolean = true) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -79,11 +81,11 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == SEPARATOR_0) {
-            val view = SeparatorView(parent.context, 1, 0)
+            val view = SeparatorView(parent.context, 1, 0, separatorBackgroundColor)
             return SeparatorViewHolder(view)
         }
         if (viewType == SEPARATOR_1) {
-            val view = SeparatorView(parent.context, separatorHeight, separatorLeft)
+            val view = SeparatorView(parent.context, separatorHeight, separatorLeft, separatorBackgroundColor)
             return SeparatorViewHolder(view)
         }
         return createVH(parent, viewType)
@@ -180,7 +182,7 @@ fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     return innerSections
 }
 
-open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = listOf()): SeparatorRecyclerViewAdapter(1, 16, sections.transformed()) {
+open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = listOf()): SeparatorRecyclerViewAdapter(sections = sections.transformed()) {
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is HeaderRecyclerViewItem)
             return HEADER

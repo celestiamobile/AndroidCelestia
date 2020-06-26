@@ -399,7 +399,7 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         SettingsCommonItem.Section(listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI"),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
-        ), "", CelestiaString("Configuration will take effect after a restart.", ""))
+        ),  footer =  CelestiaString("Configuration will take effect after a restart.", ""))
     )),
     SettingsDataLocationItem()
 )

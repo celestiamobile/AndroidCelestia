@@ -14,15 +14,17 @@ package space.celestia.mobilecelestia.search
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_search_item_list.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.search.model.RxSearchObservable
@@ -33,11 +35,14 @@ class SearchFragment : Fragment() {
     private var listener: Listener? = null
     private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
 
+    private val compositeDisposable = CompositeDisposable()
+
     private var searchView: SearchView? = null
 
     private var lastSearchText: String = ""
     private var lastSearchResultCount: Int = 0
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -60,10 +65,9 @@ class SearchFragment : Fragment() {
         return view
     }
 
-    @SuppressLint("CheckResult")
     private fun setupSearchSearchView() {
         val searchView = this.searchView ?: return
-        RxSearchObservable.fromView(searchView)
+        val disposable = RxSearchObservable.fromView(searchView)
             .debounce(300, TimeUnit.MILLISECONDS)
             .distinctUntilChanged()
             .map {
@@ -91,6 +95,7 @@ class SearchFragment : Fragment() {
                 lastSearchText = ""
                 lastSearchResultCount = 0
             })
+        compositeDisposable.add(disposable)
     }
 
     override fun onAttach(context: Context) {
@@ -105,6 +110,12 @@ class SearchFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.dispose()
+
+        super.onDestroy()
     }
 
     interface Listener {

@@ -11,10 +11,10 @@
 
 package space.celestia.mobilecelestia.share
 
-import android.annotation.SuppressLint
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import retrofit2.Retrofit
@@ -61,14 +61,13 @@ interface ShareAPIService {
     ): Observable<BaseResult>
 }
 
-@SuppressLint("CheckResult")
-fun <T> Observable<BaseResult>.commonHandler(cls: Class<T>?, success: (T) -> Unit, failure: (() -> Unit)? = null) {
+fun <T> Observable<BaseResult>.commonHandler(cls: Class<T>?, success: (T) -> Unit, failure: (() -> Unit)? = null): Disposable {
     fun callFailure() {
         if (failure != null)
             failure()
     }
 
-    this.subscribeOn(Schedulers.io())
+    return this.subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .map(ResultMap(cls))
         .subscribe({
