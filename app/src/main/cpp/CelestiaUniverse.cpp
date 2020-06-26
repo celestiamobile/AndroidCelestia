@@ -267,3 +267,28 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(J
 
     return env->NewStringUTF(j.dump().c_str());
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1mark(JNIEnv *env, jclass clazz,
+                                                                 jlong ptr, jlong selection,
+                                                                 jint marker) {
+    auto u = (Universe *)ptr;
+    u->markObject(*(Selection *)selection, MarkerRepresentation(MarkerRepresentation::Symbol(marker), 10.0f, Color(0.0f, 1.0f, 0.0f, 0.9f)), 1);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1unmark(JNIEnv *env, jclass clazz,
+                                                                   jlong ptr, jlong selection) {
+    auto u = (Universe *)ptr;
+    u->unmarkObject(*(Selection *)selection, 1);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1unmarkAll(JNIEnv *env, jclass clazz,
+                                                                      jlong ptr) {
+    auto u = (Universe *)ptr;
+    u->unmarkAll();
+}
