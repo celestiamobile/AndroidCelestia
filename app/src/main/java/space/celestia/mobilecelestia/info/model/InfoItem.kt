@@ -86,4 +86,8 @@ class AlternateSurfacesItem : InfoActionItem {
     override val title: String
         get() = CelestiaString("Alternate Surfaces", "")
 }
+class MarkItem : InfoActionItem {
+    override val title: String
+        get() = CelestiaString("Mark", "")
+}
 class InfoDescriptionItem(val name: String, val overview: String, val hasWebInfo: Boolean, val hasAlternateSurfaces: Boolean) : InfoItem, Serializable

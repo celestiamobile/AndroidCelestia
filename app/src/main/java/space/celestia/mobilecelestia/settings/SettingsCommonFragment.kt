@@ -24,6 +24,7 @@ import space.celestia.mobilecelestia.utils.PreferenceManager
 class SettingsCommonFragment : SettingsBaseFragment() {
     private var item: SettingsCommonItem? = null
     private var listener: Listener? = null
+    private var dataSource: DataSource? = null
 
     override val title: String
         get() = item!!.name
@@ -43,32 +44,39 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         val view = inflater.inflate(R.layout.fragment_settings_common_list, container, false)
         (view as? RecyclerView)?.let {
             it.layoutManager = LinearLayoutManager(context)
-            it.adapter = SettingsCommonRecyclerViewAdapter(item!!, listener)
+            it.adapter = SettingsCommonRecyclerViewAdapter(item!!, listener, dataSource)
         }
         return view
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is Listener) {
+        if (context is Listener && context is DataSource) {
             listener = context
+            dataSource = context
         } else {
-            throw RuntimeException("$context must implement SettingsCommonFragment.Listener")
+            throw RuntimeException("$context must implement SettingsCommonFragment.Listener and SettingsCommonFragment.DataSource")
         }
     }
 
     override fun onDetach() {
         super.onDetach()
         listener = null
+        dataSource = null
     }
 
     interface Listener {
         fun onCommonSettingSliderItemChange(field: String, value: Double)
         fun onCommonSettingActionItemSelected(action: Int)
-
-        // Preference switch
-        fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean
         fun onCommonSettingPreferenceSwitchStateChanged(key: PreferenceManager.PredefinedKey, value: Boolean)
+        fun onCommonSettingSwitchStateChanged(field: String, value: Boolean)
+        fun onCommonSettingUnknownAction(id: String)
+    }
+
+    interface DataSource {
+        fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean
+        fun commonSettingSwitchState(field: String): Boolean
+        fun commonSettingSliderValue(field: String): Double
     }
 
     companion object {

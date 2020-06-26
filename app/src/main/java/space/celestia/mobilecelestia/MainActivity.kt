@@ -87,6 +87,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     CelestiaFragment.Listener,
     SettingsDataLocationFragment.Listener,
     SettingsCommonFragment.Listener,
+    SettingsCommonFragment.DataSource,
     EventFinderInputFragment.Listener,
     EventFinderResultFragment.Listener {
 
@@ -753,6 +754,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                         core.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
                 }
             }
+            is MarkItem -> {
+                val markers = listOf(
+                    "Diamond", "Triangle", "Square", "Filled Square",
+                    "Plus", "X", "Left Arrow", "Right Arrow",
+                    "Up Arrow", "Down Arrow", "Circle", "Disk",
+                    "Crosshair", "Unmark").map { CelestiaString(it, "") }
+
+                showSingleSelection(CelestiaString("Mark", ""), markers, -1) { newIndex ->
+                    if (newIndex >= CelestiaUniverse.MARKER_COUNT) {
+                        core.simulation.universe.unmark(selection)
+                    } else {
+                        core.simulation.universe.mark(selection, newIndex)
+                        core.showMarkers = true
+                    }
+                }
+            }
         }
     }
 
@@ -894,14 +911,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSingleSelectionSettingItemChange(field: String, value: Int) {
-        val core = CelestiaAppCore.shared()
         core.setIntValueForField(field, value)
         settingManager[PreferenceManager.CustomKey(field)] = value.toString()
         reloadSettings()
     }
 
     override fun onCommonSettingSliderItemChange(field: String, value: Double) {
-        val core = CelestiaAppCore.shared()
         core.setDoubleValueForField(field, value)
         settingManager[PreferenceManager.CustomKey(field)] = value.toString()
         reloadSettings()
@@ -911,8 +926,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         CelestiaView.callOnRenderThread { core.charEnter(action) }
     }
 
-    override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean {
-        return preferenceManager[key] == "true"
+    override fun onCommonSettingUnknownAction(id: String) {
+        if (id == settingUnmarkAllID)
+            core.simulation.universe.unmarkAll()
+    }
+
+    override fun onCommonSettingSwitchStateChanged(field: String, value: Boolean) {
+        core.setBooleanValueForField(field, value)
+        settingManager[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
+        reloadSettings()
     }
 
     override fun onCommonSettingPreferenceSwitchStateChanged(
@@ -920,6 +942,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         value: Boolean
     ) {
         preferenceManager[key] = if (value) "true" else "false"
+    }
+
+    override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean {
+        return preferenceManager[key] == "true"
+    }
+
+    override fun commonSettingSliderValue(field: String): Double {
+        return core.getDoubleValueForField(field)
+    }
+
+    override fun commonSettingSwitchState(field: String): Boolean {
+        return core.getBooleanValueForPield(field)
     }
 
     override fun onCurrentTimeActionRequested(action: CurrentTimeAction) {

@@ -18,6 +18,8 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.io.Serializable
 
+val settingUnmarkAllID = "UnmarkAll"
+
 enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.Key, Serializable {
     // Boolean values
     ShowStars("Stars"),
@@ -79,6 +81,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowVallisLabels("Vallis"),
     ShowTerraLabels("Terra"),
     ShowEruptiveCenterLabels("Volcanoes"),
+    ShowMarkers("Show Markers"),
     // Int values
     TimeZone("Time Zone"),
     DateFormat("Date Format"),
@@ -156,7 +159,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 ShowCraterLabels,
                 ShowVallisLabels,
                 ShowTerraLabels,
-                ShowEruptiveCenterLabels
+                ShowEruptiveCenterLabels,
+                ShowMarkers
             )
 
         val allIntCases: List<SettingsKey>
@@ -216,10 +220,25 @@ class SettingsSliderItem(
 
 class SettingsPreferenceSwitchItem(
     val key: PreferenceManager.PredefinedKey,
-    private val displayName: String
+    private val rawDisplayName: String
 ) : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString(displayName, "")
+        get() = CelestiaString(rawDisplayName, "")
+}
+
+class SettingsSwitchItem(
+    val key: String,
+    private val displayName: String,
+    val representation: Representation = Representation.Checkmark
+) : SettingsItem, Serializable {
+    enum class Representation {
+        Checkmark, Switch;
+    }
+
+    override val name: String
+        get() = displayName
+
+    constructor(key: SettingsKey, representation: Representation = Representation.Checkmark) : this(key.valueString, key.displayName, representation)
 }
 
 private val staticDisplayItems: List<SettingsItem> = listOf(
@@ -292,6 +311,10 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowVallisLabels),
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowTerraLabels),
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowEruptiveCenterLabels)
+    )),
+    SettingsCommonItem.create(CelestiaString("Markers", ""), listOf(
+        SettingsSwitchItem(SettingsKey.ShowMarkers, SettingsSwitchItem.Representation.Switch),
+        SettingsUnknownTextItem(CelestiaString("Unmark All", ""), settingUnmarkAllID)
     ))
 )
 
@@ -373,6 +396,8 @@ class SettingsAboutItem : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString("About", "")
 }
+
+class SettingsUnknownTextItem(override val name: String, val id: String) : SettingsItem, Serializable
 
 class SettingsActionItem(override val name: String, val action: Int): SettingsItem, Serializable
 

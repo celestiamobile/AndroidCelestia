@@ -57,6 +57,7 @@ class InfoFragment : Fragment() {
                 if (descriptionItem!!.hasAlternateSurfaces)
                     otherActions.add(AlternateSurfacesItem())
                 otherActions.add(SubsystemActionItem())
+                otherActions.add(MarkItem())
                 actions.addAll(otherActions)
                 adapter = InfoRecyclerViewAdapter(actions, listener)
                 addItemDecoration(SpaceItemDecoration())

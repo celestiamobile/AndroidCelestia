@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.settings
 
+import android.content.res.ColorStateList
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +19,8 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.ImageViewCompat
 import kotlinx.android.synthetic.main.common_text_list_with_slider_item.view.*
 import kotlinx.android.synthetic.main.common_text_list_with_slider_item.view.title
 import kotlinx.android.synthetic.main.common_text_list_with_switch_item.view.*
@@ -27,7 +30,6 @@ import space.celestia.mobilecelestia.common.CommonTextViewHolder
 
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.CelestiaAppCore
 
 fun SettingsCommonItem.createSections(): List<CommonSectionV2> {
     val results = ArrayList<CommonSectionV2>()
@@ -43,7 +45,8 @@ fun SettingsCommonItem.createSections(): List<CommonSectionV2> {
 
 class SettingsCommonRecyclerViewAdapter(
     private val item: SettingsCommonItem,
-    private val listener: SettingsCommonFragment.Listener?
+    private val listener: SettingsCommonFragment.Listener?,
+    private val dataSource: SettingsCommonFragment.DataSource?
 ) : SeparatorHeaderRecyclerViewAdapter(item.createSections()) {
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is SettingsSliderItem)
@@ -55,17 +58,30 @@ class SettingsCommonRecyclerViewAdapter(
         if (item is SettingsPreferenceSwitchItem)
             return ITEM_PREF_SWITCH
 
+        if (item is SettingsUnknownTextItem)
+            return ITEM_UNKNOWN_TEXT
+
+        if (item is SettingsSwitchItem)
+            return if (item.representation == SettingsSwitchItem.Representation.Switch) ITEM_SWITCH else ITEM_CHECKMARK
+
         return super.itemViewType(item)
     }
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is SettingsActionItem)
             listener?.onCommonSettingActionItemSelected(item.action)
+        else if (item is SettingsUnknownTextItem)
+            listener?.onCommonSettingUnknownAction(item.id)
+        else if (item is SettingsSwitchItem && item.representation == SettingsSwitchItem.Representation.Checkmark) {
+            val on = dataSource?.commonSettingSwitchState(item.key) ?: false
+            listener?.onCommonSettingSwitchStateChanged(item.key, !on)
+        }
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (holder is SliderViewHolder && item is SettingsSliderItem) {
-            val value = (CelestiaAppCore.shared().getDoubleValueForField(item.key) - item.minValue) / (item.maxValue - item.minValue)
+            val num = dataSource?.commonSettingSliderValue(item.key) ?: 0.0
+            val value = (num - item.minValue) / (item.maxValue - item.minValue)
             holder.configure(item.name, value) { newValue ->
                 val transformed = newValue * (item.maxValue - item.minValue) + item.minValue
                 listener?.onCommonSettingSliderItemChange(item.key, transformed)
@@ -75,12 +91,25 @@ class SettingsCommonRecyclerViewAdapter(
         if (holder is CommonTextViewHolder) {
             if (item is SettingsActionItem) {
                 holder.configure(item.name)
+            } else if (item is SettingsUnknownTextItem) {
+                holder.configure(item.name)
+            } else if (item is SettingsSwitchItem) {
+                val on = dataSource?.commonSettingSwitchState(item.key) ?: false
+                holder.title.text = item.name
+                holder.accessory.visibility = if (on) View.VISIBLE else View.INVISIBLE
             }
             return
         }
-        if (holder is PreferenceSwitchViewHolder && item is SettingsPreferenceSwitchItem) {
-            holder.configure(item.name, listener?.commonSettingPreferenceSwitchState(item.key) ?: false) { checked ->
-                listener?.onCommonSettingPreferenceSwitchStateChanged(item.key, checked)
+        if (holder is SwitchViewHolder) {
+            if (item is SettingsPreferenceSwitchItem) {
+                holder.configure(item.name, dataSource?.commonSettingPreferenceSwitchState(item.key) ?: false) { checked ->
+                    listener?.onCommonSettingPreferenceSwitchStateChanged(item.key, checked)
+                }
+            } else if (item is SettingsSwitchItem) {
+                val on = dataSource?.commonSettingSwitchState(item.key) ?: false
+                holder.configure(item.name, on) { newValue ->
+                    listener?.onCommonSettingSwitchStateChanged(item.key, newValue)
+                }
             }
             return
         }
@@ -92,12 +121,18 @@ class SettingsCommonRecyclerViewAdapter(
             val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_slider_item, parent,false)
             return SliderViewHolder(view)
         }
-        if (viewType == ITEM_ACTION) {
+        if (viewType == ITEM_ACTION || viewType == ITEM_UNKNOWN_TEXT || viewType == ITEM_CHECKMARK) {
             return CommonTextViewHolder(parent)
         }
-        if (viewType == ITEM_PREF_SWITCH) {
+        if (viewType == ITEM_PREF_SWITCH || viewType == ITEM_SWITCH) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_switch_item, parent,false)
-            return PreferenceSwitchViewHolder(view)
+            return SwitchViewHolder(view)
+        }
+        if (viewType == ITEM_CHECKMARK) {
+            val holder = CommonTextViewHolder(parent)
+            holder.accessory.setImageResource(R.drawable.ic_check)
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null)))
+            return holder
         }
         return super.createVH(parent, viewType)
     }
@@ -128,7 +163,7 @@ class SettingsCommonRecyclerViewAdapter(
         }
     }
 
-    inner class PreferenceSwitchViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+    inner class SwitchViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.title
         val switch: Switch = view.accessory
 
@@ -145,5 +180,8 @@ class SettingsCommonRecyclerViewAdapter(
         const val ITEM_SLIDER           = 0
         const val ITEM_ACTION           = 1
         const val ITEM_PREF_SWITCH      = 2
+        const val ITEM_SWITCH           = 3
+        const val ITEM_CHECKMARK        = 4
+        const val ITEM_UNKNOWN_TEXT     = 5
     }
 }
