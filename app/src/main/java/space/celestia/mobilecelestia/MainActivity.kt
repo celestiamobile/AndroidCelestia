@@ -69,6 +69,7 @@ import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.IOException
+import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -1159,8 +1160,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val frag = supportFragmentManager.findFragmentById(containerID)
             val view = findViewById<View>(containerID)
             if (view == null || frag == null) {
-                if (frag is Cleanable)
-                    frag.cleanUp()
+                if (frag != null) {
+                    if (frag is Cleanable) frag.cleanUp()
+                    supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
+                }
+
+                if (view != null)
+                    view.visibility = View.INVISIBLE
 
                 emitter.onComplete()
                 return@create
@@ -1292,8 +1298,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
+        val ref = WeakReference(fragment)
         hideOverlay(true) {
-            showEndFragmentDirect(fragment, containerID)
+            ref.get()?.let {
+                showEndFragmentDirect(it, containerID)
+            }
         }
     }
 
@@ -1317,8 +1326,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showBottomFragment(fragment: Fragment) {
+        val ref = WeakReference(fragment)
         hideOverlay(true) {
-            showBottomFragmentDirect(fragment)
+            ref.get()?.let {
+                showBottomFragmentDirect(it)
+            }
         }
     }
 
