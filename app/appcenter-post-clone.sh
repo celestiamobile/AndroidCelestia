@@ -6,7 +6,7 @@ ln -s app/src/main/cpp/dependency/android app/src/main/cpp/libs
 cd ..
 
 # Clone the Celestia repo (modified)
-git clone https://github.com/eyvallah/Celestia
+git clone https://github.com/${GITHUB_USERNAME}/Celestia
 cd Celestia
 git submodule update --init
 cd ..
