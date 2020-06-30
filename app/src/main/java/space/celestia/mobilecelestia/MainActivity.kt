@@ -70,6 +70,7 @@ import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.IOException
 import java.lang.ref.WeakReference
+import java.text.DateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -1001,8 +1002,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 reloadSettings()
             }
             CurrentTimeAction.PickDate -> {
-                val format = "yyyy/MM/dd HH:mm:ss"
-                showDateInput(CelestiaString("Please enter the time in \"$format\" format.", ""), format) { date ->
+                val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(),"yyyyMMddHHmmss")
+                showDateInput(CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format) { date ->
                     if (date == null) {
                         showAlert(CelestiaString("Unrecognized time string.", ""))
                         return@showDateInput

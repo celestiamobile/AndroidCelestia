@@ -43,8 +43,8 @@ class EventFinderInputFragment : Fragment() {
         recView.layoutManager = LinearLayoutManager(context)
         adapter = EventFinderInputRecyclerViewAdapter({ isStartTime ->
             val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
-            val format = "yyyy/MM/dd HH:mm:ss"
-            ac.showDateInput(CelestiaString("Please enter the time in \"$format\" format.", ""), format) { date ->
+            val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(),"yyyyMMddHHmmss")
+            ac.showDateInput(CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format) { date ->
                 if (date == null) {
                     ac.showAlert(CelestiaString("Unrecognized time string.", ""))
                     return@showDateInput
