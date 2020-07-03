@@ -17,7 +17,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_multiline_list_item.view.*
+import kotlinx.android.synthetic.main.common_multiline_text_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
@@ -100,7 +100,7 @@ class AboutRecyclerViewAdapter(
             return CommonTextViewHolder(parent)
         }
         if (viewType == DETAIL_ITEM) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_multiline_list_item, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_multiline_text_item, parent, false)
             return MultilineViewHolder(view)
         }
         return super.createVH(parent, viewType)

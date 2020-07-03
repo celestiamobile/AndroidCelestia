@@ -16,7 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_camera_control_item.view.*
+import kotlinx.android.synthetic.main.common_text_list_with_stepper_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -80,7 +80,7 @@ class CameraControlItemRecyclerViewAdapter(
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == STEPPER) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_camera_control_item, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_stepper_item, parent, false)
             return StepperViewHolder(view)
         }
         if (viewType == TEXT) {

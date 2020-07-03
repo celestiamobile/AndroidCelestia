@@ -216,6 +216,9 @@ class SettingsSliderItem(
 
     override val name: String
         get() = CelestiaString(internalKey.displayName, "")
+
+    override val clickable: Boolean
+        get() = false
 }
 
 class SettingsPreferenceSwitchItem(
@@ -224,6 +227,9 @@ class SettingsPreferenceSwitchItem(
 ) : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString(rawDisplayName, "")
+
+    override val clickable: Boolean
+        get() = false
 }
 
 class SettingsSwitchItem(
@@ -240,6 +246,9 @@ class SettingsSwitchItem(
         get() = displayName
 
     constructor(key: SettingsKey, representation: Representation = Representation.Checkmark) : this(key.valueString, key.displayName, false, representation)
+
+    override val clickable: Boolean
+        get() = false
 }
 
 private val staticDisplayItems: List<SettingsItem> = listOf(

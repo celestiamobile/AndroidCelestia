@@ -14,8 +14,6 @@
     android:layout_width="match_parent"
     android:layout_height="88dp"
     android:orientation="vertical"
-    android:clickable="false"
-    android:focusable="false"
     style="@style/ListItemGrouped">
 
     <LinearLayout
