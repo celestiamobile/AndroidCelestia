@@ -880,9 +880,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onFavoriteItemSelected(item: FavoriteBaseItem) {
         if (item.isLeaf) {
             if (item is FavoriteScriptItem) {
-                core.runScript(item.script.filename)
+                scriptOrURLPath = item.script.filename
+                runScriptOrOpenURLIfNeeded()
             } else if (item is FavoriteBookmarkItem) {
-                core.goToURL(item.bookmark.url)
+                scriptOrURLPath = item.bookmark.url
+                runScriptOrOpenURLIfNeeded()
             }
         } else {
             val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
