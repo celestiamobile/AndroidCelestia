@@ -48,6 +48,7 @@ fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Un
     val customView = LayoutInflater.from(this).inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
 
     val editText = customView.findViewById<EditText>(R.id.input)
+    editText.hint = formatter.format(Date())
     editText.inputType = InputType.TYPE_CLASS_TEXT
     builder.setView(customView)
 
