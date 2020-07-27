@@ -47,8 +47,13 @@ private var substitutionList = mapOf(
 )
 
 private fun getLocalizedLanguageName(locale: String): String {
-    val locale = Locale.forLanguageTag(substitutionList[locale] ?: locale)
-    return locale.getDisplayName(locale)
+    val lang = substitutionList[locale] ?: locale
+    val loc1 = Locale.forLanguageTag(lang)
+    val name1 = loc1.getDisplayName(loc1)
+    if (!name1.isEmpty())
+        return name1
+    val loc2 = getLocale(lang)
+    return loc2.getDisplayName(loc2)
 }
 
 class SpecificLanguageItem(val language: String) : LanguageItem {
