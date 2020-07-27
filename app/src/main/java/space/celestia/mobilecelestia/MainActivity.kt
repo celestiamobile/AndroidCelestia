@@ -68,6 +68,7 @@ import space.celestia.mobilecelestia.share.commonHandler
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
+import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.text.DateFormat
@@ -96,13 +97,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsCommonFragment.Listener,
     SettingsCommonFragment.DataSource,
     EventFinderInputFragment.Listener,
-    EventFinderResultFragment.Listener {
+    EventFinderResultFragment.Listener,
+    SettingsLanguageFragment.Listener,
+    SettingsLanguageFragment.DataSource {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
     private val celestiaParentPath by lazy { this.filesDir.absolutePath }
     private var addonPath: String? = null
     private var extraScriptPath: String? = null
+    private var languageOverride: String? = null
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -431,6 +435,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
             customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
 
+            val localeDirectory = File("${celestiaDataDirPath}/locale")
+            if (localeDirectory.exists()) {
+                val languageCodes = ArrayList((localeDirectory.listFiles { file ->
+                    return@listFiles file.isDirectory
+                } ?: arrayOf()).map { it.name })
+                availableLanguageCodes = languageCodes.sorted()
+            }
+
+            languageOverride = preferenceManager[PreferenceManager.PredefinedKey.Language]
+
             it.onComplete()
         }
     }
@@ -665,7 +679,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             celestiaConfigFilePath,
             addonPath,
             preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true",
-            preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true"
+            preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true",
+            languageOverride
         )
         supportFragmentManager
             .beginTransaction()
@@ -1058,6 +1073,26 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun onSetOverrideLanguage(language: String?) {
+        preferenceManager[PreferenceManager.PredefinedKey.Language] = language
+        reloadSettings()
+    }
+
+    override fun currentLanguage(): String {
+        val lang = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
+        if (lang == "LANGUAGE")
+            return "en"
+        return lang
+    }
+
+    override fun currentOverrideLanguage(): String? {
+        return preferenceManager[PreferenceManager.PredefinedKey.Language]
+    }
+
+    override fun availableLanguages(): List<String> {
+        return availableLanguageCodes
+    }
+
     override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
         val body = core.simulation.findObject(objectName).`object` as? CelestiaBody
         if (body == null) {
@@ -1389,6 +1424,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var availableInstalledFonts: Map<String, Pair<FontHelper.FontCompat, FontHelper.FontCompat>> = mapOf()
         var defaultInstalledFont: Pair<FontHelper.FontCompat, FontHelper.FontCompat>? = null
+
+        private var availableLanguageCodes: List<String> = listOf()
 
         init {
             System.loadLibrary("nativecrashhandler")

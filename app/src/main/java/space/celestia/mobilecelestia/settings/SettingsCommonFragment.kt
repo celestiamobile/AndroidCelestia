@@ -70,6 +70,7 @@ class SettingsCommonFragment : SettingsBaseFragment() {
     override fun reload() {
         super.reload()
 
+        adapter?.reload()
         adapter?.notifyDataSetChanged()
     }
 

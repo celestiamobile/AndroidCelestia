@@ -62,6 +62,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/memorypool.h
         ${CELESTIA_SRC_DIR}/celutil/reshandle.h
         ${CELESTIA_SRC_DIR}/celutil/resmanager.h
+        ${CELESTIA_SRC_DIR}/celutil/strnatcmp.h
+        ${CELESTIA_SRC_DIR}/celutil/strnatcmp.cpp
         ${CELESTIA_SRC_DIR}/celutil/timer.cpp
         ${CELESTIA_SRC_DIR}/celutil/timer.h
         ${CELESTIA_SRC_DIR}/celutil/utf8.cpp

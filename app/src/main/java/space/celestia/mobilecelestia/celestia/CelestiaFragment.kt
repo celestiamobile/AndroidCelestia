@@ -57,6 +57,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
     private var addonToLoad: String? = null
     private var enableMultisample = false
     private var enableFullResolution = false
+    private var languageOverride: String? = null
     private val core by lazy { CelestiaAppCore.shared() }
 
     private val scaleFactor: Float
@@ -85,6 +86,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
             addonToLoad = it.getString(ARG_ADDON_DIR)
             enableMultisample = it.getBoolean(ARG_MULTI_SAMPLE)
             enableFullResolution = it.getBoolean(ARG_FULL_RESOLUTION)
+            languageOverride = it.getString(ARG_LANG_OVERRIDE)
         }
     }
 
@@ -203,7 +205,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         CelestiaAppCore.chdir(path)
 
         // Set up locale
-        CelestiaAppCore.setLocaleDirectoryPath("$path/locale", Locale.getDefault().toString())
+        CelestiaAppCore.setLocaleDirectoryPath("$path/locale", languageOverride ?: Locale.getDefault().toString())
 
         val extraDirs = if (addon != null) arrayOf(addon) else null
 
@@ -415,16 +417,18 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         private const val ARG_ADDON_DIR = "addon"
         private const val ARG_MULTI_SAMPLE = "multisample"
         private const val ARG_FULL_RESOLUTION = "fullresolution"
+        private const val ARG_LANG_OVERRIDE = "lang"
 
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean) =
+        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, languageOverride: String?) =
             CelestiaFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)
                     putString(ARG_CFG_FILE, cfg)
                     putBoolean(ARG_MULTI_SAMPLE, enableMultisample)
                     putBoolean(ARG_FULL_RESOLUTION, enableFullResolution)
+                    putString(ARG_LANG_OVERRIDE, languageOverride)
                     if (addon != null) {
                         putString(ARG_ADDON_DIR, addon)
                     }

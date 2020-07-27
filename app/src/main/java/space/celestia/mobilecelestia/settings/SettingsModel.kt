@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.settings
 
+import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.TitledFragment
@@ -232,6 +233,15 @@ class SettingsPreferenceSwitchItem(
         get() = false
 }
 
+interface SettingsDynamicListItem: SettingsItem {
+    fun createItems(): List<SettingsItem>
+}
+
+class SettingsLanguageItem() : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString("Language", "")
+}
+
 class SettingsSwitchItem(
     val key: String,
     private val displayName: String,
@@ -398,6 +408,7 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         SettingsSingleSelectionItem.Selection("Verbose", 2)
     )),
 
+    SettingsLanguageItem(),
     SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(
         SettingsCommonItem.Section(listOf(
             SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0),
