@@ -53,11 +53,11 @@ enum class ToolbarAction : Serializable {
     companion object {
         val persistentAction: List<List<ToolbarAction>>
             get() = listOf(
+                listOf(Setting),
                 listOf(Share, Search, Home),
                 listOf(Camera, Time, Script),
                 listOf(Browse, Favorite, Event),
-                listOf(Help),
-                listOf(Setting)
+                listOf(Help)
             )
     }
 }
