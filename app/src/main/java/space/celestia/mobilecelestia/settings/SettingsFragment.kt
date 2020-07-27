@@ -83,6 +83,9 @@ class SettingsFragment : PoppableFragment() {
             is SettingsDataLocationItem -> {
                 push(SettingsDataLocationFragment.newInstance(), item.name)
             }
+            is SettingsLanguageItem -> {
+                push(SettingsLanguageFragment.newInstance(), item.name)
+            }
             else -> {
                 throw RuntimeException("SettingsFragment cannot handle item $item")
             }

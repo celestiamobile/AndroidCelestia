@@ -30,23 +30,16 @@ import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 
-fun SettingsCommonItem.createSections(): List<CommonSectionV2> {
-    val results = ArrayList<CommonSectionV2>()
-    for (section in sections) {
-        val sectionResults = ArrayList<RecyclerViewItem>()
-        for (row in section.rows) {
-            sectionResults.add(row)
-        }
-        results.add(CommonSectionV2(sectionResults, section.header, section.footer))
-    }
-    return results
-}
-
 class SettingsCommonRecyclerViewAdapter(
     private val item: SettingsCommonItem,
     private val listener: SettingsCommonFragment.Listener?,
     private val dataSource: SettingsCommonFragment.DataSource?
-) : SeparatorHeaderRecyclerViewAdapter(item.createSections()) {
+) : SeparatorHeaderRecyclerViewAdapter(listOf()) {
+
+    init {
+        reload()
+    }
+
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is SettingsSliderItem)
             return ITEM_SLIDER
@@ -173,6 +166,26 @@ class SettingsCommonRecyclerViewAdapter(
                 stateChangeCallback(checked)
             }
         }
+    }
+
+    fun reload() {
+        val results = ArrayList<CommonSectionV2>()
+        for (section in item.sections) {
+            val sectionResults = ArrayList<RecyclerViewItem>()
+            if (section.rows.size == 1 && section.rows[0] is SettingsDynamicListItem) {
+                val item = section.rows[0] as SettingsDynamicListItem
+                results.add(CommonSectionV2(item.createItems(), section.header, section.footer))
+            } else {
+                for (row in section.rows) {
+                    if (row is SettingsDynamicListItem) {
+                        throw RuntimeException("SettingsDynamicListItem should not be embedded in a multi-row section")
+                    }
+                    sectionResults.add(row)
+                }
+                results.add(CommonSectionV2(sectionResults, section.header, section.footer))
+            }
+        }
+        updateSections(results)
     }
 
     private companion object {
