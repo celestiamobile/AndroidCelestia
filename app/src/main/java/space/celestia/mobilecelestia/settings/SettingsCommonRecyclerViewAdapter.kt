@@ -185,7 +185,7 @@ class SettingsCommonRecyclerViewAdapter(
                 results.add(CommonSectionV2(sectionResults, section.header, section.footer))
             }
         }
-        updateSections(results)
+        updateSectionsWithHeader(results)
     }
 
     private companion object {
