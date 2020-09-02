@@ -1402,8 +1402,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "10"
-        // 10: 1.0 RC
+        private const val CURRENT_DATA_VERSION = "11"
+        // 11: 1.0.1
+        // 10: 1.0
         // < 10: 1.0 Beta X
 
         private const val CELESTIA_DATA_FOLDER_NAME = "CelestiaResources"
