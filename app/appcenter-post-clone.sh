@@ -15,7 +15,9 @@ cd ..
 brew install gettext
 
 # Install appcenter cli to upload symbols
-brew install node
-brew unlink node@6
-brew link --overwrite node
+set -ex
+NODE_VERSION="14.9.0"
+curl "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}.pkg" > "$HOME/Downloads/node-installer.pkg"
+sudo installer -store -pkg "$HOME/Downloads/node-installer.pkg" -target "/"
+
 npm install -g appcenter-cli
