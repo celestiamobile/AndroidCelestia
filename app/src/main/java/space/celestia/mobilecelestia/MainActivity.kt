@@ -860,6 +860,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         CelestiaView.callOnRenderThread { core.charEnter(CelestiaAction.RunDemo.value) }
     }
 
+    override fun onHelpURLSelected(url: String) {
+        openURL(url)
+    }
+
     override fun addFavoriteItem(item: MutableFavoriteBaseItem) {
         val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
         if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
@@ -1036,15 +1040,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onAboutActionSelected(action: AboutAction) {
-        when (action) {
-            AboutAction.VisitOfficialWebsite -> {
-                openURL("https://celestia.space")
-            }
-            AboutAction.VisitOfficialForum -> {
-                openURL("https://celestia.space/forum")
-            }
-        }
+    override fun onAboutURLSelected(url: String) {
+        openURL(url)
     }
 
     override fun onDataLocationNeedReset() {

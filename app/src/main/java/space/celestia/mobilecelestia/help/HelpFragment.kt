@@ -35,6 +35,10 @@ private val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
     DescriptionItem(
         CelestiaString("In camera mode, drag to move field of view.\n\nPinch to zoom in/out field of view.", ""), R.drawable.tutorial_mode_camera)
 ) }
+private val staticHelpURLItems: List<URLItem> by lazy { listOf(
+    URLItem(CelestiaString("Use Add-ons and Scripts", ""), "https://github.com/levinli303/Celestia/wiki/Use-Addons-and-Scripts"),
+    URLItem(CelestiaString("Scripts and URLs", ""), "https://github.com/levinli303/Celestia/wiki/Scripts-and-URLs")
+) }
 private val staticHelpActionItems: List<ActionItem> by lazy { listOf( ActionItem(CelestiaString("Run Demo", ""), HelpAction.RunDemo) ) }
 
 class HelpFragment : Fragment() {
@@ -52,7 +56,7 @@ class HelpFragment : Fragment() {
         // Set the adapter
         with(view.findViewById<RecyclerView>(R.id.list)) {
             layoutManager = LinearLayoutManager(context)
-            adapter = HelpRecyclerViewAdapter(listOf(staticHelpDescriptionItems, staticHelpActionItems), listener)
+            adapter = HelpRecyclerViewAdapter(listOf(staticHelpDescriptionItems, staticHelpURLItems, staticHelpActionItems), listener)
         }
         return view
     }
@@ -73,6 +77,7 @@ class HelpFragment : Fragment() {
 
     interface Listener {
         fun onHelpActionSelected(action: HelpAction)
+        fun onHelpURLSelected(url: String)
     }
 
     companion object {

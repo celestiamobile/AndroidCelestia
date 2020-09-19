@@ -25,10 +25,6 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.versionCode
 import space.celestia.mobilecelestia.utils.versionName
 
-enum class AboutAction {
-    VisitOfficialWebsite, VisitOfficialForum;
-}
-
 class AboutFragment : TitledFragment() {
     private var listener: Listener? = null
 
@@ -74,8 +70,15 @@ class AboutFragment : TitledFragment() {
         // Links
         array.add(
             listOf(
-                ActionItem(AboutAction.VisitOfficialWebsite),
-                ActionItem(AboutAction.VisitOfficialForum)
+                ActionItem(CelestiaString("Development", ""),"https://github.com/levinli303/Celestia/wiki/Development"),
+                ActionItem(CelestiaString("Third Party Dependencies", ""), "https://github.com/levinli303/Celestia/wiki/Third-Party-Dependencies")
+            )
+        )
+
+        array.add(
+            listOf(
+                ActionItem(CelestiaString("Official Website", ""), "https://celestia.space"),
+                ActionItem(CelestiaString("Support Forum", ""), "https://celestia.space/forum")
             )
         )
 
@@ -109,7 +112,7 @@ class AboutFragment : TitledFragment() {
     }
 
     interface Listener {
-        fun onAboutActionSelected(action: AboutAction)
+        fun onAboutURLSelected(url: String)
     }
 
     companion object {

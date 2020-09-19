@@ -29,8 +29,10 @@ open class HelpItem : RecyclerViewItem {
     override val clickable: Boolean
         get() = false
 }
+
 class DescriptionItem(val description: String, val imageResourceID: Int) : HelpItem()
 class ActionItem(val title: String, val action: HelpAction) : HelpItem()
+class URLItem(val title: String, val url: String) : HelpItem()
 
 class HelpRecyclerViewAdapter(
     values: List<List<HelpItem>>,
@@ -41,14 +43,15 @@ class HelpRecyclerViewAdapter(
 ) }) {
 
     override fun itemViewType(item: RecyclerViewItem): Int {
-        if (item is ActionItem) {
+        if (item is ActionItem)
             return ACTION
-        }
+        if (item is URLItem)
+            return URL
         return DESCRIPTION
     }
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewType == ACTION) {
+        if (viewType == ACTION || viewType == URL) {
             val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.fragment_help_action_item, parent, false)
             return ActionViewHolder(view)
@@ -67,6 +70,11 @@ class HelpRecyclerViewAdapter(
         } else if (holder is DescriptionViewHolder && item is DescriptionItem) {
             holder.descriptionView.text = item.description
             holder.imageView.setImageResource(item.imageResourceID)
+        } else if (holder is ActionViewHolder && item is URLItem) {
+            holder.button.text = item.title
+            holder.buttonContainer.setOnClickListener {
+                listener?.onHelpURLSelected(item.url)
+            }
         }
     }
 
@@ -83,5 +91,6 @@ class HelpRecyclerViewAdapter(
     private companion object {
         const val DESCRIPTION   = 0
         const val ACTION        = 1
+        const val URL           = 2
     }
 }

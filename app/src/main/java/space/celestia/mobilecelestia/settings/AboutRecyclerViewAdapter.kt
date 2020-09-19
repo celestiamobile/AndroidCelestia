@@ -34,22 +34,7 @@ class VersionItem(val versionName: String) : AboutItem {
         get() = false
 }
 
-val AboutAction.title: String
-    get() {
-        return when (this) {
-            AboutAction.VisitOfficialWebsite -> {
-                CelestiaString("Official Website", "")
-            }
-            AboutAction.VisitOfficialForum -> {
-                CelestiaString("Support Forum", "")
-            }
-        }
-    }
-
-class ActionItem(val action: AboutAction) : AboutItem {
-    val title: String
-        get() = action.title
-
+class ActionItem(val title: String, val url: String) : AboutItem {
     override val clickable: Boolean
         get() = true
 }
@@ -71,7 +56,7 @@ class AboutRecyclerViewAdapter(
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is ActionItem) {
-            listener?.onAboutActionSelected(item.action)
+            listener?.onAboutURLSelected(item.url)
         }
     }
 
