@@ -220,6 +220,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/curveplot.cpp
         ${CELESTIA_SRC_DIR}/celengine/curveplot.h
         ${CELESTIA_SRC_DIR}/celengine/dds.cpp
+        ${CELESTIA_SRC_DIR}/celengine/dds_decompress.c
+        ${CELESTIA_SRC_DIR}/celengine/dds_decompress.h
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.cpp
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
         ${CELESTIA_SRC_DIR}/celengine/dispmap.cpp
@@ -327,6 +329,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/starname.h
         ${CELESTIA_SRC_DIR}/celengine/staroctree.cpp
         ${CELESTIA_SRC_DIR}/celengine/staroctree.h
+        ${CELESTIA_SRC_DIR}/celengine/stb_dxt_104.h
         ${CELESTIA_SRC_DIR}/celengine/stellarclass.cpp
         ${CELESTIA_SRC_DIR}/celengine/stellarclass.h
         ${CELESTIA_SRC_DIR}/celengine/surface.h
