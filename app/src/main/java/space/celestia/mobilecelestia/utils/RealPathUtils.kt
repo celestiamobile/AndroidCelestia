@@ -18,8 +18,11 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import space.celestia.mobilecelestia.BuildConfig
 import java.io.File
+import java.io.IOException
+
 
 object RealPathUtils {
     fun getRealPath(
@@ -62,11 +65,37 @@ object RealPathUtils {
                             return getExternalStorageDirectory(context) + "/Download/" + fileName
                         }
                         val id = DocumentsContract.getDocumentId(uri)
-                        val contentUri = ContentUris.withAppendedId(
-                            Uri.parse("content://downloads/public_downloads"),
-                            java.lang.Long.valueOf(id)
+
+                        if (id != null && id.startsWith("raw:"))
+                            return id.substring(4)
+
+                        val contentUriPrefixesToTry = arrayOf(
+                            "content://downloads/public_downloads",
+                            "content://downloads/my_downloads",
+                            "content://downloads/all_downloads"
                         )
-                        return getDataColumn(context, contentUri, null, null)
+                        for (contentUriPrefix in contentUriPrefixesToTry) {
+                            val contentUri = ContentUris.withAppendedId(
+                                Uri.parse(contentUriPrefix), java.lang.Long.valueOf(
+                                    id
+                                )
+                            )
+                            val path = getDataColumn(context, contentUri, null, null)
+                            if (path != null)
+                                return path
+                        }
+                        // path could not be retrieved using ContentResolver, therefore copy file to accessible cache using streams
+                        val destinationFile = generateFileName(getDocumentCacheDir(context), getFileName(context, uri))
+                        if (destinationFile != null) {
+                            val path = destinationFile.absolutePath
+                            try {
+                                FileUtils.copyUri(context, uri, path)
+                            } catch (exception: IOException) {
+                                return null
+                            }
+                            return path
+                        }
+                        return null
                     }
                     isMediaDocument(uri) -> {
                         val docId = DocumentsContract.getDocumentId(uri)
@@ -192,5 +221,62 @@ object RealPathUtils {
      */
     private fun isGooglePhotosUri(uri: Uri): Boolean {
         return "com.google.android.apps.photos.content" == uri.authority
+    }
+
+    private fun getDocumentCacheDir(context: Context): File {
+        val dir = File(context.cacheDir, "documents")
+        if (!dir.exists())
+            dir.mkdir();
+        return dir
+    }
+
+    private fun generateFileName(directory: File, name: String?): File? {
+        if (name == null)
+            return null
+
+        var file = File(directory, name)
+        if (file.exists()) {
+            var fileName = name
+            var extension = ""
+            val dotIndex = name.lastIndexOf('.')
+            if (dotIndex > 0) {
+                fileName = name.substring(0, dotIndex)
+                extension = name.substring(dotIndex)
+            }
+            var index = 0
+            while (file.exists()) {
+                index++
+                val newName = "$fileName($index)$extension"
+                file = File(directory, newName)
+            }
+        }
+
+        try {
+            if (!file.createNewFile()) {
+                return null
+            }
+        } catch (e: IOException) {
+            return null
+        }
+        return file
+    }
+
+    private fun getFileName(context: Context, uri: Uri): String? {
+        val mimeType = context.contentResolver.getType(uri)
+        var filename: String? = null
+        if (mimeType == null) {
+            val uriString = uri.toString()
+            val index = uriString.lastIndexOf("/")
+            filename = uriString.substring(index + 1)
+        } else {
+            val returnCursor = context.contentResolver.query(uri, null, null, null, null)
+            if (returnCursor != null) {
+                val nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                returnCursor.moveToFirst()
+                filename = returnCursor.getString(nameIndex)
+                returnCursor.close()
+            }
+        }
+        return filename
     }
 }
