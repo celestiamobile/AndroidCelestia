@@ -19,10 +19,7 @@ import android.graphics.RectF
 import android.opengl.GLSurfaceView
 import android.os.Build
 import android.util.Log
-import android.view.Choreographer
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.ScaleGestureDetector
+import android.view.*
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import java.util.*
 import kotlin.collections.HashMap
@@ -317,6 +314,32 @@ class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(con
             core.mouseButtonUp(button, lp, 0)
         }
         lastPoint = null
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (event == null || !isReady) return false
+        var modifiers = 0
+        if (event.isShiftPressed)
+            modifiers = modifiers.or(CelestiaAppCore.SHIFT_KEY)
+        if (event.isCtrlPressed)
+            modifiers = modifiers.or(CelestiaAppCore.CONTROL_KEY)
+        callOnRenderThread {
+            core.keyDown(event.unicodeChar, keyCode, modifiers)
+        }
+        return true
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (event == null || !isReady) return false
+        var modifiers = 0
+        if (event.isShiftPressed)
+            modifiers = modifiers.or(CelestiaAppCore.SHIFT_KEY)
+        if (event.isCtrlPressed)
+            modifiers = modifiers.or(CelestiaAppCore.CONTROL_KEY)
+        callOnRenderThread {
+            core.keyUp(event.unicodeChar, keyCode, modifiers)
+        }
+        return true
     }
 
     init {

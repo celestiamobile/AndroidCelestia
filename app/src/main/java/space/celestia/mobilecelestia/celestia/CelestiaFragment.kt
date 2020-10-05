@@ -191,6 +191,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         val activity = this.activity ?: return
 
         glView = CelestiaView(activity, scaleFactor)
+        glView?.isFocusable = true
         glView?.let {
             glViewContainer?.addView(it, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
             it.preserveEGLContextOnPause = true

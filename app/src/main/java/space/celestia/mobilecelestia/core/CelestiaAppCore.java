@@ -118,6 +118,14 @@ public class CelestiaAppCore {
         c_keyDown(pointer, input);
     }
 
+    public void keyUp(int input, int key, int modifiers) {
+        c_keyUpWithModifiers(pointer, input, key, modifiers);
+    }
+
+    public void keyDown(int input, int key, int modifers) {
+        c_keyDownWithModifers(pointer, input, key, modifers);
+    }
+
     public void charEnter(int input) {
         c_charEnter(pointer, input);
     }
@@ -177,6 +185,8 @@ public class CelestiaAppCore {
     private static native void c_mouseButtonDown(long ptr, int buttons, float x, float y, int modifiers);
     private static native void c_mouseMove(long ptr, int buttons, float x, float y, int modifiers);
     private static native void c_mouseWheel(long ptr, float motion, int modifiers);
+    private static native void c_keyUpWithModifiers(long ptr, int input, int key, int modifiers);
+    private static native void c_keyDownWithModifers(long ptr, int input, int key, int modifiers);
     private static native void c_keyUp(long ptr, int input);
     private static native void c_keyDown(long ptr, int input);
     private static native void c_charEnter(long ptr, int input);

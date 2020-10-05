@@ -21,6 +21,8 @@
 #include <celutil/gettext.h>
 #include <celestia/url.h>
 
+#include <android/keycodes.h>
+
 jclass cacClz = nullptr;
 jfieldID cacPtrFieldID = nullptr;
 jclass csiClz = nullptr;
@@ -384,6 +386,54 @@ static int convert_modifier_to_celestia_modifier(jint buttons, jint modifiers)
     return cModifiers;
 }
 
+static int convert_key_code_to_celestia_key(int input, int key)
+{
+    int celestiaKey = 0;
+    if (key >= AKEYCODE_NUMPAD_0 && key <= AKEYCODE_NUMPAD_9)
+        celestiaKey = CelestiaCore::Key_NumPad0 + (key - AKEYCODE_NUMPAD_0);
+    else if (key >= AKEYCODE_F1 && key <= AKEYCODE_F12)
+        celestiaKey = CelestiaCore::Key_F1 + (key - AKEYCODE_F1);
+    else
+        switch(key)
+        {
+            case AKEYCODE_DPAD_UP:
+                celestiaKey = CelestiaCore::Key_Up;
+                break;
+            case AKEYCODE_DPAD_DOWN:
+                celestiaKey = CelestiaCore::Key_Down;
+                break;
+            case AKEYCODE_DPAD_LEFT:
+                celestiaKey = CelestiaCore::Key_Left;
+                break;
+            case AKEYCODE_DPAD_RIGHT:
+                celestiaKey = CelestiaCore::Key_Right;
+                break;
+            case AKEYCODE_PAGE_UP:
+                celestiaKey = CelestiaCore::Key_PageUp;
+                break;
+            case AKEYCODE_PAGE_DOWN:
+                celestiaKey = CelestiaCore::Key_PageDown;
+                break;
+            case AKEYCODE_MOVE_HOME:
+                celestiaKey = CelestiaCore::Key_Home;
+                break;
+            case AKEYCODE_MOVE_END:
+                celestiaKey = CelestiaCore::Key_End;
+                break;
+            case AKEYCODE_INSERT:
+                celestiaKey = CelestiaCore::Key_Insert;
+                break;
+            default:
+                if ((input < 128) && (input > 33))
+                {
+                    celestiaKey = (int) (input & 0x00FF);
+                }
+                break;
+        }
+
+    return celestiaKey;
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseButtonUp(JNIEnv *env, jclass clazz,
@@ -423,6 +473,29 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseWheel(JNIEnv *en
                                                                       jint modifiers) {
     auto core = (CelestiaCore *)ptr;
     core->mouseWheel(motion, convert_modifier_to_celestia_modifier(0, modifiers));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1keyUpWithModifiers(JNIEnv *env,
+                                                                              jclass clazz,
+                                                                              jlong ptr, jint input,
+                                                                              jint key, jint modifiers) {
+    auto core = (CelestiaCore *)ptr;
+    core->keyUp(convert_key_code_to_celestia_key(input, key), convert_modifier_to_celestia_modifier(0, modifiers));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1keyDownWithModifers(JNIEnv *env,
+                                                                               jclass clazz,
+                                                                               jlong ptr, jint input,
+                                                                               jint key, jint modifiers) {
+    auto core = (CelestiaCore *)ptr;
+    int cModifiers = convert_modifier_to_celestia_modifier(0, modifiers);
+    if (input < CelestiaCore::KeyCount && (input < AKEYCODE_NUMPAD_0 || input > AKEYCODE_NUMPAD_9))
+        core->charEntered(input, cModifiers);
+    core->keyDown(convert_key_code_to_celestia_key(input, key), cModifiers);
 }
 
 extern "C"
