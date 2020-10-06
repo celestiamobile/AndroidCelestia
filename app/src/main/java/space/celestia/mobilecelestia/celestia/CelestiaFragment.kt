@@ -172,18 +172,14 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
             core.setSafeAreaInsets(cutout.safeInsets().scaleBy(scaleFactor))
         }
 
-        activity?.runOnUiThread {
-            val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-            val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
+        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+        val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
 
-            val controlView = view?.findViewById<FrameLayout>(currentControlViewID)
-            if (controlView != null) {
-                val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
-                if (params != null) {
-                    params.marginEnd = controlContainerTrailingMargin + safeInsetEnd
-                    controlView.layoutParams = params
-                }
-            }
+        val controlView = view?.findViewById<FrameLayout>(currentControlViewID) ?: return
+        val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
+        if (params != null) {
+            params.marginEnd = controlContainerTrailingMargin + safeInsetEnd
+            controlView.layoutParams = params
         }
     }
 
@@ -257,17 +253,16 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         core.start()
 
         glView?.isReady = true
-
         loadSuccess = true
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            view?.rootWindowInsets?.displayCutout?.let {
-                applyCutout(it)
-            }
-        }
 
         Log.d(TAG, "Ready to display")
         AppStatusReporter.shared().celestiaLoadResult(true)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            activity?.runOnUiThread {
+                view?.rootWindowInsets?.displayCutout?.let { applyCutout(it) }
+            }
+        }
     }
 
     // Render
