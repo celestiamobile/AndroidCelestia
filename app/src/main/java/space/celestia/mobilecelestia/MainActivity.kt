@@ -1233,17 +1233,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInfo(selection: CelestiaSelection) {
-        currentSelection = selection
-        showEndFragment(
-            InfoFragment.newInstance(
-                InfoDescriptionItem(
-                    core.simulation.universe.getNameForSelection(selection),
-                    core.getOverviewForSelection(selection),
-                    selection.webInfoURL != null,
-                    (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
-                )
-            )
-        )
+        CelestiaView.callOnRenderThread {
+            // Fetch info at the Celestia thread to avoid race condition
+            val overview = core.getOverviewForSelection(selection)
+            val name = core.simulation.universe.getNameForSelection(selection)
+            val hasWebInfo = selection.webInfoURL != null
+            val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
+            runOnUiThread {
+                currentSelection = selection
+                showEndFragment(InfoFragment.newInstance(
+                    InfoDescriptionItem(name, overview, hasWebInfo, hasAltSurface)
+                ))
+            }
+        }
     }
 
     private fun showSearch() {
