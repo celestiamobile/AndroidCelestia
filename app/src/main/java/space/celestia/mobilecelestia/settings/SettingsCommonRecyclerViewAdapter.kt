@@ -16,8 +16,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import android.widget.Switch
 import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -81,14 +81,18 @@ class SettingsCommonRecyclerViewAdapter(
             return
         }
         if (holder is CommonTextViewHolder) {
-            if (item is SettingsActionItem) {
-                holder.configure(item.name)
-            } else if (item is SettingsUnknownTextItem) {
-                holder.configure(item.name)
-            } else if (item is SettingsSwitchItem) {
-                val on = dataSource?.commonSettingSwitchState(item.key) ?: false
-                holder.title.text = item.name
-                holder.accessory.visibility = if (on) View.VISIBLE else View.INVISIBLE
+            when (item) {
+                is SettingsActionItem -> {
+                    holder.configure(item.name)
+                }
+                is SettingsUnknownTextItem -> {
+                    holder.configure(item.name)
+                }
+                is SettingsSwitchItem -> {
+                    val on = dataSource?.commonSettingSwitchState(item.key) ?: false
+                    holder.title.text = item.name
+                    holder.accessory.visibility = if (on) View.VISIBLE else View.INVISIBLE
+                }
             }
             return
         }
@@ -148,7 +152,7 @@ class SettingsCommonRecyclerViewAdapter(
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {}
 
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                    if (seekBar == null) return;
+                    if (seekBar == null) return
                     progressCallback(seekBar.progress.toDouble() / 100)
                 }
             })
@@ -157,7 +161,7 @@ class SettingsCommonRecyclerViewAdapter(
 
     inner class SwitchViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.title
-        val switch: Switch = view.accessory
+        val switch: SwitchCompat = view.accessory
 
         fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
             title.text = text

@@ -20,28 +20,24 @@ import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.push
 import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.control.EventFinderInputFragment
-import space.celestia.mobilecelestia.control.EventFinderResultFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class EventFinderContainerFragment : Fragment() {
-    private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
-        return view
+        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
         toolbar.title = CelestiaString("Eclipse Finder", "")
 
         replace(EventFinderInputFragment.newInstance(), R.id.fragment_container)
     }
 
-    public fun showResult() {
+    fun showResult() {
         push(EventFinderResultFragment.newInstance(), R.id.fragment_container)
     }
 

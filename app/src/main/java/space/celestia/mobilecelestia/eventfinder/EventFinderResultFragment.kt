@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.control
+package space.celestia.mobilecelestia.eventfinder
 
 import android.content.Context
 import android.os.Bundle
@@ -25,8 +25,6 @@ import space.celestia.mobilecelestia.core.CelestiaEclipseFinder
 class EventFinderResultFragment : Fragment() {
     private var listener: Listener? = null
 
-    private var adapter: EventFinderResultRecyclerViewAdapter? = null
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -35,7 +33,7 @@ class EventFinderResultFragment : Fragment() {
 
         val recView = view.findViewById<RecyclerView>(R.id.list)
         recView.layoutManager = LinearLayoutManager(context)
-        adapter = EventFinderResultRecyclerViewAdapter({ eclipse ->
+        val adapter = EventFinderResultRecyclerViewAdapter({ eclipse ->
             listener?.onEclipseChosen(eclipse)
         }, eclipses)
         recView.adapter = adapter

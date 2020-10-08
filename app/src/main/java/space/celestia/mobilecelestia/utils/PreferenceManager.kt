@@ -15,7 +15,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 
-class PreferenceManager(context: Context, private val name: String) {
+class PreferenceManager(context: Context, name: String) {
     private val sp: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
     private var et: SharedPreferences.Editor? = null
 

@@ -25,7 +25,7 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 
 class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
-    private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
+    private val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
     private var listener: Listener? = null
 
     private val currentFrag: FavoriteItemFragment

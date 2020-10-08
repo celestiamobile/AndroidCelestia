@@ -87,7 +87,7 @@ class ToolbarFragment : Fragment() {
 
         val allItems = ArrayList(existingActions)
         allItems.addAll(ToolbarAction.persistentAction)
-        val model = allItems.map { it.map { inner -> ToolbarActionItem(inner, resources.getIdentifier(inner.imageName, "drawable", activity!!.packageName)) } }
+        val model = allItems.map { it.map { inner -> ToolbarActionItem(inner, resources.getIdentifier(inner.imageName, "drawable", requireActivity().packageName)) } }
 
         // Set the adapter
         if (view is RecyclerView) {

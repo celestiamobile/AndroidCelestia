@@ -22,22 +22,22 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 
-fun CelestiaAction.imageName(): String? {
+fun CelestiaAction.imageID(): Int? {
     return when (this) {
         CelestiaAction.Faster -> {
-            "time_faster"
+            R.drawable.time_faster
         }
         CelestiaAction.Slower -> {
-            "time_slower"
+            R.drawable.time_slower
         }
         CelestiaAction.PlayPause -> {
-            "time_playpause"
+            R.drawable.time_playpause
         }
         CelestiaAction.CancelScript -> {
-            "time_stop"
+            R.drawable.time_stop
         }
         CelestiaAction.Reverse -> {
-            "time_reverse"
+            R.drawable.time_reverse
         }
         else -> {
             null
@@ -77,7 +77,7 @@ class BottomControlFragment : Fragment() {
                 items!!.map {
                     CelestiaActionItem(
                         it,
-                        resources.getIdentifier(it.imageName(), "drawable", activity!!.packageName)
+                        it.imageID() ?: 0
                     )
                 }, listener
             )

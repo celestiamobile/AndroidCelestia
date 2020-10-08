@@ -15,8 +15,8 @@ import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Switch
 import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -107,7 +107,7 @@ class SettingsMultiSelectionRecyclerViewAdapter(
 
     inner class MasterViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.title
-        val switch: Switch = view.accessory
+        val switch: SwitchCompat = view.accessory
     }
 
     private companion object {

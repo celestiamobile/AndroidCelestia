@@ -9,11 +9,12 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.control
+package space.celestia.mobilecelestia.eventfinder
 
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,7 +44,7 @@ class EventFinderInputFragment : Fragment() {
         recView.layoutManager = LinearLayoutManager(context)
         adapter = EventFinderInputRecyclerViewAdapter({ isStartTime ->
             val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
-            val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(),"yyyyMMddHHmmss")
+            val format = DateFormat.getBestDateTimePattern(Locale.getDefault(),"yyyyMMddHHmmss")
             ac.showDateInput(CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format) { date ->
                 if (date == null) {
                     ac.showAlert(CelestiaString("Unrecognized time string.", ""))
@@ -56,7 +57,7 @@ class EventFinderInputFragment : Fragment() {
         }, { current ->
             val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
             val objects = listOf("Earth", "Jupiter")
-            val currentIndex = Math.max(0, objects.indexOf(current))
+            val currentIndex = 0.coerceAtLeast(objects.indexOf(current))
             ac.showSingleSelection(CelestiaString("Please choose an object.", ""), objects.map { CelestiaAppCore.getLocalizedString(it, "celestia") }, currentIndex) { index ->
                 adapter?.objectName = objects[index]
                 adapter?.reload()
@@ -84,6 +85,7 @@ class EventFinderInputFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+        adapter = null
     }
 
     interface Listener {

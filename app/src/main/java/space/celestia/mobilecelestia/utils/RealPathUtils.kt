@@ -226,7 +226,7 @@ object RealPathUtils {
     private fun getDocumentCacheDir(context: Context): File {
         val dir = File(context.cacheDir, "documents")
         if (!dir.exists())
-            dir.mkdir();
+            dir.mkdir()
         return dir
     }
 

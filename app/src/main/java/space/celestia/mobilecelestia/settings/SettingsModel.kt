@@ -11,7 +11,6 @@
 
 package space.celestia.mobilecelestia.settings
 
-import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.TitledFragment
@@ -19,7 +18,7 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.io.Serializable
 
-val settingUnmarkAllID = "UnmarkAll"
+const val settingUnmarkAllID = "UnmarkAll"
 
 enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.Key, Serializable {
     // Boolean values
@@ -237,7 +236,7 @@ interface SettingsDynamicListItem: SettingsItem {
     fun createItems(): List<SettingsItem>
 }
 
-class SettingsLanguageItem() : SettingsItem, Serializable {
+class SettingsLanguageItem : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString("Language", "")
 }

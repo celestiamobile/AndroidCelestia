@@ -17,10 +17,9 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.opengl.GLSurfaceView
 import android.view.Choreographer
-import space.celestia.mobilecelestia.core.CelestiaAppCore
 
 @SuppressLint("ViewConstructor")
-class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(context), Choreographer.FrameCallback {
+class CelestiaView(context: Context, private val scaleFactor: Float) : GLSurfaceView(context), Choreographer.FrameCallback {
     interface Listener {
         fun willDrawFrame(view: CelestiaView)
     }
@@ -33,8 +32,6 @@ class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(con
 
         super.finalize()
     }
-
-    private val core by lazy { CelestiaAppCore.shared() }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
@@ -69,7 +66,6 @@ class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(con
     }
 
     companion object {
-        private const val TAG = "CelestiaView"
         private var sharedView: CelestiaView? = null
 
         // Call on render thread to avoid concurrency issue.
@@ -81,8 +77,4 @@ class CelestiaView(context: Context, val scaleFactor: Float) : GLSurfaceView(con
 
 fun PointF.scaleBy(factor: Float): PointF {
     return PointF(x * factor, y * factor)
-}
-
-fun RectF.scaleBy(factor: Float): RectF {
-    return RectF(left * factor, top * factor, right * factor, bottom * factor)
 }

@@ -23,7 +23,7 @@ enum class CelestiaControlAction {
     ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Hide, Show
 }
 
-interface CelestiaControlButton {}
+interface CelestiaControlButton
 
 class CelestiaToggleButton(val image: Int, val offAction: CelestiaControlAction, val onAction: CelestiaControlAction): CelestiaControlButton
 class CelestiaTapButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton

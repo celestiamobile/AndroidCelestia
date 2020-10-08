@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.control
+package space.celestia.mobilecelestia.eventfinder
 
 import android.annotation.SuppressLint
 import android.view.ViewGroup

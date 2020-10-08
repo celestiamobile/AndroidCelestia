@@ -22,17 +22,15 @@ import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class CameraControlContainerFragment : Fragment() {
-    private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
-        return view
+        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
         toolbar.title = CelestiaString("Camera Control", "")
 
         replace(CameraControlFragment.newInstance(), R.id.fragment_container)

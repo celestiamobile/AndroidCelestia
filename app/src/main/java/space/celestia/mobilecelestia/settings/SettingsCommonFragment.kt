@@ -65,6 +65,7 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         super.onDetach()
         listener = null
         dataSource = null
+        adapter = null
     }
 
     override fun reload() {

@@ -88,7 +88,7 @@ class SearchFragment : Fragment() {
                 (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(searchView.windowToken, 0)
                 setupSearchSearchView()
 
-                if (!lastSearchText.isEmpty() && lastSearchResultCount == 0) {
+                if (lastSearchText.isNotEmpty() && lastSearchResultCount == 0) {
                     listener?.onSearchItemSubmit(lastSearchText)
                 }
 

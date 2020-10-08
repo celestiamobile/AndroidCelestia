@@ -50,7 +50,7 @@ private fun getLocalizedLanguageName(locale: String): String {
     val lang = substitutionList[locale] ?: locale
     val loc1 = Locale.forLanguageTag(lang)
     val name1 = loc1.getDisplayName(loc1)
-    if (!name1.isEmpty())
+    if (name1.isNotEmpty())
         return name1
     val loc2 = getLocale(lang)
     return loc2.getDisplayName(loc2)

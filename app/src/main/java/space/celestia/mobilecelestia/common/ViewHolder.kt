@@ -27,9 +27,9 @@ interface BaseTextItemHolder {
 
 class CommonTextViewHolder(parent: ViewGroup):
     RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_item, parent, false)), BaseTextItemHolder {
-    override val title = itemView.title
-    override var accessory = itemView.accessory
-    val detail = itemView.detail
+    override val title: TextView = itemView.title
+    override var accessory: ImageView = itemView.accessory
+    val detail: TextView = itemView.detail
 
     fun configure(title: String?, detail: String? = null, accessory: Drawable? = null) {
         this.title.text = title

@@ -261,6 +261,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         viewInteraction?.isReady = true
         glView?.setOnTouchListener(viewInteraction)
         glView?.setOnKeyListener(viewInteraction)
+        glView?.listener = this
 
         loadSuccess = true
 

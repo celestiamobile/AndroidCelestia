@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.common
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -25,6 +26,7 @@ class StepperView(context: Context, attrs: AttributeSet): LinearLayout(context, 
 
     var listener: Listener? = null
 
+    @SuppressLint("ClickableViewAccessibility")
     private val subViewListener: OnTouchListener = OnTouchListener { view, event ->
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {

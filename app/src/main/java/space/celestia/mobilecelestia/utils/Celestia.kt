@@ -30,9 +30,8 @@ private val Float.radiusString: String
         return CelestiaString("%d km", "").format(this.toInt())
     }
 
-public fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): String {
-    val obj = selection.`object`
-    return when (obj) {
+fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): String {
+    return when (val obj = selection.`object`) {
         is CelestiaBody -> {
             getOverviewForBody(obj)
         }
@@ -64,7 +63,7 @@ private fun CelestiaAppCore.getOverviewForBody(body: CelestiaBody): String {
     val orbitalPeriod: Double = if (orbit.isPeriodic) orbit.period else 0.0
     if (rotation.isPeriodic && body.type != CelestiaBody.BODY_TYPE_SPACECRAFT) {
         var rotPeriod = rotation.period
-        var dayLength: Double = 0.0
+        var dayLength = 0.0
 
         if (orbit.isPeriodic) {
             val siderealDaysPerYear = orbitalPeriod / rotPeriod
@@ -122,7 +121,7 @@ private fun CelestiaAppCore.getOverviewForStar(star: CelestiaStar): String {
     return str
 }
 
-private fun CelestiaAppCore.getOverviewForDSO(dso: CelestiaDSO): String {
+private fun getOverviewForDSO(dso: CelestiaDSO): String {
     var str = ""
 
     val celPos = dso.position

@@ -28,7 +28,7 @@
         android:lines="1"
         style="@style/PrimaryLabel"/>
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/accessory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

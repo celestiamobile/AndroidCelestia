@@ -15,7 +15,9 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.PopupMenu
+import android.widget.TextView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.common_reorderable_text_list_item.view.*
@@ -250,9 +252,9 @@ class FavoriteItemRecyclerViewAdapter private constructor(
 
     inner class CommonReorderableTextViewHolder(parent: ViewGroup):
         RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.common_reorderable_text_list_item, parent, false)), BaseTextItemHolder {
-        override val title = itemView.title
-        override var accessory = itemView.accessory
-        val dragView = itemView.drag_accessory
+        override val title: TextView = itemView.title
+        override var accessory: ImageView = itemView.accessory
+        val dragView: ImageView = itemView.drag_accessory
     }
 
     private companion object {
@@ -261,7 +263,7 @@ class FavoriteItemRecyclerViewAdapter private constructor(
     }
 }
 
-class FavoriteItemItemTouchCallback():
+class FavoriteItemItemTouchCallback :
     ItemTouchHelper.Callback() {
     override fun getMovementFlags(
         recyclerView: RecyclerView,

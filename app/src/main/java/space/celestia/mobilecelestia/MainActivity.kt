@@ -50,6 +50,8 @@ import space.celestia.mobilecelestia.common.PoppableFragment
 import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.core.*
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
+import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
+import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
 import space.celestia.mobilecelestia.favorite.*
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
@@ -109,7 +111,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val core by lazy { CelestiaAppCore.shared() }
     private var currentSelection: CelestiaSelection? = null
 
-    private val backStack: MutableList<Fragment> = ArrayList<Fragment>()
+    private val backStack: MutableList<Fragment> = ArrayList()
 
     private var interactionBlocked = false
 
@@ -435,7 +437,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             if (localeDirectory.exists()) {
                 val languageCodes = ArrayList((localeDirectory.listFiles { file ->
                     return@listFiles file.isDirectory
-                } ?: arrayOf()).map { it.name })
+                } ?: arrayOf()).map { file -> file.name })
                 availableLanguageCodes = languageCodes.sorted()
             }
 
@@ -692,7 +694,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         executeToolbarAction(action)
     }
 
-    fun executeToolbarAction(action: ToolbarAction) {
+    private fun executeToolbarAction(action: ToolbarAction) {
         when (action) {
             ToolbarAction.Search -> {
                 showSearch()

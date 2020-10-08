@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.control
+package space.celestia.mobilecelestia.eventfinder
 
 import android.view.View
 import android.view.ViewGroup
@@ -40,12 +40,16 @@ class EventFinderInputRecyclerViewAdapter(
     private val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
 
     override fun onItemSelected(item: RecyclerViewItem) {
-        if (item is EventFinderDateItem) {
-            chooseTimeCallback(item.isStartTime)
-        } else if (item is EventFinderProceedButton) {
-            proceedCallback()
-        } else if (item is EventFinderObjectItem) {
-            chooseObjectCallback(objectName)
+        when (item) {
+            is EventFinderDateItem -> {
+                chooseTimeCallback(item.isStartTime)
+            }
+            is EventFinderProceedButton -> {
+                proceedCallback()
+            }
+            is EventFinderObjectItem -> {
+                chooseObjectCallback(objectName)
+            }
         }
     }
 
