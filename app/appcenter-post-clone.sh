@@ -5,8 +5,10 @@ ln -s app/src/main/cpp/dependency/android app/src/main/cpp/libs
 
 cd ..
 
+echo "Building for branch $APPCENTER_BRANCH"
+
 # Clone the Celestia repo (modified)
-git clone https://github.com/${GITHUB_USERNAME}/Celestia
+git clone https://github.com/${GITHUB_USERNAME}/Celestia --branch $APPCENTER_BRANCH --single-branch
 cd Celestia
 git submodule update --init
 cd ..
