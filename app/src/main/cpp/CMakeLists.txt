@@ -263,6 +263,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/marker.h
         ${CELESTIA_SRC_DIR}/celengine/meshmanager.cpp
         ${CELESTIA_SRC_DIR}/celengine/meshmanager.h
+        ${CELESTIA_SRC_DIR}/celengine/mapmanager.cpp
+        ${CELESTIA_SRC_DIR}/celengine/mapmanager.h
         ${CELESTIA_SRC_DIR}/celengine/modelgeometry.cpp
         ${CELESTIA_SRC_DIR}/celengine/modelgeometry.h
         ${CELESTIA_SRC_DIR}/celengine/multitexture.cpp
@@ -354,6 +356,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/vecgl.h
         ${CELESTIA_SRC_DIR}/celengine/vertexobject.cpp
         ${CELESTIA_SRC_DIR}/celengine/vertexobject.h
+        ${CELESTIA_SRC_DIR}/celengine/viewporteffect.cpp
+        ${CELESTIA_SRC_DIR}/celengine/viewporteffect.h
         ${CELESTIA_SRC_DIR}/celengine/virtualtex.cpp
         ${CELESTIA_SRC_DIR}/celengine/virtualtex.h
         ${CELESTIA_SRC_DIR}/celengine/visibleregion.cpp
