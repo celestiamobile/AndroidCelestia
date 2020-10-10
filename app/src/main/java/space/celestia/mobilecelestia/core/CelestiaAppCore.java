@@ -146,6 +146,10 @@ public class CelestiaAppCore {
         c_setRendererFont(pointer, fontPath, collectionIndex, fontSize, fontStyle);
     }
 
+    public void setPickTolerance(float pickTolerance) {
+        c_setPickTolerance(pointer, pickTolerance);
+    }
+
     public static boolean initGL() {
         return c_initGL();
     }
@@ -195,9 +199,11 @@ public class CelestiaAppCore {
     private static native String c_getCurrentURL(long ptr);
     private static native void c_goToURL(long ptr, String url);
 
-    public static native void c_setFont(long ptr, String fontPath, int collectionIndex, int fontSize);
-    public static native void c_setTitleFont(long ptr, String fontPath, int collectionIndex, int fontSize);
-    public static native void c_setRendererFont(long ptr, String fontPath, int collectionIndex, int fontSize, int fontStyle);
+    private static native void c_setFont(long ptr, String fontPath, int collectionIndex, int fontSize);
+    private static native void c_setTitleFont(long ptr, String fontPath, int collectionIndex, int fontSize);
+    private static native void c_setRendererFont(long ptr, String fontPath, int collectionIndex, int fontSize, int fontStyle);
+
+    private static native void c_setPickTolerance(long ptr, float pickTolerance);
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);

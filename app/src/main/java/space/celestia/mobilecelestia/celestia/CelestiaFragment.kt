@@ -231,7 +231,9 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
             glViewSize = null
         }
 
-        core.setDPI((96 * resources.displayMetrics.density * scaleFactor).toInt())
+        val density = resources.displayMetrics.density
+        core.setDPI((96 * density * scaleFactor).toInt())
+        core.setPickTolerance(10f * density * scaleFactor)
 
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
 

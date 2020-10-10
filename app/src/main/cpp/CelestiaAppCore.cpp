@@ -987,3 +987,12 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1toggleReferenceMarkEn
     core->toggleReferenceMark(c_str);
     env->ReleaseStringUTFChars(str, c_str);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setPickTolerance(JNIEnv *env,
+                                                                            jclass clazz, jlong ptr,
+                                                                            jfloat pick_tolerance) {
+    auto core = (CelestiaCore *)ptr;
+    core->setPickTolerance((float)pick_tolerance);
+}
