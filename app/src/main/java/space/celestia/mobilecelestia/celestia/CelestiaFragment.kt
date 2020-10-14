@@ -31,6 +31,8 @@ import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
 import androidx.fragment.app.Fragment
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.Disposable
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
@@ -39,10 +41,11 @@ import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.FontHelper
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.Listener, CelestiaView.Listener {
+class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.Listener {
     private var activity: Activity? = null
 
     // MARK: GL View
@@ -69,6 +72,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         get() = (4 * resources.displayMetrics.density).toInt()
     private val controlContainerTrailingMargin
         get() = (8 * resources.displayMetrics.density).toInt()
+
+    private var zoomTimer: Disposable? = null
 
     private var loadSuccess = false
 
@@ -164,6 +169,8 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
 
         listener = null
         activity = null
+        zoomTimer?.dispose()
+        zoomTimer = null
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -191,6 +198,7 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         glView = CelestiaView(activity, scaleFactor)
         viewInteraction = CelestiaInteraction(activity)
         viewInteraction?.scaleFactor = scaleFactor
+        viewInteraction?.density = resources.displayMetrics.density
         glView?.isFocusable = true
         glView?.let {
             glViewContainer?.addView(it, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
@@ -263,8 +271,6 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
         viewInteraction?.isReady = true
         glView?.setOnTouchListener(viewInteraction)
         glView?.setOnKeyListener(viewInteraction)
-        glView?.listener = this
-
         loadSuccess = true
 
         Log.d(TAG, "Ready to display")
@@ -275,10 +281,6 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
                 view?.rootWindowInsets?.displayCutout?.let { applyCutout(it) }
             }
         }
-    }
-
-    override fun willDrawFrame(view: CelestiaView) {
-        viewInteraction?.callZoom()
     }
 
     // Render
@@ -394,15 +396,17 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
     }
 
     override fun didToggleToMode(action: CelestiaControlAction) {
+        val viewInteraction = this.viewInteraction ?: return
+
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
-                viewInteraction?.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
+                viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
                 activity?.let {
                     Toast.makeText(it, CelestiaString("Switched to camera mode", ""), Toast.LENGTH_SHORT).show()
                 }
             }
             CelestiaControlAction.ToggleModeToObject -> {
-                viewInteraction?.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
+                viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
                 activity?.let {
                     Toast.makeText(it, CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT).show()
                 }
@@ -412,14 +416,23 @@ class CelestiaFragment: Fragment(), GLSurfaceView.Renderer, CelestiaControlView.
     }
 
     override fun didStartPressingAction(action: CelestiaControlAction) {
+        val viewInteraction = this.viewInteraction ?: return
+
         when (action) {
-            CelestiaControlAction.ZoomIn -> { viewInteraction?.zoomMode = CelestiaInteraction.ZoomMode.In }
-            CelestiaControlAction.ZoomOut -> { viewInteraction?.zoomMode = CelestiaInteraction.ZoomMode.Out }
+            CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
+            CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
             else -> {}
+        }
+
+        zoomTimer?.dispose()
+        zoomTimer = Observable.interval(100, TimeUnit.MILLISECONDS).subscribe {
+            viewInteraction.callZoom()
         }
     }
 
     override fun didEndPressingAction(action: CelestiaControlAction) {
+        zoomTimer?.dispose()
+        zoomTimer = null
         viewInteraction?.zoomMode = null
     }
 

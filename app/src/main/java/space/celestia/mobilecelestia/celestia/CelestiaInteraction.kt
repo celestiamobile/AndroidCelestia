@@ -39,8 +39,8 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
         val distance: Float
             get() = when (this) {
-                In -> -1f
-                Out -> 1f
+                In -> -1.5f
+                Out -> 1.5f
             }
     }
 
@@ -50,6 +50,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
     var isReady = false
     var zoomMode: ZoomMode? = null
     var scaleFactor: Float = 1f
+    var density: Float = 1f
 
     private var currentSpan: Float? = null
     private var internalInteractionMode = InteractionMode.Object
@@ -77,10 +78,11 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
     }
 
     private fun callZoom(deltaY: Float) {
+        val actualScaleFactor = scaleFactor * density
         if (internalInteractionMode == InteractionMode.Camera) {
-            core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), CelestiaAppCore.SHIFT_KEY)
+            core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY * actualScaleFactor), CelestiaAppCore.SHIFT_KEY)
         } else {
-            core.mouseWheel(deltaY, 0)
+            core.mouseWheel(deltaY * actualScaleFactor, 0)
         }
     }
 

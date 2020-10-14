@@ -20,12 +20,7 @@ import android.view.Choreographer
 
 @SuppressLint("ViewConstructor")
 class CelestiaView(context: Context, private val scaleFactor: Float) : GLSurfaceView(context), Choreographer.FrameCallback {
-    interface Listener {
-        fun willDrawFrame(view: CelestiaView)
-    }
-
     var isReady = false
-    var listener: Listener? = null
 
     override fun finalize() {
         Choreographer.getInstance().removeFrameCallback(this)
@@ -47,7 +42,6 @@ class CelestiaView(context: Context, private val scaleFactor: Float) : GLSurface
 
     override fun onDetachedFromWindow() {
         sharedView = null
-        listener = null
 
         super.onDetachedFromWindow()
     }
@@ -57,7 +51,6 @@ class CelestiaView(context: Context, private val scaleFactor: Float) : GLSurface
             requestRender()
         }
 
-        listener?.willDrawFrame(this)
         Choreographer.getInstance().postFrameCallback(this)
     }
 
