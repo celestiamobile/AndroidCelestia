@@ -731,6 +731,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ToolbarAction.Event -> {
                 showEventFinder()
             }
+            ToolbarAction.Exit -> {
+                moveTaskToBack(true)
+            }
         }
     }
 
