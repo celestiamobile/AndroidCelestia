@@ -33,4 +33,7 @@
     <color name="colorPrimary">@color/colorThemeLabel</color>
     <color name="colorPrimaryDark">@color/colorThemeSecondaryLabel</color>
     <color name="colorAccent">@color/colorThemeLabel</color>
+
+    <color name="colorProgressForeground">#4477AA</color>
+    <color name="colorProgressBackground">@color/colorThemeSecondaryLabel</color>
 </resources>

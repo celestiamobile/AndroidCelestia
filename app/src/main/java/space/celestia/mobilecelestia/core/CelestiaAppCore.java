@@ -34,7 +34,7 @@ public class CelestiaAppCore {
         void onCelestiaProgress(@NonNull String progress);
     }
 
-    private long pointer;
+    private final long pointer;
     private boolean initialized;
     private CelestiaSimulation simulation;
 

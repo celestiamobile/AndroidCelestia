@@ -42,6 +42,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import io.reactivex.rxjava3.schedulers.Schedulers
 import org.json.JSONObject
 import space.celestia.mobilecelestia.browser.*
@@ -63,12 +64,16 @@ import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
+import space.celestia.mobilecelestia.resource.AsyncListFragment
+import space.celestia.mobilecelestia.resource.ResourceFragment
+import space.celestia.mobilecelestia.resource.model.ResourceCategory
+import space.celestia.mobilecelestia.resource.model.ResourceManager
+import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.share.ShareAPI
 import space.celestia.mobilecelestia.share.ShareAPIService
 import space.celestia.mobilecelestia.share.URLCreationResponse
-import space.celestia.mobilecelestia.share.commonHandler
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
@@ -102,7 +107,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     EventFinderInputFragment.Listener,
     EventFinderResultFragment.Listener,
     SettingsLanguageFragment.Listener,
-    SettingsLanguageFragment.DataSource {
+    SettingsLanguageFragment.DataSource,
+    ResourceFragment.Listener,
+    AsyncListFragment.Listener<Any> {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -146,6 +153,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onCreate(savedInstanceState: Bundle?) {
         // We don't need to recover when we get killed
         super.onCreate(null)
+
+        // Allow us to cancel tasks without crashing the app
+        RxJavaPlugins.setErrorHandler(Throwable::printStackTrace)
 
         if (!AppCenter.isConfigured()) {
             AppCenter.start(
@@ -681,6 +691,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true",
             languageOverride
         )
+        ResourceManager.shared.addonDirectory = addonPath
         supportFragmentManager
             .beginTransaction()
             .add(R.id.celestia_fragment_container, celestiaFragment)
@@ -734,6 +745,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             ToolbarAction.Exit -> {
                 moveTaskToBack(true)
+            }
+            ToolbarAction.Plugins -> {
+                showOnlineResource()
             }
         }
     }
@@ -1332,6 +1346,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showAlert(CelestiaString("Cannot share URL", ""))
     }
 
+    // Resource
+    private fun showOnlineResource() {
+        showEndFragment(ResourceFragment.newInstance())
+    }
+
+    override fun onAsyncListItemSelected(item: Any) {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        if (frag is ResourceFragment) {
+            if (item is ResourceCategory) {
+                frag.pushItem(item)
+            } else if (item is ResourceItem) {
+                frag.pushItem(item)
+            }
+        }
+    }
+
+    // Utilities
     private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {

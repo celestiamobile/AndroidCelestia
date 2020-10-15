@@ -83,6 +83,11 @@
     <style name="SecondaryLabel">
         <item name="android:textColor">@color/colorSecondaryLabel</item>
     </style>
+
+    <style name="FooterLabel">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/colorSecondaryLabel</item>
+    </style>
     
     <style name="EditText" parent="PrimaryLabel">
         <item name="backgroundTint">@color/colorEditTextHairLine</item>

@@ -1,5 +1,5 @@
 /*
- * ShareAPI.kt
+ * ResourceAPI.kt
  *
  * Copyright (C) 2001-2020, Celestia Development Team
  *
@@ -9,33 +9,38 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.share
+package space.celestia.mobilecelestia.resource.model
 
 import io.reactivex.rxjava3.core.Observable
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.POST
+import retrofit2.http.*
 import space.celestia.mobilecelestia.utils.BaseResult
 
-class URLCreationResponse(val publicURL: String)
-
-object ShareAPI {
+object ResourceAPI {
     val shared: Retrofit = Retrofit.Builder()
-        .baseUrl("https://celestia.mobi/api/")
+        .baseUrl("https://celestia.mobi/api/resource/")
         .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 }
 
-interface ShareAPIService {
-    @FormUrlEncoded
-    @POST("create")
-    fun create(
-        @Field("title") title: String,
-        @Field("url") url: String,
-        @Field("version") version: String
+interface ResourceAPIService {
+    @GET("categories")
+    fun categories(
+        @Query("lang") lang: String
+    ): Observable<BaseResult>
+
+    @GET("items")
+    fun items(
+        @Query("lang") lang: String,
+        @Query("category") category: String
+    ): Observable<BaseResult>
+
+    @GET("item")
+    fun item(
+        @Query("lang") lang: String,
+        @Query("item") item: String
     ): Observable<BaseResult>
 }

@@ -27,7 +27,8 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 enum class ToolbarAction : Serializable {
-    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit;
+    // TODO: Localization
+    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Plugins;
 
     val title: String
         get() {
@@ -57,6 +58,7 @@ enum class ToolbarAction : Serializable {
                 listOf(Share, Search, Home),
                 listOf(Camera, Time, Script),
                 listOf(Browse, Favorite, Event),
+                listOf(Plugins),
                 listOf(Help),
                 listOf(Exit)
             )
