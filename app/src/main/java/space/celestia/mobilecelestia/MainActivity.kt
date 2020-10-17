@@ -13,7 +13,6 @@ package space.celestia.mobilecelestia
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
@@ -21,16 +20,17 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
-import android.view.*
+import android.view.DisplayCutout
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.app.ShareCompat
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.contains
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
@@ -49,7 +49,10 @@ import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.Cleanable
 import space.celestia.mobilecelestia.common.PoppableFragment
-import space.celestia.mobilecelestia.control.*
+import space.celestia.mobilecelestia.control.BottomControlFragment
+import space.celestia.mobilecelestia.control.CameraControlAction
+import space.celestia.mobilecelestia.control.CameraControlContainerFragment
+import space.celestia.mobilecelestia.control.CameraControlFragment
 import space.celestia.mobilecelestia.core.*
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
@@ -73,7 +76,6 @@ import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.*
-import java.util.concurrent.CountDownLatch
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -120,8 +122,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
-
-    private val permissionCountDownLatch = CountDownLatch(1)
 
     private val celestiaConfigFilePath: String
         get() {
@@ -216,7 +216,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         firstInstance = false
         val disposable = createCopyAssetObservable()
-            .concatWith(createPermissionObservable())
+            .concatWith(createCreateExtraFolderObservable())
             .concatWith(createLoadConfigObservable())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -256,16 +256,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode != WRITE_DATA_PERMISSION_REQUEST_CODE) return
-        // We do not care whether we got the permission here, just post notification
-        permissionCountDownLatch.countDown()
     }
 
     private fun hideSystemUI() {
@@ -399,18 +389,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun createPermissionObservable(): Observable<String> {
+    private fun createCreateExtraFolderObservable(): Observable<String> {
         return Observable.create<String> {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                it.onComplete()
-                return@create
-            }
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                it.onComplete()
-                return@create
-            }
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_DATA_PERMISSION_REQUEST_CODE)
-            permissionCountDownLatch.await()
+            createAddonFolder()
             it.onComplete()
         }
     }
@@ -1072,10 +1053,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onDataLocationRequested(dataType: DataType) {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // No permission to read
-            return
-        }
         when (dataType) {
             DataType.Config -> {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -1422,7 +1399,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "14"
+        private const val CURRENT_DATA_VERSION = "15"
+        // 15: 1.0.5
         // 14: 1.0.4
         // 13: 1.0.3
         // 12: 1.0.2
@@ -1442,8 +1420,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val TAG = "MainActivity"
 
         private var firstInstance = true
-
-        private const val WRITE_DATA_PERMISSION_REQUEST_CODE = 33
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
