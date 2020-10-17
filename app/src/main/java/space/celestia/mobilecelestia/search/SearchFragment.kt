@@ -113,7 +113,7 @@ class SearchFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        compositeDisposable.dispose()
+        compositeDisposable.clear()
 
         super.onDestroy()
     }

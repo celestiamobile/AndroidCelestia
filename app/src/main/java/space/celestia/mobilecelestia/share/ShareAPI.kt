@@ -45,7 +45,7 @@ class ResultMap<T>(private val cls: Class<T>?) : Function<BaseResult, T?> {
 
 object ShareAPI {
     val shared: Retrofit = Retrofit.Builder()
-        .baseUrl("https://astroweather.cn/celestia/")
+        .baseUrl("https://celestia.mobi/api/")
         .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
         .addConverterFactory(GsonConverterFactory.create())
         .build()

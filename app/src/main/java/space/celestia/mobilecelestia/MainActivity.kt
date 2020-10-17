@@ -236,7 +236,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onDestroy() {
         AppStatusReporter.shared().unregister(this)
-        compositeDisposable.dispose()
+        compositeDisposable.clear()
 
         super.onDestroy()
     }

@@ -40,7 +40,6 @@ enum class ToolbarAction : Serializable {
                 Setting -> "Settings"
                 Home -> "Home (Sol)"
                 Event -> "Eclipse Finder"
-                Exit -> "Exit"
                 else -> this.toString()
             }
             return CelestiaString(orig, "")
