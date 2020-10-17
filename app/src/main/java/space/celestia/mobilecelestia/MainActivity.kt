@@ -13,6 +13,7 @@ package space.celestia.mobilecelestia
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
@@ -27,7 +28,9 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.ShareCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.contains
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
@@ -35,7 +38,6 @@ import com.google.gson.reflect.TypeToken
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
-import com.tbruyelle.rxpermissions3.RxPermissions
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
@@ -71,6 +73,7 @@ import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.CountDownLatch
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -117,6 +120,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
+
+    private val permissionCountDownLatch = CountDownLatch(1)
 
     private val celestiaConfigFilePath: String
         get() {
@@ -253,6 +258,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (hasFocus) hideSystemUI()
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode != WRITE_DATA_PERMISSION_REQUEST_CODE) return
+        // We do not care whether we got the permission here, just post notification
+        permissionCountDownLatch.countDown()
+    }
+
     private fun hideSystemUI() {
         // Enables sticky immersive mode.
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -385,13 +400,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun createPermissionObservable(): Observable<String> {
-        return RxPermissions(this).request(android.Manifest.permission.WRITE_EXTERNAL_STORAGE).compose {
-            it.buffer(1).flatMap { result ->
-                if (result.size >= 1 && result.first()) {
-                    createAddonFolder()
-                }
-                Observable.just(CelestiaString("Requesting permission finished", ""))
+        return Observable.create<String> {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                it.onComplete()
+                return@create
             }
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                it.onComplete()
+                return@create
+            }
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_DATA_PERMISSION_REQUEST_CODE)
+            permissionCountDownLatch.await()
+            it.onComplete()
         }
     }
 
@@ -1052,7 +1072,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onDataLocationRequested(dataType: DataType) {
-        if (!RxPermissions(this).isGranted(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // No permission to read
             return
         }
@@ -1422,6 +1442,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val TAG = "MainActivity"
 
         private var firstInstance = true
+
+        private const val WRITE_DATA_PERMISSION_REQUEST_CODE = 33
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
