@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ backup_rules.xml
+  ~
+  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License
+  ~ as published by the Free Software Foundation; either version 2
+  ~ of the License, or (at your option) any later version.
+  -->
+
+<full-backup-content>
+    <include domain="file" path="favorites.json"/>
+    <include domain="external" path="CelestiaResources"/>
+    <include domain="sharedpref" path="celestia_setting"/>
+</full-backup-content>

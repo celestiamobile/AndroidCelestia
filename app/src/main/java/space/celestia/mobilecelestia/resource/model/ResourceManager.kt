@@ -164,18 +164,7 @@ class ResourceManager: DownloadTask.Listener {
     }
 
     fun uninstall(identifier: String): Boolean {
-        return deleteRecursively(File(addonDirectory, identifier))
-    }
-
-    private fun deleteRecursively(fileOrDirectory: File): Boolean {
-        if (fileOrDirectory.isDirectory) {
-            for (file in fileOrDirectory.listFiles() ?: arrayOf<File>()) {
-                if (!deleteRecursively(file)) {
-                    return false
-                }
-            }
-        }
-        return fileOrDirectory.delete()
+        return File(addonDirectory, identifier).deleteRecursively()
     }
 
     fun cancel(identifier: String) {

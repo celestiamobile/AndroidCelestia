@@ -43,3 +43,14 @@ object FileUtils {
         return true
     }
 }
+
+fun File.deleteRecursively(): Boolean {
+    if (isDirectory) {
+        for (file in listFiles() ?: arrayOf<File>()) {
+            if (!file.deleteRecursively()) {
+                return false
+            }
+        }
+    }
+    return delete()
+}
