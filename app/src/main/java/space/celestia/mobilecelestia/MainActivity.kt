@@ -42,6 +42,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import io.reactivex.rxjava3.schedulers.Schedulers
 import org.json.JSONObject
 import space.celestia.mobilecelestia.browser.*
@@ -63,17 +64,22 @@ import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
+import space.celestia.mobilecelestia.resource.AsyncListFragment
+import space.celestia.mobilecelestia.resource.ResourceFragment
+import space.celestia.mobilecelestia.resource.model.ResourceCategory
+import space.celestia.mobilecelestia.resource.model.ResourceManager
+import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.share.ShareAPI
 import space.celestia.mobilecelestia.share.ShareAPIService
 import space.celestia.mobilecelestia.share.URLCreationResponse
-import space.celestia.mobilecelestia.share.commonHandler
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.File
 import java.io.IOException
+import java.lang.Exception
 import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.collections.ArrayList
@@ -102,11 +108,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     EventFinderInputFragment.Listener,
     EventFinderResultFragment.Listener,
     SettingsLanguageFragment.Listener,
-    SettingsLanguageFragment.DataSource {
+    SettingsLanguageFragment.DataSource,
+    ResourceFragment.Listener,
+    AsyncListFragment.Listener<Any> {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
-    private val celestiaParentPath by lazy { this.filesDir.absolutePath }
+    private val legacyCelestiaParentPath by lazy { this.filesDir.absolutePath }
+    private val celestiaParentPath by lazy { this.noBackupFilesDir.absolutePath }
+    private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
     private var addonPath: String? = null
     private var extraScriptPath: String? = null
     private var languageOverride: String? = null
@@ -146,6 +156,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onCreate(savedInstanceState: Bundle?) {
         // We don't need to recover when we get killed
         super.onCreate(null)
+
+        // Allow us to cancel tasks without crashing the app
+        RxJavaPlugins.setErrorHandler(Throwable::printStackTrace)
 
         if (!AppCenter.isConfigured()) {
             AppCenter.start(
@@ -383,7 +396,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             it.onNext(CelestiaString("Copying data…", ""))
             if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
                 // When version name does not match, copy the asset again
-                copyAssets()
+                copyAssetsAndRemoveOldAssets()
             }
             it.onComplete()
         }
@@ -538,7 +551,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     @Throws(IOException::class)
-    private fun copyAssets() {
+    private fun copyAssetsAndRemoveOldAssets() {
+        try {
+            // Remove old ones in filesDir, ignore any exception thrown
+            File(legacyCelestiaParentPath, CELESTIA_DATA_FOLDER_NAME).deleteRecursively()
+            File(legacyCelestiaParentPath, CELESTIA_FONT_FOLDER_NAME).deleteRecursively()
+        } catch (ignored: Exception) {}
         AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_DATA_FOLDER_NAME, celestiaParentPath)
         AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_FONT_FOLDER_NAME, celestiaParentPath)
         preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
@@ -681,6 +699,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true",
             languageOverride
         )
+        ResourceManager.shared.addonDirectory = addonPath
         supportFragmentManager
             .beginTransaction()
             .add(R.id.celestia_fragment_container, celestiaFragment)
@@ -734,6 +753,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             ToolbarAction.Exit -> {
                 moveTaskToBack(true)
+            }
+            ToolbarAction.Addons -> {
+                showOnlineResource()
             }
         }
     }
@@ -882,7 +904,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         var favorites = arrayListOf<BookmarkNode>()
         try {
             val myType = object : TypeToken<List<BookmarkNode>>() {}.type
-            val str = FileUtils.readFileToText("${filesDir.absolutePath}/favorites.json")
+            val str = FileUtils.readFileToText(favoriteJsonFilePath)
             val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
             favorites = decoded
         } catch (ignored: Throwable) { }
@@ -894,7 +916,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         try {
             val myType = object : TypeToken<List<BookmarkNode>>() {}.type
             val str = Gson().toJson(favorites, myType)
-            FileUtils.writeTextToFile(str, "${filesDir.absolutePath}/favorites.json")
+            FileUtils.writeTextToFile(str, favoriteJsonFilePath)
         } catch (ignored: Throwable) { }
     }
 
@@ -1345,6 +1367,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showAlert(CelestiaString("Cannot share URL", ""))
     }
 
+    // Resource
+    private fun showOnlineResource() {
+        showEndFragment(ResourceFragment.newInstance())
+    }
+
+    override fun onAsyncListItemSelected(item: Any) {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        if (frag is ResourceFragment) {
+            if (item is ResourceCategory) {
+                frag.pushItem(item)
+            } else if (item is ResourceItem) {
+                frag.pushItem(item)
+            }
+        }
+    }
+
+    // Utilities
     private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {
@@ -1412,7 +1451,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "15"
+        private const val CURRENT_DATA_VERSION = "16"
+        // 16: 1.0.6 Migrate from filesDir to noBackupFilesDir
         // 15: 1.0.5
         // 14: 1.0.4
         // 13: 1.0.3

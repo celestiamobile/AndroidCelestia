@@ -102,7 +102,7 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         if (item == null) { return true }
         when (item.itemId) {
-            0 -> {
+            MENU_ITEM_ADD -> {
                 listener?.addFavoriteItem(currentFrag.favoriteItem as MutableFavoriteBaseItem)
             } else -> {}
         }

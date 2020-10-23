@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ dimens.xml
+  ~ attrs.xml
   ~
   ~ Copyright (C) 2001-2020, Celestia Development Team
   ~
@@ -11,10 +11,11 @@
   -->
 
 <resources>
-    <dimen name="text_margin">16dp</dimen>
-    <dimen name="dialog_input_padding_normal">16dp</dimen>
-
-    <dimen name="progress_button_text_size_default">16sp</dimen>
-    <dimen name="progress_button_default_width">150dp</dimen>
-    <dimen name="progress_button_default_height">40dp</dimen>
+    <declare-styleable name="ProgressButton">
+        <attr name="backgroundColor" format="color" />
+        <attr name="progressColor" format="color" />
+        <attr name="textColor" format="color" />
+        <attr name="textSize" format="dimension" />
+        <attr name="text" format="string" />
+    </declare-styleable>
 </resources>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ dimens.xml
+  ~ backup_rules.xml
   ~
   ~ Copyright (C) 2001-2020, Celestia Development Team
   ~
@@ -10,11 +10,8 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<resources>
-    <dimen name="text_margin">16dp</dimen>
-    <dimen name="dialog_input_padding_normal">16dp</dimen>
-
-    <dimen name="progress_button_text_size_default">16sp</dimen>
-    <dimen name="progress_button_default_width">150dp</dimen>
-    <dimen name="progress_button_default_height">40dp</dimen>
-</resources>
+<full-backup-content>
+    <include domain="file" path="favorites.json"/>
+    <include domain="external" path="CelestiaResources"/>
+    <include domain="sharedpref" path="celestia_setting"/>
+</full-backup-content>
