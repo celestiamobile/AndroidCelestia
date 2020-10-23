@@ -17,14 +17,14 @@ import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
 
 class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
     private val compositeDisposable = CompositeDisposable()
 
-    // TODO: Localization
     override val title: String
-        get() = "Categories"
+        get() = CelestiaString("Categories", "")
 
     override fun onDestroy() {
         compositeDisposable.clear()
@@ -37,8 +37,7 @@ class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
         val disposable = service.categories(lang).commonHandler(object :
             TypeToken<ArrayList<ResourceCategory>>() {}.type, success,
             {
-                // TODO: Localization
-                failure("Failed to get plugin categories.")
+                failure(CelestiaString("Failed to load add-on categories.", ""))
             })
         compositeDisposable.add(disposable)
     }

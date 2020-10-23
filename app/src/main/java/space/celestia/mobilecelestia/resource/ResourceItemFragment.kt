@@ -26,6 +26,7 @@ import space.celestia.mobilecelestia.common.ProgressButton
 import space.celestia.mobilecelestia.common.TitledFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.resource.model.*
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
@@ -73,8 +74,7 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
         val content = view.findViewById<TextView>(R.id.content)
         val footnote = view.findViewById<TextView>(R.id.footnote)
         val image = view.findViewById<ImageView>(R.id.image)
-        // TODO: Localization
-        footnote.text = "Note: restarting Celestia is needed to use any new installed plugin."
+        footnote.text = CelestiaString("Note: restarting Celestia is needed to use any new installed add-on.", "")
 
         val progressButton = view.findViewById<ProgressButton>(R.id.progress_button)
         progressButton.setOnClickListener {
@@ -120,8 +120,7 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
 
         // Already installed, offer an option for uninstalling
         if (dm.isInstalled(item.id)) {
-            // TODO: Localization
-            activity.showAlert("Do you want to uninstall this plugin?") {
+            activity.showAlert(CelestiaString("Do you want to uninstall this add-on?", "")) {
                 var success = false
                 try {
                     success = dm.uninstall(item.id)
@@ -129,7 +128,7 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
                 if (success) {
                     currentState = ResourceItemState.None
                 } else {
-                    activity.showAlert("Unable to uninstall plugin.")
+                    activity.showAlert(CelestiaString("Unable to uninstall add-on.", ""))
                 }
                 updateUI()
             }
@@ -138,8 +137,7 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
 
         // Already downloading, allow user to cancel
         if (dm.isDownloading(item.id)) {
-            // TODO: Localization
-            activity.showAlert("Do you want to cancel this task?") {
+            activity.showAlert(CelestiaString("Do you want to cancel this task?", "")) {
                 dm.cancel(item.id)
                 currentState = ResourceItemState.None
                 updateUI()
@@ -157,8 +155,7 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
         if (identifier != item?.id) return
         currentState = ResourceItemState.None
         updateUI()
-        // TODO: Localization
-        activity?.showAlert("Failed to download or install this plugin.")
+        activity?.showAlert(CelestiaString("Failed to download or install this add-on.", ""))
     }
 
     override fun onFileDownloaded(identifier: String) {
@@ -207,18 +204,17 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
         if (dm.isDownloading(id))
             currentState = ResourceItemState.Downloading
 
-        // TODO: Localization
         when (currentState) {
             ResourceItemState.None -> {
                 button.reset()
-                button.setText("DOWNLOAD")
+                button.setText(CelestiaString("DOWNLOAD", ""))
             }
             ResourceItemState.Downloading -> {
-                button.setText("DOWNLOADING")
+                button.setText(CelestiaString("DOWNLOADING", ""))
             }
             ResourceItemState.Installed -> {
                 button.setProgress(100f)
-                button.setText("INSTALLED")
+                button.setText(CelestiaString("INSTALLED", ""))
             }
         }
     }

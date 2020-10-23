@@ -19,6 +19,7 @@ import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
 
 class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
@@ -57,8 +58,7 @@ class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
         val lang = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
         val disposable = service.items(lang, categoryID).commonHandler(object: TypeToken<ArrayList<ResourceItem>>() {}.type, success, {
-            // TODO: Localization
-            failure("Failed to get plugin items.")
+            failure(CelestiaString("Failed to load add-ons.", ""))
         })
         compositeDisposable.add(disposable)
     }

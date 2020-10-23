@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.TitledFragment
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.createLoadingDrawable
 import space.celestia.mobilecelestia.utils.showAlert
 
@@ -60,8 +61,7 @@ open class AsyncListFragment<T: AsyncListTextItem>: TitledFragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.list)
         val imageView = view.findViewById<ImageView>(R.id.loading_image)
         val refresh = view.findViewById<TextView>(R.id.refresh)
-        // TODO: Localization
-        refresh.text = "Refresh"
+        refresh.text = CelestiaString("Refresh", "")
 
         refresh.setOnClickListener {
             callRefresh()

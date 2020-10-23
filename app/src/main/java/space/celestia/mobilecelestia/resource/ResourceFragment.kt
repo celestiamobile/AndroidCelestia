@@ -73,7 +73,7 @@ class ResourceFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private fun showInitialToolbar() {
         toolbar.menu.clear()
         toolbar.navigationIcon = null
-        toolbar.menu.add(Menu.NONE, MENU_ITEM_MANAGE_INSTALLED, Menu.NONE, "Installed")
+        toolbar.menu.add(Menu.NONE, MENU_ITEM_MANAGE_INSTALLED, Menu.NONE, CelestiaString("Installed", ""))
     }
 
     private fun showDetailToolbar() {

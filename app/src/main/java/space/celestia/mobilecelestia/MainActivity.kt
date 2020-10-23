@@ -754,7 +754,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ToolbarAction.Exit -> {
                 moveTaskToBack(true)
             }
-            ToolbarAction.Plugins -> {
+            ToolbarAction.Addons -> {
                 showOnlineResource()
             }
         }

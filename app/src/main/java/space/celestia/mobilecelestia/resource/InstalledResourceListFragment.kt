@@ -20,7 +20,6 @@ import space.celestia.mobilecelestia.resource.model.ResourceManager
 class InstalledResourceListFragment : AsyncListFragment<ResourceItem>() {
     private val compositeDisposable = CompositeDisposable()
 
-    // TODO: Localization
     override val title: String
         get() = "Installed"
 
