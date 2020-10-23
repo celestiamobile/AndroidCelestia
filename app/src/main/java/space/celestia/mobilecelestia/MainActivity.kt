@@ -1132,13 +1132,26 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val uri = data?.data ?: return
         if (requestCode == CONFIG_FILE_REQUEST) {
             val path = RealPathUtils.getRealPath(this, uri)
-            setConfigFilePath(path)
-            reloadSettings()
+            if (path == null) {
+                showWrongPathProvided()
+            } else {
+                setConfigFilePath(path)
+                reloadSettings()
+            }
         } else if (requestCode == DATA_DIR_REQUEST) {
             val path = RealPathUtils.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
-            setDataDirectoryPath(path)
-            reloadSettings()
+            if (path == null) {
+                showWrongPathProvided()
+            } else {
+                setDataDirectoryPath(path)
+                reloadSettings()
+            }
         }
+    }
+
+    private fun showWrongPathProvided() {
+        // TODO: Localization
+        showAlert(CelestiaString("Unable to resolve path, please ensure that you have selected a path inside %s.", "").format(getExternalFilesDir(null)?.absolutePath ?: ""))
     }
 
     override fun celestiaFragmentDidRequestActionMenu() {
