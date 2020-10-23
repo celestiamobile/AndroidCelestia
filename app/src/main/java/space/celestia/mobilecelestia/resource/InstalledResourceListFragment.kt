@@ -16,12 +16,13 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 class InstalledResourceListFragment : AsyncListFragment<ResourceItem>() {
     private val compositeDisposable = CompositeDisposable()
 
     override val title: String
-        get() = "Installed"
+        get() = CelestiaString("Installed", "")
 
     override fun onDestroy() {
         compositeDisposable.clear()
