@@ -78,11 +78,10 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
     }
 
     private fun callZoom(deltaY: Float) {
-        val actualScaleFactor = scaleFactor * density
         if (internalInteractionMode == InteractionMode.Camera) {
-            core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY * actualScaleFactor), CelestiaAppCore.SHIFT_KEY)
+            core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), CelestiaAppCore.SHIFT_KEY)
         } else {
-            core.mouseWheel(deltaY * actualScaleFactor, 0)
+            core.mouseWheel(deltaY, 0)
         }
     }
 
@@ -188,7 +187,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
         val delta = det.currentSpan / previousSpan
         // FIXME: 8 is a magic number
-        val deltaY = (1 - delta) * previousSpan / 8 * scaleFactor
+        val deltaY = (1 - delta) * previousSpan / density / 8
 
         Log.d(TAG, "Pinch with deltaY: $deltaY")
 
