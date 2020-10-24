@@ -74,6 +74,7 @@ import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.share.ShareAPI
 import space.celestia.mobilecelestia.share.ShareAPIService
 import space.celestia.mobilecelestia.share.URLCreationResponse
+import space.celestia.mobilecelestia.share.URLResolultionResponse
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
@@ -474,49 +475,57 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun handleIntent(intent: Intent?) {
-        val data = intent?.data ?: return
+        val uri = intent?.data ?: return
 
         Toast.makeText(this, CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT).show()
-        val disposable = Observable.just(data)
-            .map { uri ->
-                if (uri.scheme == "content") {
-                    return@map Pair(uri, true)
-                } else if (uri.scheme == "cel") {
-                    return@map Pair(uri, false)
-                }
-                throw RuntimeException("Unknown URI scheme ${uri.scheme}")
+        if (uri.scheme == "content") {
+            handleContentURI(uri)
+        } else if (uri.scheme == "cel") {
+            requestOpenURL(uri.toString())
+        } else if (uri.scheme == "https") {
+            handleAppLink(uri)
+        } else {
+            // Cannot handle this URI scheme
+            showAlert("Unknown URI scheme ${uri.scheme}")
+        }
+    }
+
+    private fun handleAppLink(uri: Uri) {
+        val path = uri.path ?: return
+        val id = uri.getQueryParameter("id") ?: return
+        val service = ShareAPI.shared.create(ShareAPIService::class.java)
+        val disposable = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java, {
+            requestOpenURL(it.resolvedURL)
+        })
+        compositeDisposable.add(disposable)
+    }
+
+    private fun handleContentURI(uri: Uri) {
+        // Content scheme, copy the resource to a temporary directory
+        val itemName = uri.lastPathSegment
+        // Check file name
+        if (itemName == null) {
+            showAlert("A filename needed to be present for ${uri.path}")
+            return
+        }
+        // Check file type
+        if (!itemName.endsWith(".cel") && !itemName.endsWith(".celx")) {
+            showAlert("Celestia does not know how to open $itemName")
+            return
+        }
+        val disposable = Observable.create<String> {
+            // Copy the file to cache
+            val path = "${cacheDir.absolutePath}/$itemName"
+            if (!FileUtils.copyUri(this, uri, path)) {
+                throw RuntimeException("Failed to open $itemName")
             }
-            .map { ob ->
-                if (ob.second) {
-                    // Content scheme, copy the resource to a temporary directory
-
-                    val itemName = ob.first.lastPathSegment
-                        ?: throw RuntimeException("A filename needed to be present for ${ob.first.path}")
-
-                    // Check file type
-                    if (!itemName.endsWith(".cel") && !itemName.endsWith(".celx")) {
-                        throw RuntimeException("Celestia does not know how to open $itemName")
-                    }
-
-                    // Copy to temporary directory
-                    val path = "${cacheDir.absolutePath}/$itemName"
-                    if (!FileUtils.copyUri(this, ob.first, path)) {
-                        throw RuntimeException("Failed to open $itemName")
-                    }
-                    return@map Pair(path, ob.second)
-                }
-                return@map Pair(ob.first.toString(), ob.second)
-            }
+            it.onNext(path)
+        }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ result ->
-                if (result.second) {
-                    requestRunScript(result.first)
-                } else {
-                    requestOpenURL(result.first)
-                }
+                requestRunScript(result)
             }, { error ->
-                Log.e(TAG, "Handle URI failed, $error")
                 showError(error)
             })
         compositeDisposable.add(disposable)

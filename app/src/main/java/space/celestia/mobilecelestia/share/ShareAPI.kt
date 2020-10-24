@@ -15,12 +15,11 @@ import io.reactivex.rxjava3.core.Observable
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.POST
+import retrofit2.http.*
 import space.celestia.mobilecelestia.utils.BaseResult
 
 class URLCreationResponse(val publicURL: String)
+class URLResolultionResponse(val resolvedURL: String)
 
 object ShareAPI {
     val shared: Retrofit = Retrofit.Builder()
@@ -37,5 +36,11 @@ interface ShareAPIService {
         @Field("title") title: String,
         @Field("url") url: String,
         @Field("version") version: String
+    ): Observable<BaseResult>
+
+    @GET("resolve")
+    fun resolve(
+        @Query("path") path: String,
+        @Query("id") id: String
     ): Observable<BaseResult>
 }
