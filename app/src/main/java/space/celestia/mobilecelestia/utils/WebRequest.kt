@@ -12,6 +12,7 @@
 package space.celestia.mobilecelestia.utils
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -28,15 +29,18 @@ class ResultException internal constructor(val code: Int) : java.lang.Exception(
 class ResultMap<T>: Function<BaseResult, T?> {
     val cls: Class<T>?
     val tt: Type?
+    val gson: Gson
 
-    constructor(cls: Class<T>) {
+    constructor(cls: Class<T>, gson: Gson) {
         this.cls = cls
         this.tt = null
+        this.gson = gson
     }
 
-    constructor(tt: Type) {
+    constructor(tt: Type, gson: Gson) {
         this.cls = null
         this.tt = tt
+        this.gson = gson
     }
 
     @Throws(Exception::class)
@@ -45,12 +49,12 @@ class ResultMap<T>: Function<BaseResult, T?> {
         val detail = baseResult.info.detail ?: throw ResultException(baseResult.status)
         @Suppress("UNCHECKED_CAST")
         if (cls == String::class.java) return cls.cast(detail) as T
-        if (tt != null) return Gson().fromJson(detail, tt)
-        return Gson().fromJson(detail, cls)
+        if (tt != null) return gson.fromJson(detail, tt)
+        return gson.fromJson(detail, cls)
     }
 }
 
-fun <T> Observable<BaseResult>.commonHandler(tt: Type, success: (T) -> Unit, failure: (() -> Unit)? = null): Disposable {
+fun <T> Observable<BaseResult>.commonHandler(tt: Type, gson: Gson = GsonBuilder().create(), success: (T) -> Unit, failure: (() -> Unit)? = null): Disposable {
     fun callFailure() {
         if (failure != null)
             failure()
@@ -58,7 +62,7 @@ fun <T> Observable<BaseResult>.commonHandler(tt: Type, success: (T) -> Unit, fai
 
     return this.subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .map(ResultMap<T>(tt))
+        .map(ResultMap<T>(tt, gson))
         .subscribe({
             if (it == null) {
                 callFailure()
@@ -70,7 +74,7 @@ fun <T> Observable<BaseResult>.commonHandler(tt: Type, success: (T) -> Unit, fai
         })
 }
 
-fun <T> Observable<BaseResult>.commonHandler(cls: Class<T>, success: (T) -> Unit, failure: (() -> Unit)? = null): Disposable {
+fun <T> Observable<BaseResult>.commonHandler(cls: Class<T>, gson: Gson = GsonBuilder().create(), success: (T) -> Unit, failure: (() -> Unit)? = null): Disposable {
     fun callFailure() {
         if (failure != null)
             failure()
@@ -78,7 +82,7 @@ fun <T> Observable<BaseResult>.commonHandler(cls: Class<T>, success: (T) -> Unit
 
     return this.subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .map(ResultMap(cls))
+        .map(ResultMap(cls, gson))
         .subscribe({
             if (it == null) {
                 callFailure()

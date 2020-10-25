@@ -31,40 +31,42 @@
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceListItem"
                 android:layout_marginBottom="4dp"
-                style="@style/HeadlineLabel"/>
+                style="@style/ResourceItemTitleLabel"/>
 
-            <Space
+            <TextView
+                android:id="@+id/authors"
                 android:layout_width="wrap_content"
-                android:layout_height="4dp"/>
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                style="@style/FooterLabel"/>
+
+            <TextView
+                android:id="@+id/publish_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                style="@style/FooterLabel"/>
 
             <TextView
                 android:id="@+id/content"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceListItem"
-                style="@style/SecondaryLabel"/>
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="8dp"/>
+                android:layout_marginTop="4dp"
+                style="@style/ResourceItemContentLabel"/>
 
             <ImageView
                 android:id="@+id/image"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 tools:ignore="ContentDescription" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="8dp"/>
 
             <TextView
                 android:id="@+id/footnote"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceListItem"
+                android:layout_marginTop="8dp"
                 style="@style/FooterLabel"/>
         </LinearLayout>
     </ScrollView>

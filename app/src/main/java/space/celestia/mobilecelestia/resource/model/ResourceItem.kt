@@ -13,5 +13,12 @@ package space.celestia.mobilecelestia.resource.model
 
 import space.celestia.mobilecelestia.resource.AsyncListTextItem
 import java.io.Serializable
+import java.util.*
 
-class ResourceItem(val id: String, override val name: String, val description: String, val item: String, val image: String?): AsyncListTextItem, Serializable
+class ResourceItem(val id: String,
+                   override val name: String,
+                   val description: String,
+                   val item: String,
+                   val image: String?,
+                   val authors: List<String>?,
+                   val publishTime: Date?): AsyncListTextItem, Serializable

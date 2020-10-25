@@ -57,7 +57,7 @@ class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
         val categoryID = category?.id ?: return
         val lang = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        val disposable = service.items(lang, categoryID).commonHandler(object: TypeToken<ArrayList<ResourceItem>>() {}.type, success, {
+        val disposable = service.items(lang, categoryID).commonHandler(object: TypeToken<ArrayList<ResourceItem>>() {}.type, ResourceAPI.gson, success, {
             failure(CelestiaString("Failed to load add-ons.", ""))
         })
         compositeDisposable.add(disposable)

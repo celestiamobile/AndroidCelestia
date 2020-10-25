@@ -84,9 +84,16 @@
         <item name="android:textColor">@color/colorSecondaryLabel</item>
     </style>
 
-    <style name="FooterLabel">
+    <style name="FooterLabel" parent="SecondaryLabel">
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/colorSecondaryLabel</item>
+    </style>
+
+    <style name="ResourceItemTitleLabel" parent="PrimaryLabel">
+        <item name="android:textSize">22sp</item>
+    </style>
+
+    <style name="ResourceItemContentLabel" parent="SecondaryLabel">
+        <item name="android:textSize">17sp</item>
     </style>
     
     <style name="EditText" parent="PrimaryLabel">

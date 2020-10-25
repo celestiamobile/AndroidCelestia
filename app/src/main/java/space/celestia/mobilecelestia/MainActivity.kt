@@ -494,7 +494,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val path = uri.path ?: return
         val id = uri.getQueryParameter("id") ?: return
         val service = ShareAPI.shared.create(ShareAPIService::class.java)
-        val disposable = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java, {
+        val disposable = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java, success = {
             requestOpenURL(it.resolvedURL)
         })
         compositeDisposable.add(disposable)
@@ -1354,14 +1354,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showTextInput(CelestiaString("Share", ""), name) { title ->
             Toast.makeText(this, CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT).show()
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
-            val disposable = service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java, {
+            val disposable = service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java, success = {
                 ShareCompat.IntentBuilder
                     .from(this)
                     .setType("text/plain")
                     .setChooserTitle(name)
                     .setText(it.publicURL)
                     .startChooser()
-            }, {
+            }, failure = {
                 showShareError()
             })
             compositeDisposable.add(disposable)

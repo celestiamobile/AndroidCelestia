@@ -35,7 +35,7 @@ class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
         val lang = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
         val disposable = service.categories(lang).commonHandler(object :
-            TypeToken<ArrayList<ResourceCategory>>() {}.type, success,
+            TypeToken<ArrayList<ResourceCategory>>() {}.type, success = success, failure =
             {
                 failure(CelestiaString("Failed to load add-on categories.", ""))
             })

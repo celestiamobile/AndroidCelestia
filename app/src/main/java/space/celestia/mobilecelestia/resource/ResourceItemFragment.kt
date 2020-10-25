@@ -19,17 +19,21 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.google.gson.reflect.TypeToken
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.ProgressButton
 import space.celestia.mobilecelestia.common.TitledFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.resource.model.*
+import space.celestia.mobilecelestia.resource.model.ResourceAPI
+import space.celestia.mobilecelestia.resource.model.ResourceAPIService
+import space.celestia.mobilecelestia.resource.model.ResourceItem
+import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
+import java.text.DateFormat
+import java.util.*
 
 class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
     private var item: ResourceItem? = null
@@ -39,8 +43,11 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
     private var imageView: ImageView? = null
     private var titleLabel: TextView? = null
     private var descriptionLabel: TextView? = null
+    private var authorsLabel: TextView? = null
+    private var releaseDateLabel: TextView? = null
 
     private val compositeDisposable = CompositeDisposable()
+    private val formatter = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
 
     class GlideUrlCustomCacheKey(url: String, val key: String) : GlideUrl(url) {
         override fun getCacheKey(): String {
@@ -74,6 +81,8 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
         val content = view.findViewById<TextView>(R.id.content)
         val footnote = view.findViewById<TextView>(R.id.footnote)
         val image = view.findViewById<ImageView>(R.id.image)
+        val authors = view.findViewById<TextView>(R.id.authors)
+        val releaseDate = view.findViewById<TextView>(R.id.publish_time)
         footnote.text = CelestiaString("Note: restarting Celestia is needed to use any new installed add-on.", "")
 
         val progressButton = view.findViewById<ProgressButton>(R.id.progress_button)
@@ -84,6 +93,8 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
         this.titleLabel = title
         this.descriptionLabel = content
         this.imageView = image
+        this.authorsLabel = authors
+        this.releaseDateLabel = releaseDate
         updateContents()
         updateUI()
 
@@ -98,7 +109,7 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
         // Fetch the latest data from server since user might have come from `Installed`
         val lang = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        val disposable = service.item(lang, item.id).commonHandler(ResourceItem::class.java, {
+        val disposable = service.item(lang, item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson, {
             this.item = it
             updateContents()
         })
@@ -179,17 +190,34 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
     }
 
     private fun updateContents() {
-        titleLabel?.text = item?.name
-        descriptionLabel?.text = item?.description
+        val item = this.item ?: return
+        titleLabel?.text = item.name
+        descriptionLabel?.text = item.description
 
-        val imageURL = item?.image
-        val itemID = item?.id
+        val imageURL = item.image
+        val itemID = item.id
         val imageView = this.imageView
-        if (imageURL != null && itemID != null && imageView != null) {
+        if (imageURL != null && imageView != null) {
             imageView.visibility = View.VISIBLE
             Glide.with(this).load(GlideUrlCustomCacheKey(imageURL, itemID)).into(imageView)
         } else {
             imageView?.visibility = View.GONE
+        }
+
+        val authors = item.authors
+        if (authors != null && authors.isNotEmpty()) {
+            authorsLabel?.visibility = View.VISIBLE
+            authorsLabel?.text = CelestiaString("Authors: %s", "").format(authors.joinToString(", "))
+        } else {
+            authorsLabel?.visibility = View.GONE
+        }
+
+        val releaseDate = item.publishTime
+        if (releaseDate != null) {
+            releaseDateLabel?.visibility = View.VISIBLE
+            releaseDateLabel?.text = CelestiaString("Release date: %s", "").format(formatter.format(releaseDate))
+        } else {
+            releaseDateLabel?.visibility = View.GONE
         }
     }
 

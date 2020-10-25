@@ -11,19 +11,40 @@
 
 package space.celestia.mobilecelestia.resource.model
 
+import com.google.gson.*
 import io.reactivex.rxjava3.core.Observable
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
+import retrofit2.http.GET
+import retrofit2.http.Query
 import space.celestia.mobilecelestia.utils.BaseResult
+import java.lang.reflect.Type
+import java.util.*
 
 object ResourceAPI {
+    class DateAdapter : JsonDeserializer<Date> {
+        override fun deserialize(
+            json: JsonElement?,
+            typeOfT: Type?,
+            context: JsonDeserializationContext?
+        ): Date {
+            try {
+                val seconds = json?.asDouble ?: return Date()
+                return Date((seconds * 1000.0).toLong())
+            } catch(e: Throwable) {
+                throw JsonParseException(e)
+            }
+        }
+    }
+
     val shared: Retrofit = Retrofit.Builder()
         .baseUrl("https://celestia.mobi/api/resource/")
         .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
         .addConverterFactory(GsonConverterFactory.create())
         .build()
+
+    val gson by lazy { GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create() }
 }
 
 interface ResourceAPIService {
