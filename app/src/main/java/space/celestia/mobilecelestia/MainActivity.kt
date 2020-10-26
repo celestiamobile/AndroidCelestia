@@ -551,10 +551,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val isURL = uri.startsWith("cel://")
         showAlert(if (isURL) CelestiaString("Open URL?", "") else CelestiaString("Run Script?", "")) {
-            if (isURL) {
-                core.goToURL(uri)
-            } else {
-                core.runScript(uri)
+            CelestiaView.callOnRenderThread {
+                if (isURL) {
+                    core.goToURL(uri)
+                } else {
+                    core.runScript(uri)
+                }
             }
         }
     }
