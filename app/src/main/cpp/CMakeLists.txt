@@ -411,6 +411,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaEclipseFinder.cpp
         ${CELESTIA_JNI_DIR}/CelestiaPlanetarySystem.cpp
         ${CELESTIA_JNI_DIR}/CelestiaObserver.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaRenderer.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/libs")
@@ -504,4 +505,5 @@ target_link_libraries( # Specifies the target library.
         libpng
         cspice
         EGL
+        android
         ${log-lib} )
