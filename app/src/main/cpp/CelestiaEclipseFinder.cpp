@@ -80,5 +80,5 @@ Java_space_celestia_mobilecelestia_core_CelestiaEclipseFinder_c_1search(JNIEnv *
         eclipse["endTime"] = result.endTime;
         j.push_back(eclipse);
     }
-    return env->NewStringUTF(j.dump().c_str());
+    return env->NewStringUTF(j.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace).c_str());
 }

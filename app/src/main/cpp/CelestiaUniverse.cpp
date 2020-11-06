@@ -170,7 +170,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(J
             create_browser_item_and_add(j, _("Spacecraft"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
     }
 
-    return env->NewStringUTF(j.dump().c_str());
+    return env->NewStringUTF(j.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace).c_str());
 }
 
 extern "C"
@@ -265,7 +265,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(J
             create_browser_item_and_add(j, _("Locations"), BROWSER_ITEM_TYPE_LOCATION, locationsMap);
     }
 
-    return env->NewStringUTF(j.dump().c_str());
+    return env->NewStringUTF(j.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace).c_str());
 }
 
 extern "C"
