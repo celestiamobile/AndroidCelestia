@@ -425,8 +425,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         return true
     }
 
-    override fun surfaceCreated(holder: SurfaceHolder?) {
-        renderer.setSurface(holder?.surface)
+    override fun surfaceCreated(holder: SurfaceHolder) {
+        renderer.setSurface(holder.surface)
     }
 
     private fun load(): Boolean {
@@ -445,12 +445,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         return loadCelestia(data, cfg, addon)
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         Log.d(TAG, "Resize to $width x $height")
         renderer.setSurfaceSize(width, height)
     }
 
-    override fun surfaceDestroyed(holder: SurfaceHolder?) {
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
         renderer.setSurface(null)
     }
 
