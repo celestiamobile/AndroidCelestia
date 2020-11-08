@@ -12,7 +12,7 @@
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:name="space.celestia.MobileCelestia.Control.BottomControlFragment"
+    android:name="space.celestia.mobilecelestia.control.BottomControlFragment"
     tools:context=".control.BottomControlFragment"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

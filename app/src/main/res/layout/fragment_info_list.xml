@@ -13,7 +13,7 @@
 <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/list"
-    android:name="space.celestia.MobileCelestia.Info.InfoFragment"
+    android:name="space.celestia.mobilecelestia.info.InfoFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".info.InfoFragment"

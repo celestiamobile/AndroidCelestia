@@ -1213,8 +1213,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun hideOverlay(animated: Boolean = false, callback: (() -> Unit)? = null) {
-        val disposable = hideFragment(animated, R.id.normal_end_container, R.anim.exit_to_right)
-            .concatWith(hideFragment(animated, R.id.toolbar_end_container, R.anim.exit_to_right))
+        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+        val disposable = hideFragment(animated, R.id.normal_end_container, if (ltr) R.anim.exit_to_right else R.anim.exit_to_left)
+            .concatWith(hideFragment(animated, R.id.toolbar_end_container, if (ltr) R.anim.exit_to_right else R.anim.exit_to_left))
             .concatWith {
                 findViewById<View>(R.id.overlay_container).visibility = View.INVISIBLE
                 findViewById<View>(R.id.end_notch).visibility = View.INVISIBLE
