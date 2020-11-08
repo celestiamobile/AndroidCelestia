@@ -11,107 +11,46 @@
 
 package space.celestia.mobilecelestia.resource.model
 
-import android.os.AsyncTask
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.*
 import net.lingala.zip4j.ZipFile
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.*
 import java.lang.ref.WeakReference
+import kotlin.coroutines.coroutineContext
+import kotlin.math.max
 
-class DownloadTask(
-    val item: ResourceItem,
-    val destination: File,
-    val unzipDestination: File,
-    val listener: WeakReference<Listener>
-): AsyncTask<Void, Long, Boolean>() {
-    enum class State {
-        Downloading, Unzipping
-    }
-
-    var state: State = State.Downloading
-
-    interface Listener {
-        fun onProgressUpdate(identifier: String, bytesWritten: Long, totalBytes: Long)
-        fun onFileDownloaded(identifier: String)
-        fun onUnzipFinished(identifier: String)
-        fun onResourceFetchingFailed(identifier: String)
-    }
-
-    override fun doInBackground(vararg params: Void?): Boolean {
-        val client = OkHttpClient()
-        val call = client.newCall(Request.Builder().url(item.item).get().build())
-        try {
-            val response = call.execute()
-            val body = response.body()
-            if (!response.isSuccessful || body == null) {
-                return false
-            }
-
-            val totalLength = body.contentLength()
-            var writtenLength = 0L
-            body.byteStream().use { input ->
-                destination.outputStream().use { output ->
-                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                    var bytes = input.read(buffer)
-                    while (bytes >= 0) {
-                        output.write(buffer, 0, bytes)
-                        writtenLength += bytes
-                        publishProgress(writtenLength, totalLength)
-
-                        // Check if user has canceled
-                        if (isCancelled)
-                            return false
-                        bytes = input.read(buffer)
-                    }
-                }
-            }
-            unzip(destination, unzipDestination)
-            // We also save a `description.json` just in case for future use
-            try {
-                val writer = FileWriter(File(unzipDestination, "description.json"))
-                writer.use {
-                    val gson = GsonBuilder().create()
-                    gson.toJson(item, it)
-                }
-            } catch (ignored: Exception) {
-                print(0)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return false
-        }
-        return true
-    }
-
-    override fun onProgressUpdate(vararg values: Long?) {
-        if (values[1] == values[0]) {
-            listener.get()?.onFileDownloaded(item.id)
-            state = State.Unzipping
-        } else {
-            listener.get()?.onProgressUpdate(item.id, values[0]!!, values[1]!!)
+fun <P, R> CoroutineScope.executeAsyncTask(
+    doInBackground: suspend (suspend (P) -> Unit) -> R,
+    onPostExecute: (R) -> Unit,
+    onProgressUpdate: (P) -> Unit
+) = launch {
+    val result = withContext(Dispatchers.IO) {
+        doInBackground {
+            withContext(Dispatchers.Main) { onProgressUpdate(it) }
         }
     }
-
-    override fun onPostExecute(result: Boolean?) {
-        if (result!!)
-            listener.get()?.onUnzipFinished(item.id)
-        else
-            listener.get()?.onResourceFetchingFailed(item.id)
-    }
-
-    private fun unzip(zipFile: File, destination: File) {
-        ZipFile(zipFile).extractAll(destination.absolutePath)
-    }
+    withContext(Dispatchers.Main) { onPostExecute(result) }
 }
 
-class ResourceManager: DownloadTask.Listener {
+private fun unzip(zipFile: File, destination: File) {
+    ZipFile(zipFile).extractAll(destination.absolutePath)
+}
+
+class ResourceManager {
     private var listeners = arrayListOf<Listener>()
-    private var tasks = hashMapOf<String, DownloadTask>()
+    private var tasks = hashMapOf<String, Job>()
 
     var addonDirectory: String? = null
+
+    enum class State {
+        Downloading, Downloaded
+    }
+
+    class Progress(val state: State, val finished: Long, val total: Long)
 
     interface Listener {
         fun onProgressUpdate(identifier: String, progress: Float)
@@ -168,13 +107,66 @@ class ResourceManager: DownloadTask.Listener {
     }
 
     fun cancel(identifier: String) {
-        tasks.remove(identifier)?.cancel(true)
+        tasks.remove(identifier)?.cancel()
     }
 
     fun download(item: ResourceItem, destination: File) {
         val unzipDestination = File(addonDirectory, item.id)
-        val task = DownloadTask(item, destination, unzipDestination, WeakReference(this))
-        task.execute()
+        val reference = WeakReference(this)
+        val task = GlobalScope.executeAsyncTask(doInBackground = { publishProgress: suspend (progress: Progress) -> Unit ->
+            val client = OkHttpClient()
+            val call = client.newCall(Request.Builder().url(item.item).get().build())
+            try {
+                val response = call.execute()
+                val body = response.body()
+                if (!response.isSuccessful || body == null) {
+                    return@executeAsyncTask false
+                }
+
+                val totalLength = body.contentLength()
+                var writtenLength = 0L
+                body.byteStream().use { input ->
+                    destination.outputStream().use { output ->
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        var bytes = input.read(buffer)
+                        while (bytes >= 0) {
+                            output.write(buffer, 0, bytes)
+                            writtenLength += bytes
+                            publishProgress(Progress(State.Downloading, writtenLength, totalLength))
+
+                            // Check if user has canceled
+                            if (!coroutineContext.isActive)
+                                return@executeAsyncTask false
+                            bytes = input.read(buffer)
+                        }
+                    }
+                }
+                publishProgress(Progress(State.Downloaded, 0, 0))
+                unzip(destination, unzipDestination)
+                // We also save a `description.json` just in case for future use
+                try {
+                    val writer = FileWriter(File(unzipDestination, "description.json"))
+                    writer.use {
+                        val gson = GsonBuilder().create()
+                        gson.toJson(item, it)
+                    }
+                } catch (ignored: Exception) {}
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return@executeAsyncTask false
+            }
+            return@executeAsyncTask true
+        }, onPostExecute = { result: Boolean ->
+            if (result)
+                reference.get()?.onUnzipFinished(item.id)
+            else
+                reference.get()?.onResourceFetchingFailed(item.id)
+        }, onProgressUpdate = { progress: Progress ->
+            if (progress.state == State.Downloading)
+                reference.get()?.onProgressUpdate(item.id, progress.finished, progress.total)
+            else
+                reference.get()?.onFileDownloaded(item.id)
+        })
         tasks[item.id] = task
     }
 
@@ -198,23 +190,23 @@ class ResourceManager: DownloadTask.Listener {
             listener.onFileUnzipped(identifier)
     }
 
-    override fun onFileDownloaded(identifier: String) {
+    private fun onFileDownloaded(identifier: String) {
         Log.d(TAG, "File download success")
         callListenerDownloadSuccessCallback(identifier)
     }
 
-    override fun onProgressUpdate(identifier: String, bytesWritten: Long, totalBytes: Long) {
+    private fun onProgressUpdate(identifier: String, bytesWritten: Long, totalBytes: Long) {
         Log.d(TAG, "Progress update")
-        callListenerProgressCallback(identifier, bytesWritten.toFloat() / totalBytes.toFloat())
+        callListenerProgressCallback(identifier, bytesWritten.toFloat() / max(totalBytes, 1).toFloat())
     }
 
-    override fun onResourceFetchingFailed(identifier: String) {
+    private fun onResourceFetchingFailed(identifier: String) {
         Log.d(TAG, "Resource fetch failed")
         tasks.remove(identifier)
         callListenerErrorCallback(identifier)
     }
 
-    override fun onUnzipFinished(identifier: String) {
+    private fun onUnzipFinished(identifier: String) {
         Log.d(TAG, "Unzip finished")
         tasks.remove(identifier)
         callListenerUnzipSuccessCallback(identifier)
