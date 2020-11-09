@@ -18,6 +18,7 @@ import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.provider.DocumentsContract
 import android.util.Log
 import android.view.DisplayCutout
@@ -117,9 +118,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val legacyCelestiaParentPath by lazy { this.filesDir.absolutePath }
     private val celestiaParentPath by lazy { this.noBackupFilesDir.absolutePath }
     private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
-    private var addonPath: String? = null
-    private var extraScriptPath: String? = null
-    private var languageOverride: String? = null
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -221,28 +219,34 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnTouchListener true
         }
 
-        if (!firstInstance) {
+        val rendererIntialized = CelestiaFragment.celestiaLoaded // We can skip initialization if it is already initialized before
+        if (!firstInstance && !rendererIntialized) {
             // TODO: handle recreation of Main Activity
             AppStatusReporter.shared().updateStatus(CelestiaString("Please restart Celestia", ""))
             return
         }
 
         firstInstance = false
-        val disposable = createCopyAssetObservable()
-            .concatWith(createCreateExtraFolderObservable())
-            .concatWith(createLoadConfigObservable())
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe ({ status ->
-                AppStatusReporter.shared().updateStatus(status)
-            }, { error ->
-                Log.e(TAG, "Initialization failed, $error")
-                showError(error)
-            }, {
-                loadConfigSuccess()
-            })
+        if (rendererIntialized) {
+            celestiaLoadingSucceeded()
+            loadConfigSuccess()
+        } else {
+            val disposable = createCopyAssetObservable()
+                .concatWith(createCreateExtraFolderObservable())
+                .concatWith(createLoadConfigObservable())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe ({ status ->
+                    AppStatusReporter.shared().updateStatus(status)
+                }, { error ->
+                    Log.e(TAG, "Initialization failed, $error")
+                    showError(error)
+                }, {
+                    loadConfigSuccess()
+                })
 
-        compositeDisposable.add(disposable)
+            compositeDisposable.add(disposable)
+        }
 
         handleIntent(intent)
     }
@@ -456,6 +460,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
 
             languageOverride = preferenceManager[PreferenceManager.PredefinedKey.Language]
+            enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
+            enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true"
 
             it.onComplete()
         }
@@ -705,8 +711,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             celestiaDataDirPath,
             celestiaConfigFilePath,
             addonPath,
-            preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true",
-            preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true",
+            enableMultisample,
+            enableHiDPI,
             languageOverride
         )
         ResourceManager.shared.addonDirectory = addonPath
@@ -1487,6 +1493,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
+        private var addonPath: String? = null
+        private var extraScriptPath: String? = null
+        private var languageOverride: String? = null
+        private var enableMultisample = false
+        private var enableHiDPI = false
 
         var availableInstalledFonts: Map<String, Pair<FontHelper.FontCompat, FontHelper.FontCompat>> = mapOf()
         var defaultInstalledFont: Pair<FontHelper.FontCompat, FontHelper.FontCompat>? = null

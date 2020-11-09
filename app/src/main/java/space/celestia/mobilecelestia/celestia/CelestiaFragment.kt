@@ -128,6 +128,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         activeControlView.layoutParams = layoutParamsForControls
         inactiveControlView.layoutParams = layoutParamsForControls
 
+        activeControlView.listener = this
+        inactiveControlView.listener = this
+
+        if (celestiaLoaded)
+            loadingFinished()
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             view.setOnApplyWindowInsetsListener { _, insets ->
                 insets.displayCutout?.let {
@@ -137,8 +143,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             }
         }
 
-        activeControlView.listener = this
-        inactiveControlView.listener = this
         return view
     }
 
@@ -178,8 +182,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private fun applyCutout(cutout: DisplayCutout) {
         if (!loadSuccess) { return }
 
+        val insets = cutout.safeInsets().scaleBy(scaleFactor)
         CelestiaView.callOnRenderThread {
-            core.setSafeAreaInsets(cutout.safeInsets().scaleBy(scaleFactor))
+            core.setSafeAreaInsets(insets)
         }
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
@@ -205,7 +210,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         interaction.scaleFactor = scaleFactor
         interaction.density = resources.displayMetrics.density
         view.isFocusable = true
-        renderer.start(activity, enableMultisample)
+        if (!celestiaLoaded) {
+            renderer.start(activity, enableMultisample)
+        }
         container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         view.holder?.addCallback(this)
     }
@@ -267,6 +274,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         core.tick()
         core.start()
 
+        celestiaLoaded = true
+
+        loadingFinished()
+    }
+
+    private fun loadingFinished() {
         glView?.isReady = true
         viewInteraction?.isReady = true
         glView?.setOnTouchListener(viewInteraction)
@@ -281,19 +294,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
                 view?.rootWindowInsets?.displayCutout?.let { applyCutout(it) }
             }
         }
-
-        celestiaLoaded = true
     }
 
     override fun surfaceCreated(holder: SurfaceHolder?) {
         renderer.setSurface(holder?.surface)
-    }
-
-    override fun onDestroy() {
-        if (celestiaLoaded)
-            renderer.stop()
-
-        super.onDestroy()
     }
 
     private fun load() {
