@@ -316,10 +316,7 @@ void *CelestiaRenderer::threadCallback(void *self)
 
     while (renderingEnabled) {
         if (renderer->display != EGL_NO_DISPLAY && !renderer->engineStartedCalled)
-        {
-            newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod);
-            renderer->engineStartedCalled = true;
-        }
+            renderer->engineStartedCalled = newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod) == JNI_TRUE;
         if (renderer->engineStartedCalled)
             newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushTasksMethod);
 
@@ -358,7 +355,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1initialize(JNIEnv *e
     auto renderer = (CelestiaRenderer *)ptr;
     renderer->javaObject = env->NewGlobalRef(thiz);
     jclass clazz = env->GetObjectClass(thiz);
-    CelestiaRenderer::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "()V");
+    CelestiaRenderer::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "()Z");
     CelestiaRenderer::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
 
     env->GetJavaVM(&CelestiaRenderer::jvm);

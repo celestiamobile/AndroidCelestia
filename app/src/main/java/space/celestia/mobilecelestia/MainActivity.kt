@@ -155,6 +155,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // We don't need to recover when we get killed
         super.onCreate(null)
 
+        Log.d(TAG, "Creating MainActivity")
+
         // Allow us to cancel tasks without crashing the app
         RxJavaPlugins.setErrorHandler(Throwable::printStackTrace)
 
@@ -219,18 +221,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnTouchListener true
         }
 
-        val rendererIntialized = CelestiaFragment.celestiaLoaded // We can skip initialization if it is already initialized before
-        if (!firstInstance && !rendererIntialized) {
-            // TODO: handle recreation of Main Activity
-            AppStatusReporter.shared().updateStatus(CelestiaString("Please restart Celestia", ""))
+        val currentState = AppStatusReporter.shared().state
+        if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
+            // Celestia loading failure in the original activity
+            Log.d(TAG, "Previous loading failed, unrecoverable.")
+            celestiaUnrecoveableLoadingFailed()
             return
         }
 
-        firstInstance = false
-        if (rendererIntialized) {
-            celestiaLoadingSucceeded()
-            loadConfigSuccess()
-        } else {
+        if (currentState == AppStatusReporter.State.NONE || currentState == AppStatusReporter.State.EXTERNAL_LOADING) {
+            Log.d(TAG, "Start fresh loading")
+            AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING)
             val disposable = createCopyAssetObservable()
                 .concatWith(createCreateExtraFolderObservable())
                 .concatWith(createLoadConfigObservable())
@@ -239,13 +240,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .subscribe ({ status ->
                     AppStatusReporter.shared().updateStatus(status)
                 }, { error ->
-                    Log.e(TAG, "Initialization failed, $error")
-                    showError(error)
+                    AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FAILURE)
+                    loadConfigFailed(error)
                 }, {
+                    AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FINISHED)
                     loadConfigSuccess()
                 })
 
             compositeDisposable.add(disposable)
+        } else {
+            Log.d(TAG, "Configuration already loaded")
+            loadConfigSuccess()
+            if (currentState == AppStatusReporter.State.SUCCESS) {
+                Log.d(TAG, "Celestia already loaded")
+                celestiaLoadingSucceeded()
+            }
         }
 
         handleIntent(intent)
@@ -254,6 +263,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onDestroy() {
         AppStatusReporter.shared().unregister(this)
         compositeDisposable.clear()
+
+        Log.d(TAG, "Destroying MainActivity")
 
         super.onDestroy()
     }
@@ -298,7 +309,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun celestiaLoadingProgress(status: String) {}
 
-    override fun celestiaLoadingSucceeded() {
+    override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
+        if (newState == AppStatusReporter.State.SUCCESS) {
+            celestiaLoadingSucceeded()
+        } else if (newState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
+            celestiaUnrecoveableLoadingFailed()
+        } else if (newState == AppStatusReporter.State.LOADING_FAILURE) {
+            celestiaLoadingFailed()
+        }
+    }
+
+    fun celestiaLoadingSucceeded() {
         runOnUiThread {
             // hide the loading container
             findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
@@ -315,21 +336,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun celestiaLoadingFailed() {
+    fun celestiaUnrecoveableLoadingFailed() {
+        AppStatusReporter.shared().updateStatus(CelestiaString("Please restart Celestia", ""))
+    }
+
+    fun celestiaLoadingFailed() {
         AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed…", ""))
-        if (customDataDirPath != null || customConfigFilePath != null) {
-            runOnUiThread {
-                removeCelestiaFragment()
-                showAlert(CelestiaString("Error loading data, fallback to original configuration.", "")) {
-                    // Fallback to default
-                    setConfigFilePath(null)
-                    setDataDirectoryPath(null)
-                    loadConfigSuccess()
-                }
-            }
-        } else {
-            runOnUiThread {
-                removeCelestiaFragment()
+        val recoverable = customDataDirPath != null || customConfigFilePath != null
+        if (!recoverable) {
+            celestiaUnrecoveableLoadingFailed()
+            return
+        }
+        runOnUiThread {
+            removeCelestiaFragment()
+            showAlert(CelestiaString("Error loading data, fallback to original configuration.", "")) {
+                // Fallback to default
+                setConfigFilePath(null)
+                setDataDirectoryPath(null)
+                AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FINISHED)
+                loadConfigSuccess()
             }
         }
     }
@@ -444,9 +469,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 FontHelper.FontCompat("$fontDirPath/NotoSans-Bold.ttf", 0)
             )
 
-            System.loadLibrary("celestia")
-            celestiaLibraryLoaded = true
-
             // Read custom paths here
             customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
             customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
@@ -462,6 +484,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             languageOverride = preferenceManager[PreferenceManager.PredefinedKey.Language]
             enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
             enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true"
+
+            // Load core library
+            if (!celestiaLibraryLoaded) {
+                System.loadLibrary("celestia")
+                celestiaLibraryLoaded = true
+            }
 
             it.onComplete()
         }
@@ -720,6 +748,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .beginTransaction()
             .add(R.id.celestia_fragment_container, celestiaFragment)
             .commitAllowingStateLoss()
+    }
+
+    private fun loadConfigFailed(error: Throwable) {
+        Log.e(TAG, "Initialization failed, $error")
+        showError(error)
     }
 
     private fun showToolbar() {
@@ -1488,8 +1521,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CONFIG_FILE_REQUEST = 2
 
         private const val TAG = "MainActivity"
-
-        private var firstInstance = true
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null

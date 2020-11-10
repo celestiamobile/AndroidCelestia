@@ -28,6 +28,7 @@ public class CelestiaRenderer {
     private List<Callback> tasks = new ArrayList<>();
     private final Object taskLock = new Object();
     private final long pointer;
+    private boolean started = false;
 
     private static CelestiaRenderer sharedRenderer = null;
     private EngineStartedListener engineStartedListener = null;
@@ -55,7 +56,13 @@ public class CelestiaRenderer {
         }
     }
 
+    public void startConditionally(@NonNull Activity activity, boolean enableMultisample) {
+        if (started) return;
+        start(activity, enableMultisample);
+    }
+
     public void start(@NonNull Activity activity, boolean enableMultisample) {
+        started = true;
         c_start(pointer, activity, enableMultisample);
     }
 
@@ -84,17 +91,19 @@ public class CelestiaRenderer {
     }
 
     public interface EngineStartedListener {
-        void onEngineStarted();
+        boolean onEngineStarted();
     }
 
     public void setEngineStartedListener(EngineStartedListener engineStartedListener) {
         this.engineStartedListener = engineStartedListener;
     }
 
-    private void engineStarted() {
+    private boolean engineStarted() {
+        boolean result = false;
         if (engineStartedListener != null)
-            engineStartedListener.onEngineStarted();
+            result = engineStartedListener.onEngineStarted();
         engineStartedListener = null;
+        return result;
     }
 
     private void flushTasks() {

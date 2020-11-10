@@ -40,24 +40,25 @@ import space.celestia.mobilecelestia.utils.FontHelper
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener {
     private var activity: Activity? = null
 
     // MARK: GL View
     private var glViewContainer: FrameLayout? = null
     private var glView: CelestiaView? = null
-    private var glViewSize: Size? = null
     private var viewInteraction: CelestiaInteraction? = null
 
     private var currentControlViewID = R.id.active_control_view_container
 
-    // MARK: Celestia
+    // Parameters
     private var pathToLoad: String? = null
     private var cfgToLoad: String? = null
     private var addonToLoad: String? = null
     private var enableMultisample = false
     private var enableFullResolution = false
     private var languageOverride: String? = null
+
+    // MARK: Celestia
     private val core by lazy { CelestiaAppCore.shared() }
     private val renderer by lazy { CelestiaRenderer.shared() }
 
@@ -94,7 +95,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         core.setRenderer(renderer)
         renderer.setEngineStartedListener {
-            this.load()
+            load()
         }
     }
 
@@ -102,6 +103,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val reporter = AppStatusReporter.shared()
+        val currentState = reporter.state
+        reporter.register(this)
+
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
         glViewContainer = view.findViewById(R.id.celestia_gl_view)
         setupGLView()
@@ -131,8 +136,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         activeControlView.listener = this
         inactiveControlView.listener = this
 
-        if (celestiaLoaded)
+        if (currentState == AppStatusReporter.State.SUCCESS) {
             loadingFinished()
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             view.setOnApplyWindowInsetsListener { _, insets ->
@@ -144,6 +150,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
 
         return view
+    }
+
+    override fun onDestroyView() {
+        AppStatusReporter.shared().unregister(this)
+
+        super.onDestroyView()
     }
 
     override fun onPause() {
@@ -178,6 +190,14 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         zoomTimer = null
     }
 
+
+    override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
+        if (newState == AppStatusReporter.State.SUCCESS)
+            loadingFinished()
+    }
+
+    override fun celestiaLoadingProgress(status: String) {}
+
     @RequiresApi(Build.VERSION_CODES.P)
     private fun applyCutout(cutout: DisplayCutout) {
         if (!loadSuccess) { return }
@@ -210,15 +230,16 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         interaction.scaleFactor = scaleFactor
         interaction.density = resources.displayMetrics.density
         view.isFocusable = true
-        if (!celestiaLoaded) {
-            renderer.start(activity, enableMultisample)
-        }
+        renderer.startConditionally(activity, enableMultisample)
         container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         view.holder?.addCallback(this)
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun loadCelestia(path: String, cfg: String, addon: String?) {
+    private fun loadCelestia(path: String, cfg: String, addon: String?): Boolean {
+        AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING)
+
+        CelestiaAppCore.initGL()
         CelestiaAppCore.chdir(path)
 
         // Set up locale
@@ -228,27 +249,18 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         // Reading config, data
         if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
-            AppStatusReporter.shared().celestiaLoadResult(false)
-            return
+            AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+            return false
         }
 
         // Prepare renderer
         if (!core.startRenderer()) {
-            AppStatusReporter.shared().celestiaLoadResult(false)
-            return
+            AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+            return false
         }
 
         // Prepare for browser items
         core.simulation.createAllBrowserItems()
-
-        glViewSize?.let {
-            core.resize(it.width, it.height)
-            glViewSize = null
-        }
-
-        val density = resources.displayMetrics.density
-        core.setDPI((96 * density * scaleFactor).toInt())
-        core.setPickTolerance(10f * density * scaleFactor)
 
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
 
@@ -274,12 +286,15 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         core.tick()
         core.start()
 
-        celestiaLoaded = true
-
-        loadingFinished()
+        AppStatusReporter.shared().updateState(AppStatusReporter.State.SUCCESS)
+        return true
     }
 
     private fun loadingFinished() {
+        val density = resources.displayMetrics.density
+        core.setDPI((96 * density * scaleFactor).toInt())
+        core.setPickTolerance(10f * density * scaleFactor)
+
         glView?.isReady = true
         viewInteraction?.isReady = true
         glView?.setOnTouchListener(viewInteraction)
@@ -287,7 +302,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         loadSuccess = true
 
         Log.d(TAG, "Ready to display")
-        AppStatusReporter.shared().celestiaLoadResult(true)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             activity?.runOnUiThread {
@@ -300,7 +314,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         renderer.setSurface(holder?.surface)
     }
 
-    private fun load() {
+    private fun load(): Boolean {
         val data = pathToLoad
         val cfg = cfgToLoad
         val addon = addonToLoad
@@ -309,15 +323,14 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         cfgToLoad = null
         addonToLoad = null
 
-        if (data == null || cfg == null) { return }
-
-        CelestiaAppCore.initGL()
-
-        loadCelestia(data, cfg, addon)
+        if (data == null || cfg == null) {
+            AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+            return false
+        }
+        return loadCelestia(data, cfg, addon)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
-        glViewSize = Size(width, height)
         Log.d(TAG, "Resize to $width x $height")
         renderer.setSurfaceSize(width, height)
     }
@@ -456,8 +469,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         private const val ARG_LANG_OVERRIDE = "lang"
 
         private const val TAG = "CelestiaFragment"
-
-        var celestiaLoaded = false
 
         fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, languageOverride: String?) =
             CelestiaFragment().apply {
