@@ -27,9 +27,6 @@ class SettingsDataLocationFragment : SettingsBaseFragment() {
 
     private val listAdapter by lazy { SettingsDataLocationRecyclerViewAdapter(listener) }
 
-    override val title: String
-        get() = CelestiaString("Data Location", "")
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -46,6 +43,12 @@ class SettingsDataLocationFragment : SettingsBaseFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Data Location", "")
     }
 
     override fun onAttach(context: Context) {

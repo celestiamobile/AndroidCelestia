@@ -19,13 +19,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.TitledFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.AssetUtils
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.versionCode
 import space.celestia.mobilecelestia.utils.versionName
 
-class AboutFragment : TitledFragment() {
+class AboutFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
     override fun onCreateView(
@@ -42,6 +42,12 @@ class AboutFragment : TitledFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("About", "")
     }
 
     private fun createAboutItems(): List<List<AboutItem>> {

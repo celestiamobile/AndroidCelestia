@@ -19,16 +19,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.TitledFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
 
-class BrowserCommonFragment : TitledFragment() {
+class BrowserCommonFragment : NavigationFragment.SubFragment() {
 
     private var listener: Listener? = null
     private var browserItem: CelestiaBrowserItem? = null
-
-    override val title: String
-        get() = browserItem!!.alternativeName ?: browserItem!!.name
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +51,12 @@ class BrowserCommonFragment : TitledFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = browserItem?.alternativeName ?: browserItem?.name ?: ""
     }
 
     override fun onAttach(context: Context) {

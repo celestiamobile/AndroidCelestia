@@ -11,6 +11,8 @@
 
 package space.celestia.mobilecelestia.resource
 
+import android.os.Bundle
+import android.view.View
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -21,12 +23,15 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 class InstalledResourceListFragment : AsyncListFragment<ResourceItem>() {
     private val compositeDisposable = CompositeDisposable()
 
-    override val title: String
-        get() = CelestiaString("Installed", "")
-
     override fun onDestroy() {
         compositeDisposable.clear()
         super.onDestroy()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Installed", "")
     }
 
     override fun refresh(success: (List<ResourceItem>) -> Unit, failure: (String) -> Unit) {

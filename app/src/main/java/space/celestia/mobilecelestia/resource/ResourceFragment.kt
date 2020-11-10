@@ -13,93 +13,23 @@ package space.celestia.mobilecelestia.resource
 
 import android.content.Context
 import android.os.Bundle
-import android.view.*
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.Fragment
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.TitledFragment
-import space.celestia.mobilecelestia.common.pop
-import space.celestia.mobilecelestia.common.push
-import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.favorite.FavoriteFragment
-import space.celestia.mobilecelestia.favorite.MutableFavoriteBaseItem
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
-import space.celestia.mobilecelestia.utils.CelestiaString
 
-class ResourceFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
+class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
+    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
+        return ResourceCategoryListFragment.newInstance()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar.setOnMenuItemClickListener(this)
-        toolbar.setNavigationOnClickListener {
-            popItem()
-        }
-        val fragment = ResourceCategoryListFragment.newInstance()
-        replace(fragment, R.id.fragment_container)
-        toolbar.title = fragment.title
-        showInitialToolbar()
-    }
-
-    private fun replaceItem(item: ResourceCategory) {
-        toolbar.title = item.name
-        replace(ResourceItemListFragment.newInstance(item), R.id.fragment_container)
-        showInitialToolbar()
-    }
-
-    fun pushItem(item: ResourceCategory) {
-        val frag = ResourceItemListFragment.newInstance(item)
-        push(frag, R.id.fragment_container)
-        toolbar.title = item.name
-        showDetailToolbar()
-    }
-
-    fun pushItem(item: ResourceItem) {
-        val frag = ResourceItemFragment.newInstance(item)
-        push(frag, R.id.fragment_container)
-        toolbar.title = ""
-        showDetailToolbar()
-    }
-
-    private fun showInitialToolbar() {
-        toolbar.menu.clear()
-        toolbar.navigationIcon = null
-        toolbar.menu.add(Menu.NONE, MENU_ITEM_MANAGE_INSTALLED, Menu.NONE, CelestiaString("Installed", ""))
-    }
-
-    private fun showDetailToolbar() {
-        toolbar.menu.clear()
-        toolbar.navigationIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null)
-    }
-
-    private fun popItem() {
-        pop()
-        val index = childFragmentManager.backStackEntryCount - 1
-        if (index == 0) {
-            // no more return
-            showInitialToolbar()
-        }
-        val frag = childFragmentManager.fragments[index] as TitledFragment
-        toolbar.title = frag.title
-    }
-
-    override fun onMenuItemClick(item: MenuItem?): Boolean {
-        if (item == null) return true
-        when (item.itemId) {
+    override fun menuItemClicked(id: Int): Boolean {
+        when (id) {
             MENU_ITEM_MANAGE_INSTALLED -> {
                 val fragment = InstalledResourceListFragment.newInstance()
-                push(fragment, R.id.fragment_container)
-                toolbar.title = fragment.title
-                showDetailToolbar()
+                pushFragment(fragment)
             } else -> {}
         }
         return true
@@ -119,12 +49,22 @@ class ResourceFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         listener = null
     }
 
+    fun pushItem(item: ResourceCategory) {
+        val frag = ResourceItemListFragment.newInstance(item)
+        pushFragment(frag)
+    }
+
+    fun pushItem(item: ResourceItem) {
+        val frag = ResourceItemFragment.newInstance(item)
+        pushFragment(frag)
+    }
+
     interface Listener {
     }
 
     companion object {
         fun newInstance() = ResourceFragment()
 
-        private const val MENU_ITEM_MANAGE_INSTALLED = 0
+        const val MENU_ITEM_MANAGE_INSTALLED = ResourceCategoryListFragment.MENU_ITEM_MANAGE_INSTALLED
     }
 }

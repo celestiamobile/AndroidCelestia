@@ -12,79 +12,46 @@
 package space.celestia.mobilecelestia.settings
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaView
-import space.celestia.mobilecelestia.common.*
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 
-class SettingsFragment : PoppableFragment() {
-
-    private val toolbar by lazy { view!!.findViewById<Toolbar>(R.id.toolbar) }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar.setNavigationOnClickListener {
-            popLast()
-        }
-        val main = SettingsItemFragment.newInstance()
-        replace(main, main.title)
-    }
-
-    fun replace(fragment: Fragment, title: String) {
-        replace(fragment, R.id.fragment_container)
-        toolbar.title = title
-        toolbar.navigationIcon = null
-    }
-
-    fun push(fragment: Fragment, title: String) {
-        push(fragment, R.id.fragment_container)
-        toolbar.title = title
-        toolbar.navigationIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null)
+class SettingsFragment : NavigationFragment() {
+    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
+        return SettingsItemFragment.newInstance()
     }
 
     fun pushMainSettingItem(item: SettingsItem) {
         when (item) {
             is SettingsMultiSelectionItem -> {
-                push(SettingsMultiSelectionFragment.newInstance(item), item.name)
+                pushFragment(SettingsMultiSelectionFragment.newInstance(item))
             }
             is SettingsSingleSelectionItem -> {
-                push(SettingsSingleSelectionFragment.newInstance(item), item.name)
+                pushFragment(SettingsSingleSelectionFragment.newInstance(item))
             }
             is SettingsCommonItem -> {
-                push(SettingsCommonFragment.newInstance(item), item.name)
+                pushFragment(SettingsCommonFragment.newInstance(item))
             }
             is SettingsCurrentTimeItem -> {
-                push(SettingsCurrentTimeFragment.newInstance(), item.name)
+                pushFragment(SettingsCurrentTimeFragment.newInstance())
             }
             is SettingsRenderInfoItem -> {
                 CelestiaView.callOnRenderThread {
                     val renderInfo = CelestiaAppCore.shared().renderInfo
                     activity?.runOnUiThread {
-                        push(SimpleTextFragment.newInstance(item.name, renderInfo), item.name)
+                        pushFragment(SimpleTextFragment.newInstance(item.name, renderInfo))
                     }
                 }
             }
             is SettingsAboutItem -> {
-                push(AboutFragment.newInstance(), item.name)
+                pushFragment(AboutFragment.newInstance())
             }
             is SettingsDataLocationItem -> {
-                push(SettingsDataLocationFragment.newInstance(), item.name)
+                pushFragment(SettingsDataLocationFragment.newInstance())
             }
             is SettingsLanguageItem -> {
-                push(SettingsLanguageFragment.newInstance(), item.name)
+                pushFragment(SettingsLanguageFragment.newInstance())
             }
             else -> {
                 throw RuntimeException("SettingsFragment cannot handle item $item")
@@ -98,22 +65,7 @@ class SettingsFragment : PoppableFragment() {
             frag.reload()
     }
 
-    override fun canPop(): Boolean {
-        return childFragmentManager.backStackEntryCount > 0
-    }
-
-    override fun popLast() {
-        pop()
-        val index = childFragmentManager.backStackEntryCount - 1
-        if (index == 0) {
-            // no more return
-            toolbar.navigationIcon = null
-        }
-        toolbar.title = (childFragmentManager.fragments[index] as TitledFragment).title
-    }
-
     companion object {
         fun newInstance() = SettingsFragment()
     }
-
 }

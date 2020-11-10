@@ -12,6 +12,7 @@
 package space.celestia.mobilecelestia.resource
 
 import android.os.Bundle
+import android.view.View
 import com.google.gson.reflect.TypeToken
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import space.celestia.mobilecelestia.core.CelestiaAppCore
@@ -26,9 +27,6 @@ class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
     private var category: ResourceCategory? = null
     private val compositeDisposable = CompositeDisposable()
 
-    override val title: String
-        get() = category?.name ?: ""
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -40,6 +38,12 @@ class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
             val savedCategory = arguments?.getSerializable(ARG_CATEGORY)
             category = savedCategory as ResourceCategory
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = category?.name ?: ""
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -21,15 +21,11 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 
 class SettingsMultiSelectionFragment : SettingsBaseFragment() {
-
     private var item: SettingsMultiSelectionItem? = null
 
     private var listener: Listener? = null
 
     private val listAdapter by lazy { SettingsMultiSelectionRecyclerViewAdapter(item!!, listener) }
-
-    override val title: String
-        get() = item!!.name
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +52,12 @@ class SettingsMultiSelectionFragment : SettingsBaseFragment() {
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = item?.name ?: ""
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Listener) {
@@ -80,7 +82,6 @@ class SettingsMultiSelectionFragment : SettingsBaseFragment() {
     }
 
     companion object {
-
         const val ARG_ITEM = "item"
 
         @JvmStatic

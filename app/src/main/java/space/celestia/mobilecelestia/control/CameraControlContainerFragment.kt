@@ -12,28 +12,11 @@
 package space.celestia.mobilecelestia.control
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
-import androidx.fragment.app.Fragment
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.common.NavigationFragment
 
-class CameraControlContainerFragment : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
-        toolbar.title = CelestiaString("Camera Control", "")
-
-        replace(CameraControlFragment.newInstance(), R.id.fragment_container)
+class CameraControlContainerFragment : NavigationFragment() {
+    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
+        return CameraControlFragment.newInstance()
     }
 
     companion object {

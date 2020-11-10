@@ -12,13 +12,14 @@
 package space.celestia.mobilecelestia.resource.model
 
 import android.util.Log
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
 import net.lingala.zip4j.ZipFile
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.*
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
 import java.lang.ref.WeakReference
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max

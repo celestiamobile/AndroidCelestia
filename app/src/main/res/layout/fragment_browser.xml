@@ -19,8 +19,8 @@
     tools:context=".browser.BrowserFragment"
     style="@style/Background">
 
-    <include
-        layout="@layout/fragment_general_container_with_toolbar"
+    <FrameLayout
+        android:id="@+id/navigation_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"/>

@@ -11,8 +11,11 @@
 
 package space.celestia.mobilecelestia.resource
 
+import android.os.Bundle
+import android.view.View
 import com.google.gson.reflect.TypeToken
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
@@ -23,8 +26,11 @@ import space.celestia.mobilecelestia.utils.commonHandler
 class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
     private val compositeDisposable = CompositeDisposable()
 
-    override val title: String
-        get() = CelestiaString("Categories", "")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        title = CelestiaString("Categories", "")
+        menuItems = listOf(NavigationFragment.MenuItem(MENU_ITEM_MANAGE_INSTALLED, CelestiaString("Installed", "")))
+    }
 
     override fun onDestroy() {
         compositeDisposable.clear()
@@ -45,5 +51,7 @@ class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
     companion object {
         @JvmStatic
         fun newInstance() = ResourceCategoryListFragment()
+
+        const val MENU_ITEM_MANAGE_INSTALLED = 0
     }
 }

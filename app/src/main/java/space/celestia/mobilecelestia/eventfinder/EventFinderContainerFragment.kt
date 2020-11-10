@@ -12,49 +12,15 @@
 package space.celestia.mobilecelestia.eventfinder
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.Fragment
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.TitledFragment
-import space.celestia.mobilecelestia.common.pop
-import space.celestia.mobilecelestia.common.push
-import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.common.NavigationFragment
 
-class EventFinderContainerFragment : Fragment() {
-    private val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar.title = CelestiaString("Eclipse Finder", "")
-        toolbar.setNavigationOnClickListener {
-            popItem()
-        }
-        replace(EventFinderInputFragment.newInstance(), R.id.fragment_container)
+class EventFinderContainerFragment : NavigationFragment() {
+    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
+        return EventFinderInputFragment.newInstance()
     }
 
     fun showResult() {
-        push(EventFinderResultFragment.newInstance(), R.id.fragment_container)
-        toolbar.navigationIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null)
-    }
-
-    private fun popItem() {
-        pop()
-        val index = childFragmentManager.backStackEntryCount - 1
-        if (index == 0) {
-            // no more return
-            toolbar.navigationIcon = null
-        }
+        pushFragment(EventFinderResultFragment.newInstance())
     }
 
     companion object {

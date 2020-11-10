@@ -13,29 +13,19 @@ package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
 import android.view.*
-import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.*
+import space.celestia.mobilecelestia.common.Poppable
+import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
 
-
-abstract class BrowserRootFragment: PoppableFragment() {
-    abstract fun pushItem(browserItem: CelestiaBrowserItem)
+interface BrowserRootFragment {
+    fun pushItem(browserItem: CelestiaBrowserItem)
 }
 
-class BrowserFragment : BrowserRootFragment(), BottomNavigationView.OnNavigationItemSelectedListener {
-    private val browserItemMenu by lazy {
-        val sim = CelestiaAppCore.shared().simulation
-        listOf(
-            BrowserItemMenu(sim.universe.solBrowserRoot(), R.drawable.browser_tab_sso),
-            BrowserItemMenu(sim.starBrowserRoot(), R.drawable.browser_tab_star),
-            BrowserItemMenu(sim.universe.dsoBrowserRoot(), R.drawable.browser_tab_dso)
-        )
-    }
-
-    private val toolbar get() = view!!.findViewById<Toolbar>(R.id.toolbar)
+class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigationView.OnNavigationItemSelectedListener {
     private var currentPath = ""
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -69,9 +59,6 @@ class BrowserFragment : BrowserRootFragment(), BottomNavigationView.OnNavigation
             val item = browserItemMenu[i]
             nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.alternativeName ?: item.item.name).setIcon(item.icon)
         }
-        toolbar.setNavigationOnClickListener {
-            popLast()
-        }
         nav.setOnNavigationItemSelectedListener(this)
         replaceItem(browserItemMenu[0].item)
     }
@@ -82,37 +69,38 @@ class BrowserFragment : BrowserRootFragment(), BottomNavigationView.OnNavigation
     }
 
     private fun replaceItem(browserItem: CelestiaBrowserItem) {
-        toolbar.navigationIcon = null
-        toolbar.title = browserItem.alternativeName ?: browserItem.name
         currentPath = browserItem.name
         browserMap[currentPath] = browserItem
-        replace(BrowserCommonFragment.newInstance(currentPath), R.id.fragment_container)
+        replace(BrowserNavigationFragment.newInstance(currentPath), R.id.navigation_container)
     }
 
     override fun pushItem(browserItem: CelestiaBrowserItem) {
-        toolbar.title = browserItem.name
-        toolbar.setNavigationIcon(R.drawable.ic_action_arrow_back)
+        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
         currentPath = "$currentPath/${browserItem.name}"
         browserMap[currentPath] = browserItem
-        val frag = BrowserCommonFragment.newInstance(currentPath)
-        push(frag, R.id.fragment_container)
+        navigationFragment.pushItem(currentPath)
     }
 
     override fun canPop(): Boolean {
-        return childFragmentManager.backStackEntryCount > 0
+        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return false
+        return navigationFragment.canPop()
     }
 
     override fun popLast() {
-        pop()
-        val index = childFragmentManager.backStackEntryCount - 1
-        if (index == 0) {
-            // no more return
-            toolbar.navigationIcon = null
-        }
-        toolbar.title = (childFragmentManager.fragments[index] as TitledFragment).title
+        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
+        navigationFragment.popLast()
     }
 
     companion object {
+        private val browserItemMenu by lazy {
+            val sim = CelestiaAppCore.shared().simulation
+            listOf(
+                BrowserItemMenu(sim.universe.solBrowserRoot(), R.drawable.browser_tab_sso),
+                BrowserItemMenu(sim.starBrowserRoot(), R.drawable.browser_tab_star),
+                BrowserItemMenu(sim.universe.dsoBrowserRoot(), R.drawable.browser_tab_dso)
+            )
+        }
+
         @JvmStatic
         fun newInstance() =
             BrowserFragment()

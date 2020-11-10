@@ -27,9 +27,6 @@ class SettingsCommonFragment : SettingsBaseFragment() {
     private var dataSource: DataSource? = null
     private var adapter: SettingsCommonRecyclerViewAdapter? = null
 
-    override val title: String
-        get() = item!!.name
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -49,6 +46,12 @@ class SettingsCommonFragment : SettingsBaseFragment() {
             it.adapter = adapter
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = item?.name ?: ""
     }
 
     override fun onAttach(context: Context) {
@@ -90,7 +93,7 @@ class SettingsCommonFragment : SettingsBaseFragment() {
     }
 
     companion object {
-        const val ARG_ITEM = "item"
+        private const val ARG_ITEM = "item"
 
         @JvmStatic
         fun newInstance(item: SettingsCommonItem) =

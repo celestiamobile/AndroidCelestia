@@ -16,13 +16,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaEclipseFinder
+import space.celestia.mobilecelestia.utils.CelestiaString
 
-class EventFinderResultFragment : Fragment() {
+class EventFinderResultFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
     override fun onCreateView(
@@ -38,6 +39,12 @@ class EventFinderResultFragment : Fragment() {
         }, eclipses)
         recView.adapter = adapter
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Eclipse Finder", "")
     }
 
     override fun onAttach(context: Context) {

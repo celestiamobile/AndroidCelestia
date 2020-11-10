@@ -14,7 +14,6 @@ package space.celestia.mobilecelestia.celestia
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PointF
-import android.graphics.RectF
 import android.opengl.GLSurfaceView
 import android.view.Choreographer
 

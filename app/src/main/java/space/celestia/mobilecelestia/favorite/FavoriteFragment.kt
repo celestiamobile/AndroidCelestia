@@ -13,51 +13,22 @@ package space.celestia.mobilecelestia.favorite
 
 import android.content.Context
 import android.os.Bundle
-import android.view.*
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.Fragment
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.pop
-import space.celestia.mobilecelestia.common.push
-import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.common.NavigationFragment
 
-class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-
-    private val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
+class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
 
     private val currentFrag: FavoriteItemFragment
         get() = childFragmentManager.fragments.last() as FavoriteItemFragment
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar.setOnMenuItemClickListener(this)
-        toolbar.setNavigationOnClickListener {
-            popItem()
-        }
-        replaceItem(FavoriteRoot())
-    }
-
-    private fun replaceItem(item: FavoriteBaseItem) {
-        replace(FavoriteItemFragment.newInstance(item), R.id.fragment_container)
-        toolbar.navigationIcon = null
-        toolbar.title = item.title
+    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
+        return FavoriteItemFragment.newInstance(FavoriteRoot())
     }
 
     fun pushItem(item: FavoriteBaseItem) {
         val frag = FavoriteItemFragment.newInstance(item)
-        push(frag, R.id.fragment_container)
-        toolbar.title = item.title
-        toolbar.navigationIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null)
-        reloadMenu(item)
+        pushFragment(frag)
     }
 
     fun add(item: FavoriteBaseItem) {
@@ -78,30 +49,8 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         frag.reload()
     }
 
-    private fun reloadMenu(item: FavoriteBaseItem) {
-        if (item is MutableFavoriteBaseItem) {
-            toolbar.menu.clear()
-            toolbar.menu.add(Menu.NONE, MENU_ITEM_ADD, Menu.NONE, CelestiaString("Add", "")).setIcon(R.drawable.ic_add)
-        } else {
-            toolbar.menu.clear()
-        }
-    }
-
-    private fun popItem() {
-        pop()
-        val index = childFragmentManager.backStackEntryCount - 1
-        if (index == 0) {
-            // no more return
-            toolbar.navigationIcon = null
-        }
-        val frag = childFragmentManager.fragments[index] as FavoriteItemFragment
-        toolbar.title = frag.title
-        reloadMenu(frag.favoriteItem!!)
-    }
-
-    override fun onMenuItemClick(item: MenuItem?): Boolean {
-        if (item == null) { return true }
-        when (item.itemId) {
+    override fun menuItemClicked(id: Int): Boolean {
+        when (id) {
             MENU_ITEM_ADD -> {
                 listener?.addFavoriteItem(currentFrag.favoriteItem as MutableFavoriteBaseItem)
             } else -> {}
@@ -134,5 +83,4 @@ class FavoriteFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         const val MENU_ITEM_ADD = 0
     }
-
 }

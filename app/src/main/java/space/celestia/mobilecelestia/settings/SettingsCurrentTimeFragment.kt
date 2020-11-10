@@ -19,15 +19,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 class SettingsCurrentTimeFragment : SettingsBaseFragment() {
-    
     private var listener: Listener? = null
 
     private val listAdapter by lazy { SettingsCurrentTimeRecyclerViewAdapter(listener) }
-
-    override val title: String
-        get() = SettingsCurrentTimeItem().name
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +41,12 @@ class SettingsCurrentTimeFragment : SettingsBaseFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Current Time", "")
     }
 
     override fun onAttach(context: Context) {

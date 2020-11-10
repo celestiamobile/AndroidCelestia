@@ -21,8 +21,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.ProgressButton
-import space.celestia.mobilecelestia.common.TitledFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
@@ -35,7 +35,7 @@ import java.io.File
 import java.text.DateFormat
 import java.util.*
 
-class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
+class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
     private var item: ResourceItem? = null
     private var progressButton: ProgressButton? = null
     private var currentState: ResourceItemState = ResourceItemState.None
@@ -58,9 +58,6 @@ class ResourceItemFragment : TitledFragment(), ResourceManager.Listener {
     enum class ResourceItemState {
         None, Downloading, Installed
     }
-
-    override val title: String
-        get() = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -20,18 +20,15 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.TitledFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.utils.CelestiaString
 
-class FavoriteItemFragment : TitledFragment() {
-
+class FavoriteItemFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
     var favoriteItem: FavoriteBaseItem? = null
     private val itemHelper by lazy { ItemTouchHelper(FavoriteItemItemTouchCallback()) }
     private val listAdapter by lazy { FavoriteItemRecyclerViewAdapter(favoriteItem!!, listener, this.itemHelper) }
-
-    override val title: String
-        get() = favoriteItem!!.title
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +53,19 @@ class FavoriteItemFragment : TitledFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = favoriteItem?.title ?: ""
+        var items: List<NavigationFragment.MenuItem> = listOf()
+        if (favoriteItem is MutableFavoriteBaseItem) {
+            items = listOf(
+                NavigationFragment.MenuItem(FavoriteFragment.MENU_ITEM_ADD, CelestiaString("Add", ""), R.drawable.ic_add)
+            )
+        }
+        menuItems = items
     }
 
     override fun onAttach(context: Context) {
@@ -84,7 +94,6 @@ class FavoriteItemFragment : TitledFragment() {
     }
 
     companion object {
-
         const val ARG_ITEM = "item"
 
         @JvmStatic

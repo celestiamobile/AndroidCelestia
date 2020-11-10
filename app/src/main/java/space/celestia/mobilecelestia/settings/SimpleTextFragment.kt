@@ -17,12 +17,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.TitledFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
 
-class SimpleTextFragment : TitledFragment() {
-
-    override val title: String
-        get() = textTitle!!
+class SimpleTextFragment : NavigationFragment.SubFragment() {
 
     private var textTitle: String? = null
     private var textDetail: String? = null
@@ -44,6 +41,12 @@ class SimpleTextFragment : TitledFragment() {
         val view = inflater.inflate(R.layout.fragment_simple_text, container, false)
         view.findViewById<TextView>(R.id.text).text = textDetail
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = textTitle ?: ""
     }
 
     companion object {

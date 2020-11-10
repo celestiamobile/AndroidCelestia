@@ -22,11 +22,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class SettingsItemFragment : SettingsBaseFragment() {
-
     var listener: Listener? = null
-
-    override val title: String
-        get() = CelestiaString("Settings", "")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,12 +40,18 @@ class SettingsItemFragment : SettingsBaseFragment() {
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Settings", "")
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement SettingsItemMainFragment.Listener")
+            throw RuntimeException("$context must implement SettingsItemFragment.Listener")
         }
     }
 

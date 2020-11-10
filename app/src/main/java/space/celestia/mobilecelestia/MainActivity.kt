@@ -49,7 +49,7 @@ import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.Cleanable
-import space.celestia.mobilecelestia.common.PoppableFragment
+import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.control.BottomControlFragment
 import space.celestia.mobilecelestia.control.CameraControlAction
 import space.celestia.mobilecelestia.control.CameraControlContainerFragment
@@ -67,8 +67,8 @@ import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.resource.AsyncListFragment
 import space.celestia.mobilecelestia.resource.ResourceFragment
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
-import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.resource.model.ResourceItem
+import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.share.ShareAPI
@@ -80,7 +80,6 @@ import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.File
 import java.io.IOException
-import java.lang.Exception
 import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.collections.ArrayList
@@ -260,7 +259,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (frag == null)
             frag = supportFragmentManager.findFragmentById(R.id.toolbar_end_container)
 
-        if (frag is PoppableFragment && frag.canPop()) {
+        if (frag is Poppable && frag.canPop()) {
             frag.popLast()
         } else {
             popLastFromBackStackAndShow()

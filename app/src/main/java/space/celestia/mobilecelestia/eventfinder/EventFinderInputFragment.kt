@@ -18,10 +18,10 @@ import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.showAlert
@@ -29,7 +29,7 @@ import space.celestia.mobilecelestia.utils.showDateInput
 import space.celestia.mobilecelestia.utils.showSingleSelection
 import java.util.*
 
-class EventFinderInputFragment : Fragment() {
+class EventFinderInputFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
     private var adapter: EventFinderInputRecyclerViewAdapter? = null
@@ -71,6 +71,12 @@ class EventFinderInputFragment : Fragment() {
         })
         recView.adapter = adapter
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Eclipse Finder", "")
     }
 
     override fun onAttach(context: Context) {

@@ -18,7 +18,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.CelestiaString
 
@@ -27,9 +26,6 @@ class SettingsLanguageFragment : SettingsBaseFragment() {
     private var dataSource: DataSource? = null
 
     private val listAdapter by lazy { SettingsLanguageRecyclerViewAdapter(listener, dataSource) }
-
-    override val title: String
-        get() = CelestiaString("Data Location", "")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,6 +42,12 @@ class SettingsLanguageFragment : SettingsBaseFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Language", "")
     }
 
     override fun onAttach(context: Context) {
