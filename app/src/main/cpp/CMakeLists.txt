@@ -36,8 +36,6 @@ set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/url.h
         ${CELESTIA_SRC_DIR}/celestia/view.cpp
         ${CELESTIA_SRC_DIR}/celestia/view.h
-        ${CELESTIA_SRC_DIR}/celestia/oggtheoracapture.cpp
-        ${CELESTIA_SRC_DIR}/celestia/oggtheoracapture.h
         )
 
 list(APPEND CELESTIA_SOURCES
@@ -456,12 +454,6 @@ set_target_properties(gettext PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR
 add_library(libepoxy STATIC IMPORTED)
 set_target_properties(libepoxy PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libGL.a)
 
-add_library(libogg STATIC IMPORTED)
-set_target_properties(libogg PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libogg.a)
-
-add_library(theora STATIC IMPORTED)
-set_target_properties(theora PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libtheora.a)
-
 add_library(libpng STATIC IMPORTED)
 set_target_properties(libpng PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libpng16.a)
 
@@ -510,8 +502,6 @@ target_link_libraries( # Specifies the target library.
         freetype
         lua
         libpng
-        theora
-        libogg
         cspice
         EGL
         ${log-lib} )
