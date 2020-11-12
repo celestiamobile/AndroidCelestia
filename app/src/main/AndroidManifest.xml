@@ -28,6 +28,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name="space.celestia.mobilecelestia.MainActivity"
+            android:windowSoftInputMode="stateHidden|adjustNothing"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
             android:screenOrientation="sensorLandscape"
             android:launchMode="singleInstance"

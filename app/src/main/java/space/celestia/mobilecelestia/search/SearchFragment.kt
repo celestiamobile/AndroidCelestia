@@ -51,11 +51,9 @@ class SearchFragment : Fragment() {
 
         view.findViewById<View>(R.id.search_container).setOnTouchListener { _, _ -> true }
         val searchView = view.findViewById<SearchView>(R.id.search)
-        searchView.setOnClickListener {
-            searchView.isIconified = false
-        }
         this.searchView = searchView
         setupSearchSearchView()
+        searchView.isIconified = false
 
         // Set the adapter
         with(view.findViewById<RecyclerView>(R.id.list)) {
