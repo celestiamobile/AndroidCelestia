@@ -1526,7 +1526,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "16"
+        private const val CURRENT_DATA_VERSION = "17"
+        // 17: 1.2 Beta
         // 16: 1.1 Migrate from filesDir to noBackupFilesDir
         // 15: 1.0.5
         // 14: 1.0.4
