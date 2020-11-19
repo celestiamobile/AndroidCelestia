@@ -37,6 +37,7 @@ private val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
         CelestiaString("In camera mode, drag to move field of view.\n\nPinch to zoom in/out field of view.", ""), R.drawable.tutorial_mode_camera)
 ) }
 private val staticHelpURLItems: List<URLItem> by lazy { listOf(
+    URLItem(CelestiaString("Mouse/Keyboard Controls", ""), "https://github.com/levinli303/Celestia/wiki/Controls"),
     URLItem(CelestiaString("Use Add-ons and Scripts", ""), "https://github.com/levinli303/Celestia/wiki/Use-Addons-and-Scripts"),
     URLItem(CelestiaString("Scripts and URLs", ""), "https://github.com/levinli303/Celestia/wiki/Scripts-and-URLs")
 ) }
