@@ -24,7 +24,8 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class HelpAction {
-    RunDemo;
+    RunDemo,
+    ShowDestinations;
 }
 
 private val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
@@ -39,7 +40,12 @@ private val staticHelpURLItems: List<URLItem> by lazy { listOf(
     URLItem(CelestiaString("Use Add-ons and Scripts", ""), "https://github.com/levinli303/Celestia/wiki/Use-Addons-and-Scripts"),
     URLItem(CelestiaString("Scripts and URLs", ""), "https://github.com/levinli303/Celestia/wiki/Scripts-and-URLs")
 ) }
-private val staticHelpActionItems: List<ActionItem> by lazy { listOf( ActionItem(CelestiaString("Run Demo", ""), HelpAction.RunDemo) ) }
+private val staticHelpActionItems: List<ActionItem> by lazy {
+    listOf(
+        ActionItem(CelestiaString("Run Demo", ""), HelpAction.RunDemo),
+        ActionItem(CelestiaString("Show Destinations", ""), HelpAction.ShowDestinations)
+    )
+}
 
 class HelpFragment : Fragment() {
 

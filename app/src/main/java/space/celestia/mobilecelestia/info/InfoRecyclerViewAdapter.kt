@@ -16,7 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_info_action_item.view.*
+import kotlinx.android.synthetic.main.common_action_button.view.*
 import kotlinx.android.synthetic.main.fragment_info_description_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.InfoFragment.Listener
@@ -39,7 +39,7 @@ class InfoRecyclerViewAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == ACTION_ITEM) {
             val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.fragment_info_action_item, parent, false)
+                .inflate(R.layout.common_action_button, parent, false)
             return ActionViewHolder(view)
         }
         val view = LayoutInflater.from(parent.context)

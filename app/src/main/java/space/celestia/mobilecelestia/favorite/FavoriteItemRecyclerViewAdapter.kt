@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.common_reorderable_text_list_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
+import space.celestia.mobilecelestia.core.CelestiaDestination
 import space.celestia.mobilecelestia.core.CelestiaScript
 import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -55,14 +56,16 @@ interface MutableFavoriteBaseItem : FavoriteBaseItem {
 }
 
 enum class FavoriteType {
-    Script
+    Script,
+    Destination
 }
 
 class FavoriteRoot : FavoriteBaseItem {
     override val children: List<FavoriteBaseItem>
         get() = listOf(
             FavoriteTypeItem(FavoriteType.Script),
-            FavoriteBookmarkRootItem(currentBookmarkRoot)
+            FavoriteBookmarkRootItem(currentBookmarkRoot),
+            FavoriteTypeItem(FavoriteType.Destination)
         )
     override val title: String
         get() = CelestiaString("Favorites", "")
@@ -77,12 +80,18 @@ class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
                 FavoriteType.Script -> {
                     return currentScripts.map { FavoriteScriptItem(it) }
                 }
+                FavoriteType.Destination -> {
+                    return currentDestinations.map { FavoriteDestinationItem(it) }
+                }
             }
         }
     override val title: String
     get() = when (type) {
         FavoriteType.Script -> {
             CelestiaString("Scripts", "")
+        }
+        FavoriteType.Destination -> {
+            CelestiaString("Destinations", "")
         }
     }
     override val isLeaf: Boolean
@@ -94,6 +103,15 @@ class FavoriteScriptItem(val script: CelestiaScript) : FavoriteBaseItem {
         get() = listOf()
     override val title: String
         get() = script.title
+    override val isLeaf: Boolean
+        get() = true
+}
+
+class FavoriteDestinationItem(val destination: CelestiaDestination): FavoriteBaseItem {
+    override val children: List<FavoriteBaseItem>
+        get() = listOf()
+    override val title: String
+        get() = destination.name
     override val isLeaf: Boolean
         get() = true
 }
@@ -140,7 +158,6 @@ fun updateCurrentScripts(scripts: List<CelestiaScript>) {
     currentScripts = scripts
 }
 
-
 fun getCurrentBookmarks(): List<BookmarkNode> {
     return currentBookmarkRoot.children ?: return listOf()
 }
@@ -149,8 +166,13 @@ fun updateCurrentBookmarks(nodes: List<BookmarkNode>) {
     currentBookmarkRoot.children = ArrayList(nodes)
 }
 
+fun updateCurrentDestinations(destinations: List<CelestiaDestination>) {
+    currentDestinations = destinations
+}
+
 private var currentScripts: List<CelestiaScript> = listOf()
 private var currentBookmarkRoot: BookmarkNode = BookmarkNode(CelestiaString("Bookmarks", "") , "", arrayListOf())
+private var currentDestinations: List<CelestiaDestination> = listOf()
 
 class FavoriteItemRecyclerViewAdapter private constructor(
     private val item: FavoriteBaseItem,

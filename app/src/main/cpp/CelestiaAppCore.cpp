@@ -81,6 +81,10 @@ jfieldID crmPtrFieldID = nullptr;
 jclass cucClz = nullptr;
 jfieldID cucPtrFieldID = nullptr;
 
+// destination
+jclass cdClz = nullptr;
+jmethodID cdInitMethodID = nullptr;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -157,6 +161,10 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     jclass cuc = env->FindClass("space/celestia/mobilecelestia/core/CelestiaUniversalCoord");
     cucClz = (jclass)env->NewGlobalRef(cuc);
     cucPtrFieldID = env->GetFieldID(cucClz, "pointer", "J");
+
+    jclass cd = env->FindClass("space/celestia/mobilecelestia/core/CelestiaDestination");
+    cdClz = (jclass)env->NewGlobalRef(cd);
+    cdInitMethodID = env->GetMethodID(cdClz, "<init>", "(Ljava/lang/String;Ljava/lang/String;DLjava/lang/String;)V");
 
     jclass al = env->FindClass("java/util/ArrayList");
     alClz = (jclass)env->NewGlobalRef(al);

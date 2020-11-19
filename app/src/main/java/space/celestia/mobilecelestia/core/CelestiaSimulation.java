@@ -77,6 +77,10 @@ public class CelestiaSimulation {
         return new CelestiaObserver(c_getActiveObserver());
     }
 
+    public void goTo(@NonNull CelestiaDestination destination) {
+        c_goToDestination(pointer, destination.target, destination.distance);
+    }
+
     // C functions
     private native long c_getSelection();
     private native void c_setSelection(long ptr);
@@ -89,4 +93,5 @@ public class CelestiaSimulation {
     private native void c_setTime(double time);
     private native void c_goToEclipse(double time, long ref, long target);
     private native long c_getActiveObserver();
+    private static native void c_goToDestination(long ptr, String target, double distance);
 }

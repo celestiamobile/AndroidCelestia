@@ -72,6 +72,10 @@ extern jfieldID crmPtrFieldID;
 // universal coord
 extern jclass cucClz;
 extern jfieldID cucPtrFieldID;
+
+// universal destination
+extern jclass cdClz;
+extern jmethodID cdInitMethodID;
 }
 
 #endif //CELESTIA_JNI_H

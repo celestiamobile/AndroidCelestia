@@ -18,12 +18,21 @@ import space.celestia.mobilecelestia.common.NavigationFragment
 
 class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
+    private var initialItem: FavoriteBaseItem? = null
 
     private val currentFrag: FavoriteItemFragment
         get() = childFragmentManager.fragments.last() as FavoriteItemFragment
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        arguments?.let {
+            initialItem = it.getSerializable(ARG_ITEM) as? FavoriteBaseItem
+        }
+    }
+
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return FavoriteItemFragment.newInstance(FavoriteRoot())
+        return FavoriteItemFragment.newInstance(initialItem ?: FavoriteRoot())
     }
 
     fun pushItem(item: FavoriteBaseItem) {
@@ -79,7 +88,15 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     companion object {
-        fun newInstance() = FavoriteFragment()
+        const val ARG_ITEM = "item"
+
+        @JvmStatic
+        fun newInstance(item: FavoriteBaseItem) =
+            FavoriteFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable(ARG_ITEM, item)
+                }
+            }
 
         const val MENU_ITEM_ADD = 0
     }

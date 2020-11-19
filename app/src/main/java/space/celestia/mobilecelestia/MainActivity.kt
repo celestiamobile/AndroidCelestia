@@ -65,6 +65,7 @@ import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.resource.AsyncListFragment
+import space.celestia.mobilecelestia.resource.DestinationDetailFragment
 import space.celestia.mobilecelestia.resource.ResourceFragment
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
@@ -110,7 +111,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsLanguageFragment.Listener,
     SettingsLanguageFragment.DataSource,
     ResourceFragment.Listener,
-    AsyncListFragment.Listener<Any> {
+    AsyncListFragment.Listener<Any>,
+    DestinationDetailFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -879,7 +881,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onCameraActionClicked(action: CameraControlAction) {
-        core.simulation.reverseObserverOrientation()
+        CelestiaView.callOnRenderThread { core.simulation.reverseObserverOrientation() }
     }
 
     override fun onCameraActionStepperTouchDown(action: CameraControlAction) {
@@ -891,7 +893,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onHelpActionSelected(action: HelpAction) {
-        CelestiaView.callOnRenderThread { core.charEnter(CelestiaAction.RunDemo.value) }
+        when (action) {
+            HelpAction.RunDemo -> {
+                CelestiaView.callOnRenderThread { core.charEnter(CelestiaAction.RunDemo.value) }
+            }
+            HelpAction.ShowDestinations -> {
+                showDestinations()
+            }
+        }
     }
 
     override fun onHelpURLSelected(url: String) {
@@ -938,6 +947,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             } else if (item is FavoriteBookmarkItem) {
                 scriptOrURLPath = item.bookmark.url
                 runScriptOrOpenURLIfNeeded()
+            } else if (item is FavoriteDestinationItem) {
+                val destination = item.destination
+                val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+                if (frag is FavoriteFragment) {
+                    frag.pushFragment(DestinationDetailFragment.newInstance(destination))
+                }
             }
         } else {
             val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
@@ -945,6 +960,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 frag.pushItem(item)
             }
         }
+    }
+
+    override fun onGoToDestination(destination: CelestiaDestination) {
+        CelestiaView.callOnRenderThread { core.simulation.goTo(destination) }
     }
 
     override fun deleteFavoriteItem(index: Int) {
@@ -1339,7 +1358,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             scripts.addAll(CelestiaScript.getScriptsInDirectory(path, true))
         }
         updateCurrentScripts(scripts)
-        showEndFragment(FavoriteFragment.newInstance())
+        updateCurrentDestinations(core.destinations)
+        showEndFragment(FavoriteFragment.newInstance(FavoriteRoot()))
+    }
+
+    private fun showDestinations() {
+        updateCurrentDestinations(core.destinations)
+        showEndFragment(FavoriteFragment.newInstance(FavoriteTypeItem(FavoriteType.Destination)))
     }
 
     private fun showSettings() {

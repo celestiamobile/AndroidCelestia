@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.common_action_button.view.*
 import kotlinx.android.synthetic.main.fragment_help_action_item.view.*
 import kotlinx.android.synthetic.main.fragment_help_description_item.view.*
 import space.celestia.mobilecelestia.R

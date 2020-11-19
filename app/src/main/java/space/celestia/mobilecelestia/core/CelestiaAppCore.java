@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.List;
 
 public class CelestiaAppCore {
     public static final int MOUSE_BUTTON_LEFT       = 0x01;
@@ -171,6 +172,10 @@ public class CelestiaAppCore {
         return c_getRenderInfo(pointer);
     }
 
+    public @NonNull List<CelestiaDestination> getDestinations() {
+        return c_getDestinations(pointer);
+    }
+
     // C function
     private static native long c_init();
     private static native boolean c_startRenderer(long ptr);
@@ -207,6 +212,8 @@ public class CelestiaAppCore {
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);
+
+    private static native List<CelestiaDestination> c_getDestinations(long ptr);
 
     // Locale
     private static native void c_setLocaleDirectoryPath(String path, String locale);
