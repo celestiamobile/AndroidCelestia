@@ -17,7 +17,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.common_text_list_item.view.*
 import space.celestia.mobilecelestia.R
 
 interface BaseTextItemHolder {
@@ -27,9 +26,13 @@ interface BaseTextItemHolder {
 
 class CommonTextViewHolder(parent: ViewGroup):
     RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_item, parent, false)), BaseTextItemHolder {
-    override val title: TextView = itemView.title
-    override var accessory: ImageView = itemView.accessory
-    val detail: TextView = itemView.detail
+    override val title: TextView
+        get() = itemView.findViewById(R.id.title)
+    override val accessory: ImageView
+        get() = itemView.findViewById(R.id.accessory)
+
+    val detail: TextView
+        get() = itemView.findViewById(R.id.detail)
 
     fun configure(title: String?, detail: String? = null, accessory: Drawable? = null) {
         this.title.text = title

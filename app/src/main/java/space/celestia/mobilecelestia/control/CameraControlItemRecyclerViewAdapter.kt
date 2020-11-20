@@ -16,7 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.common_text_list_with_stepper_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -91,7 +90,7 @@ class CameraControlItemRecyclerViewAdapter(
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (item is CameraControlStepperItem && holder is StepperViewHolder) {
-            holder.contentView.text = item.title
+            holder.title.text = item.title
             holder.stepper.tag = item
             holder.stepper.listener = this
             return
@@ -103,9 +102,11 @@ class CameraControlItemRecyclerViewAdapter(
         super.bindVH(holder, item)
     }
 
-    inner class StepperViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val contentView: TextView = view.title
-        var stepper: StepperView = view.stepper
+    inner class StepperViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val title: TextView
+            get() = itemView.findViewById(R.id.title)
+        val stepper: StepperView
+            get() = itemView.findViewById(R.id.stepper)
     }
 
     companion object {

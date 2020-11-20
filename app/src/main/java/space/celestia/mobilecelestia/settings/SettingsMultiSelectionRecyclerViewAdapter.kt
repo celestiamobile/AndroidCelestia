@@ -20,7 +20,6 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.common_text_list_with_switch_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
@@ -105,9 +104,11 @@ class SettingsMultiSelectionRecyclerViewAdapter(
         updateSectionsWithHeader(item.createSections())
     }
 
-    inner class MasterViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val title: TextView = view.title
-        val switch: SwitchCompat = view.accessory
+    inner class MasterViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val title: TextView
+            get() = itemView.findViewById(R.id.title)
+        val switch: SwitchCompat
+            get() = itemView.findViewById(R.id.accessory)
     }
 
     private companion object {

@@ -145,7 +145,7 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
         values = data
     }
 
-    inner class SeparatorViewHolder(val view: View) : RecyclerView.ViewHolder(view)
+    inner class SeparatorViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
     companion object {
         const val SEPARATOR_0 = 99998

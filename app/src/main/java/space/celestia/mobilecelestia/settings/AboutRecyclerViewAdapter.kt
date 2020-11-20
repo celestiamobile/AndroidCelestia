@@ -17,7 +17,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.common_multiline_text_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
@@ -114,8 +113,9 @@ class AboutRecyclerViewAdapter(
         super.bindVH(holder, item)
     }
 
-    inner class MultilineViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val textView: TextView = view.text
+    inner class MultilineViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView
+            get() = itemView.findViewById(R.id.text)
     }
 
     private companion object {

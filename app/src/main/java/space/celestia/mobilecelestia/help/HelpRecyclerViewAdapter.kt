@@ -17,9 +17,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.common_action_button.view.*
-import kotlinx.android.synthetic.main.fragment_help_action_item.view.*
-import kotlinx.android.synthetic.main.fragment_help_description_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSection
 import space.celestia.mobilecelestia.common.RecyclerViewItem
@@ -79,14 +76,18 @@ class HelpRecyclerViewAdapter(
         }
     }
 
-    inner class ActionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val button: TextView = view.button
-        val buttonContainer: View = view.button_container
+    inner class ActionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val button: TextView
+            get() = itemView.findViewById(R.id.button)
+        val buttonContainer: View
+            get() = itemView.findViewById(R.id.button_container)
     }
 
-    inner class DescriptionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val descriptionView: TextView = view.description
-        var imageView: ImageView = view.image
+    inner class DescriptionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val descriptionView: TextView
+            get() = itemView.findViewById(R.id.description)
+        val imageView: ImageView
+            get() = itemView.findViewById(R.id.image)
     }
 
     private companion object {

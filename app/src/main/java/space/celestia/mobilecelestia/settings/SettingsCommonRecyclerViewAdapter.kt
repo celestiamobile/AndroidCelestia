@@ -21,9 +21,6 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.common_text_list_with_slider_item.view.*
-import kotlinx.android.synthetic.main.common_text_list_with_slider_item.view.title
-import kotlinx.android.synthetic.main.common_text_list_with_switch_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
@@ -133,9 +130,11 @@ class SettingsCommonRecyclerViewAdapter(
         return super.createVH(parent, viewType)
     }
 
-    inner class SliderViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        private val title: TextView = view.title
-        private val seekBar: SeekBar = view.slider
+    inner class SliderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val title: TextView
+            get() = itemView.findViewById(R.id.title)
+        private val seekBar: SeekBar
+            get() = itemView.findViewById(R.id.slider)
 
         fun configure(text: String, progress: Double, progressCallback: (Double) -> Unit) {
             title.text = text
@@ -159,9 +158,11 @@ class SettingsCommonRecyclerViewAdapter(
         }
     }
 
-    inner class SwitchViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val title: TextView = view.title
-        val switch: SwitchCompat = view.accessory
+    inner class SwitchViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val title: TextView
+            get() = itemView.findViewById(R.id.title)
+        val switch: SwitchCompat
+            get() = itemView.findViewById(R.id.accessory)
 
         fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
             title.text = text

@@ -16,8 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.common_action_button.view.*
-import kotlinx.android.synthetic.main.fragment_info_description_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.InfoFragment.Listener
 import space.celestia.mobilecelestia.info.model.InfoActionItem
@@ -52,7 +50,7 @@ class InfoRecyclerViewAdapter(
         if (item is InfoActionItem && holder is ActionViewHolder) {
             holder.button.text = item.title
 
-            with(holder.view) {
+            with(holder.itemView) {
                 tag = item
                 setOnClickListener(onClickListener)
             }
@@ -75,13 +73,16 @@ class InfoRecyclerViewAdapter(
 
     override fun getItemCount(): Int = values.size
 
-    inner class ActionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val button: TextView = view.button
+    inner class ActionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val button: TextView
+            get() = itemView.findViewById(R.id.button)
     }
 
-    inner class DescriptionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val contentView: TextView = view.content
-        val titleView: TextView = view.title
+    inner class DescriptionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val contentView: TextView
+            get() = itemView.findViewById(R.id.content)
+        val titleView: TextView
+            get() = itemView.findViewById(R.id.title)
     }
 
     companion object {

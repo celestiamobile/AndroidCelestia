@@ -15,7 +15,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_bottom_control_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.StandardImageButton
 import space.celestia.mobilecelestia.control.BottomControlFragment.Listener
@@ -61,7 +60,8 @@ class BottomControlRecyclerViewAdapter(
 
     override fun getItemCount(): Int = values.size + 1
 
-    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val imageButton: StandardImageButton = view.button
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val imageButton: StandardImageButton
+            get() = itemView.findViewById(R.id.button)
     }
 }

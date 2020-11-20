@@ -20,7 +20,6 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.common_reorderable_text_list_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.core.CelestiaDestination
@@ -274,9 +273,12 @@ class FavoriteItemRecyclerViewAdapter private constructor(
 
     inner class CommonReorderableTextViewHolder(parent: ViewGroup):
         RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.common_reorderable_text_list_item, parent, false)), BaseTextItemHolder {
-        override val title: TextView = itemView.title
-        override var accessory: ImageView = itemView.accessory
-        val dragView: ImageView = itemView.drag_accessory
+        override val title: TextView
+            get() = itemView.findViewById(R.id.title)
+        override val accessory: ImageView
+            get() = itemView.findViewById(R.id.accessory)
+        val dragView: ImageView
+            get() = itemView.findViewById(R.id.drag_accessory)
     }
 
     private companion object {

@@ -17,7 +17,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_toolbar_action_item.view.*
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSection
 import space.celestia.mobilecelestia.common.RecyclerViewItem
@@ -57,9 +56,11 @@ class ToolbarRecyclerViewAdapter(
         }
     }
 
-    inner class ActionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val contentView: TextView = view.content
-        val imageView: ImageView = view.image
+    inner class ActionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val contentView: TextView
+            get() = itemView.findViewById(R.id.content)
+        val imageView: ImageView
+            get() = itemView.findViewById(R.id.image)
     }
 
     companion object {
