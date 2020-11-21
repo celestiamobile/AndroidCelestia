@@ -20,7 +20,43 @@ import space.celestia.mobilecelestia.core.CelestiaAppCore;
 public class AppStatusReporter implements CelestiaAppCore.ProgressWatcher {
     private static AppStatusReporter singleton = null;
     private ArrayList<Listener> listeners = new ArrayList<>();
-    private String currentStatusString = "";
+    private String status = "";
+
+    private Object lock = new Object();
+
+    public enum State {
+        EXTERNAL_LOADING_FAILURE(-2),
+        LOADING_FAILURE(-1),
+        NONE(0),
+        EXTERNAL_LOADING(1),
+        EXTERNAL_LOADING_FINISHED(2),
+        LOADING(3),
+        SUCCESS(4);
+
+        private int value;
+
+        public int getValue() {
+            return value;
+        }
+
+        private State(int i) {
+            this.value = i;
+        }
+    }
+
+    private State state = State.NONE;
+
+    @NonNull public State getState() {
+        synchronized (lock) {
+            return state;
+        }
+    }
+
+    @NonNull public String getStatus() {
+        synchronized (lock) {
+            return status;
+        }
+    }
 
     @NonNull public static AppStatusReporter shared() {
         if (singleton == null)
@@ -30,12 +66,7 @@ public class AppStatusReporter implements CelestiaAppCore.ProgressWatcher {
 
     public interface Listener {
         void celestiaLoadingProgress(@NonNull String status);
-        void celestiaLoadingSucceeded();
-        void celestiaLoadingFailed();
-    }
-
-    @NonNull public String getCurrentStatusString() {
-        return currentStatusString;
+        void celestiaLoadingStateChanged(@NonNull State newState);
     }
 
     public void register(Listener listener) {
@@ -49,24 +80,27 @@ public class AppStatusReporter implements CelestiaAppCore.ProgressWatcher {
 
     @Override
     public void onCelestiaProgress(@NonNull String progress) {
-        String result = String.format(CelestiaAppCore.getLocalizedString("Loading: %s"), progress);
-        updateStatus(result);
+        synchronized (lock) {
+            String result = String.format(CelestiaAppCore.getLocalizedString("Loading: %s"), progress);
+            updateStatus(result);
+        }
     }
 
-    public void celestiaLoadResult(boolean success) {
-        for (Listener listener : listeners) {
-            if (success) {
-                listener.celestiaLoadingSucceeded();
-            } else {
-                listener.celestiaLoadingFailed();
+    public void updateState(@NonNull State state) {
+        synchronized (lock) {
+            this.state = state;
+            for (Listener listener : listeners) {
+                listener.celestiaLoadingStateChanged(state);
             }
         }
     }
 
     public void updateStatus(@NonNull String status) {
-        currentStatusString = status;
-        for (Listener listener : listeners) {
-            listener.celestiaLoadingProgress(currentStatusString);
+        synchronized (lock) {
+            status = status;
+            for (Listener listener : listeners) {
+                listener.celestiaLoadingProgress(status);
+            }
         }
     }
 }

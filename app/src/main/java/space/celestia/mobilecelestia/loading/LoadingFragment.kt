@@ -44,7 +44,7 @@ class LoadingFragment : Fragment(), AppStatusReporter.Listener {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_loading, container, false)
         loadingLabel = view.findViewById(R.id.loading_label)
-        loadingLabel?.text = AppStatusReporter.shared().currentStatusString
+        loadingLabel?.text = AppStatusReporter.shared().status
         return view
     }
 
@@ -55,8 +55,7 @@ class LoadingFragment : Fragment(), AppStatusReporter.Listener {
         }
     }
 
-    override fun celestiaLoadingSucceeded() {}
-    override fun celestiaLoadingFailed() {}
+    override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {}
 
     companion object {
         private const val TAG = "LoadingFragment"
