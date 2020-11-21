@@ -32,17 +32,14 @@
     </style>
 
     <style name="Background">
-        <item name="android:clickable">true</item>
         <item name="android:background">@color/colorBackground</item>
     </style>
 
     <style name="SecondaryBackground">
-        <item name="android:clickable">true</item>
         <item name="android:background">@color/colorSecondaryBackground</item>
     </style>
 
     <style name="ControlViewBackground">
-        <item name="android:clickable">true</item>
         <item name="android:background">@drawable/control_view_background</item>
     </style>
 

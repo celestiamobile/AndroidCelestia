@@ -277,13 +277,17 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
     private fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (!isReady) return false
+        var input = event.unicodeChar
         var modifiers = 0
         if (event.isShiftPressed)
             modifiers = modifiers.or(CelestiaAppCore.SHIFT_KEY)
-        if (event.isCtrlPressed)
+        if (event.isCtrlPressed) {
             modifiers = modifiers.or(CelestiaAppCore.CONTROL_KEY)
+            if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
+                input = (keyCode - KeyEvent.KEYCODE_A) + 1
+        }
         CelestiaView.callOnRenderThread {
-            core.keyDown(event.unicodeChar, keyCode, modifiers)
+            core.keyDown(input, keyCode, modifiers)
         }
         return true
     }
