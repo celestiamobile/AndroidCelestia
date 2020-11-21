@@ -35,9 +35,14 @@ public class CelestiaAppCore {
         void onCelestiaProgress(@NonNull String progress);
     }
 
+    public interface ContextMenuHandler {
+        void requestContextMenu(float x, float y, @NonNull CelestiaSelection selection);
+    }
+
     private final long pointer;
     private boolean initialized;
     private CelestiaSimulation simulation;
+    private ContextMenuHandler contextMenuHandler;
 
     // Singleton
     private static CelestiaAppCore shared;
@@ -55,6 +60,8 @@ public class CelestiaAppCore {
         this.pointer = c_init();
         this.initialized = false;
         this.simulation = null;
+        this.contextMenuHandler = null;
+        c_setContextMenuHandler(pointer);
     }
 
     public boolean startRenderer() {
@@ -86,6 +93,15 @@ public class CelestiaAppCore {
         c_resize(pointer, w, h);
     }
 
+    public void setContextMenuHandler(@Nullable ContextMenuHandler handler) {
+        contextMenuHandler = handler;
+    }
+
+    private void onRequestContextMenu(float x, float y, long pointer) {
+        if (contextMenuHandler != null)
+            contextMenuHandler.requestContextMenu(x, y, new CelestiaSelection(pointer));
+    }
+
     public void setSafeAreaInsets(int left, int top, int right, int bottom) {
         c_setSafeAreaInsets(pointer, left, top, right, bottom);
     }
@@ -95,15 +111,15 @@ public class CelestiaAppCore {
     }
 
     // Control
-    public void mouseButtonUp(int buttons, PointF point, int modifiers) {
+    public void mouseButtonUp(int buttons, @NonNull PointF point, int modifiers) {
         c_mouseButtonUp(pointer, buttons, point.x, point.y, modifiers);
     }
 
-    public void mouseButtonDown(int buttons, PointF point, int modifiers) {
+    public void mouseButtonDown(int buttons, @NonNull PointF point, int modifiers) {
         c_mouseButtonDown(pointer, buttons, point.x, point.y, modifiers);
     }
 
-    public void mouseMove(int buttons, PointF offset, int modifiers) {
+    public void mouseMove(int buttons, @NonNull PointF offset, int modifiers) {
         c_mouseMove(pointer, buttons, offset.x, offset.y, modifiers);
     }
 
@@ -181,6 +197,7 @@ public class CelestiaAppCore {
     }
 
     // C function
+    private native void c_setContextMenuHandler(long ptr);
     private static native long c_init();
     private static native boolean c_startRenderer(long ptr);
     private static native boolean c_startSimulation(long ptr, String configFileName, String[] extraDirectories, ProgressWatcher watcher);

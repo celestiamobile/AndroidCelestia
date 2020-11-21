@@ -204,6 +204,26 @@ private:
     jmethodID method;
 };
 
+class AppCoreContextMenuHandler: public CelestiaCore::ContextMenuHandler
+{
+public:
+    AppCoreContextMenuHandler(jobject object, jmethodID method) :
+    CelestiaCore::ContextMenuHandler(),
+    object(object),
+    method(method) {};
+
+    void requestContextMenu(float x, float y, Selection sel)
+    {
+        auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+        if (!env) return;
+        env->CallVoidMethod(object, method, (jfloat)x, (jfloat)y, (jlong)new Selection(sel));
+    }
+
+private:
+    jobject object;
+    jmethodID method;
+};
+
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1initGL(JNIEnv *env, jclass clazz) {
@@ -214,7 +234,19 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1initGL(JNIEnv *env, j
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1init(JNIEnv *env, jclass clazz) {
-    return (jlong)new CelestiaCore;
+    auto core = new CelestiaCore;
+    return (jlong)core;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setContextMenuHandler(JNIEnv *env, jobject thiz, jlong ptr) {
+    auto core = (CelestiaCore *)ptr;
+    static jmethodID contextMenuCallback = nullptr;
+    if (!contextMenuCallback)
+        contextMenuCallback = env->GetMethodID(env->GetObjectClass(thiz), "onRequestContextMenu", "(FFJ)V");
+    // TODO: where to delete the global reference?
+    core->setContextMenuHandler(new AppCoreContextMenuHandler(env->NewGlobalRef(thiz), contextMenuCallback));
 }
 
 extern "C"

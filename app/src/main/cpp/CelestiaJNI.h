@@ -13,6 +13,7 @@
 #define CELESTIA_JNI_H
 
 #include <jni.h>
+#include <pthread.h>
 
 extern "C" {
 extern jclass cacClz;
@@ -76,6 +77,8 @@ extern jfieldID cucPtrFieldID;
 // universal destination
 extern jclass cdClz;
 extern jmethodID cdInitMethodID;
+
+extern pthread_key_t javaEnvKey;
 }
 
 #endif //CELESTIA_JNI_H

@@ -47,6 +47,13 @@ enum class CelestiaAction(val value: Int) : Serializable {
             }
             return CelestiaString(orig, "")
         }
+
+    companion object {
+        val allActions: List<CelestiaAction>
+            get() = listOf(
+                GoTo, Center,Follow, Chase, SyncOrbit, Lock, GoToSurface
+            )
+    }
 }
 
 interface InfoItem
@@ -56,16 +63,7 @@ interface InfoActionItem : InfoItem {
 
     companion object {
         val infoActions: List<InfoActionItem>
-            get() = listOf(
-                InfoSelectActionItem(),
-                InfoNormalActionItem(CelestiaAction.GoTo),
-                InfoNormalActionItem(CelestiaAction.Center),
-                InfoNormalActionItem(CelestiaAction.Follow),
-                InfoNormalActionItem(CelestiaAction.Chase),
-                InfoNormalActionItem(CelestiaAction.SyncOrbit),
-                InfoNormalActionItem(CelestiaAction.Lock),
-                InfoNormalActionItem(CelestiaAction.GoToSurface)
-            )
+            get() = listOf(InfoSelectActionItem()) + CelestiaAction.allActions.map { return@map InfoNormalActionItem(it) }
     }
 }
 

@@ -16,31 +16,31 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.util.Size
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
+import androidx.core.view.MenuCompat
 import androidx.fragment.app.Fragment
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
-import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.core.CelestiaRenderer
+import space.celestia.mobilecelestia.core.*
+import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.FontHelper
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, CelestiaInteraction.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
     private var activity: Activity? = null
 
     // MARK: GL View
@@ -61,6 +61,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     // MARK: Celestia
     private val core by lazy { CelestiaAppCore.shared() }
     private val renderer by lazy { CelestiaRenderer.shared() }
+    private var pendingTarget: CelestiaSelection? = null
+    private var browserItems: ArrayList<CelestiaBrowserItem> = arrayListOf()
 
     private val scaleFactor: Float
         get() = if (enableFullResolution) 1.0f else (1.0f / resources.displayMetrics.density)
@@ -154,6 +156,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     override fun onDestroyView() {
         AppStatusReporter.shared().unregister(this)
+        core.setContextMenuHandler(null)
+        viewInteraction?.listener = null
 
         super.onDestroyView()
     }
@@ -190,7 +194,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         zoomTimer = null
     }
 
-
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
         if (newState == AppStatusReporter.State.SUCCESS)
             loadingFinished()
@@ -222,6 +225,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val activity = this.activity ?: return
         val container = glViewContainer ?: return
         val view = CelestiaView(activity, scaleFactor)
+
+        registerForContextMenu(view)
 
         val interaction = CelestiaInteraction(activity)
         glView = view
@@ -287,11 +292,16 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val density = resources.displayMetrics.density
         core.setDPI((96 * density * scaleFactor).toInt())
         core.setPickTolerance(10f * density * scaleFactor)
+        core.setContextMenuHandler(this)
 
         glView?.isReady = true
+        glView?.isContextClickable = true
         viewInteraction?.isReady = true
+        viewInteraction?.listener = this
         glView?.setOnTouchListener(viewInteraction)
         glView?.setOnKeyListener(viewInteraction)
+        glView?.setOnGenericMotionListener(viewInteraction)
+        registerForContextMenu(glView!!)
         loadSuccess = true
 
         Log.d(TAG, "Ready to display")
@@ -301,6 +311,115 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
                 view?.rootWindowInsets?.displayCutout?.let { applyCutout(it) }
             }
         }
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu,
+        v: View,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        val selection = pendingTarget ?: return
+        if (selection.isEmpty) return
+
+        browserItems.clear()
+
+        fun createSubMenu(menu: Menu, browserItem: CelestiaBrowserItem) {
+            val obj = browserItem.`object`
+            if (obj != null) {
+                menu.add(GROUP_BROWSER_ITEM_GO, browserItems.size, Menu.NONE, CelestiaString("Go", ""))
+                browserItems.add(browserItem)
+            }
+
+            browserItem.children.withIndex().forEach {
+                val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, browserItem.childNameAtIndex(it.index))
+                createSubMenu(subMenu, it.value)
+            }
+            MenuCompat.setGroupDividerEnabled(menu, true)
+        }
+
+        menu.setHeaderTitle(core.simulation.universe.getNameForSelection(selection))
+
+        CelestiaAction.allActions.withIndex().forEach {
+            menu.add(GROUP_ACTION, it.index, Menu.NONE, it.value.title)
+        }
+        val obj = selection.`object`
+
+        if (obj != null) {
+            val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, obj, core.simulation.universe)
+            for (child in browserItem.children) {
+                val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, child.name)
+                createSubMenu(subMenu, child)
+            }
+        }
+
+        if (obj is CelestiaBody) {
+            val alternateSurfaces = obj.alternateSurfaceNames
+            if (alternateSurfaces.size > 0) {
+                val subMenu = menu.addSubMenu(GROUP_ALT_SURFACE_TOP, 0, Menu.NONE, CelestiaString("Alternate Surfaces", ""))
+                subMenu.add(GROUP_ALT_SURFACE, 0, Menu.NONE, CelestiaString("Default", ""))
+                alternateSurfaces.withIndex().forEach {
+                    subMenu.add(GROUP_ALT_SURFACE, it.index + 1, Menu.NONE, it.value)
+                }
+            }
+        }
+        val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", ""))
+        availableMarkers.withIndex().forEach {
+            markMenu.add(GROUP_MARK, it.index, Menu.NONE, it.value)
+        }
+        MenuCompat.setGroupDividerEnabled(menu, true)
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        val selection = pendingTarget ?: return true
+        if (selection.isEmpty) return true
+        val actions = CelestiaAction.allActions
+        if (item.groupId == GROUP_ACTION) {
+            if (item.itemId >= 0 && item.itemId < actions.size) {
+                CelestiaView.callOnRenderThread {
+                    core.simulation.selection = selection
+                    core.charEnter(actions[item.itemId].value)
+                }
+            }
+        } else if (item.groupId == GROUP_ALT_SURFACE) {
+            val body = selection.body
+            if (body != null) {
+                CelestiaView.callOnRenderThread {
+                    val alternateSurfaces = body.alternateSurfaceNames
+                    if (item.itemId == 0) {
+                        core.simulation.activeObserver.displayedSurface = ""
+                    } else if (item.itemId >= 0 && item.itemId < alternateSurfaces.size) {
+                        core.simulation.activeObserver.displayedSurface = alternateSurfaces[item.itemId - 1]
+                    }
+                }
+            }
+        } else if (item.groupId == GROUP_MARK) {
+            CelestiaView.callOnRenderThread {
+                if (item.itemId == availableMarkers.size) {
+                    core.simulation.universe.unmark(selection)
+                } else {
+                    core.simulation.universe.mark(selection, item.itemId)
+                    core.showMarkers = true
+                }
+            }
+        } else if (item.groupId == GROUP_BROWSER_ITEM_GO) {
+            if (item.itemId >= 0 && item.itemId < browserItems.size) {
+                val ent = browserItems[item.itemId].`object`
+                if (ent != null) {
+                    val obj = CelestiaSelection.create(ent)
+                    if (obj != null) {
+                        CelestiaView.callOnRenderThread {
+                            core.simulation.selection = obj
+                            core.charEnter(CelestiaAction.GoTo.value)
+                        }
+                    }
+                }
+            }
+        }
+        if (item.subMenu == null) { // leaf clicked, do clean up
+            pendingTarget = null
+            browserItems.clear()
+        }
+        return true
     }
 
     override fun surfaceCreated(holder: SurfaceHolder?) {
@@ -453,6 +572,25 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         viewInteraction?.zoomMode = null
     }
 
+    override fun showContextMenu(celestiaLocation: PointF, viewLocation: PointF) {
+        CelestiaView.callOnRenderThread {
+            // Simulate a right click
+            core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_RIGHT, celestiaLocation, 0)
+            core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_RIGHT, celestiaLocation, 0)
+            if (pendingTarget == null) return@callOnRenderThread
+
+            // Show context menu on main thread
+            activity?.runOnUiThread {
+                glView?.showContextMenu(viewLocation.x, viewLocation.y)
+            }
+        }
+    }
+
+    override fun requestContextMenu(x: Float, y: Float, selection: CelestiaSelection) {
+        if (selection.isEmpty) return
+        pendingTarget = selection
+    }
+
     companion object {
         private const val ARG_DATA_DIR = "data"
         private const val ARG_CFG_FILE = "cfg"
@@ -460,6 +598,22 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         private const val ARG_MULTI_SAMPLE = "multisample"
         private const val ARG_FULL_RESOLUTION = "fullresolution"
         private const val ARG_LANG_OVERRIDE = "lang"
+        private const val GROUP_ACTION = 0
+        private const val GROUP_ALT_SURFACE_TOP = 1
+        private const val GROUP_ALT_SURFACE = 2
+        private const val GROUP_MARK_TOP = 3
+        private const val GROUP_MARK = 4
+        private const val GROUP_WEB_INFO = 5
+        private const val GROUP_BROWSER_ITEM_GO = 6
+        private const val GROUP_BROWSER_ITEM = 7
+
+        val availableMarkers: List<String>
+            get() = listOf(
+                "Diamond", "Triangle", "Square", "Filled Square",
+                "Plus", "X", "Left Arrow", "Right Arrow",
+                "Up Arrow", "Down Arrow", "Circle", "Disk",
+                "Crosshair", "Unmark"
+            ).map { CelestiaString(it, "") }
 
         private const val TAG = "CelestiaFragment"
 

@@ -10,7 +10,6 @@
  */
 
 #include <jni.h>
-#include <pthread.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <epoxy/egl.h>
@@ -23,6 +22,10 @@
 #define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 #define LOG_TAG "Renderer"
+
+#include "CelestiaJNI.h"
+
+pthread_key_t javaEnvKey;
 
 class CelestiaRenderer
 {
@@ -311,6 +314,9 @@ void *CelestiaRenderer::threadCallback(void *self)
     args.name = nullptr;
     args.group = nullptr;
     CelestiaRenderer::jvm->AttachCurrentThread(&newEnv, &args);
+
+    pthread_key_create(&javaEnvKey, nullptr);
+    pthread_setspecific(javaEnvKey, newEnv);
 
     bool renderingEnabled = true;
 

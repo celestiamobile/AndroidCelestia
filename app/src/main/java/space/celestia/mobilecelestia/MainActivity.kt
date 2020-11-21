@@ -21,10 +21,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.provider.DocumentsContract
 import android.util.Log
-import android.view.DisplayCutout
-import android.view.MotionEvent
-import android.view.View
-import android.view.WindowManager
+import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
@@ -857,12 +854,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             }
             is MarkItem -> {
-                val markers = listOf(
-                    "Diamond", "Triangle", "Square", "Filled Square",
-                    "Plus", "X", "Left Arrow", "Right Arrow",
-                    "Up Arrow", "Down Arrow", "Circle", "Disk",
-                    "Crosshair", "Unmark").map { CelestiaString(it, "") }
-
+                val markers = CelestiaFragment.availableMarkers
                 showSingleSelection(CelestiaString("Mark", ""), markers, -1) { newIndex ->
                     if (newIndex >= CelestiaUniverse.MARKER_COUNT) {
                         core.simulation.universe.unmark(selection)

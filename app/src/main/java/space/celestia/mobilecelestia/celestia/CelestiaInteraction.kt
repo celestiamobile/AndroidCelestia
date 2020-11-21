@@ -14,6 +14,7 @@ package space.celestia.mobilecelestia.celestia
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Build
@@ -21,7 +22,7 @@ import android.util.Log
 import android.view.*
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 
-class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
+class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGenericMotionListener, View.OnKeyListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, GestureDetector.OnContextClickListener {
     private val core by lazy { CelestiaAppCore.shared() }
 
     enum class InteractionMode {
@@ -44,6 +45,10 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
             }
     }
 
+    interface Listener {
+        fun showContextMenu(celestiaLocation: PointF, viewLocation: PointF)
+    }
+
     private val scaleGestureDetector = ScaleGestureDetector(context, this)
     private val gestureDetector = GestureDetector(context, this)
 
@@ -51,6 +56,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
     var zoomMode: ZoomMode? = null
     var scaleFactor: Float = 1f
     var density: Float = 1f
+    var listener: Listener? = null
 
     private var currentSpan: Float? = null
     private var internalInteractionMode = InteractionMode.Object
@@ -61,10 +67,6 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
     private var canScroll = true
     private var canInteract = true
     private var isScaling = false
-
-    init {
-        gestureDetector.setIsLongpressEnabled(false)
-    }
 
     fun setInteractionMode(interactionMode: InteractionMode) {
         CelestiaView.callOnRenderThread {
@@ -83,6 +85,10 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         } else {
             core.mouseWheel(deltaY, 0)
         }
+    }
+
+    override fun onGenericMotion(v: View?, event: MotionEvent?): Boolean {
+        return gestureDetector.onGenericMotionEvent(event)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -258,7 +264,21 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
     override fun onShowPress(e: MotionEvent?) {}
 
-    override fun onLongPress(e: MotionEvent?) {}
+    override fun onLongPress(e: MotionEvent?) {
+        if (e == null) return
+        if (e.source == InputDevice.SOURCE_MOUSE) return // Mouse long press detected, ignore
+
+        val viewLocation = PointF(e.x, e.y)
+        listener?.showContextMenu(viewLocation.scaleBy(scaleFactor), viewLocation)
+    }
+
+    override fun onContextClick(e: MotionEvent?): Boolean {
+        if (e == null) return true
+
+        val viewLocation = PointF(e.x, e.y)
+        listener?.showContextMenu(viewLocation.scaleBy(scaleFactor), viewLocation)
+        return true
+    }
 
     override fun onDown(e: MotionEvent?): Boolean {
         Log.d(TAG, "on down")
