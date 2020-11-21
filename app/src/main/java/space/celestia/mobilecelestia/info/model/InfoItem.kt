@@ -16,6 +16,7 @@ import java.io.Serializable
 
 enum class CelestiaAction(val value: Int) : Serializable {
     GoTo(103),
+    GoToSurface(7),
     Center(99),
     PlayPause(32),
     Reverse(106),
@@ -34,6 +35,7 @@ enum class CelestiaAction(val value: Int) : Serializable {
         get() {
             val orig = when (this) {
                 GoTo -> "Go"
+                GoToSurface -> "Land"
                 PlayPause -> "Resume/Pause"
                 CurrentTime -> "Current Time"
                 SyncOrbit -> "Sync Orbit"
@@ -61,7 +63,8 @@ interface InfoActionItem : InfoItem {
                 InfoNormalActionItem(CelestiaAction.Follow),
                 InfoNormalActionItem(CelestiaAction.Chase),
                 InfoNormalActionItem(CelestiaAction.SyncOrbit),
-                InfoNormalActionItem(CelestiaAction.Lock)
+                InfoNormalActionItem(CelestiaAction.Lock),
+                InfoNormalActionItem(CelestiaAction.GoToSurface)
             )
     }
 }
