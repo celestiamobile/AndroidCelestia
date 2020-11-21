@@ -501,8 +501,6 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1keyDownWithModifers(J
                                                                                jint key, jint modifiers) {
     auto core = (CelestiaCore *)ptr;
     int cModifiers = convert_modifier_to_celestia_modifier(0, modifiers);
-    if (key == AKEYCODE_DEL)
-        input = 8;
     if (input < CelestiaCore::KeyCount && (input < AKEYCODE_NUMPAD_0 || input > AKEYCODE_NUMPAD_9))
         core->charEntered(input, cModifiers);
     core->keyDown(convert_key_code_to_celestia_key(input, key), cModifiers);

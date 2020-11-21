@@ -286,6 +286,13 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
             if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
                 input = (keyCode - KeyEvent.KEYCODE_A) + 1
         }
+        if (keyCode == KeyEvent.KEYCODE_ESCAPE)
+            input = 27
+        else if (keyCode == KeyEvent.KEYCODE_FORWARD_DEL)
+            input = 127
+        else if (keyCode == KeyEvent.KEYCODE_DEL)
+            input = 8
+
         CelestiaView.callOnRenderThread {
             core.keyDown(input, keyCode, modifiers)
         }

@@ -22,7 +22,6 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:clickable="true"
-        android:focusable="true"
         android:background="@drawable/stepper_left">
         <ImageView
             android:layout_width="wrap_content"
@@ -43,7 +42,6 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:clickable="true"
-        android:focusable="true"
         android:background="@drawable/stepper_right">
         <ImageView
             android:layout_width="wrap_content"

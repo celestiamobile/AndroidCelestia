@@ -38,7 +38,6 @@
             android:layout_gravity="end"
             android:visibility="invisible"
             android:clickable="true"
-            android:focusable="true"
             style="@style/Container" />
 
         <FrameLayout
@@ -49,7 +48,6 @@
             android:layout_gravity="end"
             android:visibility="invisible"
             android:clickable="true"
-            android:focusable="true"
             style="@style/Container"/>
 
         <FrameLayout
@@ -76,8 +74,7 @@
             android:layout_marginBottom="8dp"
             android:layout_gravity="bottom|start"
             android:visibility="invisible"
-            android:clickable="true"
-            android:focusable="true"/>
+            android:clickable="true"/>
     </FrameLayout>
 
     <FrameLayout
@@ -85,7 +82,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clickable="true"
-        android:focusable="true"
         style="@style/Container" />
 
     <View
