@@ -40,13 +40,13 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, CelestiaInteraction.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, CelestiaBaseInteraction.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
     private var activity: Activity? = null
 
     // MARK: GL View
     private var glViewContainer: FrameLayout? = null
     private var glView: CelestiaView? = null
-    private var viewInteraction: CelestiaInteraction? = null
+    private var viewInteraction: CelestiaBaseInteraction? = null
 
     private var currentControlViewID = R.id.active_control_view_container
 
@@ -228,14 +228,21 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         registerForContextMenu(view)
 
-        val interaction = CelestiaInteraction(activity)
+        val interaction: CelestiaBaseInteraction
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            interaction = CelestiaInteraction(activity) // Include context click
+        } else {
+            interaction = CelestiaBaseInteraction(activity)
+        }
         glView = view
         viewInteraction = interaction
 
         interaction.scaleFactor = scaleFactor
         interaction.density = resources.displayMetrics.density
         view.isFocusable = true
-        view.defaultFocusHighlightEnabled = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            view.defaultFocusHighlightEnabled = false
+        }
         renderer.startConditionally(activity, enableMultisample)
         container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         view.holder?.addCallback(this)
@@ -290,26 +297,32 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     private fun loadingFinished() {
+        val interaction = viewInteraction ?: return
+        val view = glView ?: return
+
         val density = resources.displayMetrics.density
         core.setDPI((96 * density * scaleFactor).toInt())
         core.setPickTolerance(10f * density * scaleFactor)
         core.setContextMenuHandler(this)
 
-        glView?.isReady = true
-        glView?.isContextClickable = true
-        viewInteraction?.isReady = true
-        viewInteraction?.listener = this
-        glView?.setOnTouchListener(viewInteraction)
-        glView?.setOnKeyListener(viewInteraction)
-        glView?.setOnGenericMotionListener(viewInteraction)
-        registerForContextMenu(glView!!)
+        view.isReady = true
+        view.isContextClickable = true
+        interaction.isReady = true
+        interaction.listener = this
+        view.setOnTouchListener(interaction)
+        view.setOnKeyListener(interaction)
+        view.setOnFocusChangeListener(interaction)
+        if (interaction is View.OnGenericMotionListener) {
+            view.setOnGenericMotionListener(interaction)
+        }
+        registerForContextMenu(view)
         loadSuccess = true
 
         Log.d(TAG, "Ready to display")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             activity?.runOnUiThread {
-                view?.rootWindowInsets?.displayCutout?.let { applyCutout(it) }
+                this.view?.rootWindowInsets?.displayCutout?.let { applyCutout(it) }
             }
         }
     }
@@ -537,13 +550,13 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
-                viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
+                viewInteraction.setInteractionMode(CelestiaBaseInteraction.InteractionMode.Camera)
                 activity?.let {
                     Toast.makeText(it, CelestiaString("Switched to camera mode", ""), Toast.LENGTH_SHORT).show()
                 }
             }
             CelestiaControlAction.ToggleModeToObject -> {
-                viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
+                viewInteraction.setInteractionMode(CelestiaBaseInteraction.InteractionMode.Object)
                 activity?.let {
                     Toast.makeText(it, CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT).show()
                 }
@@ -556,8 +569,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val viewInteraction = this.viewInteraction ?: return
 
         when (action) {
-            CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
-            CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
+            CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaBaseInteraction.ZoomMode.In; viewInteraction.callZoom() }
+            CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaBaseInteraction.ZoomMode.Out; viewInteraction.callZoom() }
             else -> {}
         }
 

@@ -22,8 +22,8 @@ import android.util.Log
 import android.view.*
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 
-class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGenericMotionListener, View.OnKeyListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, GestureDetector.OnContextClickListener {
-    private val core by lazy { CelestiaAppCore.shared() }
+open class CelestiaBaseInteraction(context: Context): View.OnTouchListener, View.OnKeyListener, View.OnFocusChangeListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
+    protected val core by lazy { CelestiaAppCore.shared() }
 
     enum class InteractionMode {
         Object, Camera;
@@ -50,7 +50,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
     }
 
     private val scaleGestureDetector = ScaleGestureDetector(context, this)
-    private val gestureDetector = GestureDetector(context, this)
+    protected val gestureDetector = GestureDetector(context, this)
 
     var isReady = false
     var zoomMode: ZoomMode? = null
@@ -67,6 +67,22 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
     private var canScroll = true
     private var canInteract = true
     private var isScaling = false
+
+    private var isShiftPressed = false
+    private var isCtrlPressed = false
+
+    protected val keyModifier: Int
+        get() {
+            var modifier = 0
+            if (isShiftPressed)
+                modifier = modifier or CelestiaAppCore.SHIFT_KEY
+            if (isCtrlPressed)
+                modifier = modifier or CelestiaAppCore.CONTROL_KEY
+            return modifier
+        }
+
+    private val button: Int
+        get() = internalInteractionMode.button
 
     fun setInteractionMode(interactionMode: InteractionMode) {
         CelestiaView.callOnRenderThread {
@@ -85,10 +101,6 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
         } else {
             core.mouseWheel(deltaY, 0)
         }
-    }
-
-    override fun onGenericMotion(v: View?, event: MotionEvent?): Boolean {
-        return gestureDetector.onGenericMotionEvent(event)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -165,6 +177,10 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
         return true
     }
 
+    override fun onFocusChange(v: View?, hasFocus: Boolean) {
+        isShiftPressed = false
+        isCtrlPressed = false
+    }
 
     override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
         val det = detector ?: return true
@@ -247,18 +263,17 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
         val originalPoint = PointF(event1.x, event1.y).scaleBy(scaleFactor)
         val newPoint = PointF(event2.x, event2.y).scaleBy(scaleFactor)
 
-        val button = internalInteractionMode.button
-        lastPoint = newPoint
         if (!isScrolling) {
             CelestiaView.callOnRenderThread {
-                core.mouseButtonDown(button, originalPoint, 0)
-                core.mouseMove(button, offset, 0)
+                core.mouseButtonDown(button, originalPoint, keyModifier)
+                core.mouseMove(button, offset, keyModifier)
             }
         } else {
             CelestiaView.callOnRenderThread {
-                core.mouseMove(button, offset, 0)
+                core.mouseMove(button, offset, keyModifier)
             }
         }
+        lastPoint = newPoint
         return true
     }
 
@@ -272,14 +287,6 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
         listener?.showContextMenu(viewLocation.scaleBy(scaleFactor), viewLocation)
     }
 
-    override fun onContextClick(e: MotionEvent?): Boolean {
-        if (e == null) return true
-
-        val viewLocation = PointF(e.x, e.y)
-        listener?.showContextMenu(viewLocation.scaleBy(scaleFactor), viewLocation)
-        return true
-    }
-
     override fun onDown(e: MotionEvent?): Boolean {
         Log.d(TAG, "on down")
         return true
@@ -288,6 +295,8 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
     override fun onKey(v: View?, keyCode: Int, event: KeyEvent?): Boolean {
         if (v == null || event == null) return false
 
+        isShiftPressed = event.isShiftPressed
+        isCtrlPressed = event.isCtrlPressed
         if (event.action == KeyEvent.ACTION_UP)
             return onKeyUp(keyCode, event)
         else if (event.action == KeyEvent.ACTION_DOWN)
@@ -298,11 +307,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
     private fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (!isReady) return false
         var input = event.unicodeChar
-        var modifiers = 0
-        if (event.isShiftPressed)
-            modifiers = modifiers.or(CelestiaAppCore.SHIFT_KEY)
-        if (event.isCtrlPressed) {
-            modifiers = modifiers.or(CelestiaAppCore.CONTROL_KEY)
+        if (isCtrlPressed) {
             if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
                 input = (keyCode - KeyEvent.KEYCODE_A) + 1
         }
@@ -314,38 +319,59 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnGeneri
             input = 8
 
         CelestiaView.callOnRenderThread {
-            core.keyDown(input, keyCode, modifiers)
+            core.keyDown(input, keyCode, keyModifier)
         }
         return true
     }
 
     private fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         if (!isReady) return false
-        event.action
-        var modifiers = 0
-        if (event.isShiftPressed)
-            modifiers = modifiers.or(CelestiaAppCore.SHIFT_KEY)
-        if (event.isCtrlPressed)
-            modifiers = modifiers.or(CelestiaAppCore.CONTROL_KEY)
+        if (keyCode == KeyEvent.KEYCODE_SHIFT_LEFT || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT)
+            isShiftPressed = false
+        if (keyCode == KeyEvent.KEYCODE_CTRL_LEFT || keyCode == KeyEvent.KEYCODE_CTRL_RIGHT)
+            isCtrlPressed = false
         CelestiaView.callOnRenderThread {
-            core.keyUp(event.unicodeChar, keyCode, modifiers)
+            core.keyUp(event.unicodeChar, keyCode, keyModifier)
         }
         return true
     }
 
     private fun stopScrolling() {
         Log.d(TAG, "stop scrolling")
-
-        val button = internalInteractionMode.button
         val lp = lastPoint!!
 
         CelestiaView.callOnRenderThread {
-            core.mouseButtonUp(button, lp, 0)
+            core.mouseButtonUp(button, lp, keyModifier)
         }
         lastPoint = null
     }
 
     companion object {
         private const val TAG = "CelestiaView"
+    }
+}
+
+class CelestiaInteraction(context: Context): CelestiaBaseInteraction(context), View.OnGenericMotionListener, GestureDetector.OnContextClickListener {
+    override fun onGenericMotion(v: View?, event: MotionEvent?): Boolean {
+        if (event == null || v == null) { return true }
+        if (!isReady) { return true }
+        if (gestureDetector.onGenericMotionEvent(event)) return true
+
+        if (event.action == MotionEvent.ACTION_SCROLL) {
+            val y = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
+            CelestiaView.callOnRenderThread {
+                core.mouseWheel(y * scaleFactor, keyModifier)
+            }
+        }
+
+        return true
+    }
+
+    override fun onContextClick(e: MotionEvent?): Boolean {
+        if (e == null) return true
+
+        val viewLocation = PointF(e.x, e.y)
+        listener?.showContextMenu(viewLocation.scaleBy(scaleFactor), viewLocation)
+        return true
     }
 }
