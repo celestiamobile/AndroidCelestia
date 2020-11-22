@@ -16,7 +16,6 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -40,13 +39,13 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, CelestiaBaseInteraction.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
     private var activity: Activity? = null
 
     // MARK: GL View
     private var glViewContainer: FrameLayout? = null
     private var glView: CelestiaView? = null
-    private var viewInteraction: CelestiaBaseInteraction? = null
+    private var viewInteraction: CelestiaInteraction? = null
 
     private var currentControlViewID = R.id.active_control_view_container
 
@@ -157,7 +156,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     override fun onDestroyView() {
         AppStatusReporter.shared().unregister(this)
         core.setContextMenuHandler(null)
-        viewInteraction?.listener = null
 
         super.onDestroyView()
     }
@@ -228,12 +226,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         registerForContextMenu(view)
 
-        val interaction: CelestiaBaseInteraction
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            interaction = CelestiaInteraction(activity) // Include context click
-        } else {
-            interaction = CelestiaBaseInteraction(activity)
-        }
+        val interaction = CelestiaInteraction(activity)
         glView = view
         viewInteraction = interaction
 
@@ -310,13 +303,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             view.isContextClickable = true
         }
         interaction.isReady = true
-        interaction.listener = this
         view.setOnTouchListener(interaction)
         view.setOnKeyListener(interaction)
-        view.setOnFocusChangeListener(interaction)
-        if (interaction is View.OnGenericMotionListener) {
-            view.setOnGenericMotionListener(interaction)
-        }
+        view.setOnGenericMotionListener(interaction)
         registerForContextMenu(view)
         loadSuccess = true
 
@@ -552,13 +541,13 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
-                viewInteraction.setInteractionMode(CelestiaBaseInteraction.InteractionMode.Camera)
+                viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
                 activity?.let {
                     Toast.makeText(it, CelestiaString("Switched to camera mode", ""), Toast.LENGTH_SHORT).show()
                 }
             }
             CelestiaControlAction.ToggleModeToObject -> {
-                viewInteraction.setInteractionMode(CelestiaBaseInteraction.InteractionMode.Object)
+                viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
                 activity?.let {
                     Toast.makeText(it, CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT).show()
                 }
@@ -571,8 +560,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val viewInteraction = this.viewInteraction ?: return
 
         when (action) {
-            CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaBaseInteraction.ZoomMode.In; viewInteraction.callZoom() }
-            CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaBaseInteraction.ZoomMode.Out; viewInteraction.callZoom() }
+            CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
+            CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
             else -> {}
         }
 
@@ -586,14 +575,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         zoomTimer?.dispose()
         zoomTimer = null
         viewInteraction?.zoomMode = null
-    }
-
-    override fun showContextMenu(celestiaLocation: PointF, viewLocation: PointF) {
-        CelestiaView.callOnRenderThread {
-            // Simulate a right click
-            core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_RIGHT, celestiaLocation, 0)
-            core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_RIGHT, celestiaLocation, 0)
-        }
     }
 
     override fun requestContextMenu(x: Float, y: Float, selection: CelestiaSelection) {
