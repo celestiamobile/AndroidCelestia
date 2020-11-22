@@ -306,7 +306,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         core.setContextMenuHandler(this)
 
         view.isReady = true
-        view.isContextClickable = true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            view.isContextClickable = true
+        }
         interaction.isReady = true
         interaction.listener = this
         view.setOnTouchListener(interaction)
@@ -591,18 +593,21 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             // Simulate a right click
             core.mouseButtonDown(CelestiaAppCore.MOUSE_BUTTON_RIGHT, celestiaLocation, 0)
             core.mouseButtonUp(CelestiaAppCore.MOUSE_BUTTON_RIGHT, celestiaLocation, 0)
-            if (pendingTarget == null) return@callOnRenderThread
-
-            // Show context menu on main thread
-            activity?.runOnUiThread {
-                glView?.showContextMenu(viewLocation.x, viewLocation.y)
-            }
         }
     }
 
     override fun requestContextMenu(x: Float, y: Float, selection: CelestiaSelection) {
         if (selection.isEmpty) return
         pendingTarget = selection
+
+        // Show context menu on main thread
+        activity?.runOnUiThread {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                glView?.showContextMenu(x / scaleFactor, y / scaleFactor)
+            } else {
+                glView?.showContextMenu()
+            }
+        }
     }
 
     companion object {

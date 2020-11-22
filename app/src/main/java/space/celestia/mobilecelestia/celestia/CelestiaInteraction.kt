@@ -33,6 +33,12 @@ open class CelestiaBaseInteraction(context: Context): View.OnTouchListener, View
                 Camera -> CelestiaAppCore.MOUSE_BUTTON_LEFT
                 Object -> CelestiaAppCore.MOUSE_BUTTON_RIGHT
             }
+
+        val next: InteractionMode
+            get() = when (this) {
+                Camera -> Object
+                Object -> Camera
+            }
     }
 
     enum class ZoomMode {
@@ -70,6 +76,7 @@ open class CelestiaBaseInteraction(context: Context): View.OnTouchListener, View
 
     private var isShiftPressed = false
     private var isCtrlPressed = false
+    private var isAltPressed = false
 
     protected val keyModifier: Int
         get() {
@@ -82,7 +89,7 @@ open class CelestiaBaseInteraction(context: Context): View.OnTouchListener, View
         }
 
     private val button: Int
-        get() = internalInteractionMode.button
+        get() = (if (isAltPressed) internalInteractionMode.next else internalInteractionMode).button
 
     fun setInteractionMode(interactionMode: InteractionMode) {
         CelestiaView.callOnRenderThread {
@@ -180,6 +187,7 @@ open class CelestiaBaseInteraction(context: Context): View.OnTouchListener, View
     override fun onFocusChange(v: View?, hasFocus: Boolean) {
         isShiftPressed = false
         isCtrlPressed = false
+        isAltPressed = false
     }
 
     override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
@@ -294,9 +302,8 @@ open class CelestiaBaseInteraction(context: Context): View.OnTouchListener, View
 
     override fun onKey(v: View?, keyCode: Int, event: KeyEvent?): Boolean {
         if (v == null || event == null) return false
+        if (!isReady) return false
 
-        isShiftPressed = event.isShiftPressed
-        isCtrlPressed = event.isCtrlPressed
         if (event.action == KeyEvent.ACTION_UP)
             return onKeyUp(keyCode, event)
         else if (event.action == KeyEvent.ACTION_DOWN)
@@ -306,7 +313,15 @@ open class CelestiaBaseInteraction(context: Context): View.OnTouchListener, View
 
     private fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (!isReady) return false
+
         var input = event.unicodeChar
+        if (keyCode == KeyEvent.KEYCODE_SHIFT_LEFT || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT)
+            isShiftPressed = true
+        if (keyCode == KeyEvent.KEYCODE_CTRL_LEFT || keyCode == KeyEvent.KEYCODE_CTRL_RIGHT)
+            isCtrlPressed = true
+        if (keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_ALT_RIGHT)
+            isAltPressed = true
+
         if (isCtrlPressed) {
             if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
                 input = (keyCode - KeyEvent.KEYCODE_A) + 1
@@ -330,6 +345,8 @@ open class CelestiaBaseInteraction(context: Context): View.OnTouchListener, View
             isShiftPressed = false
         if (keyCode == KeyEvent.KEYCODE_CTRL_LEFT || keyCode == KeyEvent.KEYCODE_CTRL_RIGHT)
             isCtrlPressed = false
+        if (keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_ALT_RIGHT)
+            isAltPressed = false
         CelestiaView.callOnRenderThread {
             core.keyUp(event.unicodeChar, keyCode, keyModifier)
         }
