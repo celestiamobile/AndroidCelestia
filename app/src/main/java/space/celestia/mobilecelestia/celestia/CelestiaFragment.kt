@@ -235,6 +235,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         interaction.scaleFactor = scaleFactor
         interaction.density = resources.displayMetrics.density
         view.isFocusable = true
+        view.defaultFocusHighlightEnabled = false
         renderer.startConditionally(activity, enableMultisample)
         container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         view.holder?.addCallback(this)
