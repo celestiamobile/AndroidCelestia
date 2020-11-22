@@ -75,6 +75,15 @@
                     android:host="celestia.mobi"
                     android:pathPattern="/api/url" />
             </intent-filter>
+            <meta-data android:name="WindowManagerPreference:FreeformWindowSize"
+                android:value="[phone|tablet|maximize]" />
+            <meta-data android:name="WindowManagerPreference:FreeformWindowOrientation"
+                android:value="[portrait|landscape]" />
+            <layout android:defaultHeight="600dp"
+                android:defaultWidth="800dp"
+                android:gravity="top|end"
+                android:minHeight="600dp"
+                android:minWidth="800dp" />
         </activity>
     </application>
 
