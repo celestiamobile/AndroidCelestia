@@ -268,9 +268,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         // Prepare for browser items
         core.simulation.createAllBrowserItems()
 
-        val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
+        val density = resources.displayMetrics.density
+        core.setDPI((96 * density * scaleFactor).toInt())
+        core.setPickTolerance(10f * density * scaleFactor)
 
         // Use installed font
+        val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
         val preferredInstalledFont = MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
         if (preferredInstalledFont != null) {
             val font = preferredInstalledFont.first
@@ -292,11 +295,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private fun loadingFinished() {
         val interaction = viewInteraction ?: return
         val view = glView ?: return
-
-        val density = resources.displayMetrics.density
-        core.setDPI((96 * density * scaleFactor).toInt())
-        core.setPickTolerance(10f * density * scaleFactor)
-        core.setContextMenuHandler(this)
 
         view.isReady = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
