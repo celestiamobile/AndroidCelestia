@@ -4,7 +4,7 @@ set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/libs")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
 set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/breakpad/breakpad

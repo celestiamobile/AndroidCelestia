@@ -13,7 +13,6 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <epoxy/egl.h>
-#include <swappy/swappyGL.h>
 #include <celestia/celestiacore.h>
 
 #include <android/log.h>
@@ -216,8 +215,8 @@ void CelestiaRenderer::tickAndDraw() const
 {
     core->tick();
     core->draw();
-    if (!SwappyGL_swap(display, surface))
-        LOG_ERROR("SwappyGL_swap() returned error %d", eglGetError());
+    if (!eglSwapBuffers(display, surface))
+        LOG_ERROR("eglSwapBuffers() returned error %d", eglGetError());
 }
 
 void CelestiaRenderer::start()
@@ -283,8 +282,6 @@ void CelestiaRenderer::setSurface(JNIEnv *env, jobject m_surface)
         window = ANativeWindow_fromSurface(env, m_surface);
     else
         window = nullptr;
-    if (window)
-        SwappyGL_setWindow(window);
     unlock();
 }
 
@@ -382,10 +379,6 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1start(JNIEnv *env, j
                                                                   jlong ptr,
                                                                   jobject activity,
                                                                   jboolean enable_multisample) {
-    SwappyGL_init(env, activity);
-    // By default, Swappy will adjust the swap interval based on actual frame rendering time.
-    // SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_60FPS);
-
     LOG_INFO("Creating renderer thread");
 
     auto renderer = (CelestiaRenderer *)ptr;
@@ -402,8 +395,6 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1stop(JNIEnv *env, jo
     LOG_INFO("Stopping renderer thread");
     renderer->stop();
     LOG_INFO("Renderer thread stopped");
-
-    SwappyGL_destroy();
 }
 
 extern "C"

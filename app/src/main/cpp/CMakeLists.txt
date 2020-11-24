@@ -408,11 +408,8 @@ list(APPEND CELESTIA_SOURCES
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/libs")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
 set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
-set(GAME_SDK_DIR "${CMAKE_SOURCE_DIR}/gamesdk")
-set(GAME_SDK_INCLUDE_DIR "${GAME_SDK_DIR}/include")
-set(GAME_SDK_LIB_DIR "${GAME_SDK_DIR}/libs")
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 add_definitions(-DENABLE_NLS)
 add_definitions(-DUSE_SPICE)
@@ -459,9 +456,6 @@ set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/$
 add_library(freetype STATIC IMPORTED)
 set_target_properties(freetype PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libfreetype.a)
 
-add_library(gamesdk STATIC IMPORTED)
-set_target_properties(gamesdk PROPERTIES IMPORTED_LOCATION ${GAME_SDK_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libgamesdk.a)
-
 add_library(
         celestia
         SHARED
@@ -484,5 +478,4 @@ target_link_libraries(
         cspice
         EGL
         android
-        gamesdk
         ${log-lib} )
