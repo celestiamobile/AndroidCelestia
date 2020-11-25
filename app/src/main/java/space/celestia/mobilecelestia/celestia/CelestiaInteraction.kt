@@ -98,7 +98,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         if (event.action == MotionEvent.ACTION_SCROLL) {
             val y = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
             CelestiaView.callOnRenderThread {
-                core.mouseWheel(y * scaleFactor, event.keyModifier())
+                core.mouseWheel(-y * scaleFactor, event.keyModifier())
             }
         }
         return true
