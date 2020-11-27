@@ -808,10 +808,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 openURL(url)
             }
             is SubsystemActionItem -> {
-                addToBackStack()
                 val entry = selection.`object` ?: return
                 val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, entry, core.simulation.universe)
-                showEndFragment(SubsystemBrowserFragment.newInstance(browserItem))
+                showEndFragment(SubsystemBrowserFragment.newInstance(browserItem), addCurrentToBackStack = true)
                 return
             }
             is AlternateSurfacesItem -> {
@@ -853,8 +852,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             showAlert(CelestiaString("Object not found", ""))
             return
         }
-        addToBackStack()
-        showInfo(sel)
+        showInfo(sel, true)
     }
 
     override fun onSearchItemSubmit(text: String) {
@@ -1304,7 +1302,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun showInfo(selection: CelestiaSelection) {
+    private fun showInfo(selection: CelestiaSelection, addCurrentToBackStack: Boolean = false) {
         CelestiaView.callOnRenderThread {
             // Fetch info at the Celestia thread to avoid race condition
             val overview = core.getOverviewForSelection(selection)
@@ -1315,7 +1313,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 currentSelection = selection
                 showEndFragment(InfoFragment.newInstance(
                     InfoDescriptionItem(name, overview, hasWebInfo, hasAltSurface)
-                ))
+                ), addCurrentToBackStack = addCurrentToBackStack)
             }
         }
     }
@@ -1431,7 +1429,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Utilities
-    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
+    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container, addCurrentToBackStack: Boolean = false) {
+        if (addCurrentToBackStack)
+            addToBackStack()
         val ref = WeakReference(fragment)
         hideOverlay(true) {
             ref.get()?.let {
@@ -1499,7 +1499,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     companion object {
         private const val CURRENT_DATA_VERSION = "17"
-        // 17: 1.2 Beta
+        // 17: 1.2 Shader updates
         // 16: 1.1 Migrate from filesDir to noBackupFilesDir
         // 15: 1.0.5
         // 14: 1.0.4
