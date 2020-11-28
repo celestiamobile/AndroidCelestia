@@ -223,7 +223,8 @@ class SettingsSliderItem(
 
 class SettingsPreferenceSwitchItem(
     val key: PreferenceManager.PredefinedKey,
-    private val rawDisplayName: String
+    private val rawDisplayName: String,
+    val defaultOn: Boolean = false
 ) : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString(rawDisplayName, "")
@@ -416,7 +417,7 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
             SettingsSliderItem(SettingsKey.GalaxyBrightness, 0.0, 1.0)
         )),
         SettingsCommonItem.Section(listOf(
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI"),
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI", true),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
         ),  footer =  CelestiaString("Configuration will take effect after a restart.", ""))
     )),

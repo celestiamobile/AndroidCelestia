@@ -460,7 +460,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         languageOverride = preferenceManager[PreferenceManager.PredefinedKey.Language]
         enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
-        enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] == "true"
+        enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
 
         // Load core library
         if (!celestiaLibraryLoaded) {

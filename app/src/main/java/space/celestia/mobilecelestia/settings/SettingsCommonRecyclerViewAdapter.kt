@@ -95,7 +95,7 @@ class SettingsCommonRecyclerViewAdapter(
         }
         if (holder is SwitchViewHolder) {
             if (item is SettingsPreferenceSwitchItem) {
-                holder.configure(item.name, dataSource?.commonSettingPreferenceSwitchState(item.key) ?: false) { checked ->
+                holder.configure(item.name, dataSource?.commonSettingPreferenceSwitchState(item.key) ?: item.defaultOn) { checked ->
                     listener?.onCommonSettingPreferenceSwitchStateChanged(item.key, checked)
                 }
             } else if (item is SettingsSwitchItem) {
