@@ -13,12 +13,16 @@ package space.celestia.mobilecelestia.search
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.SearchView
+import android.widget.EditText
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -31,6 +35,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 @ExperimentalCoroutinesApi
 fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
@@ -52,26 +57,19 @@ fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
 }
 
 class SearchFragment : Fragment() {
-
     private var listener: Listener? = null
     private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
 
     private var searchView: SearchView? = null
 
-    @FlowPreview
-    @ExperimentalCoroutinesApi
-    @SuppressLint("ClickableViewAccessibility")
+    private val toolbar: Toolbar
+        get() = requireView().findViewById<Toolbar>(R.id.toolbar)
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_search_item_list, container, false)
-
-        view.findViewById<View>(R.id.search_container).setOnTouchListener { _, _ -> true }
-        val searchView = view.findViewById<SearchView>(R.id.search)
-        this.searchView = searchView
-        setupSearchSearchView()
-        searchView.isIconified = false
 
         // Set the adapter
         with(view.findViewById<RecyclerView>(R.id.list)) {
@@ -79,6 +77,27 @@ class SearchFragment : Fragment() {
             adapter = listAdapter
         }
         return view
+    }
+
+    @FlowPreview
+    @ExperimentalCoroutinesApi
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        toolbar.title = CelestiaString("Search", "")
+        toolbar.inflateMenu(R.menu.search_view_menu)
+        val searchItem = toolbar.menu.findItem(R.id.action_search)
+        val searchView = searchItem.actionView
+        if (searchView is SearchView) {
+            ViewCompat.setBackground(searchView.findViewById<View>(R.id.search_plate), ColorDrawable(Color.TRANSPARENT))
+            searchView.findViewById<EditText>(R.id.search_src_text).hint = ""
+            searchView.imeOptions = EditorInfo.IME_ACTION_SEARCH or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
+            this.searchView = searchView
+        }
+
+        setupSearchSearchView()
+        searchItem.expandActionView()
     }
 
     @FlowPreview

@@ -18,20 +18,13 @@
     android:orientation="vertical"
     style="@style/Background">
 
-    <FrameLayout
-        android:id="@+id/search_container"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Toolbar">
+        style="@style/Toolbar"/>
 
-        <SearchView
-            android:id="@+id/search"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:queryBackground="@android:color/transparent"
-            android:imeOptions="actionSearch|flagNoExtractUi|flagNoFullscreen"/>
-
-    </FrameLayout>
+    <View style="@style/BarSeparator"/>
 
     <include layout="@layout/fragment_general_grouped_list"
         android:layout_width="match_parent"
