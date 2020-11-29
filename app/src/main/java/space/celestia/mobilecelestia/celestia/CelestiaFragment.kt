@@ -577,15 +577,13 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     override fun requestContextMenu(x: Float, y: Float, selection: CelestiaSelection) {
         if (selection.isEmpty) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return // Avoid showing context menu before Android 8, since it is fullscreen
+
         pendingTarget = selection
 
         // Show context menu on main thread
         activity?.runOnUiThread {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                glView?.showContextMenu(x / scaleFactor, y / scaleFactor)
-            } else {
-                glView?.showContextMenu()
-            }
+            glView?.showContextMenu(x / scaleFactor, y / scaleFactor)
         }
     }
 
