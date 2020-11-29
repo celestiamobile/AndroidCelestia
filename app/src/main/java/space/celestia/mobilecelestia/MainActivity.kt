@@ -1066,8 +1066,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         preferenceManager[key] = if (value) "true" else "false"
     }
 
-    override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean {
-        return preferenceManager[key] == "true"
+    override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean? {
+        return when (preferenceManager[key]) {
+            "true" -> true
+            "false" -> false
+            else -> null
+        }
     }
 
     override fun commonSettingSliderValue(field: String): Double {

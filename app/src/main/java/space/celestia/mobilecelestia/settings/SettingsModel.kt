@@ -258,7 +258,7 @@ class SettingsSwitchItem(
     constructor(key: SettingsKey, representation: Representation = Representation.Checkmark) : this(key.valueString, key.displayName, false, representation)
 
     override val clickable: Boolean
-        get() = false
+        get() = representation == Representation.Checkmark
 }
 
 private val staticDisplayItems: List<SettingsItem> = listOf(

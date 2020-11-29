@@ -87,7 +87,7 @@ class SettingsCommonFragment : SettingsBaseFragment() {
     }
 
     interface DataSource {
-        fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean
+        fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean?
         fun commonSettingSwitchState(field: String): Boolean
         fun commonSettingSliderValue(field: String): Double
     }
