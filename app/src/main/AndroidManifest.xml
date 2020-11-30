@@ -13,8 +13,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="space.celestia.mobilecelestia"
-    android:versionCode="129"
-    android:versionName="1.2.1">
+    android:versionCode="140"
+    android:versionName="1.2.2">
 
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
     <uses-permission android:name="android.permission.INTERNET"/>

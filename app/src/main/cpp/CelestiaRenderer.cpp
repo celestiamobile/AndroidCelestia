@@ -162,6 +162,12 @@ bool CelestiaRenderer::initialize()
         }
     }
 
+    if (surface != EGL_NO_SURFACE) {
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglDestroySurface(display, surface);
+        surface = EGL_NO_SURFACE;
+    }
+
     if (window) {
         ANativeWindow_setBuffersGeometry(window, 0, 0, format);
         if (!(surface = eglCreateWindowSurface(display, config, window, nullptr))) {
@@ -175,9 +181,6 @@ bool CelestiaRenderer::initialize()
             destroy();
             return false;
         }
-    } else {
-        eglDestroySurface(display, surface);
-        surface = EGL_NO_SURFACE;
     }
     return true;
 }
@@ -318,7 +321,7 @@ void *CelestiaRenderer::threadCallback(void *self)
     bool renderingEnabled = true;
 
     while (renderingEnabled) {
-        if (renderer->display != EGL_NO_DISPLAY && !renderer->engineStartedCalled)
+        if (renderer->surface != EGL_NO_SURFACE && !renderer->engineStartedCalled)
             renderer->engineStartedCalled = newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod) == JNI_TRUE;
         if (renderer->engineStartedCalled)
             newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushTasksMethod);
@@ -340,7 +343,7 @@ void *CelestiaRenderer::threadCallback(void *self)
         }
         renderer->msg = CelestiaRenderer::MSG_NONE;
 
-        if (renderer->engineStartedCalled && renderer->core) {
+        if (renderer->engineStartedCalled && renderer->surface != EGL_NO_SURFACE && renderer->core) {
             renderer->resizeIfNeeded();
             renderer->tickAndDraw();
         }
