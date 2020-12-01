@@ -1,0 +1,72 @@
+resources:
+  repositories:
+  - repository: Celestia
+    type: github
+    endpoint: GithubAuth
+    name: levinli303/Celestia
+
+trigger:
+- main
+
+pool:
+  vmImage: 'macos-latest'
+
+
+steps:
+- checkout: Celestia
+- checkout: self
+  submodules: true
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      brew install gettext
+
+- task: android-manifest-version@1
+  inputs:
+    sourcePath: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml'
+    versionCodeOption: 'buildid'
+    versionCode: '$(Build.BuildId)'
+    versionCodeOffset: '142'
+    versionName: 
+    printFile: true
+
+- task: Gradle@2
+  inputs:
+    workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
+    gradleWrapperFile: 'gradlew'
+    gradleOptions: '-Xmx3072m'
+    publishJUnitResults: false
+    testResultsFiles: '**/TEST-*.xml'
+    tasks: 'assembleDebug'
+
+- task: AndroidSigning@2
+  inputs:
+    apkFiles: '**/*.apk'
+    jarsign: true
+    jarsignerKeystoreFile: 'celestia.jks'
+    jarsignerKeystorePassword: '$(JARSIGNER_KEYSTORE_PASSWORD)'
+    jarsignerKeystoreAlias: 'celestia'
+    jarsignerKeyPassword: '$(JARSIGNER_KEY_PASSWORD)'
+    zipalign: true
+
+- task: CopyFiles@2
+  inputs:
+    contents: '**/*.apk'
+    targetFolder: '$(build.artifactStagingDirectory)'
+
+- task: CopyFiles@2
+  inputs:
+    contents: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj/**/*.so'
+    targetFolder: '$(build.artifactStagingDirectory)'
+
+- task: AppCenterDistribute@3
+  inputs:
+    serverEndpoint: 'MobileCelestiaAppCenter'
+    appSlug: 'CelestiaProject/Celestia-1'
+    appFile: '$(build.artifactstagingdirectory)/**/*.apk'
+    releaseNotesOption: 'input'
+    releaseNotesInput: 'Internal testing only.'
+    destinationType: 'groups'
+    symbolsOption: 'Android'
+    nativeLibrariesPath: '$(build.artifactStagingDirectory)/**/*.so'
