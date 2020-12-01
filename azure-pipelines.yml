@@ -34,7 +34,7 @@ steps:
 - task: Gradle@2
   inputs:
     workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
-    gradleWrapperFile: 'gradlew'
+    gradleWrapperFile: '$(system.defaultWorkingDirectory)/AndroidCelestia/gradlew'
     gradleOptions: '-Xmx3072m'
     publishJUnitResults: false
     testResultsFiles: '**/TEST-*.xml'
