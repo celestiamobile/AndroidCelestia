@@ -62,7 +62,7 @@ steps:
 
 - task: AppCenterDistribute@3
   inputs:
-    serverEndpoint: 'MobileCelestiaAppCenter'
+    serverEndpoint: 'AndroidCelestiaAppCenter'
     appSlug: 'CelestiaProject/Celestia-1'
     appFile: '$(build.artifactstagingdirectory)/**/*.apk'
     releaseNotesOption: 'input'
