@@ -11,7 +11,6 @@ trigger:
 pool:
   vmImage: 'macos-latest'
 
-
 steps:
 - checkout: Celestia
 - checkout: self
@@ -27,7 +26,7 @@ steps:
     sourcePath: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml'
     versionCodeOption: 'buildid'
     versionCode: '$(Build.BuildId)'
-    versionCodeOffset: '142'
+    versionCodeOffset: '140'
     versionName: 
     printFile: true
 
@@ -42,7 +41,7 @@ steps:
 
 - task: AndroidSigning@2
   inputs:
-    apkFiles: '**/*.apk'
+    apkFiles: '$(system.defaultWorkingDirectory)/**/*.apk'
     jarsign: true
     jarsignerKeystoreFile: 'celestia.jks'
     jarsignerKeystorePassword: '$(JARSIGNER_KEYSTORE_PASSWORD)'
@@ -52,12 +51,14 @@ steps:
 
 - task: CopyFiles@2
   inputs:
+    sourceFolder: '$(system.defaultWorkingDirectory)'
     contents: '**/*.apk'
     targetFolder: '$(build.artifactStagingDirectory)'
 
 - task: CopyFiles@2
   inputs:
-    contents: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj/**/*.so'
+    sourceFolder: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj'
+    contents: '**/*.so'
     targetFolder: '$(build.artifactStagingDirectory)'
 
 - task: AppCenterDistribute@3
