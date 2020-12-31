@@ -71,11 +71,11 @@ object RealPathUtils {
                             "content://downloads/my_downloads",
                             "content://downloads/all_downloads"
                         )
-                        var idLong: Long = 0
+                        var idLong: Long
                         try {
                             idLong = java.lang.Long.valueOf(id)
                         } catch (ignored: NumberFormatException) {
-                            (uri.path ?: "").replaceFirst("^/document/raw:", "").replaceFirst("^raw:", "")
+                            return (uri.path ?: "").replaceFirst("^/document/raw:", "").replaceFirst("^raw:", "")
                         }
                         for (contentUriPrefix in contentUriPrefixesToTry) {
                             val contentUri = ContentUris.withAppendedId(
