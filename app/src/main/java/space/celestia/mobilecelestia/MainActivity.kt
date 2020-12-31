@@ -1399,12 +1399,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showShare() {
-        showOptions("", arrayOf(CelestiaString("URL", ""), CelestiaString("Image", ""))) { which ->
+        showOptions("", arrayOf(CelestiaString("Image", ""), CelestiaString("URL", ""))) { which ->
             when (which) {
-                0 -> {
+                1 -> {
                     shareURL()
                 }
-                1 -> {
+                0 -> {
                     shareImage()
                 }
                 else -> {
