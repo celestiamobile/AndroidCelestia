@@ -31,6 +31,9 @@ public class CelestiaAppCore {
     public static final int RENDER_FONT_STYLE_NORMAL    = 0;
     public static final int RENDER_FONT_STYLE_LARGE     = 1;
 
+    public static final int IMAGE_TYPE_JPEG     = 1;
+    public static final int IMAGE_TYPE_PNG      = 4;
+
     public interface ProgressWatcher {
         void onCelestiaProgress(@NonNull String progress);
     }
@@ -175,6 +178,9 @@ public class CelestiaAppCore {
     public void setRenderer(CelestiaRenderer renderer) {
         renderer.setCorePointer(pointer);
     }
+    public boolean saveScreenshot(@NonNull String filePath, int imageType) {
+        return c_saveScreenshot(pointer, filePath, imageType);
+    }
 
     // Locale
     public static void setLocaleDirectoryPath(@NonNull String localeDirectoryPath, @NonNull String locale) { c_setLocaleDirectoryPath(localeDirectoryPath, locale); }
@@ -242,6 +248,8 @@ public class CelestiaAppCore {
     private static native String c_getLocalizedFilename(String filename);
 
     private static native String c_getRenderInfo(long ptr);
+
+    private static native boolean c_saveScreenshot(long ptr, String filePath, int imageType);
 
     private final static String TAG = "CelestiaAppCore";
 

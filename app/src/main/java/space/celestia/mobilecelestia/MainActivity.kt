@@ -11,14 +11,19 @@
 
 package space.celestia.mobilecelestia
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.DocumentsContract
+import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import android.view.animation.Animation
@@ -27,6 +32,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.contains
 import androidx.fragment.app.Fragment
@@ -1233,7 +1239,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showWrongPathProvided() {
-        // TODO: Localization
         showAlert(CelestiaString("Unable to resolve path, please ensure that you have selected a path inside %s.", "").format(getExternalFilesDir(null)?.absolutePath ?: ""))
     }
 
@@ -1394,6 +1399,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showShare() {
+        showOptions("", arrayOf(CelestiaString("URL", ""), CelestiaString("Image", ""))) { which ->
+            when (which) {
+                0 -> {
+                    shareURL()
+                }
+                1 -> {
+                    shareImage()
+                }
+                else -> {
+                    Log.e(TAG, "Unknown selection in share $which")
+                }
+            }
+        }
+    }
+
+    private fun shareURL() {
         val orig = core.currentURL
         val bytes = orig.toByteArray()
         val url = android.util.Base64.encodeToString(bytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
@@ -1407,12 +1428,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 try {
                     val result = service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java)
                     withContext(Dispatchers.Main) {
-                        ShareCompat.IntentBuilder
+                        val intent = ShareCompat.IntentBuilder
                             .from(this@MainActivity)
                             .setType("text/plain")
                             .setChooserTitle(name)
                             .setText(result.publicURL)
-                            .startChooser()
+                            .intent
+                        if (intent.resolveActivity(packageManager) != null)
+                            startActivity(intent)
                     }
                 } catch (ignored: Throwable) {
                     withContext(Dispatchers.Main) {
@@ -1420,6 +1443,78 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     }
                 }
             }
+        }
+    }
+
+    private fun shareImage() {
+        // On Android 9-, we need WRITE_EXTERNAL_STORAGE to add image to Pictures folder
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            shareImagePermissionGranted()
+            return
+        }
+
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_EXTERNAL_STORAGE_PERMISSION_CODE)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode != WRITE_EXTERNAL_STORAGE_PERMISSION_CODE) return
+        if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            shareImagePermissionGranted()
+        } else {
+            Toast.makeText(this, CelestiaString("Unable to share image without permission.", ""), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun shareImagePermissionGranted() {
+        val tempPath = "${cacheDir.absolutePath}/${UUID.randomUUID().toString()}.png"
+        CelestiaView.callOnRenderThread {
+            core.draw()
+            if (core.saveScreenshot(tempPath, CelestiaAppCore.IMAGE_TYPE_PNG)) {
+                lifecycleScope.launch {
+                    shareImageAtPath(tempPath, "image/png")
+                }
+            } else {
+                lifecycleScope.launch {
+                    Toast.makeText(this@MainActivity, CelestiaString("Unable to generate image.", ""), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun shareImageAtPath(path: String, mimeType: String) {
+        val file = File(path)
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, UUID.randomUUID().toString())
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/celestia/screenshots")
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+        }
+        val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+        try {
+            uri?.let { it ->
+                val stream = contentResolver.openOutputStream(it)
+                stream?.let { st ->
+                    st.use {
+                        file.inputStream().copyTo(it)
+                    }
+                } ?: throw IOException("Failed to get output stream.")
+            } ?: throw IOException("Failed to create new MediaStore record.")
+
+            val intent = ShareCompat.IntentBuilder
+                .from(this)
+                .setType(mimeType)
+                .setStream(uri)
+                .intent
+            if (intent.resolveActivity(packageManager) != null)
+                startActivity(intent)
+        } catch (error: IOException) {
+            showAlert(CelestiaString("Failed to copy image to shared directory for sharing.", ""))
         }
     }
 
@@ -1538,6 +1633,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         private const val DATA_DIR_REQUEST = 1
         private const val CONFIG_FILE_REQUEST = 2
+        private const val WRITE_EXTERNAL_STORAGE_PERMISSION_CODE = 101
 
         private const val TAG = "MainActivity"
 

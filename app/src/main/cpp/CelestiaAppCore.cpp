@@ -880,6 +880,17 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getRenderInfo(JNIEnv 
 }
 
 extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1saveScreenshot(JNIEnv *env, jclass clazz, jlong ptr, jstring file_path, int image_type)
+{
+    auto core = (CelestiaCore *)ptr;
+    const char *c_path = env->GetStringUTFChars(file_path, nullptr);
+    bool result = core->saveScreenShot(c_path, (ContentType)image_type);
+    env->ReleaseStringUTFChars(file_path, c_path);
+    return result ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setAmbientLightLevel(JNIEnv *env,
                                                                                 jobject thiz,

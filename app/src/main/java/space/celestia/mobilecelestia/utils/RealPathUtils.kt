@@ -11,7 +11,6 @@
 
 package space.celestia.mobilecelestia.utils
 
-import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
@@ -23,7 +22,6 @@ import space.celestia.mobilecelestia.BuildConfig
 import java.io.File
 import java.io.IOException
 
-
 object RealPathUtils {
     fun getRealPath(
         context: Context,
@@ -32,7 +30,6 @@ object RealPathUtils {
         return getRealPathFromURIAboveAPI19(context, fileUri)
     }
 
-    @SuppressLint("NewApi")
     private fun getRealPathFromURIAboveAPI19(
         context: Context,
         uri: Uri
@@ -74,11 +71,16 @@ object RealPathUtils {
                             "content://downloads/my_downloads",
                             "content://downloads/all_downloads"
                         )
+                        var idLong: Long = 0
+                        try {
+                            idLong = java.lang.Long.valueOf(id)
+                        } catch (ignored: NumberFormatException) {
+                            (uri.path ?: "").replaceFirst("^/document/raw:", "").replaceFirst("^raw:", "")
+                        }
                         for (contentUriPrefix in contentUriPrefixesToTry) {
                             val contentUri = ContentUris.withAppendedId(
-                                Uri.parse(contentUriPrefix), java.lang.Long.valueOf(
-                                    id
-                                )
+                                Uri.parse(contentUriPrefix),
+                                idLong
                             )
                             val path = getDataColumn(context, contentUri, null, null)
                             if (path != null)

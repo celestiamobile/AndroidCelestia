@@ -77,6 +77,15 @@ fun Activity.showSingleSelection(title: String, selections: List<String>, checke
     builder.show()
 }
 
+fun Activity.showOptions(title: String, options: Array<String>, handler: (Int) -> Unit) {
+    val builder = AlertDialog.Builder(this)
+    builder.setTitle(title)
+    builder.setItems(options) { _, index ->
+        handler(index)
+    }
+    builder.show()
+}
+
 fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): AlertDialog {
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
