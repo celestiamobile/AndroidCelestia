@@ -23,10 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.showAlert
-import space.celestia.mobilecelestia.utils.showDateInput
-import space.celestia.mobilecelestia.utils.showSingleSelection
+import space.celestia.mobilecelestia.utils.*
 import java.util.*
 
 class EventFinderInputFragment : NavigationFragment.SubFragment() {
@@ -57,8 +54,18 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
         }, { current ->
             val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
             val objects = listOf("Earth", "Jupiter")
+            val other = CelestiaString("Other", "")
             val currentIndex = 0.coerceAtLeast(objects.indexOf(current))
-            ac.showSingleSelection(CelestiaString("Please choose an object.", ""), objects.map { CelestiaAppCore.getLocalizedString(it, "celestia") }, currentIndex) { index ->
+            ac.showSingleSelection(CelestiaString("Please choose an object.", ""), objects.map { CelestiaAppCore.getLocalizedString(it, "celestia") } + other, currentIndex) { index ->
+                if (index >= objects.size) {
+                    // User choose other, show text input for the object name
+                    ac.showTextInput(CelestiaString("Please enter an object name.", "")) { objectName ->
+                        adapter?.objectName = objectName
+                        adapter?.reload()
+                        adapter?.notifyDataSetChanged()
+                    }
+                    return@showSingleSelection
+                }
                 adapter?.objectName = objects[index]
                 adapter?.reload()
                 adapter?.notifyDataSetChanged()
