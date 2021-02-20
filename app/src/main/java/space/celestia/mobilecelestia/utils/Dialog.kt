@@ -70,8 +70,9 @@ fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Un
 fun Activity.showSingleSelection(title: String, selections: List<String>, checkedIndex: Int, handler: (Int) -> Unit) {
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
-    builder.setSingleChoiceItems(selections.toTypedArray(), checkedIndex) { _, index ->
+    builder.setSingleChoiceItems(selections.toTypedArray(), checkedIndex) { dialog, index ->
         handler(index)
+        dialog.dismiss()
     }
 
     builder.show()
