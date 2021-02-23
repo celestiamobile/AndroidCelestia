@@ -13,8 +13,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="space.celestia.mobilecelestia"
-    android:versionCode="153"
-    android:versionName="1.2.5">
+    android:versionCode="156"
+    android:versionName="1.2.6">
 
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -96,4 +96,14 @@
         </provider>
     </application>
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+    </queries>
 </manifest>
