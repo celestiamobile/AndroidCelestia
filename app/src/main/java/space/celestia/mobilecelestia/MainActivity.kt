@@ -1566,7 +1566,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "19"
+        private const val CURRENT_DATA_VERSION = "20"
+        // 20: 1.2.7 Privacy Policy and Service Agreement
         // 19: 1.2.2 Shader updates
         // 18: 1.2.1 ru.po/bg.po updates
         // 17: 1.2 Beta, shader updates
