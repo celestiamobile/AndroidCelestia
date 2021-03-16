@@ -115,7 +115,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
 
     private val core by lazy { CelestiaAppCore.shared() }
-    private var currentSelection: CelestiaSelection? = null
 
     private val backStack: MutableList<Fragment> = ArrayList()
 
@@ -913,18 +912,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBrowserItemSelected(item: BrowserItem) {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? BrowserRootFragment ?: return
+
         if (!item.isLeaf) {
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
-            if (frag is BrowserRootFragment) {
-                frag.pushItem(item.item)
-            }
+            frag.pushItem(item.item)
         } else {
             val obj = item.item.`object`
             if (obj != null) {
                 val selection = CelestiaSelection.create(obj)
                 if (selection != null) {
                     clearBackStack()
-                    showInfo(selection)
+                    createInfo(selection) {
+                        currentSelection = selection
+                        frag.showInfo(it)
+                    }
                 } else {
                     showAlert(CelestiaString("Object not found", ""))
                 }
@@ -1350,7 +1351,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun showInfo(selection: CelestiaSelection, addCurrentToBackStack: Boolean = false) {
+    private fun createInfo(selection: CelestiaSelection, callback: (InfoDescriptionItem) -> Unit) {
         CelestiaView.callOnRenderThread {
             // Fetch info at the Celestia thread to avoid race condition
             val overview = core.getOverviewForSelection(selection)
@@ -1358,11 +1359,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val hasWebInfo = selection.webInfoURL != null
             val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
             lifecycleScope.launch {
-                currentSelection = selection
-                showEndFragment(InfoFragment.newInstance(
-                    InfoDescriptionItem(name, overview, hasWebInfo, hasAltSurface)
-                ), addCurrentToBackStack = addCurrentToBackStack)
+                callback(InfoDescriptionItem(name, overview, hasWebInfo, hasAltSurface))
             }
+        }
+    }
+
+    private fun showInfo(selection: CelestiaSelection, addCurrentToBackStack: Boolean = false) {
+        createInfo(selection) {
+            currentSelection = selection
+            showEndFragment(InfoFragment.newInstance(it), addCurrentToBackStack = addCurrentToBackStack)
         }
     }
 
@@ -1632,6 +1637,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var languageOverride: String? = null
         private var enableMultisample = false
         private var enableHiDPI = false
+
+        private var currentSelection: CelestiaSelection? = null
 
         var availableInstalledFonts: Map<String, Pair<FontHelper.FontCompat, FontHelper.FontCompat>> = mapOf()
         var defaultInstalledFont: Pair<FontHelper.FontCompat, FontHelper.FontCompat>? = null

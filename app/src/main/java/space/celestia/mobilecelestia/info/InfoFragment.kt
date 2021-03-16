@@ -22,18 +22,21 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.info.model.*
 
-class InfoFragment : Fragment() {
+class InfoFragment : NavigationFragment.SubFragment() {
 
     private var listener: Listener? = null
     private var descriptionItem: InfoDescriptionItem? = null
+    private var embeddedInNavigation = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
             descriptionItem = it.getSerializable(ARG_DESCRIPTION_ITEM) as? InfoDescriptionItem
+            embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION, false)
         }
     }
 
@@ -42,6 +45,9 @@ class InfoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_info_list, container, false)
+
+        if (embeddedInNavigation)
+            view.setBackgroundResource(R.color.colorBackground)
 
         // Set the adapter
         if (view is RecyclerView) {
@@ -64,6 +70,12 @@ class InfoFragment : Fragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = ""
     }
 
     override fun onAttach(context: Context) {
@@ -123,12 +135,14 @@ class InfoFragment : Fragment() {
 
     companion object {
         const val ARG_DESCRIPTION_ITEM = "description-item"
+        const val ARG_EMBEDDED_IN_NAVIGATION = "embedded-in-navigation"
 
         @JvmStatic
-        fun newInstance(info: InfoDescriptionItem) =
+        fun newInstance(info: InfoDescriptionItem, embeddedInNavigation: Boolean = false) =
             InfoFragment().apply {
                 arguments = Bundle().apply {
                     this.putSerializable(ARG_DESCRIPTION_ITEM, info)
+                    this.putBoolean(ARG_EMBEDDED_IN_NAVIGATION, embeddedInNavigation)
                 }
             }
     }

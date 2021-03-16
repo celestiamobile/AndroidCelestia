@@ -85,6 +85,11 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigat
         navigationFragment.pushItem(currentPath)
     }
 
+    override fun showInfo(info: InfoDescriptionItem) {
+        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
+        navigationFragment.pushFragment(InfoFragment.newInstance(info, true))
+    }
+
     override fun canPop(): Boolean {
         val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return false
         return navigationFragment.canPop()
