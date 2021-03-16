@@ -59,7 +59,11 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         toolbar.setNavigationOnClickListener {
             popFragment()
         }
-        replaceFragment(createInitialFragment(savedInstanceState))
+        if (savedInstanceState == null) {
+            replaceFragment(createInitialFragment(savedInstanceState))
+        } else {
+            configureToolbar(null, null, canPop())
+        }
     }
 
     fun replaceFragment(fragment: SubFragment) {
@@ -72,13 +76,15 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         configureToolbar(fragment.title, fragment.menuItems, true)
     }
 
-    private fun configureToolbar(name: String, menuItems: List<MenuItem>, canGoBack: Boolean? = null) {
-        toolbar.title = name
-        toolbar.menu.clear()
+    private fun configureToolbar(name: String?, menuItems: List<MenuItem>?, canGoBack: Boolean? = null) {
+        if (name != null)
+            toolbar.title = name
+
         if (canGoBack != null)
             toolbar.navigationIcon = if (canGoBack) ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null) else null
-        if (menuItems.size == 0) return;
 
+        if (menuItems == null) return
+        toolbar.menu.clear()
         for (menuItem in menuItems) {
             val item = toolbar.menu.add(Menu.NONE, menuItem.id, Menu.NONE, menuItem.title)
             val icon = menuItem.icon

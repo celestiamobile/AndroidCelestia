@@ -76,8 +76,31 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
             val objectName = adapter?.objectName ?: return@EventFinderInputRecyclerViewAdapter
             listener?.onSearchForEvent(objectName, startDate, endDate)
         })
+
+        if (savedInstanceState != null) {
+            val objectName = savedInstanceState.getString(OBJECT_TAG)
+            val startDate = savedInstanceState.getSerializable(START_TIME_TAG) as? Date
+            val endDate = savedInstanceState.getSerializable(END_TIME_TAG) as? Date
+
+            if (objectName != null)
+                adapter?.objectName = objectName
+            if (startDate != null)
+                adapter?.startDate = startDate
+            if (endDate != null)
+                adapter?.endDate = endDate
+            adapter?.reload()
+        }
+
         recView.adapter = adapter
         return view
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable(START_TIME_TAG, adapter?.startDate)
+        outState.putSerializable(END_TIME_TAG, adapter?.startDate)
+        outState.putString(OBJECT_TAG, adapter?.objectName)
+
+        super.onSaveInstanceState(outState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -107,6 +130,10 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
 
     companion object {
         private const val TAG = "EventFinderInput"
+
+        private const val START_TIME_TAG = "start_time"
+        private const val END_TIME_TAG = "end_time"
+        private const val OBJECT_TAG = "object"
 
         @JvmStatic
         fun newInstance() =

@@ -20,9 +20,12 @@ import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
+import space.celestia.mobilecelestia.info.InfoFragment
+import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
 interface BrowserRootFragment {
     fun pushItem(browserItem: CelestiaBrowserItem)
+    fun showInfo(info: InfoDescriptionItem)
 }
 
 class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigationView.OnNavigationItemSelectedListener {
@@ -60,7 +63,8 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigat
             nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.alternativeName ?: item.item.name).setIcon(item.icon)
         }
         nav.setOnNavigationItemSelectedListener(this)
-        replaceItem(browserItemMenu[0].item)
+        if (savedInstanceState == null)
+            replaceItem(browserItemMenu[0].item)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

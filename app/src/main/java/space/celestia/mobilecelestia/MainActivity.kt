@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         // We don't need to recover when we get killed
-        super.onCreate(null)
+        super.onCreate(savedInstanceState)
 
         Log.d(TAG, "Creating MainActivity")
 
@@ -184,12 +184,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
-        // Add fragments
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
-            .commitAllowingStateLoss()
-
         findViewById<View>(R.id.overlay_container).setOnTouchListener { _, e ->
             if (e.actionMasked == MotionEvent.ACTION_UP) {
                 popLastFromBackStackAndShow()
@@ -213,43 +207,43 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val currentState = AppStatusReporter.shared().state
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
-            // Celestia loading failure in the original activity
-            Log.d(TAG, "Previous loading failed, unrecoverable.")
             celestiaUnrecoveableLoadingFailed()
             return
         }
 
-        handleIntent(intent)
-
-        if (currentState == AppStatusReporter.State.NONE || currentState == AppStatusReporter.State.EXTERNAL_LOADING) {
-            Log.d(TAG, "Start fresh loading")
-            AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING)
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    copyAssetIfNeeded()
-                    if (!isActive) return@launch
-                    createAddonFolder()
-                    if (!isActive) return@launch
-                    loadConfig()
-                    if (!isActive) return@launch
-                    with(Dispatchers.Main) {
-                        loadConfigSuccess()
-                    }
-                } catch (error: Throwable) {
-                    withContext(Dispatchers.Main) {
-                        AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FAILURE)
-                        loadConfigFailed(error)
-                    }
-                }
-            }
+        if (currentState == AppStatusReporter.State.NONE || currentState == AppStatusReporter.State.EXTERNAL_LOADING)  {
+            loadExternalConfig(savedInstanceState)
         } else {
-            Log.d(TAG, "Configuration already loaded")
-            loadConfigSuccess()
+            loadConfigSuccess(savedInstanceState)
             if (currentState == AppStatusReporter.State.SUCCESS) {
-                Log.d(TAG, "Celestia already loaded")
                 celestiaLoadingSucceeded()
             }
         }
+
+        if (savedInstanceState != null) {
+            val toolbarVisible = savedInstanceState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
+            val endFragmentVisible = savedInstanceState.getBoolean(END_FRAGMENT_VISIBLE_TAG, false)
+            val bottomFragmentVisible = savedInstanceState.getBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, false)
+
+            findViewById<View>(R.id.bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.toolbar_bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
+
+            findViewById<View>(R.id.normal_end_container).visibility = if (endFragmentVisible) View.VISIBLE else View.GONE
+
+            findViewById<View>(R.id.toolbar_end_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+
+            findViewById<View>(R.id.overlay_container).visibility = if (toolbarVisible || endFragmentVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.end_notch).visibility = if (toolbarVisible || endFragmentVisible) View.VISIBLE else View.GONE
+        }
+
+        handleIntent(intent)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_end_container).visibility == View.VISIBLE)
+        outState.putBoolean(END_FRAGMENT_VISIBLE_TAG, findViewById<View>(R.id.normal_end_container).visibility == View.VISIBLE)
+        outState.putBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, findViewById<View>(R.id.toolbar_bottom_container).visibility == View.VISIBLE)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
@@ -275,6 +269,34 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
+    }
+
+    private fun loadExternalConfig(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) {
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
+                .commitAllowingStateLoss()
+        }
+        AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                copyAssetIfNeeded()
+                if (!isActive) return@launch
+                createAddonFolder()
+                if (!isActive) return@launch
+                loadConfig()
+                if (!isActive) return@launch
+                with(Dispatchers.Main) {
+                    loadConfigSuccess(null)
+                }
+            } catch (error: Throwable) {
+                withContext(Dispatchers.Main) {
+                    AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FAILURE)
+                    loadConfigFailed(error)
+                }
+            }
+        }
     }
 
     private fun hideSystemUI() {
@@ -328,17 +350,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     fun celestiaLoadingSucceeded() {
         lifecycleScope.launch {
             // hide the loading container
+            supportFragmentManager.findFragmentById(R.id.loading_fragment_container)?.let {
+                supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
+            }
             findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
 
             // apply setting
             readSettings()
 
-            // show onboard
-            showWelcomeIfNeeded()
-
             // open url/script if present
             readyForInteraction = true
             runScriptOrOpenURLIfNeeded()
+
+            // Show onboarding if needed
+            showWelcomeIfNeeded()
         }
     }
 
@@ -360,7 +385,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 setConfigFilePath(null)
                 setDataDirectoryPath(null)
                 AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FINISHED)
-                loadConfigSuccess()
+                loadConfigSuccess(null)
             }
         }
     }
@@ -728,21 +753,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } catch (ignored: Throwable) {}
     }
 
-    private fun loadConfigSuccess() {
-        // Add gl fragment
-        val celestiaFragment = CelestiaFragment.newInstance(
-            celestiaDataDirPath,
-            celestiaConfigFilePath,
-            addonPath,
-            enableMultisample,
-            enableHiDPI,
-            languageOverride
-        )
+    private fun loadConfigSuccess(savedInstanceState: Bundle?) {
         ResourceManager.shared.addonDirectory = addonPath
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.celestia_fragment_container, celestiaFragment)
-            .commitAllowingStateLoss()
+
+        if (savedInstanceState == null) {
+            // Add gl fragment
+            val celestiaFragment = CelestiaFragment.newInstance(
+                celestiaDataDirPath,
+                celestiaConfigFilePath,
+                addonPath,
+                enableMultisample,
+                enableHiDPI,
+                languageOverride
+            )
+            ResourceManager.shared.addonDirectory = addonPath
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.celestia_fragment_container, celestiaFragment)
+                .commitAllowingStateLoss()
+        }
     }
 
     private fun loadConfigFailed(error: Throwable) {
@@ -1589,6 +1618,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val DATA_DIR_REQUEST = 1
         private const val CONFIG_FILE_REQUEST = 2
         private const val WRITE_EXTERNAL_STORAGE_PERMISSION_CODE = 101
+
+        private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
+        private const val END_FRAGMENT_VISIBLE_TAG = "end_visible"
+        private const val BOTTOM_FRAGMENT_VISIBLE_TAG = "bottom_visible"
 
         private const val TAG = "MainActivity"
 
