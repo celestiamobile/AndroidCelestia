@@ -60,8 +60,7 @@ class SubsystemBrowserFragment : NavigationFragment(), BrowserRootFragment, Clea
     }
 
     override fun showInfo(info: InfoDescriptionItem) {
-        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
-        navigationFragment.pushFragment(InfoFragment.newInstance(info, true))
+        pushFragment(InfoFragment.newInstance(info, true))
     }
 
     override fun cleanUp() {
