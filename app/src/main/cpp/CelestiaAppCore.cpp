@@ -17,7 +17,7 @@
 #include <celestia/celestiacore.h>
 #include <celengine/glsupport.h>
 #include <celestia/helper.h>
-#include <celutil/util.h>
+#include <celutil/fsutils.h>
 #include <celutil/gettext.h>
 #include <celestia/url.h>
 
@@ -582,8 +582,8 @@ JNIEXPORT jstring JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getCurrentURL(JNIEnv *env, jclass clazz,
                                                                          jlong ptr) {
     auto core = (CelestiaCore *)ptr;
-    CelestiaState appState;
-    appState.captureState(core);
+    CelestiaState appState(core);
+    appState.captureState();
 
     Url currentURL(appState, Url::CurrentVersion);
     return env->NewStringUTF(currentURL.getAsString().c_str());
@@ -644,6 +644,7 @@ JNIEXPORT jstring JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getLocalizedFilename(JNIEnv *env,
                                                                                 jclass clazz,
                                                                                 jstring string) {
+    using namespace celestia::util;
     const char *str = env->GetStringUTFChars(string, nullptr);
     jstring localized = env->NewStringUTF(LocaleFilename(str).string().c_str());
     env->ReleaseStringUTFChars(string, str);

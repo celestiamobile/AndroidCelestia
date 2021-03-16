@@ -7,6 +7,8 @@ set(CELESTIA_SRC_DIR "${CELESTIA_DIR}/src")
 set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/celestiacore.cpp
         ${CELESTIA_SRC_DIR}/celestia/celestiacore.h
+        ${CELESTIA_SRC_DIR}/celestia/celestiastate.cpp
+        ${CELESTIA_SRC_DIR}/celestia/celestiastate.h
         ${CELESTIA_SRC_DIR}/celestia/configfile.cpp
         ${CELESTIA_SRC_DIR}/celestia/configfile.h
         ${CELESTIA_SRC_DIR}/celestia/destination.cpp
@@ -46,10 +48,14 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/filetype.h
         ${CELESTIA_SRC_DIR}/celutil/formatnum.cpp
         ${CELESTIA_SRC_DIR}/celutil/formatnum.h
+        ${CELESTIA_SRC_DIR}/celutil/fsutils.cpp
+        ${CELESTIA_SRC_DIR}/celutil/fsutils.h
         ${CELESTIA_SRC_DIR}/celutil/memorypool.cpp
         ${CELESTIA_SRC_DIR}/celutil/memorypool.h
         ${CELESTIA_SRC_DIR}/celutil/reshandle.h
         ${CELESTIA_SRC_DIR}/celutil/resmanager.h
+        ${CELESTIA_SRC_DIR}/celutil/stringutils.h
+        ${CELESTIA_SRC_DIR}/celutil/stringutils.cpp
         ${CELESTIA_SRC_DIR}/celutil/strnatcmp.h
         ${CELESTIA_SRC_DIR}/celutil/strnatcmp.cpp
         ${CELESTIA_SRC_DIR}/celutil/timer.cpp
@@ -129,8 +135,13 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_SRC_DIR}/celcompat/cc.cpp
+        ${CELESTIA_SRC_DIR}/celcompat/cc.h
+        ${CELESTIA_SRC_DIR}/celcompat/charconv.h
         ${CELESTIA_SRC_DIR}/celcompat/fs.cpp
         ${CELESTIA_SRC_DIR}/celcompat/fs.h
+        ${CELESTIA_SRC_DIR}/celcompat/string_view.h
+        ${CELESTIA_SRC_DIR}/celcompat/sv.h
         )
 
 list(APPEND CELESTIA_SOURCES
@@ -208,7 +219,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/curveplot.cpp
         ${CELESTIA_SRC_DIR}/celengine/curveplot.h
         ${CELESTIA_SRC_DIR}/celengine/dds.cpp
-        ${CELESTIA_SRC_DIR}/celengine/dds_decompress.c
+        ${CELESTIA_SRC_DIR}/celengine/dds_decompress.cpp
         ${CELESTIA_SRC_DIR}/celengine/dds_decompress.h
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.cpp
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
@@ -319,7 +330,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/starname.h
         ${CELESTIA_SRC_DIR}/celengine/staroctree.cpp
         ${CELESTIA_SRC_DIR}/celengine/staroctree.h
-        ${CELESTIA_SRC_DIR}/celengine/stb_dxt_104.h
         ${CELESTIA_SRC_DIR}/celengine/stellarclass.cpp
         ${CELESTIA_SRC_DIR}/celengine/stellarclass.h
         ${CELESTIA_SRC_DIR}/celengine/surface.h
