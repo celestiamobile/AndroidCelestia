@@ -218,8 +218,6 @@ void CelestiaRenderer::tickAndDraw() const
 {
     core->tick();
     core->draw();
-    if (!eglSwapBuffers(display, surface))
-        LOG_ERROR("eglSwapBuffers() returned error %d", eglGetError());
 }
 
 void CelestiaRenderer::start()
@@ -343,11 +341,20 @@ void *CelestiaRenderer::threadCallback(void *self)
         }
         renderer->msg = CelestiaRenderer::MSG_NONE;
 
-        if (renderer->engineStartedCalled && renderer->surface != EGL_NO_SURFACE && renderer->core) {
+        bool needsDrawn = false;
+        if (renderer->engineStartedCalled && renderer->surface != EGL_NO_SURFACE && renderer->core)
+        {
             renderer->resizeIfNeeded();
-            renderer->tickAndDraw();
+            needsDrawn = true;
         }
         renderer->unlock();
+
+        if (needsDrawn)
+        {
+            renderer->tickAndDraw();
+            if (!eglSwapBuffers(renderer->display, renderer->surface))
+                LOG_ERROR("eglSwapBuffers() returned error %d", eglGetError());
+        }
     }
 
     // Detach
