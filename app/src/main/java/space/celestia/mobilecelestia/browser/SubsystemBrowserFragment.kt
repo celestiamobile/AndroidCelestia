@@ -43,10 +43,10 @@ class SubsystemBrowserFragment : NavigationFragment(), BrowserRootFragment, Clea
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
         outState.putString(ARG_CURR_PATH, currentPath)
         outState.putString(ARG_ROOT_PATH, rootPath)
+
+        super.onSaveInstanceState(outState)
     }
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {

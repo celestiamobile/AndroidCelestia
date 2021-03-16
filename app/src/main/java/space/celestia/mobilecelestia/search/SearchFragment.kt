@@ -12,6 +12,7 @@
 package space.celestia.mobilecelestia.search
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -127,8 +128,8 @@ class SearchFragment : Fragment() {
                     if (!it.third) return@withContext
 
                     // Submit, clear focus
+                    activity?.hideKeyboard()
                     searchView.clearFocus()
-                    (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(searchView.windowToken, 0)
                     setupSearchSearchView()
 
                     if (lastSearchText.isNotEmpty() && lastSearchResultCount == 0) {
@@ -165,4 +166,8 @@ class SearchFragment : Fragment() {
         @JvmStatic
         fun newInstance() = SearchFragment()
     }
+}
+
+fun Activity.hideKeyboard() {
+    (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
 }

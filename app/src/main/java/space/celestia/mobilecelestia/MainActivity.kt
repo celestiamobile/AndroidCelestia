@@ -64,7 +64,10 @@ import space.celestia.mobilecelestia.resource.ResourceFragment
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
+import space.celestia.mobilecelestia.search.SearchContainerFragment
 import space.celestia.mobilecelestia.search.SearchFragment
+import space.celestia.mobilecelestia.search.SearchResultFragment
+import space.celestia.mobilecelestia.search.hideKeyboard
 import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.share.ShareAPI
 import space.celestia.mobilecelestia.share.ShareAPIService
@@ -106,7 +109,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsLanguageFragment.DataSource,
     ResourceFragment.Listener,
     AsyncListFragment.Listener<Any>,
-    DestinationDetailFragment.Listener {
+    DestinationDetailFragment.Listener,
+    SearchResultFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -115,8 +119,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
 
     private val core by lazy { CelestiaAppCore.shared() }
-
-    private val backStack: MutableList<Fragment> = ArrayList()
 
     private var interactionBlocked = false
 
@@ -185,7 +187,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         findViewById<View>(R.id.overlay_container).setOnTouchListener { _, e ->
             if (e.actionMasked == MotionEvent.ACTION_UP) {
-                popLastFromBackStackAndShow()
+                hideOverlay(true)
             }
             return@setOnTouchListener true
         }
@@ -261,7 +263,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (frag is Poppable && frag.canPop()) {
             frag.popLast()
         } else {
-            popLastFromBackStackAndShow()
+            hideOverlay(true)
         }
     }
 
@@ -837,16 +839,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val selection = currentSelection ?: return
         when (action) {
             is InfoNormalActionItem -> {
-                clearBackStack()
                 core.simulation.selection = selection
                 CelestiaView.callOnRenderThread { core.charEnter(action.item.value) }
             }
             is InfoSelectActionItem -> {
-                clearBackStack()
                 core.simulation.selection = selection
             }
             is InfoWebActionItem -> {
-                clearBackStack()
                 val url = selection.webInfoURL!!
                 // show web info in browser
                 openURL(url)
@@ -854,7 +853,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             is SubsystemActionItem -> {
                 val entry = selection.`object` ?: return
                 val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, entry, core.simulation.universe)
-                showEndFragment(SubsystemBrowserFragment.newInstance(browserItem), addCurrentToBackStack = true)
+                showEndFragment(SubsystemBrowserFragment.newInstance(browserItem))
                 return
             }
             is AlternateSurfacesItem -> {
@@ -890,13 +889,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun onSearchBackButtonPressed() {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? SearchContainerFragment ?: return
+        frag.backToSearch()
+    }
+
     override fun onSearchItemSelected(text: String) {
+        hideKeyboard()
+
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? SearchContainerFragment ?: return
         val sel = core.simulation.findObject(text)
         if (sel.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return
         }
-        showInfo(sel, true)
+
+        createInfo(sel) {
+            currentSelection = sel
+            frag.pushSearchResult(it)
+        }
     }
 
     override fun onSearchItemSubmit(text: String) {
@@ -921,7 +932,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             if (obj != null) {
                 val selection = CelestiaSelection.create(obj)
                 if (selection != null) {
-                    clearBackStack()
                     createInfo(selection) {
                         currentSelection = selection
                         frag.showInfo(it)
@@ -1364,15 +1374,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun showInfo(selection: CelestiaSelection, addCurrentToBackStack: Boolean = false) {
+    private fun showInfo(selection: CelestiaSelection) {
         createInfo(selection) {
             currentSelection = selection
-            showEndFragment(InfoFragment.newInstance(it), addCurrentToBackStack = addCurrentToBackStack)
+            showEndFragment(InfoFragment.newInstance(it))
         }
     }
 
     private fun showSearch() {
-        showEndFragment(SearchFragment.newInstance())
+        showEndFragment(SearchContainerFragment.newInstance())
     }
 
     private fun showBrowser() {
@@ -1531,9 +1541,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Utilities
-    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container, addCurrentToBackStack: Boolean = false) {
-        if (addCurrentToBackStack)
-            addToBackStack()
+    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {
             ref.get()?.let {
@@ -1578,25 +1586,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top, R.anim.enter_from_top, R.anim.exit_to_bottom)
             .add(R.id.toolbar_bottom_container, fragment)
             .commitAllowingStateLoss()
-    }
-
-    private fun addToBackStack() {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) ?: return
-        backStack.add(frag)
-    }
-
-    private fun clearBackStack() {
-        backStack.clear()
-    }
-
-    private fun popLastFromBackStackAndShow() {
-        if (backStack.size == 0) {
-            hideOverlay(true)
-            return
-        }
-        val frag = backStack.last()
-        backStack.removeAt(backStack.size - 1)
-        showEndFragment(frag)
     }
 
     companion object {

@@ -30,22 +30,24 @@ interface BrowserRootFragment {
 
 class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigationView.OnNavigationItemSelectedListener {
     private var currentPath = ""
+    private var selectedItemIndex = 0
+
+    private var savedFragments: ArrayList<Pair<Fragment, String>?> = arrayListOf(null, null, null)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
         if (savedInstanceState != null) {
-            val p = savedInstanceState.getString("path")
-            if (p != null) {
-                currentPath = p
-            }
+            currentPath = savedInstanceState.getString(ARG_PATH_TAG, "")
+            selectedItemIndex = savedInstanceState.getInt(ARG_ITEM_TAG, 0)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
+        outState.putString(ARG_PATH_TAG, currentPath)
+        outState.putInt(ARG_ITEM_TAG, selectedItemIndex)
 
-        outState.putString("path", currentPath)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateView(
@@ -62,14 +64,24 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigat
             val item = browserItemMenu[i]
             nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.alternativeName ?: item.item.name).setIcon(item.icon)
         }
+        nav.selectedItemId = selectedItemIndex
         nav.setOnNavigationItemSelectedListener(this)
+
         if (savedInstanceState == null)
-            replaceItem(browserItemMenu[0].item)
+            showTab(selectedItemIndex)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        replaceItem(browserItemMenu[item.itemId].item)
+        val newSelectedItemIndex = item.itemId
+        if (newSelectedItemIndex != selectedItemIndex) {
+            showTab(newSelectedItemIndex)
+        }
         return true
+    }
+
+    private fun showTab(index: Int) {
+        selectedItemIndex = index
+        replaceItem(browserItemMenu[selectedItemIndex].item)
     }
 
     private fun replaceItem(browserItem: CelestiaBrowserItem) {
@@ -101,6 +113,9 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigat
     }
 
     companion object {
+        private const val ARG_PATH_TAG = "path"
+        private const val ARG_ITEM_TAG = "item"
+
         private val browserItemMenu by lazy {
             val sim = CelestiaAppCore.shared().simulation
             listOf(
