@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.PointF
@@ -21,12 +22,11 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
 import android.view.*
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.contains
@@ -1303,12 +1303,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun hideOverlay(animated: Boolean = false, callback: (() -> Unit)? = null) {
-        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-        hideFragment(animated, R.id.normal_end_container, if (ltr) R.anim.exit_to_right else R.anim.exit_to_left) {
-            hideFragment(animated, R.id.toolbar_end_container, if (ltr) R.anim.exit_to_right else R.anim.exit_to_left) {
+        hideFragment(animated, R.id.normal_end_container, true) {
+            hideFragment(animated, R.id.toolbar_end_container, true) {
                 findViewById<View>(R.id.overlay_container).visibility = View.INVISIBLE
                 findViewById<View>(R.id.end_notch).visibility = View.INVISIBLE
-                hideFragment(animated, R.id.toolbar_bottom_container, R.anim.exit_to_bottom) {
+                hideFragment(animated, R.id.toolbar_bottom_container, false) {
                     findViewById<View>(R.id.bottom_container).visibility = View.INVISIBLE
                     if (callback != null)
                         callback()
@@ -1317,9 +1316,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun hideFragment(animated: Boolean, containerID: Int, animationID: Int, completion: () -> Unit = {}) {
+    private fun hideFragment(animated: Boolean, containerID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
         val frag = supportFragmentManager.findFragmentById(containerID)
-        val view = findViewById<View>(containerID)
+        val view = findViewById<ViewGroup>(containerID)
         if (view == null || frag == null) {
             if (frag != null)
                 supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
@@ -1344,19 +1343,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (fragView == null || !animated) {
             executionBlock()
         } else {
-            val animation = AnimationUtils.loadAnimation(this, animationID)
-            animation.setAnimationListener(object: Animation.AnimationListener {
-                override fun onAnimationRepeat(animation: Animation?) {}
-                override fun onAnimationStart(animation: Animation?) {
-                    interactionBlocked = true
-                }
-
-                override fun onAnimationEnd(animation: Animation?) {
-                    interactionBlocked = false
-                    executionBlock()
-                }
+            val hideAnimator: ObjectAnimator
+            if (horizontal) {
+                val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+                hideAnimator = ObjectAnimator.ofFloat(fragView, "translationX", 0f, (if (ltr) 1 else -1) * fragView.width.toFloat())
+            } else {
+                hideAnimator = ObjectAnimator.ofFloat(fragView, "translationY", 0f, fragView.height.toFloat())
+            }
+            hideAnimator.duration = 200
+            hideAnimator.addListener(onStart = {
+                interactionBlocked = true
+            }, onEnd = {
+                interactionBlocked = false
+                executionBlock()
+            }, onCancel = {
+                interactionBlocked = false
+                executionBlock()
             })
-            fragView.startAnimation(animation)
+            hideAnimator.start()
         }
     }
 
