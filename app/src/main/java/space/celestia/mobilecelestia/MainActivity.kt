@@ -1321,25 +1321,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val frag = supportFragmentManager.findFragmentById(containerID)
         val view = findViewById<View>(containerID)
         if (view == null || frag == null) {
-            if (frag != null) {
-                if (frag is Cleanable) frag.cleanUp()
+            if (frag != null)
                 supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
-            }
 
             if (view != null)
                 view.visibility = View.INVISIBLE
 
             completion()
+            if (frag is Cleanable) frag.cleanUp()
             return@hideFragment
         }
 
         val fragView = frag.view
         val executionBlock = {
-            if (frag is Cleanable)
-                frag.cleanUp()
             supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
             view.visibility = View.INVISIBLE
+
             completion()
+            if (frag is Cleanable) frag.cleanUp()
         }
 
         if (fragView == null || !animated) {
