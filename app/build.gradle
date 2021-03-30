@@ -15,7 +15,7 @@ apply plugin: 'kotlin-android'
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
-    ndkVersion "22.0.7026061"
+    ndkVersion "22.1.7171670"
 
     defaultConfig {
         applicationId "space.celestia.mobilecelestia"
@@ -44,6 +44,7 @@ android {
 
     externalNativeBuild {
         cmake {
+            version "3.18.1"
             path "src/main/cpp/CMakeLists.txt"
         }
     }
@@ -98,7 +99,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
-    def appCenterSdkVersion = '4.1.0'
+    def appCenterSdkVersion = '4.1.1'
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
