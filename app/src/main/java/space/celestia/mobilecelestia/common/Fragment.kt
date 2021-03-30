@@ -50,7 +50,3 @@ interface Poppable {
     fun canPop(): Boolean
     fun popLast()
 }
-
-interface Cleanable {
-    fun cleanUp()
-}

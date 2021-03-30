@@ -42,7 +42,6 @@ import org.json.JSONObject
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaView
-import space.celestia.mobilecelestia.common.Cleanable
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.control.BottomControlFragment
 import space.celestia.mobilecelestia.control.CameraControlAction
@@ -1327,7 +1326,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 view.visibility = View.INVISIBLE
 
             completion()
-            if (frag is Cleanable) frag.cleanUp()
             return@hideFragment
         }
 
@@ -1337,7 +1335,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             view.visibility = View.INVISIBLE
 
             completion()
-            if (frag is Cleanable) frag.cleanUp()
         }
 
         if (fragView == null || !animated) {
