@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-/* #undef HAVE_BYTESWAP_H */
+#define HAVE_BYTESWAP_H
 #define CELX
 #define HAVE_STRING_VIEW
 #define HAVE_FILESYSTEM
