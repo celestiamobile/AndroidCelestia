@@ -75,11 +75,11 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowCityLabels("Cities"),
     ShowObservatoryLabels("Observatories"),
     ShowLandingSiteLabels("Landing Sites"),
-    ShowMonsLabels("Mons"),
-    ShowMareLabels("Mare"),
-    ShowCraterLabels("Crater"),
-    ShowVallisLabels("Vallis"),
-    ShowTerraLabels("Terra"),
+    ShowMonsLabels("Montes (Mountains)"),
+    ShowMareLabels("Maria (Seas)"),
+    ShowCraterLabels("Craters"),
+    ShowVallisLabels("Valles (Valleys)"),
+    ShowTerraLabels("Terrae (Land masses)"),
     ShowEruptiveCenterLabels("Volcanoes"),
     ShowMarkers("Show Markers"),
     // Int values
@@ -92,7 +92,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     FaintestVisible("Faintest Stars"),
     AmbientLightLevel("Ambient Light"),
     GalaxyBrightness("Galaxy Brightness"),
-    MinimumFeatureSize("Minimum Labelled Feature Size");
+    MinimumFeatureSize("Minimum Labeled Feature Size");
 
     val displayName: String
         get() = CelestiaString(rawDisplayName, "")
