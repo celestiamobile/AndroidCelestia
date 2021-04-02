@@ -1177,12 +1177,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                 intent.type = "*/*"
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                startActivityForResult(intent, CONFIG_FILE_REQUEST)
+                if (intent.resolveActivity(packageManager) != null)
+                    startActivityForResult(intent, CONFIG_FILE_REQUEST)
+                else
+                    showUnsupportedAction()
             }
             DataType.DataDirectory -> {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                startActivityForResult(intent, DATA_DIR_REQUEST)
+                if (intent.resolveActivity(packageManager) != null)
+                    startActivityForResult(intent, DATA_DIR_REQUEST)
+                else
+                    showUnsupportedAction()
             }
         }
     }
@@ -1276,6 +1282,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showAlert(CelestiaString("Unable to resolve path, please ensure that you have selected a path inside %s.", "").format(getExternalFilesDir(null)?.absolutePath ?: ""))
     }
 
+    private fun showUnsupportedAction() {
+        showAlert(CelestiaString("Unsupported action.", ""))
+    }
+
     override fun celestiaFragmentDidRequestActionMenu() {
         showToolbar()
     }
@@ -1289,9 +1299,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun openURL(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        if (intent.resolveActivity(packageManager) != null) {
+        if (intent.resolveActivity(packageManager) != null)
             startActivity(intent)
-        }
+        else
+            showUnsupportedAction()
     }
 
     private fun reloadSettings() {
@@ -1475,6 +1486,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                             .intent
                         if (intent.resolveActivity(packageManager) != null)
                             startActivity(intent)
+                        else
+                            showUnsupportedAction()
                     }
                 } catch (ignored: Throwable) {
                     withContext(Dispatchers.Main) {
@@ -1514,6 +1527,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .intent
         if (intent.resolveActivity(packageManager) != null)
             startActivity(intent)
+        else
+            showUnsupportedAction()
     }
 
     private fun showEventFinder() {
