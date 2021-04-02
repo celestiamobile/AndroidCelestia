@@ -896,7 +896,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onSearchItemSelected(text: String) {
         hideKeyboard()
 
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? SearchContainerFragment ?: return
         val sel = core.simulation.findObject(text)
         if (sel.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
@@ -904,6 +903,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         createInfo(sel) {
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? SearchContainerFragment ?: return@createInfo
             currentSelection = sel
             frag.pushSearchResult(it)
         }
@@ -922,9 +922,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBrowserItemSelected(item: BrowserItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? BrowserRootFragment ?: return
-
         if (!item.isLeaf) {
+            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? BrowserRootFragment ?: return
             frag.pushItem(item.item)
         } else {
             val obj = item.item.`object`
@@ -932,6 +931,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val selection = CelestiaSelection.create(obj)
                 if (selection != null) {
                     createInfo(selection) {
+                        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? BrowserRootFragment ?: return@createInfo
                         currentSelection = selection
                         frag.showInfo(it)
                     }
@@ -1589,7 +1589,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "20"
+        private const val CURRENT_DATA_VERSION = "21"
+        // 21: 1.2.10 Update content to commit 2a80a7695f1dea73de20d3411bfdf8eff94155e5
         // 20: 1.2.7 Privacy Policy and Service Agreement
         // 19: 1.2.2 Shader updates
         // 18: 1.2.1 ru.po/bg.po updates
