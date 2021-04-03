@@ -124,12 +124,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
 
+    private val defaultConfigFilePath by lazy { "$defaultDataDirectoryPath/$CELESTIA_CFG_NAME" }
+    private val defaultDataDirectoryPath by lazy { "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME" }
+
     private val celestiaConfigFilePath: String
         get() {
             val custom = customConfigFilePath
             if (custom != null)
                 return custom
-            return "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME/$CELESTIA_CFG_NAME"
+            return defaultConfigFilePath
         }
 
     private val celestiaDataDirPath: String
@@ -137,7 +140,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val custom = customDataDirPath
             if (custom != null)
                 return custom
-            return "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME"
+            return defaultDataDirectoryPath
         }
 
     private val fontDirPath: String
@@ -207,7 +210,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val currentState = AppStatusReporter.shared().state
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
-            celestiaUnrecoveableLoadingFailed()
+            celestiaLoadingFailed()
             return
         }
 
@@ -340,9 +343,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
         if (newState == AppStatusReporter.State.SUCCESS) {
             celestiaLoadingSucceeded()
-        } else if (newState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
-            celestiaUnrecoveableLoadingFailed()
-        } else if (newState == AppStatusReporter.State.LOADING_FAILURE) {
+        } else if (newState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE || newState == AppStatusReporter.State.LOADING_FAILURE) {
             celestiaLoadingFailed()
         }
     }
@@ -367,26 +368,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    fun celestiaUnrecoveableLoadingFailed() {
-        AppStatusReporter.shared().updateStatus(CelestiaString("Please restart Celestia", ""))
-    }
-
     fun celestiaLoadingFailed() {
         AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed…", ""))
-        val recoverable = customDataDirPath != null || customConfigFilePath != null
-        if (!recoverable) {
-            celestiaUnrecoveableLoadingFailed()
-            return
-        }
         lifecycleScope.launch {
             removeCelestiaFragment()
-            showAlert(CelestiaString("Error loading data, fallback to original configuration.", "")) {
-                // Fallback to default
-                setConfigFilePath(null)
-                setDataDirectoryPath(null)
-                AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FINISHED)
-                loadConfigSuccess(null)
-            }
         }
     }
 
@@ -1295,6 +1280,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (selection.isEmpty) { return }
 
         showInfo(selection)
+    }
+
+    override fun provideFallbackConfigFilePath(): String {
+        return defaultConfigFilePath
+    }
+
+    override fun provideFallbackDataDirectoryPath(): String {
+        return defaultDataDirectoryPath
+    }
+
+    override fun celestiaFragmentLoadingFromFallback() {
+        lifecycleScope.launch {
+            showAlert(CelestiaString("Error loading data, fallback to original configuration.", ""))
+        }
     }
 
     private fun openURL(url: String) {

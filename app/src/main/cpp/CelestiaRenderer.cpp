@@ -318,9 +318,15 @@ void *CelestiaRenderer::threadCallback(void *self)
 
     bool renderingEnabled = true;
 
-    while (renderingEnabled) {
+    while (renderingEnabled)
+    {
         if (renderer->surface != EGL_NO_SURFACE && !renderer->engineStartedCalled)
-            renderer->engineStartedCalled = newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod) == JNI_TRUE;
+        {
+            bool started = newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod) == JNI_TRUE;
+            if (!started)
+                break;
+            renderer->engineStartedCalled = true;
+        }
         if (renderer->engineStartedCalled)
             newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushTasksMethod);
 
@@ -334,7 +340,6 @@ void *CelestiaRenderer::threadCallback(void *self)
                 break;
             case CelestiaRenderer::MSG_RENDER_LOOP_EXIT:
                 renderingEnabled = false;
-                renderer->destroy();
                 break;
             default:
                 break;
@@ -356,6 +361,7 @@ void *CelestiaRenderer::threadCallback(void *self)
                 LOG_ERROR("eglSwapBuffers() returned error %d", eglGetError());
         }
     }
+    renderer->destroy();
 
     // Detach
     CelestiaRenderer::jvm->DetachCurrentThread();

@@ -77,6 +77,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
         fun celestiaFragmentDidRequestObjectInfo()
+        fun provideFallbackConfigFilePath(): String
+        fun provideFallbackDataDirectoryPath(): String
+        fun celestiaFragmentLoadingFromFallback()
     }
 
     var listener: Listener? = null
@@ -94,9 +97,11 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             languageOverride = it.getString(ARG_LANG_OVERRIDE)
         }
 
-        core.setRenderer(renderer)
-        renderer.setEngineStartedListener {
-            load()
+        if (savedInstanceState == null) {
+            core.setRenderer(renderer)
+            renderer.setEngineStartedListener {
+                loadCelestia()
+            }
         }
     }
 
@@ -242,21 +247,50 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun loadCelestia(path: String, cfg: String, addon: String?): Boolean {
+    private fun loadCelestia(): Boolean {
+        val data = pathToLoad
+        val cfg = cfgToLoad
+        val addon = addonToLoad
+
+        if (data == null || cfg == null) {
+            AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+            return false
+        }
+
         AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING)
 
         CelestiaAppCore.initGL()
-        CelestiaAppCore.chdir(path)
+        CelestiaAppCore.chdir(data)
 
         // Set up locale
-        CelestiaAppCore.setLocaleDirectoryPath("$path/locale", languageOverride ?: Locale.getDefault().toString())
+        val language = languageOverride ?: Locale.getDefault().toString()
+        CelestiaAppCore.setLocaleDirectoryPath("$data/locale", language)
 
         val extraDirs = if (addon != null) arrayOf(addon) else null
 
         // Reading config, data
         if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
-            AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
-            return false
+            var lis = listener;
+            if (lis != null) {
+                // Read from fallback
+                var fallbackConfigPath = lis.provideFallbackConfigFilePath();
+                var fallbackDataPath = lis.provideFallbackDataDirectoryPath();
+                if (fallbackConfigPath != cfg || fallbackDataPath != data) {
+                    lis.celestiaFragmentLoadingFromFallback()
+                    CelestiaAppCore.chdir(fallbackDataPath)
+                    CelestiaAppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", language)
+                    if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
+                        AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+                        return false
+                    }
+                } else {
+                    AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+                    return false
+                }
+            } else {
+                AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+                return false
+            }
         }
 
         // Prepare renderer
@@ -427,22 +461,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         renderer.setSurface(holder.surface)
-    }
-
-    private fun load(): Boolean {
-        val data = pathToLoad
-        val cfg = cfgToLoad
-        val addon = addonToLoad
-
-        pathToLoad = null
-        cfgToLoad = null
-        addonToLoad = null
-
-        if (data == null || cfg == null) {
-            AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
-            return false
-        }
-        return loadCelestia(data, cfg, addon)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
