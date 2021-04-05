@@ -488,12 +488,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
         enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
 
-        // Load core library
-        if (!celestiaLibraryLoaded) {
-            System.loadLibrary("celestia")
-            celestiaLibraryLoaded = true
-        }
-
         AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FINISHED)
     }
 
@@ -1651,6 +1645,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         init {
             System.loadLibrary("nativecrashhandler")
+            System.loadLibrary("celestia")
         }
     }
 }
