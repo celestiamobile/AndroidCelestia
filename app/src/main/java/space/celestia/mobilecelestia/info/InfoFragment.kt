@@ -23,21 +23,34 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.model.*
+import space.celestia.mobilecelestia.utils.getOverviewForSelection
 
 class InfoFragment : NavigationFragment.SubFragment() {
-
     private var listener: Listener? = null
-    private var descriptionItem: InfoDescriptionItem? = null
+    private lateinit var selection: CelestiaSelection
     private var embeddedInNavigation = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arguments?.let {
-            descriptionItem = it.getSerializable(ARG_DESCRIPTION_ITEM) as? InfoDescriptionItem
-            embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION, false)
+        if (savedInstanceState != null) {
+            selection = CelestiaSelection(savedInstanceState.getLong(ARG_SELECTION))
+            embeddedInNavigation = savedInstanceState.getBoolean(ARG_EMBEDDED_IN_NAVIGATION)
+        } else  {
+            arguments?.let {
+                selection = CelestiaSelection(it.getLong(ARG_SELECTION))
+                embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION)
+            }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(ARG_EMBEDDED_IN_NAVIGATION, embeddedInNavigation)
+        outState.putLong(ARG_SELECTION, selection.createCopy())
+        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateView(
@@ -49,6 +62,14 @@ class InfoFragment : NavigationFragment.SubFragment() {
         if (embeddedInNavigation)
             view.setBackgroundResource(R.color.colorBackground)
 
+        val core = CelestiaAppCore.shared()
+        val overview = core.getOverviewForSelection(selection)
+        val name = core.simulation.universe.getNameForSelection(selection)
+        val hasWebInfo = selection.webInfoURL != null
+        val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
+
+        val descriptionItem = InfoDescriptionItem(name, overview, hasWebInfo, hasAltSurface)
+
         // Set the adapter
         if (view is RecyclerView) {
             with(view) {
@@ -56,16 +77,16 @@ class InfoFragment : NavigationFragment.SubFragment() {
                 manager.spanSizeLookup = SizeLookup()
                 layoutManager = manager
                 val actions = ArrayList<InfoItem>()
-                actions.add(descriptionItem!!)
+                actions.add(descriptionItem)
                 val otherActions = ArrayList(InfoActionItem.infoActions)
-                if (descriptionItem!!.hasWebInfo)
+                if (descriptionItem.hasWebInfo)
                     otherActions.add(InfoWebActionItem())
-                if (descriptionItem!!.hasAlternateSurfaces)
+                if (descriptionItem.hasAlternateSurfaces)
                     otherActions.add(AlternateSurfacesItem())
                 otherActions.add(SubsystemActionItem())
                 otherActions.add(MarkItem())
                 actions.addAll(otherActions)
-                adapter = InfoRecyclerViewAdapter(actions, listener)
+                adapter = InfoRecyclerViewAdapter(actions, selection, listener)
                 addItemDecoration(SpaceItemDecoration())
             }
         }
@@ -93,7 +114,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
     }
 
     interface Listener {
-        fun onInfoActionSelected(action: InfoActionItem)
+        fun onInfoActionSelected(action: InfoActionItem, selection: CelestiaSelection)
     }
 
     inner class SizeLookup: GridLayoutManager.SpanSizeLookup() {
@@ -134,14 +155,14 @@ class InfoFragment : NavigationFragment.SubFragment() {
     }
 
     companion object {
-        const val ARG_DESCRIPTION_ITEM = "description-item"
+        const val ARG_SELECTION = "selection"
         const val ARG_EMBEDDED_IN_NAVIGATION = "embedded-in-navigation"
 
         @JvmStatic
-        fun newInstance(info: InfoDescriptionItem, embeddedInNavigation: Boolean = false) =
+        fun newInstance(selection: CelestiaSelection, embeddedInNavigation: Boolean = false) =
             InfoFragment().apply {
                 arguments = Bundle().apply {
-                    this.putSerializable(ARG_DESCRIPTION_ITEM, info)
+                    this.putLong(ARG_SELECTION, selection.createCopy())
                     this.putBoolean(ARG_EMBEDDED_IN_NAVIGATION, embeddedInNavigation)
                 }
             }

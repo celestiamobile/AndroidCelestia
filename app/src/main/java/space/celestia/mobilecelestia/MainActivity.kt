@@ -148,8 +148,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
-        // We don't need to recover when we get killed
-        super.onCreate(savedInstanceState)
+        val reporter = AppStatusReporter.shared()
+        val currentState = reporter.state
+
+        val savedState = if (currentState == AppStatusReporter.State.NONE) null else savedInstanceState
+
+        super.onCreate(savedState)
 
         Log.d(TAG, "Creating MainActivity")
 
@@ -174,7 +178,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        AppStatusReporter.shared().register(this)
+        reporter.register(this)
 
         // Handle notch
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -208,25 +212,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnTouchListener true
         }
 
-        val currentState = AppStatusReporter.shared().state
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
             celestiaLoadingFailed()
             return
         }
 
         if (currentState == AppStatusReporter.State.NONE || currentState == AppStatusReporter.State.EXTERNAL_LOADING)  {
-            loadExternalConfig(savedInstanceState)
+            loadExternalConfig(savedState)
         } else {
-            loadConfigSuccess(savedInstanceState)
+            loadConfigSuccess(savedState)
             if (currentState == AppStatusReporter.State.SUCCESS) {
                 celestiaLoadingSucceeded()
             }
         }
 
-        if (savedInstanceState != null) {
-            val toolbarVisible = savedInstanceState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
-            val endFragmentVisible = savedInstanceState.getBoolean(END_FRAGMENT_VISIBLE_TAG, false)
-            val bottomFragmentVisible = savedInstanceState.getBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, false)
+        if (savedState != null) {
+            val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
+            val endFragmentVisible = savedState.getBoolean(END_FRAGMENT_VISIBLE_TAG, false)
+            val bottomFragmentVisible = savedState.getBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, false)
 
             findViewById<View>(R.id.bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.toolbar_bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
@@ -813,8 +816,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Listeners...
-    override fun onInfoActionSelected(action: InfoActionItem) {
-        val selection = currentSelection ?: return
+    override fun onInfoActionSelected(action: InfoActionItem, selection: CelestiaSelection) {
         when (action) {
             is InfoNormalActionItem -> {
                 core.simulation.selection = selection
@@ -881,11 +883,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        createInfo(sel) {
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? SearchContainerFragment ?: return@createInfo
-            currentSelection = sel
-            frag.pushSearchResult(it)
-        }
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? SearchContainerFragment ?: return
+        frag.pushSearchResult(sel)
     }
 
     override fun onSearchItemSubmit(text: String) {
@@ -901,19 +900,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBrowserItemSelected(item: BrowserItem) {
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? BrowserRootFragment ?: return
         if (!item.isLeaf) {
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? BrowserRootFragment ?: return
             frag.pushItem(item.item)
         } else {
             val obj = item.item.`object`
             if (obj != null) {
                 val selection = CelestiaSelection.create(obj)
                 if (selection != null) {
-                    createInfo(selection) {
-                        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? BrowserRootFragment ?: return@createInfo
-                        currentSelection = selection
-                        frag.showInfo(it)
-                    }
+                    frag.showInfo(selection)
                 } else {
                     showAlert(CelestiaString("Object not found", ""))
                 }
@@ -1379,10 +1374,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInfo(selection: CelestiaSelection) {
-        createInfo(selection) {
-            currentSelection = selection
-            showEndFragment(InfoFragment.newInstance(it))
-        }
+        showEndFragment(InfoFragment.newInstance(selection))
     }
 
     private fun showSearch() {
@@ -1635,8 +1627,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var languageOverride: String? = null
         private var enableMultisample = false
         private var enableHiDPI = false
-
-        private var currentSelection: CelestiaSelection? = null
 
         var availableInstalledFonts: Map<String, Pair<FontHelper.FontCompat, FontHelper.FontCompat>> = mapOf()
         var defaultInstalledFont: Pair<FontHelper.FontCompat, FontHelper.FontCompat>? = null

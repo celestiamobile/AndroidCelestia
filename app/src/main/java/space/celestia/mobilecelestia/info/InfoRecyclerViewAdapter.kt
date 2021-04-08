@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.InfoFragment.Listener
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
@@ -24,13 +25,14 @@ import space.celestia.mobilecelestia.info.model.InfoItem
 
 class InfoRecyclerViewAdapter(
     private val values: List<InfoItem>,
+    private val selection: CelestiaSelection,
     private val listener: Listener?
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener = View.OnClickListener { v ->
         val tag = v.tag
         if (tag is InfoActionItem) {
-            listener?.onInfoActionSelected(tag)
+            listener?.onInfoActionSelected(tag, selection)
         }
     }
 

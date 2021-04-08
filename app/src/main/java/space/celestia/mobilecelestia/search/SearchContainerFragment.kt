@@ -21,6 +21,7 @@ import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.pop
 import space.celestia.mobilecelestia.common.push
 import space.celestia.mobilecelestia.common.replace
+import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
 class SearchContainerFragment : Fragment(), Poppable {
@@ -39,8 +40,8 @@ class SearchContainerFragment : Fragment(), Poppable {
         replace(SearchFragment.newInstance(), R.id.fragment_container)
     }
 
-    fun pushSearchResult(info: InfoDescriptionItem) {
-        push(SearchResultFragment.newInstance(info), R.id.fragment_container)
+    fun pushSearchResult(selection: CelestiaSelection) {
+        push(SearchResultFragment.newInstance(selection), R.id.fragment_container)
     }
 
     fun backToSearch() {

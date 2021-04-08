@@ -20,12 +20,13 @@ import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
+import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
 interface BrowserRootFragment {
     fun pushItem(browserItem: CelestiaBrowserItem)
-    fun showInfo(info: InfoDescriptionItem)
+    fun showInfo(selection: CelestiaSelection)
 }
 
 class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigationView.OnNavigationItemSelectedListener {
@@ -97,9 +98,9 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigat
         navigationFragment.pushItem(currentPath)
     }
 
-    override fun showInfo(info: InfoDescriptionItem) {
+    override fun showInfo(selection: CelestiaSelection) {
         val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
-        navigationFragment.pushFragment(InfoFragment.newInstance(info, true))
+        navigationFragment.pushFragment(InfoFragment.newInstance(selection, true))
     }
 
     override fun canPop(): Boolean {

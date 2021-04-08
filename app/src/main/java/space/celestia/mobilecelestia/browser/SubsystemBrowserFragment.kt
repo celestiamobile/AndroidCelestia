@@ -15,6 +15,7 @@ import android.os.Bundle
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
+import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
@@ -58,8 +59,8 @@ class SubsystemBrowserFragment : NavigationFragment(), BrowserRootFragment {
         pushFragment(BrowserCommonFragment.newInstance(currentPath, rootPath))
     }
 
-    override fun showInfo(info: InfoDescriptionItem) {
-        pushFragment(InfoFragment.newInstance(info, true))
+    override fun showInfo(selection: CelestiaSelection) {
+        pushFragment(InfoFragment.newInstance(selection, true))
     }
 
     companion object {

@@ -21,20 +21,25 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.replace
+import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
 class SearchResultFragment : Fragment()  {
     private val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
 
-    private var descriptionItem: InfoDescriptionItem? = null
+    private lateinit var selection: CelestiaSelection
     private var listener: Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arguments?.let {
-            descriptionItem = it.getSerializable(InfoFragment.ARG_DESCRIPTION_ITEM) as? InfoDescriptionItem
+        if (savedInstanceState != null) {
+            selection = CelestiaSelection(savedInstanceState.getLong(ARG_SELECTION))
+        } else {
+            arguments?.let {
+                selection = CelestiaSelection(it.getLong(ARG_SELECTION))
+            }
         }
     }
 
@@ -51,9 +56,8 @@ class SearchResultFragment : Fragment()  {
             listener?.onSearchBackButtonPressed()
         }
 
-        val item = descriptionItem
-        if (savedInstanceState == null && item != null) {
-            replace(InfoFragment.newInstance(item, true), R.id.fragment_container)
+        if (savedInstanceState == null) {
+            replace(InfoFragment.newInstance(selection, true), R.id.fragment_container)
         }
     }
 
@@ -77,12 +81,12 @@ class SearchResultFragment : Fragment()  {
 
     companion object {
         const val SEARCH_RESULT_LIMIT = 20
-        const val ARG_DESCRIPTION_ITEM = "description-item"
+        const val ARG_SELECTION = "selection"
 
         @JvmStatic
-        fun newInstance(info: InfoDescriptionItem) = SearchResultFragment().apply {
+        fun newInstance(selection: CelestiaSelection) = SearchResultFragment().apply {
             arguments = Bundle().apply {
-                this.putSerializable(InfoFragment.ARG_DESCRIPTION_ITEM, info)
+                this.putLong(ARG_SELECTION, selection.createCopy())
             }
         }
     }
