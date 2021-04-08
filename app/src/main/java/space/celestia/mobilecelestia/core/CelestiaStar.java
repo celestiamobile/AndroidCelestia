@@ -21,18 +21,18 @@ public class CelestiaStar extends CelestiaAstroObject {
 
     @Nullable
     String getWebInfoURL() {
-        String web = c_getWebInfoURL();
+        String web = c_getWebInfoURL(pointer);
         if (web.isEmpty())
             return null;
-        return c_getWebInfoURL();
+        return c_getWebInfoURL(pointer);
     }
 
     @NonNull
     public CelestiaUniversalCoord getPositionAtTime(double julianDay) {
-        return new CelestiaUniversalCoord(c_getPositionAtTime(julianDay));
+        return new CelestiaUniversalCoord(c_getPositionAtTime(pointer, julianDay));
     }
 
     // C functions
-    private native String c_getWebInfoURL();
-    private native long c_getPositionAtTime(double julianDay);
+    private static native String c_getWebInfoURL(long pointer);
+    private static native long c_getPositionAtTime(long pointer, double julianDay);
 }

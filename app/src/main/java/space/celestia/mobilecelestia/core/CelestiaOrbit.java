@@ -18,21 +18,21 @@ public class CelestiaOrbit {
         pointer = ptr;
     }
 
-    public Boolean isPeriodic() { return c_isPeriodic(); }
-    public double getPeriod() { return c_getPeriod(); }
-    public double getBoundingRadius() { return c_getBoundingRadius(); }
-    public double getValidBeginTime() { return c_getValidBeginTime(); }
-    public double getValidEndTime() { return c_getValidEndTime(); }
+    public Boolean isPeriodic() { return c_isPeriodic(pointer); }
+    public double getPeriod() { return c_getPeriod(pointer); }
+    public double getBoundingRadius() { return c_getBoundingRadius(pointer); }
+    public double getValidBeginTime() { return c_getValidBeginTime(pointer); }
+    public double getValidEndTime() { return c_getValidEndTime(pointer); }
 
-    public CelestiaVector getVelocityAtTime(double julianDay) { return c_getVelocityAtTime(julianDay); }
-    public CelestiaVector getPositionAtTime(double julianDay) { return c_getPositionAtTime(julianDay); }
+    public CelestiaVector getVelocityAtTime(double julianDay) { return c_getVelocityAtTime(pointer, julianDay); }
+    public CelestiaVector getPositionAtTime(double julianDay) { return c_getPositionAtTime(pointer, julianDay); }
 
-    private native boolean c_isPeriodic();
-    private native double c_getPeriod();
-    private native double c_getBoundingRadius();
-    private native double c_getValidBeginTime();
-    private native double c_getValidEndTime();
+    private static native boolean c_isPeriodic(long pointer);
+    private static native double c_getPeriod(long pointer);
+    private static native double c_getBoundingRadius(long pointer);
+    private static native double c_getValidBeginTime(long pointer);
+    private static native double c_getValidEndTime(long pointer);
 
-    private native CelestiaVector c_getVelocityAtTime(double julianDay);
-    private native CelestiaVector c_getPositionAtTime(double julianDay);
+    private static native CelestiaVector c_getVelocityAtTime(long pointer, double julianDay);
+    private static native CelestiaVector c_getPositionAtTime(long pointer, double julianDay);
 }

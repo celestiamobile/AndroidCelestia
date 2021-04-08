@@ -14,23 +14,21 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getDSOName(JNIEnv *env, jobject thiz,
-                                                                         jlong pointer) {
-    DSODatabase *d = (DSODatabase *)env->GetLongField(thiz, cdcPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getDSOName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
+    auto d = (DSODatabase *)ptr;
     return env->NewStringUTF(d->getDSOName((DeepSkyObject *)pointer, true).c_str());
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getCount(JNIEnv *env, jobject thiz) {
-    DSODatabase *d = (DSODatabase *)env->GetLongField(thiz, cdcPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getCount(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto d = (DSODatabase *)ptr;
     return d->size();
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getDSO(JNIEnv *env, jobject thiz,
-                                                                     jint index) {
-    DSODatabase *d = (DSODatabase *)env->GetLongField(thiz, cdcPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getDSO(JNIEnv *env, jclass clazz, jlong ptr, jint index) {
+    auto d = (DSODatabase *)ptr;
     return (jlong)d->getDSO(index);
 }

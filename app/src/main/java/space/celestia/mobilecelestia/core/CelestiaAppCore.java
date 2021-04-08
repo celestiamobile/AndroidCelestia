@@ -314,400 +314,400 @@ public class CelestiaAppCore {
         return 0.0;
     }
 
-    public boolean getShowStars() { return c_getShowStars(); }
-    public void setShowStars(boolean showStars) { c_setShowStars(showStars); }
-    private native void c_setShowStars(boolean showStars);
-    private native boolean c_getShowStars();
-    public boolean getShowPlanets() { return c_getShowPlanets(); }
-    public void setShowPlanets(boolean showPlanets) { c_setShowPlanets(showPlanets); }
-    private native void c_setShowPlanets(boolean showPlanets);
-    private native boolean c_getShowPlanets();
-    public boolean getShowDwarfPlanets() { return c_getShowDwarfPlanets(); }
-    public void setShowDwarfPlanets(boolean showDwarfPlanets) { c_setShowDwarfPlanets(showDwarfPlanets); }
-    private native void c_setShowDwarfPlanets(boolean showDwarfPlanets);
-    private native boolean c_getShowDwarfPlanets();
-    public boolean getShowMoons() { return c_getShowMoons(); }
-    public void setShowMoons(boolean showMoons) { c_setShowMoons(showMoons); }
-    private native void c_setShowMoons(boolean showMoons);
-    private native boolean c_getShowMoons();
-    public boolean getShowMinorMoons() { return c_getShowMinorMoons(); }
-    public void setShowMinorMoons(boolean showMinorMoons) { c_setShowMinorMoons(showMinorMoons); }
-    private native void c_setShowMinorMoons(boolean showMinorMoons);
-    private native boolean c_getShowMinorMoons();
-    public boolean getShowAsteroids() { return c_getShowAsteroids(); }
-    public void setShowAsteroids(boolean showAsteroids) { c_setShowAsteroids(showAsteroids); }
-    private native void c_setShowAsteroids(boolean showAsteroids);
-    private native boolean c_getShowAsteroids();
-    public boolean getShowComets() { return c_getShowComets(); }
-    public void setShowComets(boolean showComets) { c_setShowComets(showComets); }
-    private native void c_setShowComets(boolean showComets);
-    private native boolean c_getShowComets();
-    public boolean getShowSpacecrafts() { return c_getShowSpacecrafts(); }
-    public void setShowSpacecrafts(boolean showSpacecrafts) { c_setShowSpacecrafts(showSpacecrafts); }
-    private native void c_setShowSpacecrafts(boolean showSpacecrafts);
-    private native boolean c_getShowSpacecrafts();
-    public boolean getShowGalaxies() { return c_getShowGalaxies(); }
-    public void setShowGalaxies(boolean showGalaxies) { c_setShowGalaxies(showGalaxies); }
-    private native void c_setShowGalaxies(boolean showGalaxies);
-    private native boolean c_getShowGalaxies();
-    public boolean getShowGlobulars() { return c_getShowGlobulars(); }
-    public void setShowGlobulars(boolean showGlobulars) { c_setShowGlobulars(showGlobulars); }
-    private native void c_setShowGlobulars(boolean showGlobulars);
-    private native boolean c_getShowGlobulars();
-    public boolean getShowNebulae() { return c_getShowNebulae(); }
-    public void setShowNebulae(boolean showNebulae) { c_setShowNebulae(showNebulae); }
-    private native void c_setShowNebulae(boolean showNebulae);
-    private native boolean c_getShowNebulae();
-    public boolean getShowOpenClusters() { return c_getShowOpenClusters(); }
-    public void setShowOpenClusters(boolean showOpenClusters) { c_setShowOpenClusters(showOpenClusters); }
-    private native void c_setShowOpenClusters(boolean showOpenClusters);
-    private native boolean c_getShowOpenClusters();
-    public boolean getShowDiagrams() { return c_getShowDiagrams(); }
-    public void setShowDiagrams(boolean showDiagrams) { c_setShowDiagrams(showDiagrams); }
-    private native void c_setShowDiagrams(boolean showDiagrams);
-    private native boolean c_getShowDiagrams();
-    public boolean getShowBoundaries() { return c_getShowBoundaries(); }
-    public void setShowBoundaries(boolean showBoundaries) { c_setShowBoundaries(showBoundaries); }
-    private native void c_setShowBoundaries(boolean showBoundaries);
-    private native boolean c_getShowBoundaries();
-    public boolean getShowCloudMaps() { return c_getShowCloudMaps(); }
-    public void setShowCloudMaps(boolean showCloudMaps) { c_setShowCloudMaps(showCloudMaps); }
-    private native void c_setShowCloudMaps(boolean showCloudMaps);
-    private native boolean c_getShowCloudMaps();
-    public boolean getShowNightMaps() { return c_getShowNightMaps(); }
-    public void setShowNightMaps(boolean showNightMaps) { c_setShowNightMaps(showNightMaps); }
-    private native void c_setShowNightMaps(boolean showNightMaps);
-    private native boolean c_getShowNightMaps();
-    public boolean getShowAtmospheres() { return c_getShowAtmospheres(); }
-    public void setShowAtmospheres(boolean showAtmospheres) { c_setShowAtmospheres(showAtmospheres); }
-    private native void c_setShowAtmospheres(boolean showAtmospheres);
-    private native boolean c_getShowAtmospheres();
-    public boolean getShowCometTails() { return c_getShowCometTails(); }
-    public void setShowCometTails(boolean showCometTails) { c_setShowCometTails(showCometTails); }
-    private native void c_setShowCometTails(boolean showCometTails);
-    private native boolean c_getShowCometTails();
-    public boolean getShowPlanetRings() { return c_getShowPlanetRings(); }
-    public void setShowPlanetRings(boolean showPlanetRings) { c_setShowPlanetRings(showPlanetRings); }
-    private native void c_setShowPlanetRings(boolean showPlanetRings);
-    private native boolean c_getShowPlanetRings();
-    public boolean getShowMarkers() { return c_getShowMarkers(); }
-    public void setShowMarkers(boolean showMarkers) { c_setShowMarkers(showMarkers); }
-    private native void c_setShowMarkers(boolean showMarkers);
-    private native boolean c_getShowMarkers();
-    public boolean getShowOrbits() { return c_getShowOrbits(); }
-    public void setShowOrbits(boolean showOrbits) { c_setShowOrbits(showOrbits); }
-    private native void c_setShowOrbits(boolean showOrbits);
-    private native boolean c_getShowOrbits();
-    public boolean getShowFadingOrbits() { return c_getShowFadingOrbits(); }
-    public void setShowFadingOrbits(boolean showFadingOrbits) { c_setShowFadingOrbits(showFadingOrbits); }
-    private native void c_setShowFadingOrbits(boolean showFadingOrbits);
-    private native boolean c_getShowFadingOrbits();
-    public boolean getShowPartialTrajectories() { return c_getShowPartialTrajectories(); }
-    public void setShowPartialTrajectories(boolean showPartialTrajectories) { c_setShowPartialTrajectories(showPartialTrajectories); }
-    private native void c_setShowPartialTrajectories(boolean showPartialTrajectories);
-    private native boolean c_getShowPartialTrajectories();
-    public boolean getShowSmoothLines() { return c_getShowSmoothLines(); }
-    public void setShowSmoothLines(boolean showSmoothLines) { c_setShowSmoothLines(showSmoothLines); }
-    private native void c_setShowSmoothLines(boolean showSmoothLines);
-    private native boolean c_getShowSmoothLines();
-    public boolean getShowEclipseShadows() { return c_getShowEclipseShadows(); }
-    public void setShowEclipseShadows(boolean showEclipseShadows) { c_setShowEclipseShadows(showEclipseShadows); }
-    private native void c_setShowEclipseShadows(boolean showEclipseShadows);
-    private native boolean c_getShowEclipseShadows();
-    public boolean getShowRingShadows() { return c_getShowRingShadows(); }
-    public void setShowRingShadows(boolean showRingShadows) { c_setShowRingShadows(showRingShadows); }
-    private native void c_setShowRingShadows(boolean showRingShadows);
-    private native boolean c_getShowRingShadows();
-    public boolean getShowCloudShadows() { return c_getShowCloudShadows(); }
-    public void setShowCloudShadows(boolean showCloudShadows) { c_setShowCloudShadows(showCloudShadows); }
-    private native void c_setShowCloudShadows(boolean showCloudShadows);
-    private native boolean c_getShowCloudShadows();
-    public boolean getShowAutoMag() { return c_getShowAutoMag(); }
-    public void setShowAutoMag(boolean showAutoMag) { c_setShowAutoMag(showAutoMag); }
-    private native void c_setShowAutoMag(boolean showAutoMag);
-    private native boolean c_getShowAutoMag();
-    public boolean getShowCelestialSphere() { return c_getShowCelestialSphere(); }
-    public void setShowCelestialSphere(boolean showCelestialSphere) { c_setShowCelestialSphere(showCelestialSphere); }
-    private native void c_setShowCelestialSphere(boolean showCelestialSphere);
-    private native boolean c_getShowCelestialSphere();
-    public boolean getShowEclipticGrid() { return c_getShowEclipticGrid(); }
-    public void setShowEclipticGrid(boolean showEclipticGrid) { c_setShowEclipticGrid(showEclipticGrid); }
-    private native void c_setShowEclipticGrid(boolean showEclipticGrid);
-    private native boolean c_getShowEclipticGrid();
-    public boolean getShowHorizonGrid() { return c_getShowHorizonGrid(); }
-    public void setShowHorizonGrid(boolean showHorizonGrid) { c_setShowHorizonGrid(showHorizonGrid); }
-    private native void c_setShowHorizonGrid(boolean showHorizonGrid);
-    private native boolean c_getShowHorizonGrid();
-    public boolean getShowGalacticGrid() { return c_getShowGalacticGrid(); }
-    public void setShowGalacticGrid(boolean showGalacticGrid) { c_setShowGalacticGrid(showGalacticGrid); }
-    private native void c_setShowGalacticGrid(boolean showGalacticGrid);
-    private native boolean c_getShowGalacticGrid();
-    public boolean getShowEcliptic() { return c_getShowEcliptic(); }
-    public void setShowEcliptic(boolean showEcliptic) { c_setShowEcliptic(showEcliptic); }
-    private native void c_setShowEcliptic(boolean showEcliptic);
-    private native boolean c_getShowEcliptic();
-    public boolean getShowTintedIllumination() { return c_getShowTintedIllumination(); }
-    public void setShowTintedIllumination(boolean showTintedIllumination) { c_setShowTintedIllumination(showTintedIllumination); }
-    private native void c_setShowTintedIllumination(boolean showTintedIllumination);
-    private native boolean c_getShowTintedIllumination();
+    public boolean getShowStars() { return c_getShowStars(pointer); }
+    public void setShowStars(boolean showStars) { c_setShowStars(pointer, showStars); }
+    private static native void c_setShowStars(long pointer, boolean showStars);
+    private native boolean c_getShowStars(long pointer);
+    public boolean getShowPlanets() { return c_getShowPlanets(pointer); }
+    public void setShowPlanets(boolean showPlanets) { c_setShowPlanets(pointer, showPlanets); }
+    private static native void c_setShowPlanets(long pointer, boolean showPlanets);
+    private native boolean c_getShowPlanets(long pointer);
+    public boolean getShowDwarfPlanets() { return c_getShowDwarfPlanets(pointer); }
+    public void setShowDwarfPlanets(boolean showDwarfPlanets) { c_setShowDwarfPlanets(pointer, showDwarfPlanets); }
+    private static native void c_setShowDwarfPlanets(long pointer, boolean showDwarfPlanets);
+    private native boolean c_getShowDwarfPlanets(long pointer);
+    public boolean getShowMoons() { return c_getShowMoons(pointer); }
+    public void setShowMoons(boolean showMoons) { c_setShowMoons(pointer, showMoons); }
+    private static native void c_setShowMoons(long pointer, boolean showMoons);
+    private native boolean c_getShowMoons(long pointer);
+    public boolean getShowMinorMoons() { return c_getShowMinorMoons(pointer); }
+    public void setShowMinorMoons(boolean showMinorMoons) { c_setShowMinorMoons(pointer, showMinorMoons); }
+    private static native void c_setShowMinorMoons(long pointer, boolean showMinorMoons);
+    private native boolean c_getShowMinorMoons(long pointer);
+    public boolean getShowAsteroids() { return c_getShowAsteroids(pointer); }
+    public void setShowAsteroids(boolean showAsteroids) { c_setShowAsteroids(pointer, showAsteroids); }
+    private static native void c_setShowAsteroids(long pointer, boolean showAsteroids);
+    private native boolean c_getShowAsteroids(long pointer);
+    public boolean getShowComets() { return c_getShowComets(pointer); }
+    public void setShowComets(boolean showComets) { c_setShowComets(pointer, showComets); }
+    private static native void c_setShowComets(long pointer, boolean showComets);
+    private native boolean c_getShowComets(long pointer);
+    public boolean getShowSpacecrafts() { return c_getShowSpacecrafts(pointer); }
+    public void setShowSpacecrafts(boolean showSpacecrafts) { c_setShowSpacecrafts(pointer, showSpacecrafts); }
+    private static native void c_setShowSpacecrafts(long pointer, boolean showSpacecrafts);
+    private native boolean c_getShowSpacecrafts(long pointer);
+    public boolean getShowGalaxies() { return c_getShowGalaxies(pointer); }
+    public void setShowGalaxies(boolean showGalaxies) { c_setShowGalaxies(pointer, showGalaxies); }
+    private static native void c_setShowGalaxies(long pointer, boolean showGalaxies);
+    private native boolean c_getShowGalaxies(long pointer);
+    public boolean getShowGlobulars() { return c_getShowGlobulars(pointer); }
+    public void setShowGlobulars(boolean showGlobulars) { c_setShowGlobulars(pointer, showGlobulars); }
+    private static native void c_setShowGlobulars(long pointer, boolean showGlobulars);
+    private native boolean c_getShowGlobulars(long pointer);
+    public boolean getShowNebulae() { return c_getShowNebulae(pointer); }
+    public void setShowNebulae(boolean showNebulae) { c_setShowNebulae(pointer, showNebulae); }
+    private static native void c_setShowNebulae(long pointer, boolean showNebulae);
+    private native boolean c_getShowNebulae(long pointer);
+    public boolean getShowOpenClusters() { return c_getShowOpenClusters(pointer); }
+    public void setShowOpenClusters(boolean showOpenClusters) { c_setShowOpenClusters(pointer, showOpenClusters); }
+    private static native void c_setShowOpenClusters(long pointer, boolean showOpenClusters);
+    private native boolean c_getShowOpenClusters(long pointer);
+    public boolean getShowDiagrams() { return c_getShowDiagrams(pointer); }
+    public void setShowDiagrams(boolean showDiagrams) { c_setShowDiagrams(pointer, showDiagrams); }
+    private static native void c_setShowDiagrams(long pointer, boolean showDiagrams);
+    private native boolean c_getShowDiagrams(long pointer);
+    public boolean getShowBoundaries() { return c_getShowBoundaries(pointer); }
+    public void setShowBoundaries(boolean showBoundaries) { c_setShowBoundaries(pointer, showBoundaries); }
+    private static native void c_setShowBoundaries(long pointer, boolean showBoundaries);
+    private native boolean c_getShowBoundaries(long pointer);
+    public boolean getShowCloudMaps() { return c_getShowCloudMaps(pointer); }
+    public void setShowCloudMaps(boolean showCloudMaps) { c_setShowCloudMaps(pointer, showCloudMaps); }
+    private static native void c_setShowCloudMaps(long pointer, boolean showCloudMaps);
+    private native boolean c_getShowCloudMaps(long pointer);
+    public boolean getShowNightMaps() { return c_getShowNightMaps(pointer); }
+    public void setShowNightMaps(boolean showNightMaps) { c_setShowNightMaps(pointer, showNightMaps); }
+    private static native void c_setShowNightMaps(long pointer, boolean showNightMaps);
+    private native boolean c_getShowNightMaps(long pointer);
+    public boolean getShowAtmospheres() { return c_getShowAtmospheres(pointer); }
+    public void setShowAtmospheres(boolean showAtmospheres) { c_setShowAtmospheres(pointer, showAtmospheres); }
+    private static native void c_setShowAtmospheres(long pointer, boolean showAtmospheres);
+    private native boolean c_getShowAtmospheres(long pointer);
+    public boolean getShowCometTails() { return c_getShowCometTails(pointer); }
+    public void setShowCometTails(boolean showCometTails) { c_setShowCometTails(pointer, showCometTails); }
+    private static native void c_setShowCometTails(long pointer, boolean showCometTails);
+    private native boolean c_getShowCometTails(long pointer);
+    public boolean getShowPlanetRings() { return c_getShowPlanetRings(pointer); }
+    public void setShowPlanetRings(boolean showPlanetRings) { c_setShowPlanetRings(pointer, showPlanetRings); }
+    private static native void c_setShowPlanetRings(long pointer, boolean showPlanetRings);
+    private native boolean c_getShowPlanetRings(long pointer);
+    public boolean getShowMarkers() { return c_getShowMarkers(pointer); }
+    public void setShowMarkers(boolean showMarkers) { c_setShowMarkers(pointer, showMarkers); }
+    private static native void c_setShowMarkers(long pointer, boolean showMarkers);
+    private native boolean c_getShowMarkers(long pointer);
+    public boolean getShowOrbits() { return c_getShowOrbits(pointer); }
+    public void setShowOrbits(boolean showOrbits) { c_setShowOrbits(pointer, showOrbits); }
+    private static native void c_setShowOrbits(long pointer, boolean showOrbits);
+    private native boolean c_getShowOrbits(long pointer);
+    public boolean getShowFadingOrbits() { return c_getShowFadingOrbits(pointer); }
+    public void setShowFadingOrbits(boolean showFadingOrbits) { c_setShowFadingOrbits(pointer, showFadingOrbits); }
+    private static native void c_setShowFadingOrbits(long pointer, boolean showFadingOrbits);
+    private native boolean c_getShowFadingOrbits(long pointer);
+    public boolean getShowPartialTrajectories() { return c_getShowPartialTrajectories(pointer); }
+    public void setShowPartialTrajectories(boolean showPartialTrajectories) { c_setShowPartialTrajectories(pointer, showPartialTrajectories); }
+    private static native void c_setShowPartialTrajectories(long pointer, boolean showPartialTrajectories);
+    private native boolean c_getShowPartialTrajectories(long pointer);
+    public boolean getShowSmoothLines() { return c_getShowSmoothLines(pointer); }
+    public void setShowSmoothLines(boolean showSmoothLines) { c_setShowSmoothLines(pointer, showSmoothLines); }
+    private static native void c_setShowSmoothLines(long pointer, boolean showSmoothLines);
+    private native boolean c_getShowSmoothLines(long pointer);
+    public boolean getShowEclipseShadows() { return c_getShowEclipseShadows(pointer); }
+    public void setShowEclipseShadows(boolean showEclipseShadows) { c_setShowEclipseShadows(pointer, showEclipseShadows); }
+    private static native void c_setShowEclipseShadows(long pointer, boolean showEclipseShadows);
+    private native boolean c_getShowEclipseShadows(long pointer);
+    public boolean getShowRingShadows() { return c_getShowRingShadows(pointer); }
+    public void setShowRingShadows(boolean showRingShadows) { c_setShowRingShadows(pointer, showRingShadows); }
+    private static native void c_setShowRingShadows(long pointer, boolean showRingShadows);
+    private native boolean c_getShowRingShadows(long pointer);
+    public boolean getShowCloudShadows() { return c_getShowCloudShadows(pointer); }
+    public void setShowCloudShadows(boolean showCloudShadows) { c_setShowCloudShadows(pointer, showCloudShadows); }
+    private static native void c_setShowCloudShadows(long pointer, boolean showCloudShadows);
+    private native boolean c_getShowCloudShadows(long pointer);
+    public boolean getShowAutoMag() { return c_getShowAutoMag(pointer); }
+    public void setShowAutoMag(boolean showAutoMag) { c_setShowAutoMag(pointer, showAutoMag); }
+    private static native void c_setShowAutoMag(long pointer, boolean showAutoMag);
+    private native boolean c_getShowAutoMag(long pointer);
+    public boolean getShowCelestialSphere() { return c_getShowCelestialSphere(pointer); }
+    public void setShowCelestialSphere(boolean showCelestialSphere) { c_setShowCelestialSphere(pointer, showCelestialSphere); }
+    private static native void c_setShowCelestialSphere(long pointer, boolean showCelestialSphere);
+    private native boolean c_getShowCelestialSphere(long pointer);
+    public boolean getShowEclipticGrid() { return c_getShowEclipticGrid(pointer); }
+    public void setShowEclipticGrid(boolean showEclipticGrid) { c_setShowEclipticGrid(pointer, showEclipticGrid); }
+    private static native void c_setShowEclipticGrid(long pointer, boolean showEclipticGrid);
+    private native boolean c_getShowEclipticGrid(long pointer);
+    public boolean getShowHorizonGrid() { return c_getShowHorizonGrid(pointer); }
+    public void setShowHorizonGrid(boolean showHorizonGrid) { c_setShowHorizonGrid(pointer, showHorizonGrid); }
+    private static native void c_setShowHorizonGrid(long pointer, boolean showHorizonGrid);
+    private native boolean c_getShowHorizonGrid(long pointer);
+    public boolean getShowGalacticGrid() { return c_getShowGalacticGrid(pointer); }
+    public void setShowGalacticGrid(boolean showGalacticGrid) { c_setShowGalacticGrid(pointer, showGalacticGrid); }
+    private static native void c_setShowGalacticGrid(long pointer, boolean showGalacticGrid);
+    private native boolean c_getShowGalacticGrid(long pointer);
+    public boolean getShowEcliptic() { return c_getShowEcliptic(pointer); }
+    public void setShowEcliptic(boolean showEcliptic) { c_setShowEcliptic(pointer, showEcliptic); }
+    private static native void c_setShowEcliptic(long pointer, boolean showEcliptic);
+    private native boolean c_getShowEcliptic(long pointer);
+    public boolean getShowTintedIllumination() { return c_getShowTintedIllumination(pointer); }
+    public void setShowTintedIllumination(boolean showTintedIllumination) { c_setShowTintedIllumination(pointer, showTintedIllumination); }
+    private static native void c_setShowTintedIllumination(long pointer, boolean showTintedIllumination);
+    private native boolean c_getShowTintedIllumination(long pointer);
 
-    public boolean getShowStarLabels() { return c_getShowStarLabels(); }
-    public void setShowStarLabels(boolean showStarLabels) { c_setShowStarLabels(showStarLabels); }
-    private native void c_setShowStarLabels(boolean showStarLabels);
-    private native boolean c_getShowStarLabels();
-    public boolean getShowPlanetLabels() { return c_getShowPlanetLabels(); }
-    public void setShowPlanetLabels(boolean showPlanetLabels) { c_setShowPlanetLabels(showPlanetLabels); }
-    private native void c_setShowPlanetLabels(boolean showPlanetLabels);
-    private native boolean c_getShowPlanetLabels();
-    public boolean getShowMoonLabels() { return c_getShowMoonLabels(); }
-    public void setShowMoonLabels(boolean showMoonLabels) { c_setShowMoonLabels(showMoonLabels); }
-    private native void c_setShowMoonLabels(boolean showMoonLabels);
-    private native boolean c_getShowMoonLabels();
-    public boolean getShowConstellationLabels() { return c_getShowConstellationLabels(); }
-    public void setShowConstellationLabels(boolean showConstellationLabels) { c_setShowConstellationLabels(showConstellationLabels); }
-    private native void c_setShowConstellationLabels(boolean showConstellationLabels);
-    private native boolean c_getShowConstellationLabels();
-    public boolean getShowGalaxyLabels() { return c_getShowGalaxyLabels(); }
-    public void setShowGalaxyLabels(boolean showGalaxyLabels) { c_setShowGalaxyLabels(showGalaxyLabels); }
-    private native void c_setShowGalaxyLabels(boolean showGalaxyLabels);
-    private native boolean c_getShowGalaxyLabels();
-    public boolean getShowGlobularLabels() { return c_getShowGlobularLabels(); }
-    public void setShowGlobularLabels(boolean showGlobularLabels) { c_setShowGlobularLabels(showGlobularLabels); }
-    private native void c_setShowGlobularLabels(boolean showGlobularLabels);
-    private native boolean c_getShowGlobularLabels();
-    public boolean getShowNebulaLabels() { return c_getShowNebulaLabels(); }
-    public void setShowNebulaLabels(boolean showNebulaLabels) { c_setShowNebulaLabels(showNebulaLabels); }
-    private native void c_setShowNebulaLabels(boolean showNebulaLabels);
-    private native boolean c_getShowNebulaLabels();
-    public boolean getShowOpenClusterLabels() { return c_getShowOpenClusterLabels(); }
-    public void setShowOpenClusterLabels(boolean showOpenClusterLabels) { c_setShowOpenClusterLabels(showOpenClusterLabels); }
-    private native void c_setShowOpenClusterLabels(boolean showOpenClusterLabels);
-    private native boolean c_getShowOpenClusterLabels();
-    public boolean getShowAsteroidLabels() { return c_getShowAsteroidLabels(); }
-    public void setShowAsteroidLabels(boolean showAsteroidLabels) { c_setShowAsteroidLabels(showAsteroidLabels); }
-    private native void c_setShowAsteroidLabels(boolean showAsteroidLabels);
-    private native boolean c_getShowAsteroidLabels();
-    public boolean getShowSpacecraftLabels() { return c_getShowSpacecraftLabels(); }
-    public void setShowSpacecraftLabels(boolean showSpacecraftLabels) { c_setShowSpacecraftLabels(showSpacecraftLabels); }
-    private native void c_setShowSpacecraftLabels(boolean showSpacecraftLabels);
-    private native boolean c_getShowSpacecraftLabels();
-    public boolean getShowLocationLabels() { return c_getShowLocationLabels(); }
-    public void setShowLocationLabels(boolean showLocationLabels) { c_setShowLocationLabels(showLocationLabels); }
-    private native void c_setShowLocationLabels(boolean showLocationLabels);
-    private native boolean c_getShowLocationLabels();
-    public boolean getShowCometLabels() { return c_getShowCometLabels(); }
-    public void setShowCometLabels(boolean showCometLabels) { c_setShowCometLabels(showCometLabels); }
-    private native void c_setShowCometLabels(boolean showCometLabels);
-    private native boolean c_getShowCometLabels();
-    public boolean getShowDwarfPlanetLabels() { return c_getShowDwarfPlanetLabels(); }
-    public void setShowDwarfPlanetLabels(boolean showDwarfPlanetLabels) { c_setShowDwarfPlanetLabels(showDwarfPlanetLabels); }
-    private native void c_setShowDwarfPlanetLabels(boolean showDwarfPlanetLabels);
-    private native boolean c_getShowDwarfPlanetLabels();
-    public boolean getShowMinorMoonLabels() { return c_getShowMinorMoonLabels(); }
-    public void setShowMinorMoonLabels(boolean showMinorMoonLabels) { c_setShowMinorMoonLabels(showMinorMoonLabels); }
-    private native void c_setShowMinorMoonLabels(boolean showMinorMoonLabels);
-    private native boolean c_getShowMinorMoonLabels();
+    public boolean getShowStarLabels() { return c_getShowStarLabels(pointer); }
+    public void setShowStarLabels(boolean showStarLabels) { c_setShowStarLabels(pointer, showStarLabels); }
+    private static native void c_setShowStarLabels(long pointer, boolean showStarLabels);
+    private native boolean c_getShowStarLabels(long pointer);
+    public boolean getShowPlanetLabels() { return c_getShowPlanetLabels(pointer); }
+    public void setShowPlanetLabels(boolean showPlanetLabels) { c_setShowPlanetLabels(pointer, showPlanetLabels); }
+    private static native void c_setShowPlanetLabels(long pointer, boolean showPlanetLabels);
+    private native boolean c_getShowPlanetLabels(long pointer);
+    public boolean getShowMoonLabels() { return c_getShowMoonLabels(pointer); }
+    public void setShowMoonLabels(boolean showMoonLabels) { c_setShowMoonLabels(pointer, showMoonLabels); }
+    private static native void c_setShowMoonLabels(long pointer, boolean showMoonLabels);
+    private native boolean c_getShowMoonLabels(long pointer);
+    public boolean getShowConstellationLabels() { return c_getShowConstellationLabels(pointer); }
+    public void setShowConstellationLabels(boolean showConstellationLabels) { c_setShowConstellationLabels(pointer, showConstellationLabels); }
+    private static native void c_setShowConstellationLabels(long pointer, boolean showConstellationLabels);
+    private native boolean c_getShowConstellationLabels(long pointer);
+    public boolean getShowGalaxyLabels() { return c_getShowGalaxyLabels(pointer); }
+    public void setShowGalaxyLabels(boolean showGalaxyLabels) { c_setShowGalaxyLabels(pointer, showGalaxyLabels); }
+    private static native void c_setShowGalaxyLabels(long pointer, boolean showGalaxyLabels);
+    private native boolean c_getShowGalaxyLabels(long pointer);
+    public boolean getShowGlobularLabels() { return c_getShowGlobularLabels(pointer); }
+    public void setShowGlobularLabels(boolean showGlobularLabels) { c_setShowGlobularLabels(pointer, showGlobularLabels); }
+    private static native void c_setShowGlobularLabels(long pointer, boolean showGlobularLabels);
+    private native boolean c_getShowGlobularLabels(long pointer);
+    public boolean getShowNebulaLabels() { return c_getShowNebulaLabels(pointer); }
+    public void setShowNebulaLabels(boolean showNebulaLabels) { c_setShowNebulaLabels(pointer, showNebulaLabels); }
+    private static native void c_setShowNebulaLabels(long pointer, boolean showNebulaLabels);
+    private native boolean c_getShowNebulaLabels(long pointer);
+    public boolean getShowOpenClusterLabels() { return c_getShowOpenClusterLabels(pointer); }
+    public void setShowOpenClusterLabels(boolean showOpenClusterLabels) { c_setShowOpenClusterLabels(pointer, showOpenClusterLabels); }
+    private static native void c_setShowOpenClusterLabels(long pointer, boolean showOpenClusterLabels);
+    private native boolean c_getShowOpenClusterLabels(long pointer);
+    public boolean getShowAsteroidLabels() { return c_getShowAsteroidLabels(pointer); }
+    public void setShowAsteroidLabels(boolean showAsteroidLabels) { c_setShowAsteroidLabels(pointer, showAsteroidLabels); }
+    private static native void c_setShowAsteroidLabels(long pointer, boolean showAsteroidLabels);
+    private native boolean c_getShowAsteroidLabels(long pointer);
+    public boolean getShowSpacecraftLabels() { return c_getShowSpacecraftLabels(pointer); }
+    public void setShowSpacecraftLabels(boolean showSpacecraftLabels) { c_setShowSpacecraftLabels(pointer, showSpacecraftLabels); }
+    private static native void c_setShowSpacecraftLabels(long pointer, boolean showSpacecraftLabels);
+    private native boolean c_getShowSpacecraftLabels(long pointer);
+    public boolean getShowLocationLabels() { return c_getShowLocationLabels(pointer); }
+    public void setShowLocationLabels(boolean showLocationLabels) { c_setShowLocationLabels(pointer, showLocationLabels); }
+    private static native void c_setShowLocationLabels(long pointer, boolean showLocationLabels);
+    private native boolean c_getShowLocationLabels(long pointer);
+    public boolean getShowCometLabels() { return c_getShowCometLabels(pointer); }
+    public void setShowCometLabels(boolean showCometLabels) { c_setShowCometLabels(pointer, showCometLabels); }
+    private static native void c_setShowCometLabels(long pointer, boolean showCometLabels);
+    private native boolean c_getShowCometLabels(long pointer);
+    public boolean getShowDwarfPlanetLabels() { return c_getShowDwarfPlanetLabels(pointer); }
+    public void setShowDwarfPlanetLabels(boolean showDwarfPlanetLabels) { c_setShowDwarfPlanetLabels(pointer, showDwarfPlanetLabels); }
+    private static native void c_setShowDwarfPlanetLabels(long pointer, boolean showDwarfPlanetLabels);
+    private native boolean c_getShowDwarfPlanetLabels(long pointer);
+    public boolean getShowMinorMoonLabels() { return c_getShowMinorMoonLabels(pointer); }
+    public void setShowMinorMoonLabels(boolean showMinorMoonLabels) { c_setShowMinorMoonLabels(pointer, showMinorMoonLabels); }
+    private static native void c_setShowMinorMoonLabels(long pointer, boolean showMinorMoonLabels);
+    private native boolean c_getShowMinorMoonLabels(long pointer);
 
     // ShowLatinConstellationLabels (UI) is the opposite value of ShowI18nConstellationLabels
-    public boolean getShowLatinConstellationLabels() { return !c_getShowI18nConstellationLabels(); }
-    public void setShowLatinConstellationLabels(boolean showLatinConstellationLabels) { c_setShowI18nConstellationLabels(!showLatinConstellationLabels); }
-    private native void c_setShowI18nConstellationLabels(boolean showI18nConstellationLabels);
-    private native boolean c_getShowI18nConstellationLabels();
+    public boolean getShowLatinConstellationLabels() { return !c_getShowI18nConstellationLabels(pointer); }
+    public void setShowLatinConstellationLabels(boolean showLatinConstellationLabels) { c_setShowI18nConstellationLabels(pointer, !showLatinConstellationLabels); }
+    private static native void c_setShowI18nConstellationLabels(long pointer, boolean showI18nConstellationLabels);
+    private static native boolean c_getShowI18nConstellationLabels(long pointer);
 
-    public boolean getShowPlanetOrbits() { return c_getShowPlanetOrbits(); }
-    public void setShowPlanetOrbits(boolean showPlanetOrbits) { c_setShowPlanetOrbits(showPlanetOrbits); }
-    private native void c_setShowPlanetOrbits(boolean showPlanetOrbits);
-    private native boolean c_getShowPlanetOrbits();
-    public boolean getShowMoonOrbits() { return c_getShowMoonOrbits(); }
-    public void setShowMoonOrbits(boolean showMoonOrbits) { c_setShowMoonOrbits(showMoonOrbits); }
-    private native void c_setShowMoonOrbits(boolean showMoonOrbits);
-    private native boolean c_getShowMoonOrbits();
-    public boolean getShowAsteroidOrbits() { return c_getShowAsteroidOrbits(); }
-    public void setShowAsteroidOrbits(boolean showAsteroidOrbits) { c_setShowAsteroidOrbits(showAsteroidOrbits); }
-    private native void c_setShowAsteroidOrbits(boolean showAsteroidOrbits);
-    private native boolean c_getShowAsteroidOrbits();
-    public boolean getShowSpacecraftOrbits() { return c_getShowSpacecraftOrbits(); }
-    public void setShowSpacecraftOrbits(boolean showSpacecraftOrbits) { c_setShowSpacecraftOrbits(showSpacecraftOrbits); }
-    private native void c_setShowSpacecraftOrbits(boolean showSpacecraftOrbits);
-    private native boolean c_getShowSpacecraftOrbits();
-    public boolean getShowCometOrbits() { return c_getShowCometOrbits(); }
-    public void setShowCometOrbits(boolean showCometOrbits) { c_setShowCometOrbits(showCometOrbits); }
-    private native void c_setShowCometOrbits(boolean showCometOrbits);
-    private native boolean c_getShowCometOrbits();
-    public boolean getShowStellarOrbits() { return c_getShowStellarOrbits(); }
-    public void setShowStellarOrbits(boolean showStellarOrbits) { c_setShowStellarOrbits(showStellarOrbits); }
-    private native void c_setShowStellarOrbits(boolean showStellarOrbits);
-    private native boolean c_getShowStellarOrbits();
-    public boolean getShowDwarfPlanetOrbits() { return c_getShowDwarfPlanetOrbits(); }
-    public void setShowDwarfPlanetOrbits(boolean showDwarfPlanetOrbits) { c_setShowDwarfPlanetOrbits(showDwarfPlanetOrbits); }
-    private native void c_setShowDwarfPlanetOrbits(boolean showDwarfPlanetOrbits);
-    private native boolean c_getShowDwarfPlanetOrbits();
-    public boolean getShowMinorMoonOrbits() { return c_getShowMinorMoonOrbits(); }
-    public void setShowMinorMoonOrbits(boolean showMinorMoonOrbits) { c_setShowMinorMoonOrbits(showMinorMoonOrbits); }
-    private native void c_setShowMinorMoonOrbits(boolean showMinorMoonOrbits);
-    private native boolean c_getShowMinorMoonOrbits();
+    public boolean getShowPlanetOrbits() { return c_getShowPlanetOrbits(pointer); }
+    public void setShowPlanetOrbits(boolean showPlanetOrbits) { c_setShowPlanetOrbits(pointer, showPlanetOrbits); }
+    private static native void c_setShowPlanetOrbits(long pointer, boolean showPlanetOrbits);
+    private native boolean c_getShowPlanetOrbits(long pointer);
+    public boolean getShowMoonOrbits() { return c_getShowMoonOrbits(pointer); }
+    public void setShowMoonOrbits(boolean showMoonOrbits) { c_setShowMoonOrbits(pointer, showMoonOrbits); }
+    private static native void c_setShowMoonOrbits(long pointer, boolean showMoonOrbits);
+    private native boolean c_getShowMoonOrbits(long pointer);
+    public boolean getShowAsteroidOrbits() { return c_getShowAsteroidOrbits(pointer); }
+    public void setShowAsteroidOrbits(boolean showAsteroidOrbits) { c_setShowAsteroidOrbits(pointer, showAsteroidOrbits); }
+    private static native void c_setShowAsteroidOrbits(long pointer, boolean showAsteroidOrbits);
+    private native boolean c_getShowAsteroidOrbits(long pointer);
+    public boolean getShowSpacecraftOrbits() { return c_getShowSpacecraftOrbits(pointer); }
+    public void setShowSpacecraftOrbits(boolean showSpacecraftOrbits) { c_setShowSpacecraftOrbits(pointer, showSpacecraftOrbits); }
+    private static native void c_setShowSpacecraftOrbits(long pointer, boolean showSpacecraftOrbits);
+    private native boolean c_getShowSpacecraftOrbits(long pointer);
+    public boolean getShowCometOrbits() { return c_getShowCometOrbits(pointer); }
+    public void setShowCometOrbits(boolean showCometOrbits) { c_setShowCometOrbits(pointer, showCometOrbits); }
+    private static native void c_setShowCometOrbits(long pointer, boolean showCometOrbits);
+    private native boolean c_getShowCometOrbits(long pointer);
+    public boolean getShowStellarOrbits() { return c_getShowStellarOrbits(pointer); }
+    public void setShowStellarOrbits(boolean showStellarOrbits) { c_setShowStellarOrbits(pointer, showStellarOrbits); }
+    private static native void c_setShowStellarOrbits(long pointer, boolean showStellarOrbits);
+    private native boolean c_getShowStellarOrbits(long pointer);
+    public boolean getShowDwarfPlanetOrbits() { return c_getShowDwarfPlanetOrbits(pointer); }
+    public void setShowDwarfPlanetOrbits(boolean showDwarfPlanetOrbits) { c_setShowDwarfPlanetOrbits(pointer, showDwarfPlanetOrbits); }
+    private static native void c_setShowDwarfPlanetOrbits(long pointer, boolean showDwarfPlanetOrbits);
+    private native boolean c_getShowDwarfPlanetOrbits(long pointer);
+    public boolean getShowMinorMoonOrbits() { return c_getShowMinorMoonOrbits(pointer); }
+    public void setShowMinorMoonOrbits(boolean showMinorMoonOrbits) { c_setShowMinorMoonOrbits(pointer, showMinorMoonOrbits); }
+    private static native void c_setShowMinorMoonOrbits(long pointer, boolean showMinorMoonOrbits);
+    private native boolean c_getShowMinorMoonOrbits(long pointer);
 
-    public boolean getShowCityLabels() { return c_getShowCityLabels(); }
-    public void setShowCityLabels(boolean showCityLabels) { c_setShowCityLabels(showCityLabels); }
-    private native void c_setShowCityLabels(boolean showCityLabels);
-    private native boolean c_getShowCityLabels();
-    public boolean getShowObservatoryLabels() { return c_getShowObservatoryLabels(); }
-    public void setShowObservatoryLabels(boolean showObservatoryLabels) { c_setShowObservatoryLabels(showObservatoryLabels); }
-    private native void c_setShowObservatoryLabels(boolean showObservatoryLabels);
-    private native boolean c_getShowObservatoryLabels();
-    public boolean getShowLandingSiteLabels() { return c_getShowLandingSiteLabels(); }
-    public void setShowLandingSiteLabels(boolean showLandingSiteLabels) { c_setShowLandingSiteLabels(showLandingSiteLabels); }
-    private native void c_setShowLandingSiteLabels(boolean showLandingSiteLabels);
-    private native boolean c_getShowLandingSiteLabels();
-    public boolean getShowCraterLabels() { return c_getShowCraterLabels(); }
-    public void setShowCraterLabels(boolean showCraterLabels) { c_setShowCraterLabels(showCraterLabels); }
-    private native void c_setShowCraterLabels(boolean showCraterLabels);
-    private native boolean c_getShowCraterLabels();
-    public boolean getShowVallisLabels() { return c_getShowVallisLabels(); }
-    public void setShowVallisLabels(boolean showVallisLabels) { c_setShowVallisLabels(showVallisLabels); }
-    private native void c_setShowVallisLabels(boolean showVallisLabels);
-    private native boolean c_getShowVallisLabels();
-    public boolean getShowMonsLabels() { return c_getShowMonsLabels(); }
-    public void setShowMonsLabels(boolean showMonsLabels) { c_setShowMonsLabels(showMonsLabels); }
-    private native void c_setShowMonsLabels(boolean showMonsLabels);
-    private native boolean c_getShowMonsLabels();
-    public boolean getShowPlanumLabels() { return c_getShowPlanumLabels(); }
-    public void setShowPlanumLabels(boolean showPlanumLabels) { c_setShowPlanumLabels(showPlanumLabels); }
-    private native void c_setShowPlanumLabels(boolean showPlanumLabels);
-    private native boolean c_getShowPlanumLabels();
-    public boolean getShowChasmaLabels() { return c_getShowChasmaLabels(); }
-    public void setShowChasmaLabels(boolean showChasmaLabels) { c_setShowChasmaLabels(showChasmaLabels); }
-    private native void c_setShowChasmaLabels(boolean showChasmaLabels);
-    private native boolean c_getShowChasmaLabels();
-    public boolean getShowPateraLabels() { return c_getShowPateraLabels(); }
-    public void setShowPateraLabels(boolean showPateraLabels) { c_setShowPateraLabels(showPateraLabels); }
-    private native void c_setShowPateraLabels(boolean showPateraLabels);
-    private native boolean c_getShowPateraLabels();
-    public boolean getShowMareLabels() { return c_getShowMareLabels(); }
-    public void setShowMareLabels(boolean showMareLabels) { c_setShowMareLabels(showMareLabels); }
-    private native void c_setShowMareLabels(boolean showMareLabels);
-    private native boolean c_getShowMareLabels();
-    public boolean getShowRupesLabels() { return c_getShowRupesLabels(); }
-    public void setShowRupesLabels(boolean showRupesLabels) { c_setShowRupesLabels(showRupesLabels); }
-    private native void c_setShowRupesLabels(boolean showRupesLabels);
-    private native boolean c_getShowRupesLabels();
-    public boolean getShowTesseraLabels() { return c_getShowTesseraLabels(); }
-    public void setShowTesseraLabels(boolean showTesseraLabels) { c_setShowTesseraLabels(showTesseraLabels); }
-    private native void c_setShowTesseraLabels(boolean showTesseraLabels);
-    private native boolean c_getShowTesseraLabels();
-    public boolean getShowRegioLabels() { return c_getShowRegioLabels(); }
-    public void setShowRegioLabels(boolean showRegioLabels) { c_setShowRegioLabels(showRegioLabels); }
-    private native void c_setShowRegioLabels(boolean showRegioLabels);
-    private native boolean c_getShowRegioLabels();
-    public boolean getShowChaosLabels() { return c_getShowChaosLabels(); }
-    public void setShowChaosLabels(boolean showChaosLabels) { c_setShowChaosLabels(showChaosLabels); }
-    private native void c_setShowChaosLabels(boolean showChaosLabels);
-    private native boolean c_getShowChaosLabels();
-    public boolean getShowTerraLabels() { return c_getShowTerraLabels(); }
-    public void setShowTerraLabels(boolean showTerraLabels) { c_setShowTerraLabels(showTerraLabels); }
-    private native void c_setShowTerraLabels(boolean showTerraLabels);
-    private native boolean c_getShowTerraLabels();
-    public boolean getShowAstrumLabels() { return c_getShowAstrumLabels(); }
-    public void setShowAstrumLabels(boolean showAstrumLabels) { c_setShowAstrumLabels(showAstrumLabels); }
-    private native void c_setShowAstrumLabels(boolean showAstrumLabels);
-    private native boolean c_getShowAstrumLabels();
-    public boolean getShowCoronaLabels() { return c_getShowCoronaLabels(); }
-    public void setShowCoronaLabels(boolean showCoronaLabels) { c_setShowCoronaLabels(showCoronaLabels); }
-    private native void c_setShowCoronaLabels(boolean showCoronaLabels);
-    private native boolean c_getShowCoronaLabels();
-    public boolean getShowDorsumLabels() { return c_getShowDorsumLabels(); }
-    public void setShowDorsumLabels(boolean showDorsumLabels) { c_setShowDorsumLabels(showDorsumLabels); }
-    private native void c_setShowDorsumLabels(boolean showDorsumLabels);
-    private native boolean c_getShowDorsumLabels();
-    public boolean getShowFossaLabels() { return c_getShowFossaLabels(); }
-    public void setShowFossaLabels(boolean showFossaLabels) { c_setShowFossaLabels(showFossaLabels); }
-    private native void c_setShowFossaLabels(boolean showFossaLabels);
-    private native boolean c_getShowFossaLabels();
-    public boolean getShowCatenaLabels() { return c_getShowCatenaLabels(); }
-    public void setShowCatenaLabels(boolean showCatenaLabels) { c_setShowCatenaLabels(showCatenaLabels); }
-    private native void c_setShowCatenaLabels(boolean showCatenaLabels);
-    private native boolean c_getShowCatenaLabels();
-    public boolean getShowMensaLabels() { return c_getShowMensaLabels(); }
-    public void setShowMensaLabels(boolean showMensaLabels) { c_setShowMensaLabels(showMensaLabels); }
-    private native void c_setShowMensaLabels(boolean showMensaLabels);
-    private native boolean c_getShowMensaLabels();
-    public boolean getShowRimaLabels() { return c_getShowRimaLabels(); }
-    public void setShowRimaLabels(boolean showRimaLabels) { c_setShowRimaLabels(showRimaLabels); }
-    private native void c_setShowRimaLabels(boolean showRimaLabels);
-    private native boolean c_getShowRimaLabels();
-    public boolean getShowUndaeLabels() { return c_getShowUndaeLabels(); }
-    public void setShowUndaeLabels(boolean showUndaeLabels) { c_setShowUndaeLabels(showUndaeLabels); }
-    private native void c_setShowUndaeLabels(boolean showUndaeLabels);
-    private native boolean c_getShowUndaeLabels();
-    public boolean getShowReticulumLabels() { return c_getShowReticulumLabels(); }
-    public void setShowReticulumLabels(boolean showReticulumLabels) { c_setShowReticulumLabels(showReticulumLabels); }
-    private native void c_setShowReticulumLabels(boolean showReticulumLabels);
-    private native boolean c_getShowReticulumLabels();
-    public boolean getShowPlanitiaLabels() { return c_getShowPlanitiaLabels(); }
-    public void setShowPlanitiaLabels(boolean showPlanitiaLabels) { c_setShowPlanitiaLabels(showPlanitiaLabels); }
-    private native void c_setShowPlanitiaLabels(boolean showPlanitiaLabels);
-    private native boolean c_getShowPlanitiaLabels();
-    public boolean getShowLineaLabels() { return c_getShowLineaLabels(); }
-    public void setShowLineaLabels(boolean showLineaLabels) { c_setShowLineaLabels(showLineaLabels); }
-    private native void c_setShowLineaLabels(boolean showLineaLabels);
-    private native boolean c_getShowLineaLabels();
-    public boolean getShowFluctusLabels() { return c_getShowFluctusLabels(); }
-    public void setShowFluctusLabels(boolean showFluctusLabels) { c_setShowFluctusLabels(showFluctusLabels); }
-    private native void c_setShowFluctusLabels(boolean showFluctusLabels);
-    private native boolean c_getShowFluctusLabels();
-    public boolean getShowFarrumLabels() { return c_getShowFarrumLabels(); }
-    public void setShowFarrumLabels(boolean showFarrumLabels) { c_setShowFarrumLabels(showFarrumLabels); }
-    private native void c_setShowFarrumLabels(boolean showFarrumLabels);
-    private native boolean c_getShowFarrumLabels();
-    public boolean getShowEruptiveCenterLabels() { return c_getShowEruptiveCenterLabels(); }
-    public void setShowEruptiveCenterLabels(boolean showEruptiveCenterLabels) { c_setShowEruptiveCenterLabels(showEruptiveCenterLabels); }
-    private native void c_setShowEruptiveCenterLabels(boolean showEruptiveCenterLabels);
-    private native boolean c_getShowEruptiveCenterLabels();
-    public boolean getShowOtherLabels() { return c_getShowOtherLabels(); }
-    public void setShowOtherLabels(boolean showOtherLabels) { c_setShowOtherLabels(showOtherLabels); }
-    private native void c_setShowOtherLabels(boolean showOtherLabels);
-    private native boolean c_getShowOtherLabels();
+    public boolean getShowCityLabels() { return c_getShowCityLabels(pointer); }
+    public void setShowCityLabels(boolean showCityLabels) { c_setShowCityLabels(pointer, showCityLabels); }
+    private static native void c_setShowCityLabels(long pointer, boolean showCityLabels);
+    private native boolean c_getShowCityLabels(long pointer);
+    public boolean getShowObservatoryLabels() { return c_getShowObservatoryLabels(pointer); }
+    public void setShowObservatoryLabels(boolean showObservatoryLabels) { c_setShowObservatoryLabels(pointer, showObservatoryLabels); }
+    private static native void c_setShowObservatoryLabels(long pointer, boolean showObservatoryLabels);
+    private native boolean c_getShowObservatoryLabels(long pointer);
+    public boolean getShowLandingSiteLabels() { return c_getShowLandingSiteLabels(pointer); }
+    public void setShowLandingSiteLabels(boolean showLandingSiteLabels) { c_setShowLandingSiteLabels(pointer, showLandingSiteLabels); }
+    private static native void c_setShowLandingSiteLabels(long pointer, boolean showLandingSiteLabels);
+    private native boolean c_getShowLandingSiteLabels(long pointer);
+    public boolean getShowCraterLabels() { return c_getShowCraterLabels(pointer); }
+    public void setShowCraterLabels(boolean showCraterLabels) { c_setShowCraterLabels(pointer, showCraterLabels); }
+    private static native void c_setShowCraterLabels(long pointer, boolean showCraterLabels);
+    private native boolean c_getShowCraterLabels(long pointer);
+    public boolean getShowVallisLabels() { return c_getShowVallisLabels(pointer); }
+    public void setShowVallisLabels(boolean showVallisLabels) { c_setShowVallisLabels(pointer, showVallisLabels); }
+    private static native void c_setShowVallisLabels(long pointer, boolean showVallisLabels);
+    private native boolean c_getShowVallisLabels(long pointer);
+    public boolean getShowMonsLabels() { return c_getShowMonsLabels(pointer); }
+    public void setShowMonsLabels(boolean showMonsLabels) { c_setShowMonsLabels(pointer, showMonsLabels); }
+    private static native void c_setShowMonsLabels(long pointer, boolean showMonsLabels);
+    private native boolean c_getShowMonsLabels(long pointer);
+    public boolean getShowPlanumLabels() { return c_getShowPlanumLabels(pointer); }
+    public void setShowPlanumLabels(boolean showPlanumLabels) { c_setShowPlanumLabels(pointer, showPlanumLabels); }
+    private static native void c_setShowPlanumLabels(long pointer, boolean showPlanumLabels);
+    private native boolean c_getShowPlanumLabels(long pointer);
+    public boolean getShowChasmaLabels() { return c_getShowChasmaLabels(pointer); }
+    public void setShowChasmaLabels(boolean showChasmaLabels) { c_setShowChasmaLabels(pointer, showChasmaLabels); }
+    private static native void c_setShowChasmaLabels(long pointer, boolean showChasmaLabels);
+    private native boolean c_getShowChasmaLabels(long pointer);
+    public boolean getShowPateraLabels() { return c_getShowPateraLabels(pointer); }
+    public void setShowPateraLabels(boolean showPateraLabels) { c_setShowPateraLabels(pointer, showPateraLabels); }
+    private static native void c_setShowPateraLabels(long pointer, boolean showPateraLabels);
+    private native boolean c_getShowPateraLabels(long pointer);
+    public boolean getShowMareLabels() { return c_getShowMareLabels(pointer); }
+    public void setShowMareLabels(boolean showMareLabels) { c_setShowMareLabels(pointer, showMareLabels); }
+    private static native void c_setShowMareLabels(long pointer, boolean showMareLabels);
+    private native boolean c_getShowMareLabels(long pointer);
+    public boolean getShowRupesLabels() { return c_getShowRupesLabels(pointer); }
+    public void setShowRupesLabels(boolean showRupesLabels) { c_setShowRupesLabels(pointer, showRupesLabels); }
+    private static native void c_setShowRupesLabels(long pointer, boolean showRupesLabels);
+    private native boolean c_getShowRupesLabels(long pointer);
+    public boolean getShowTesseraLabels() { return c_getShowTesseraLabels(pointer); }
+    public void setShowTesseraLabels(boolean showTesseraLabels) { c_setShowTesseraLabels(pointer, showTesseraLabels); }
+    private static native void c_setShowTesseraLabels(long pointer, boolean showTesseraLabels);
+    private native boolean c_getShowTesseraLabels(long pointer);
+    public boolean getShowRegioLabels() { return c_getShowRegioLabels(pointer); }
+    public void setShowRegioLabels(boolean showRegioLabels) { c_setShowRegioLabels(pointer, showRegioLabels); }
+    private static native void c_setShowRegioLabels(long pointer, boolean showRegioLabels);
+    private native boolean c_getShowRegioLabels(long pointer);
+    public boolean getShowChaosLabels() { return c_getShowChaosLabels(pointer); }
+    public void setShowChaosLabels(boolean showChaosLabels) { c_setShowChaosLabels(pointer, showChaosLabels); }
+    private static native void c_setShowChaosLabels(long pointer, boolean showChaosLabels);
+    private native boolean c_getShowChaosLabels(long pointer);
+    public boolean getShowTerraLabels() { return c_getShowTerraLabels(pointer); }
+    public void setShowTerraLabels(boolean showTerraLabels) { c_setShowTerraLabels(pointer, showTerraLabels); }
+    private static native void c_setShowTerraLabels(long pointer, boolean showTerraLabels);
+    private native boolean c_getShowTerraLabels(long pointer);
+    public boolean getShowAstrumLabels() { return c_getShowAstrumLabels(pointer); }
+    public void setShowAstrumLabels(boolean showAstrumLabels) { c_setShowAstrumLabels(pointer, showAstrumLabels); }
+    private static native void c_setShowAstrumLabels(long pointer, boolean showAstrumLabels);
+    private native boolean c_getShowAstrumLabels(long pointer);
+    public boolean getShowCoronaLabels() { return c_getShowCoronaLabels(pointer); }
+    public void setShowCoronaLabels(boolean showCoronaLabels) { c_setShowCoronaLabels(pointer, showCoronaLabels); }
+    private static native void c_setShowCoronaLabels(long pointer, boolean showCoronaLabels);
+    private native boolean c_getShowCoronaLabels(long pointer);
+    public boolean getShowDorsumLabels() { return c_getShowDorsumLabels(pointer); }
+    public void setShowDorsumLabels(boolean showDorsumLabels) { c_setShowDorsumLabels(pointer, showDorsumLabels); }
+    private static native void c_setShowDorsumLabels(long pointer, boolean showDorsumLabels);
+    private native boolean c_getShowDorsumLabels(long pointer);
+    public boolean getShowFossaLabels() { return c_getShowFossaLabels(pointer); }
+    public void setShowFossaLabels(boolean showFossaLabels) { c_setShowFossaLabels(pointer, showFossaLabels); }
+    private static native void c_setShowFossaLabels(long pointer, boolean showFossaLabels);
+    private native boolean c_getShowFossaLabels(long pointer);
+    public boolean getShowCatenaLabels() { return c_getShowCatenaLabels(pointer); }
+    public void setShowCatenaLabels(boolean showCatenaLabels) { c_setShowCatenaLabels(pointer, showCatenaLabels); }
+    private static native void c_setShowCatenaLabels(long pointer, boolean showCatenaLabels);
+    private native boolean c_getShowCatenaLabels(long pointer);
+    public boolean getShowMensaLabels() { return c_getShowMensaLabels(pointer); }
+    public void setShowMensaLabels(boolean showMensaLabels) { c_setShowMensaLabels(pointer, showMensaLabels); }
+    private static native void c_setShowMensaLabels(long pointer, boolean showMensaLabels);
+    private native boolean c_getShowMensaLabels(long pointer);
+    public boolean getShowRimaLabels() { return c_getShowRimaLabels(pointer); }
+    public void setShowRimaLabels(boolean showRimaLabels) { c_setShowRimaLabels(pointer, showRimaLabels); }
+    private static native void c_setShowRimaLabels(long pointer, boolean showRimaLabels);
+    private native boolean c_getShowRimaLabels(long pointer);
+    public boolean getShowUndaeLabels() { return c_getShowUndaeLabels(pointer); }
+    public void setShowUndaeLabels(boolean showUndaeLabels) { c_setShowUndaeLabels(pointer, showUndaeLabels); }
+    private static native void c_setShowUndaeLabels(long pointer, boolean showUndaeLabels);
+    private native boolean c_getShowUndaeLabels(long pointer);
+    public boolean getShowReticulumLabels() { return c_getShowReticulumLabels(pointer); }
+    public void setShowReticulumLabels(boolean showReticulumLabels) { c_setShowReticulumLabels(pointer, showReticulumLabels); }
+    private static native void c_setShowReticulumLabels(long pointer, boolean showReticulumLabels);
+    private native boolean c_getShowReticulumLabels(long pointer);
+    public boolean getShowPlanitiaLabels() { return c_getShowPlanitiaLabels(pointer); }
+    public void setShowPlanitiaLabels(boolean showPlanitiaLabels) { c_setShowPlanitiaLabels(pointer, showPlanitiaLabels); }
+    private static native void c_setShowPlanitiaLabels(long pointer, boolean showPlanitiaLabels);
+    private native boolean c_getShowPlanitiaLabels(long pointer);
+    public boolean getShowLineaLabels() { return c_getShowLineaLabels(pointer); }
+    public void setShowLineaLabels(boolean showLineaLabels) { c_setShowLineaLabels(pointer, showLineaLabels); }
+    private static native void c_setShowLineaLabels(long pointer, boolean showLineaLabels);
+    private native boolean c_getShowLineaLabels(long pointer);
+    public boolean getShowFluctusLabels() { return c_getShowFluctusLabels(pointer); }
+    public void setShowFluctusLabels(boolean showFluctusLabels) { c_setShowFluctusLabels(pointer, showFluctusLabels); }
+    private static native void c_setShowFluctusLabels(long pointer, boolean showFluctusLabels);
+    private native boolean c_getShowFluctusLabels(long pointer);
+    public boolean getShowFarrumLabels() { return c_getShowFarrumLabels(pointer); }
+    public void setShowFarrumLabels(boolean showFarrumLabels) { c_setShowFarrumLabels(pointer, showFarrumLabels); }
+    private static native void c_setShowFarrumLabels(long pointer, boolean showFarrumLabels);
+    private native boolean c_getShowFarrumLabels(long pointer);
+    public boolean getShowEruptiveCenterLabels() { return c_getShowEruptiveCenterLabels(pointer); }
+    public void setShowEruptiveCenterLabels(boolean showEruptiveCenterLabels) { c_setShowEruptiveCenterLabels(pointer, showEruptiveCenterLabels); }
+    private static native void c_setShowEruptiveCenterLabels(long pointer, boolean showEruptiveCenterLabels);
+    private native boolean c_getShowEruptiveCenterLabels(long pointer);
+    public boolean getShowOtherLabels() { return c_getShowOtherLabels(pointer); }
+    public void setShowOtherLabels(boolean showOtherLabels) { c_setShowOtherLabels(pointer, showOtherLabels); }
+    private static native void c_setShowOtherLabels(long pointer, boolean showOtherLabels);
+    private native boolean c_getShowOtherLabels(long pointer);
 
-    public void setResolution(int resolution) { c_setResolution(resolution); }
-    public int getResolution() { return c_getResolution(); }
-    private native void c_setResolution(int resolution);
-    private native int c_getResolution();
-    public void setStarStyle(int starStyle) { c_setStarStyle(starStyle);}
-    public int getStarStyle() { return c_getStarStyle(); }
-    private native void c_setStarStyle(int starStyle);
-    private native int c_getStarStyle();
-    public void setHudDetail(int hudDetail) { c_setHudDetail(hudDetail); }
-    public int getHudDetail() { return c_getHudDetail(); }
-    private native void c_setHudDetail(int hudDetail);
-    private native int c_getHudDetail();
-    public void setTimeZone(int timeZone) { c_setTimeZone(timeZone); }
-    public int getTimeZone() { return c_getTimeZone(); }
-    private native void c_setTimeZone(int TimeZone);
-    private native int c_getTimeZone();
-    public void setDateFormat(int dateFormat) { c_setDateFormat(dateFormat); }
-    public int getDateFormat() { return c_getDateFormat(); }
-    private native void c_setDateFormat(int DateFormat);
-    private native int c_getDateFormat();
+    public void setResolution(int resolution) { c_setResolution(pointer, resolution); }
+    public int getResolution() { return c_getResolution(pointer); }
+    private static native double c_setResolution(long pointer, int resolution);
+    private static native int c_getResolution(long pointer);
+    public void setStarStyle(int starStyle) { c_setStarStyle(pointer, starStyle);}
+    public int getStarStyle() { return c_getStarStyle(pointer); }
+    private static native double c_setStarStyle(long pointer, int starStyle);
+    private static native int c_getStarStyle(long pointer);
+    public void setHudDetail(int hudDetail) { c_setHudDetail(pointer, hudDetail); }
+    public int getHudDetail() { return c_getHudDetail(pointer); }
+    private static native double c_setHudDetail(long pointer, int hudDetail);
+    private static native int c_getHudDetail(long pointer);
+    public void setTimeZone(int timeZone) { c_setTimeZone(pointer, timeZone); }
+    public int getTimeZone() { return c_getTimeZone(pointer); }
+    private static native double c_setTimeZone(long pointer, int TimeZone);
+    private static native int c_getTimeZone(long pointer);
+    public void setDateFormat(int dateFormat) { c_setDateFormat(pointer, dateFormat); }
+    public int getDateFormat() { return c_getDateFormat(pointer); }
+    private static native double c_setDateFormat(long pointer, int DateFormat);
+    private static native int c_getDateFormat(long pointer);
 
-    public void setAmbientLightLevel(double ambientLightLevel) { c_setAmbientLightLevel(ambientLightLevel); }
-    public double getAmbientLightLevel() { return c_getAmbientLightLevel(); }
-    private native void c_setAmbientLightLevel(double ambientLightLevel);
-    private native double c_getAmbientLightLevel();
+    public void setAmbientLightLevel(double ambientLightLevel) { c_setAmbientLightLevel(pointer, ambientLightLevel); }
+    public double getAmbientLightLevel() { return c_getAmbientLightLevel(pointer); }
+    private static native double c_setAmbientLightLevel(long pointer, double ambientLightLevel);
+    private static native double c_getAmbientLightLevel(long pointer);
 
-    public void setFaintestVisible(double faintestVisible) { c_setFaintestVisible(faintestVisible); }
-    public double getFaintestVisible() { return c_getFaintestVisible(); }
-    private native void c_setFaintestVisible(double faintestVisible);
-    private native double c_getFaintestVisible();
+    public void setFaintestVisible(double faintestVisible) { c_setFaintestVisible(pointer, faintestVisible); }
+    public double getFaintestVisible() { return c_getFaintestVisible(pointer); }
+    private static native double c_setFaintestVisible(long pointer, double faintestVisible);
+    private static native double c_getFaintestVisible(long pointer);
 
-    public void setGalaxyBrightness(double galaxyBrightness) { c_setGalaxyBrightness(galaxyBrightness); }
-    public double getGalaxyBrightness() { return c_getGalaxyBrightness(); }
-    private native void c_setGalaxyBrightness(double galaxyBrightness);
-    private native double c_getGalaxyBrightness();
+    public void setGalaxyBrightness(double galaxyBrightness) { c_setGalaxyBrightness(pointer, galaxyBrightness); }
+    public double getGalaxyBrightness() { return c_getGalaxyBrightness(pointer); }
+    private static native double c_setGalaxyBrightness(long pointer, double galaxyBrightness);
+    private static native double c_getGalaxyBrightness(long pointer);
 
-    public void setMinimumFeatureSize(double minimumFeatureSize) { c_setMinimumFeatureSize(minimumFeatureSize); }
-    public double getMinimumFeatureSize() { return c_geMinimumFeatureSize(); }
-    private native void c_setMinimumFeatureSize(double minimumFeatureSize);
-    private native double c_geMinimumFeatureSize();
+    public void setMinimumFeatureSize(double minimumFeatureSize) { c_setMinimumFeatureSize(pointer, minimumFeatureSize); }
+    public double getMinimumFeatureSize() { return c_getMinimumFeatureSize(pointer); }
+    private static native double c_setMinimumFeatureSize(long pointer, double minimumFeatureSize);
+    private static native double c_getMinimumFeatureSize(long pointer);
 
     public boolean getShowBodyAxes() { return c_getReferenceMarkEnabled(pointer, "body axes"); }
     public void setShowBodyAxes(boolean value) { c_toggleReferenceMarkEnabled(pointer, "body axes"); }

@@ -14,9 +14,8 @@
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniversalCoord_c_1destroy(JNIEnv *env,
-                                                                          jobject thiz) {
-    UniversalCoord *ptr = (UniversalCoord *)env->GetLongField(thiz, cucPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaUniversalCoord_c_1destroy(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto ptr = (UniversalCoord *)pointer;
     delete ptr;
 }
 

@@ -14,15 +14,15 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaStar_c_1getWebInfoURL(JNIEnv *env, jobject thiz) {
-    Star *star = (Star *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaStar_c_1getWebInfoURL(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto star = (Star *)pointer;
     return env->NewStringUTF(star->getInfoURL().c_str());
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaStar_c_1getPositionAtTime(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaStar_c_1getPositionAtTime(JNIEnv *env, jclass clazz, jlong pointer,
                                                                           jdouble julian_day) {
-    Star *star = (Star *)env->GetLongField(thiz, caoPtrFieldID);
+    auto star = (Star *)pointer;
     return (jlong)new UniversalCoord(star->getPosition(julian_day));
 }

@@ -16,22 +16,22 @@ public class CelestiaRotationModel {
 
     CelestiaRotationModel(long ptr) { pointer = ptr; }
 
-    public Boolean isPeriodic() { return c_isPeriodic(); }
-    public double getPeriod() { return c_getPeriod(); }
-    public double getValidBeginTime() { return c_getValidBeginTime(); }
-    public double getValidEndTime() { return c_getValidEndTime(); }
+    public Boolean isPeriodic() { return c_isPeriodic(pointer); }
+    public double getPeriod() { return c_getPeriod(pointer); }
+    public double getValidBeginTime() { return c_getValidBeginTime(pointer); }
+    public double getValidEndTime() { return c_getValidEndTime(pointer); }
 
-    public CelestiaVector getAngularVelocityAtTime(double julianDay) { return c_getAngularVelocityAtTime(julianDay); }
-    public CelestiaVector getEquatorOrientationAtTime(double julianDay) { return c_getEquatorOrientationAtTime(julianDay); }
-    public CelestiaVector getSpinAtTime(double julianDay) { return c_getSpinAtTime(julianDay); }
+    public CelestiaVector getAngularVelocityAtTime(double julianDay) { return c_getAngularVelocityAtTime(pointer, julianDay); }
+    public CelestiaVector getEquatorOrientationAtTime(double julianDay) { return c_getEquatorOrientationAtTime(pointer, julianDay); }
+    public CelestiaVector getSpinAtTime(double julianDay) { return c_getSpinAtTime(pointer, julianDay); }
 
-    private native boolean c_isPeriodic();
-    private native double c_getPeriod();
-    private native double c_getValidBeginTime();
-    private native double c_getValidEndTime();
+    private static native boolean c_isPeriodic(long pointer);
+    private static native double c_getPeriod(long pointer);
+    private static native double c_getValidBeginTime(long pointer);
+    private static native double c_getValidEndTime(long pointer);
 
-    private native CelestiaVector c_getAngularVelocityAtTime(double julianDay);
-    private native CelestiaVector c_getEquatorOrientationAtTime(double julianDay);
-    private native CelestiaVector c_getSpinAtTime(double julianDay);
+    private static native CelestiaVector c_getAngularVelocityAtTime(long pointer, double julianDay);
+    private static native CelestiaVector c_getEquatorOrientationAtTime(long pointer, double julianDay);
+    private static native CelestiaVector c_getSpinAtTime(long pointer, double julianDay);
 
 }

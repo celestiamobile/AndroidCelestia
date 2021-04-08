@@ -14,21 +14,21 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSO_c_1getWebInfoURL(JNIEnv *env, jobject thiz) {
-    DeepSkyObject *dso = (DeepSkyObject *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaDSO_c_1getWebInfoURL(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto dso = (DeepSkyObject *)pointer;
     return env->NewStringUTF(dso->getInfoURL().c_str());
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSO_c_1getType(JNIEnv *env, jobject thiz) {
-    DeepSkyObject *dso = (DeepSkyObject *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaDSO_c_1getType(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto dso = (DeepSkyObject *)pointer;
     return env->NewStringUTF(dso->getType());
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSO_c_1getPosition(JNIEnv *env, jobject thiz) {
-    DeepSkyObject *dso = (DeepSkyObject *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaDSO_c_1getPosition(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto dso = (DeepSkyObject *)pointer;
     return createVectorForVector3d(env, dso->getPosition());
 }

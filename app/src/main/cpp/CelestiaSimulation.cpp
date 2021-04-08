@@ -17,37 +17,30 @@
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getSelection(JNIEnv *env,
-                                                                           jobject thiz) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getSelection(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto sim = (Simulation *)pointer;
     Selection sel = sim->getSelection();
     return (jlong)new Selection(sel);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1setSelection(JNIEnv *env,
-                                                                           jobject thiz,
-                                                                           jlong ptr) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1setSelection(JNIEnv *env, jclass clazz, jlong pointer, jlong ptr) {
+    auto sim = (Simulation *)pointer;
     sim->setSelection(Selection(*(Selection *)ptr));
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getUniverse(JNIEnv *env,
-                                                                          jobject thiz) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getUniverse(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto sim = (Simulation *)pointer;
     return (jlong)sim->getUniverse();
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1completionForText(JNIEnv *env,
-                                                                                jobject thiz,
-                                                                                jstring text,
-                                                                                jint limit) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1completionForText(JNIEnv *env, jclass clazz, jlong pointer, jstring text, jint limit) {
+    auto sim = (Simulation *)pointer;
     const char *str = env->GetStringUTFChars(text, nullptr);
     std::vector<std::string> results = sim->getObjectCompletion(str);
     env->ReleaseStringUTFChars(text, str);
@@ -64,9 +57,8 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1completionForText(
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1findObject(JNIEnv *env, jobject thiz,
-                                                                         jstring name) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1findObject(JNIEnv *env, jclass clazz, jlong pointer, jstring name) {
+    auto sim = (Simulation *)pointer;
     const char *str = env->GetStringUTFChars(name, nullptr);
     Selection *sel = new Selection(sim->findObject(str, true));
     env->ReleaseStringUTFChars(name, str);
@@ -75,44 +67,37 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1findObject(JNIEnv 
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getStarBrowser(JNIEnv *env,
-                                                                             jobject thiz,
-                                                                             jint kind) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getStarBrowser(JNIEnv *env, jclass clazz, jlong pointer, jint kind) {
+    auto sim = (Simulation *)pointer;
     return (jlong)new StarBrowser(sim, (int)kind);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1reverseObserverOrientation(
-        JNIEnv *env, jobject thiz) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1reverseObserverOrientation(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto sim = (Simulation *)pointer;
     sim->reverseObserverOrientation();
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getTime(JNIEnv *env, jobject thiz) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getTime(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto sim = (Simulation *)pointer;
     return sim->getTime();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1setTime(JNIEnv *env, jobject thiz,
-                                                                      jdouble time) {
-    Simulation *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1setTime(JNIEnv *env, jclass clazz, jlong pointer, jdouble time) {
+    auto sim = (Simulation *)pointer;
     sim->setTime(time);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToEclipse(JNIEnv *env, jobject thiz,
-                                                                          jdouble time,
-                                                                          jlong ref,
-                                                                          jlong target) {
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToEclipse(JNIEnv *env, jclass clazz, jlong pointer, jdouble time, jlong ref, jlong target) {
     using namespace celmath;
-    auto *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+    auto sim = (Simulation *)pointer;
     sim->setTime(time);
     sim->setFrame(ObserverFrame::PhaseLock, *(Selection *)target, *(Selection *)ref);
     sim->update(0);
@@ -124,8 +109,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToEclipse(JNIEnv
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getActiveObserver(JNIEnv *env,
-                                                                                jobject thiz) {
-    auto *sim = (Simulation *)env->GetLongField(thiz, csiPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1getActiveObserver(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto sim = (Simulation *)pointer;
     return (jlong)sim->getActiveObserver();
 }

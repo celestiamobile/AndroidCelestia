@@ -14,7 +14,7 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaLocation_c_1getName(JNIEnv *env, jobject thiz) {
-    Location *location = (Location *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaLocation_c_1getName(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto location = (Location *)pointer;
     return env->NewStringUTF(location->getName(true).c_str());
 }

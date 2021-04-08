@@ -22,19 +22,19 @@ public class CelestiaDSOCatalog {
 
     @NonNull
     public String getDSOName(CelestiaDSO dso) {
-        return c_getDSOName(dso.pointer);
+        return c_getDSOName(pointer, dso.pointer);
     }
 
     public int getCount() {
-        return c_getCount();
+        return c_getCount(pointer);
     }
 
     public CelestiaDSO getDSO(int index) {
-        return new CelestiaDSO(c_getDSO(index));
+        return new CelestiaDSO(c_getDSO(pointer, index));
     }
 
     // C functions
-    private native String c_getDSOName(long pointer);
-    private native int c_getCount();
-    private native long c_getDSO(int index);
+    private static native String c_getDSOName(long ptr, long pointer);
+    private static native int c_getCount(long ptr);
+    private static native long c_getDSO(long ptr, int index);
 }

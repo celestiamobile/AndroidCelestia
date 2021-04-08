@@ -21,22 +21,22 @@ public class CelestiaDSO extends CelestiaAstroObject {
 
     @Nullable
     String getWebInfoURL() {
-        String web = c_getWebInfoURL();
+        String web = c_getWebInfoURL(pointer);
         if (web.isEmpty())
             return null;
-        return c_getWebInfoURL();
+        return c_getWebInfoURL(pointer);
     }
 
     @NonNull
     public String getType() {
-        return c_getType();
+        return c_getType(pointer);
     }
 
     @NonNull
-    public CelestiaVector getPosition() { return c_getPosition(); }
+    public CelestiaVector getPosition() { return c_getPosition(pointer); }
 
     // C functions
-    private native String c_getWebInfoURL();
-    private native String c_getType();
-    private native CelestiaVector c_getPosition();
+    private static native String c_getWebInfoURL(long pointer);
+    private static native String c_getType(long pointer);
+    private static native CelestiaVector c_getPosition(long pointer);
 }

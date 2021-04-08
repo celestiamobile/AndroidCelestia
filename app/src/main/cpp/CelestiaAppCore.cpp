@@ -23,25 +23,6 @@
 
 #include <android/keycodes.h>
 
-jclass cacClz = nullptr;
-jfieldID cacPtrFieldID = nullptr;
-jclass csiClz = nullptr;
-jfieldID csiPtrFieldID = nullptr;
-jclass cseClz = nullptr;
-jfieldID csePtrFieldID = nullptr;
-jclass caoClz = nullptr;
-jfieldID caoPtrFieldID = nullptr;
-jclass cunClz = nullptr;
-jfieldID cunPtrFieldID = nullptr;
-
-jclass cscClz = nullptr;
-jfieldID cscPtrFieldID = nullptr;
-jclass cdcClz = nullptr;
-jfieldID cdcPtrFieldID = nullptr;
-
-jclass csbClz = nullptr;
-jfieldID csbPtrFieldID = nullptr;
-
 jclass cbClz = nullptr;
 jmethodID cbiMethodID = nullptr;
 jclass clClz = nullptr;
@@ -69,18 +50,6 @@ jmethodID cvyMethodID = nullptr;
 jmethodID cvzMethodID = nullptr;
 jmethodID cvwMethodID = nullptr;
 
-// orbit
-jclass coClz = nullptr;
-jfieldID coPtrFieldID = nullptr;
-
-// rotation model
-jclass crmClz = nullptr;
-jfieldID crmPtrFieldID = nullptr;
-
-// universal coord
-jclass cucClz = nullptr;
-jfieldID cucPtrFieldID = nullptr;
-
 // destination
 jclass cdClz = nullptr;
 jmethodID cdInitMethodID = nullptr;
@@ -91,35 +60,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     JNIEnv* env;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
         return JNI_ERR;
-
-    // Find some commonly used classes and fields
-    jclass cac = env->FindClass("space/celestia/mobilecelestia/core/CelestiaAppCore");
-    cacClz = (jclass)env->NewGlobalRef(cac);
-    cacPtrFieldID = env->GetFieldID(cacClz, "pointer", "J");
-
-    jclass csi = env->FindClass("space/celestia/mobilecelestia/core/CelestiaSimulation");
-    csiClz = (jclass)env->NewGlobalRef(csi);
-    csiPtrFieldID = env->GetFieldID(csiClz, "pointer", "J");
-
-    jclass cse = env->FindClass("space/celestia/mobilecelestia/core/CelestiaSelection");
-    cseClz = (jclass)env->NewGlobalRef(cse);
-    csePtrFieldID = env->GetFieldID(cseClz, "pointer", "J");
-
-    jclass cao = env->FindClass("space/celestia/mobilecelestia/core/CelestiaAstroObject");
-    caoClz = (jclass)env->NewGlobalRef(cao);
-    caoPtrFieldID = env->GetFieldID(caoClz, "pointer", "J");
-
-    jclass cun = env->FindClass("space/celestia/mobilecelestia/core/CelestiaUniverse");
-    cunClz = (jclass)env->NewGlobalRef(cun);
-    cunPtrFieldID = env->GetFieldID(cunClz, "pointer", "J");
-
-    jclass csc = env->FindClass("space/celestia/mobilecelestia/core/CelestiaStarCatalog");
-    cscClz = (jclass)env->NewGlobalRef(csc);
-    cscPtrFieldID = env->GetFieldID(cscClz, "pointer", "J");
-
-    jclass cdc = env->FindClass("space/celestia/mobilecelestia/core/CelestiaDSOCatalog");
-    cdcClz = (jclass)env->NewGlobalRef(cdc);
-    cdcPtrFieldID = env->GetFieldID(cdcClz, "pointer", "J");
 
     jclass cb = env->FindClass("space/celestia/mobilecelestia/core/CelestiaBody");
     cbClz = (jclass)env->NewGlobalRef(cb);
@@ -133,10 +73,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     csClz = (jclass)env->NewGlobalRef(cs);
     csiMethodID = env->GetMethodID(csClz, "<init>", "(J)V");
 
-    jclass csb = env->FindClass("space/celestia/mobilecelestia/core/CelestiaStarBrowser");
-    csbClz = (jclass)env->NewGlobalRef(csb);
-    csbPtrFieldID = env->GetFieldID(csbClz, "pointer", "J");
-
     jclass cscript = env->FindClass("space/celestia/mobilecelestia/core/CelestiaScript");
     cscriptClz = (jclass)env->NewGlobalRef(cscript);
     cscriptiMethodID = env->GetMethodID(cscriptClz, "<init>", "(Ljava/lang/String;Ljava/lang/String;)V");
@@ -149,18 +85,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     cvyMethodID = env->GetMethodID(cvClz, "getY", "()D");
     cvzMethodID = env->GetMethodID(cvClz, "getZ", "()D");
     cvwMethodID = env->GetMethodID(cvClz, "getW", "()D");
-
-    jclass co = env->FindClass("space/celestia/mobilecelestia/core/CelestiaOrbit");
-    coClz = (jclass)env->NewGlobalRef(co);
-    coPtrFieldID = env->GetFieldID(coClz, "pointer", "J");
-
-    jclass crm = env->FindClass("space/celestia/mobilecelestia/core/CelestiaRotationModel");
-    crmClz = (jclass)env->NewGlobalRef(crm);
-    crmPtrFieldID = env->GetFieldID(crmClz, "pointer", "J");
-
-    jclass cuc = env->FindClass("space/celestia/mobilecelestia/core/CelestiaUniversalCoord");
-    cucClz = (jclass)env->NewGlobalRef(cuc);
-    cucPtrFieldID = env->GetFieldID(cucClz, "pointer", "J");
 
     jclass cd = env->FindClass("space/celestia/mobilecelestia/core/CelestiaDestination");
     cdClz = (jclass)env->NewGlobalRef(cd);
@@ -657,15 +581,15 @@ static uint64_t bit_mask_value_update(jboolean value, uint64_t bit, uint64_t set
 }
 
 #define RENDERMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag (JNIEnv *env, jobject thiz) { \
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag (JNIEnv *env, jclass clazz, jlong pointer) { \
+    auto core = (CelestiaCore *)pointer; \
     return (jboolean)(((core->getRenderer()->getRenderFlags() & Renderer::Show##flag) == 0) ? JNI_FALSE : JNI_TRUE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setShow##flag (JNIEnv *env, jobject thiz, \
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setShow##flag (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    auto core = (CelestiaCore *)pointer; \
     core->getRenderer()->setRenderFlags(bit_mask_value_update(value, Renderer::Show##flag, core->getRenderer()->getRenderFlags())); \
 } \
 
@@ -705,15 +629,15 @@ RENDERMETHODS(Ecliptic)
 RENDERMETHODS(TintedIllumination)
 
 #define LABELMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag##Labels (JNIEnv *env, jobject thiz) { \
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer) { \
+    auto core = (CelestiaCore *)pointer; \
     return (jboolean)(((core->getRenderer()->getLabelMode() & Renderer::flag##Labels) == 0) ? JNI_FALSE : JNI_TRUE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setShow##flag##Labels (JNIEnv *env, jobject thiz, \
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    auto core = (CelestiaCore *)pointer; \
     core->getRenderer()->setLabelMode((int)bit_mask_value_update(value, Renderer::flag##Labels, core->getRenderer()->getLabelMode())); \
 } \
 
@@ -735,15 +659,15 @@ LABELMETHODS(MinorMoon)
 LABELMETHODS(I18nConstellation)
 
 #define ORBITMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag##Orbits (JNIEnv *env, jobject thiz) { \
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag##Orbits (JNIEnv *env, jclass clazz, jlong pointer) { \
+    auto core = (CelestiaCore *)pointer; \
     return (jboolean)(((core->getRenderer()->getOrbitMask() & Body::flag) == 0) ? JNI_FALSE : JNI_TRUE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setShow##flag##Orbits (JNIEnv *env, jobject thiz, \
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setShow##flag##Orbits (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    auto core = (CelestiaCore *)pointer; \
     core->getRenderer()->setOrbitMask((int)bit_mask_value_update(value, Body::flag, core->getRenderer()->getOrbitMask())); \
 } \
 
@@ -757,15 +681,15 @@ ORBITMETHODS(DwarfPlanet)
 ORBITMETHODS(MinorMoon)
 
 #define FEATUREMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag##Labels (JNIEnv *env, jobject thiz) { \
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer) { \
+    auto core = (CelestiaCore *)pointer; \
     return (jboolean)(((core->getSimulation()->getObserver().getLocationFilter() & Location::flag) == 0) ? JNI_FALSE : JNI_TRUE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setShow##flag##Labels (JNIEnv *env, jobject thiz, \
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID); \
+    auto core = (CelestiaCore *)pointer; \
     core->getSimulation()->getObserver().setLocationFilter((int)bit_mask_value_update(value, Location::flag, core->getSimulation()->getObserver().getLocationFilter())); \
 } \
 
@@ -801,84 +725,74 @@ FEATUREMETHODS(EruptiveCenter)
 FEATUREMETHODS(Other)extern "C"
 
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setResolution(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setResolution(JNIEnv *env, jclass clazz, jlong pointer,
                                                                          jint value) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+    auto core = (CelestiaCore *)pointer;
     core->getRenderer()->setResolution(value);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getResolution(JNIEnv *env,
-                                                                         jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getResolution(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
     return core->getRenderer()->getResolution();
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setHudDetail(JNIEnv *env, jobject thiz,
-                                                                         jint value) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setHudDetail(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
+    auto core = (CelestiaCore *)pointer;
     core->setHudDetail(value);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getHudDetail(JNIEnv *env,
-                                                                         jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getHudDetail(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
     return core->getHudDetail();
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setTimeZone(JNIEnv *env, jobject thiz,
-                                                                        jint value) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setTimeZone(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
+    auto core = (CelestiaCore *)pointer;
     core->setTimeZoneBias(0 == value ? 1 : 0);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getTimeZone(JNIEnv *env,
-                                                                        jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getTimeZone(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
     return core->getTimeZoneBias() == 0 ? 1 : 0;
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setDateFormat(JNIEnv *env, jobject thiz,
-                                                                       jint value) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setDateFormat(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
+    auto core = (CelestiaCore *)pointer;
     core->setDateFormat((astro::Date::Format)value);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getDateFormat(JNIEnv *env,
-                                                                       jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getDateFormat(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
     return core->getDateFormat();
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setStarStyle(JNIEnv *env, jobject thiz,
-                                                                         jint value) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setStarStyle(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
+    auto core = (CelestiaCore *)pointer;
     core->getRenderer()->setStarStyle((Renderer::StarStyle)value);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getStarStyle(JNIEnv *env,
-                                                                         jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getStarStyle(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
     return core->getRenderer()->getStarStyle();
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getRenderInfo(JNIEnv *env, jclass clazz,
-                                                                         jlong ptr) {
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getRenderInfo(JNIEnv *env, jclass clazz, jlong ptr) {
     auto core = (CelestiaCore *)ptr;
     return env->NewStringUTF(Helper::getRenderInfo(core->getRenderer()).c_str());
 }
@@ -896,27 +810,22 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1saveScreenshot(JNIEnv
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setAmbientLightLevel(JNIEnv *env,
-                                                                                jobject thiz,
-                                                                                jdouble ambient_light_level) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setAmbientLightLevel(JNIEnv *env, jclass clazz, jlong pointer, jdouble ambient_light_level) {
+    auto core = (CelestiaCore *)pointer;
     core->getRenderer()->setAmbientLightLevel((float)ambient_light_level);
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getAmbientLightLevel(JNIEnv *env,
-                                                                                jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getAmbientLightLevel(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
     return core->getRenderer()->getAmbientLightLevel();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setFaintestVisible(JNIEnv *env,
-                                                                              jobject thiz,
-                                                                              jdouble faintest_visible) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setFaintestVisible(JNIEnv *env, jclass clazz, jlong pointer, jdouble faintest_visible) {
+    auto core = (CelestiaCore *)pointer;
     if ((core->getRenderer()->getRenderFlags() & Renderer::ShowAutoMag) == 0)
     {
         core->setFaintest((float)faintest_visible);
@@ -930,9 +839,8 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setFaintestVisible(JN
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getFaintestVisible(JNIEnv *env,
-                                                                              jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getFaintestVisible(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
     if ((core->getRenderer()->getRenderFlags() & Renderer::ShowAutoMag) == 0)
     {
         return core->getSimulation()->getFaintestVisible();
@@ -945,33 +853,27 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getFaintestVisible(JN
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setGalaxyBrightness(JNIEnv *env,
-                                                                               jobject thiz,
-                                                                               jdouble galaxy_brightness) {
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setGalaxyBrightness(JNIEnv *env, jclass clazz, jlong pointer, jdouble galaxy_brightness) {
     Galaxy::setLightGain((float)galaxy_brightness);
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getGalaxyBrightness(JNIEnv *env,
-                                                                               jobject thiz) {
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getGalaxyBrightness(JNIEnv *env, jclass clazz, jlong pointer) {
     return Galaxy::getLightGain();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setMinimumFeatureSize(JNIEnv *env,
-                                                                                 jobject thiz,
-                                                                                 jdouble minimum_feature_size) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setMinimumFeatureSize(JNIEnv *env, jclass clazz, jlong pointer, jdouble minimum_feature_size) {
+    auto core = (CelestiaCore *)pointer;
     core->getRenderer()->setMinimumFeatureSize((float)minimum_feature_size);
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1geMinimumFeatureSize(JNIEnv *env,
-                                                                                jobject thiz) {
-    CelestiaCore *core = (CelestiaCore *)env->GetLongField(thiz, cacPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getMinimumFeatureSize(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
     return core->getRenderer()->getMinimumFeatureSize();
 }
 

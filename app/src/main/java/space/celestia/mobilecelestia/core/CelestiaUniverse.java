@@ -42,14 +42,14 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
     @NonNull
     public CelestiaStarCatalog getStarCatalog() {
         if (starCatalog == null)
-            starCatalog = new CelestiaStarCatalog(c_getStarCatalog());
+            starCatalog = new CelestiaStarCatalog(c_getStarCatalog(pointer));
         return starCatalog;
     }
 
     @NonNull
     public CelestiaDSOCatalog getDSOCatalog() {
         if (dsoCatalog == null)
-            dsoCatalog = new CelestiaDSOCatalog(c_getDSOCatalog());
+            dsoCatalog = new CelestiaDSOCatalog(c_getDSOCatalog(pointer));
         return dsoCatalog;
     }
 
@@ -76,15 +76,15 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
 
         if (obj == null) { return null; }
         if (obj instanceof CelestiaStar)
-            return CelestiaBrowserItem.fromJsonString(c_getChildrenForStar(obj.pointer), this);
+            return CelestiaBrowserItem.fromJsonString(c_getChildrenForStar(pointer, obj.pointer), this);
         if (obj instanceof CelestiaBody)
-            return CelestiaBrowserItem.fromJsonString(c_getChildrenForBody(obj.pointer), this);
+            return CelestiaBrowserItem.fromJsonString(c_getChildrenForBody(pointer, obj.pointer), this);
 
         return null;
     }
 
     public @NonNull CelestiaSelection findObject(@NonNull String name) {
-        return new CelestiaSelection(c_findObject(name));
+        return new CelestiaSelection(c_findObject(pointer, name));
     }
 
     public void mark(@NonNull CelestiaSelection selection, int marker) {
@@ -100,11 +100,11 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
     }
 
     // C functions
-    private native long c_getStarCatalog();
-    private native long c_getDSOCatalog();
-    private native String c_getChildrenForStar(long pointer);
-    private native String c_getChildrenForBody(long pointer);
-    private native long c_findObject(String name);
+    private static native long c_getStarCatalog(long ptr);
+    private static native long c_getDSOCatalog(long ptr);
+    private static native String c_getChildrenForStar(long ptr, long pointer);
+    private static native String c_getChildrenForBody(long ptr, long pointer);
+    private static native long c_findObject(long ptr, String name);
 
     private static native void c_mark(long ptr, long selection, int marker);
     private static native void c_unmark(long ptr, long selection);

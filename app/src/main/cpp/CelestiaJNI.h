@@ -16,25 +16,6 @@
 #include <pthread.h>
 
 extern "C" {
-extern jclass cacClz;
-extern jfieldID cacPtrFieldID;
-extern jclass csiClz;
-extern jfieldID csiPtrFieldID;
-extern jclass cseClz;
-extern jfieldID csePtrFieldID;
-extern jclass caoClz;
-extern jfieldID caoPtrFieldID;
-extern jclass cunClz;
-extern jfieldID cunPtrFieldID;
-
-extern jclass cscClz;
-extern jfieldID cscPtrFieldID;
-extern jclass cdcClz;
-extern jfieldID cdcPtrFieldID;
-
-extern jclass csbClz;
-extern jfieldID csbPtrFieldID;
-
 extern jclass cbClz;
 extern jmethodID cbiMethodID;
 extern jclass clClz;
@@ -61,18 +42,6 @@ extern jmethodID cvxMethodID;
 extern jmethodID cvyMethodID;
 extern jmethodID cvzMethodID;
 extern jmethodID cvwMethodID;
-
-// orbit
-extern jclass coClz;
-extern jfieldID coPtrFieldID;
-
-// rotation model
-extern jclass crmClz;
-extern jfieldID crmPtrFieldID;
-
-// universal coord
-extern jclass cucClz;
-extern jfieldID cucPtrFieldID;
 
 // universal destination
 extern jclass cdClz;

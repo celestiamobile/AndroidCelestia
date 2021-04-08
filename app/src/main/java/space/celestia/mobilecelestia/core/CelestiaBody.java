@@ -38,63 +38,63 @@ public class CelestiaBody extends CelestiaAstroObject {
         super(ptr);
     }
 
-    public int getType() { return c_getType(); }
+    public int getType() { return c_getType(pointer); }
 
     @NonNull
     public String getName() {
-        return c_getName();
+        return c_getName(pointer);
     }
 
-    public boolean hasRings() { return c_hasRings(); }
-    public boolean hasAtmosphere() { return  c_hasAtmosphere(); }
-    public boolean isEllipsoid() { return c_isEllipsoid(); }
-    public float getRadius() { return c_getRadius(); }
+    public boolean hasRings() { return c_hasRings(pointer); }
+    public boolean hasAtmosphere() { return  c_hasAtmosphere(pointer); }
+    public boolean isEllipsoid() { return c_isEllipsoid(pointer); }
+    public float getRadius() { return c_getRadius(pointer); }
 
     @Nullable
     String getWebInfoURL() {
-        String web = c_getWebInfoURL();
+        String web = c_getWebInfoURL(pointer);
         if (web.isEmpty())
             return null;
-        return c_getWebInfoURL();
+        return c_getWebInfoURL(pointer);
     }
 
     @NonNull
     public CelestiaOrbit getOrbitAtTime(double julianDay) {
-        return new CelestiaOrbit(c_getOrbitAtTime(julianDay));
+        return new CelestiaOrbit(c_getOrbitAtTime(pointer, julianDay));
     }
 
     @NonNull
     public CelestiaRotationModel getRotationModelAtTime(double julianDay) {
-        return new CelestiaRotationModel(c_getRotationModelAtTime(julianDay));
+        return new CelestiaRotationModel(c_getRotationModelAtTime(pointer, julianDay));
     }
 
     @Nullable
     public CelestiaPlanetarySystem getSystem() {
-        long ptr = c_getPlanetarySystem();
+        long ptr = c_getPlanetarySystem(pointer);
         if (ptr == 0)
             return null;
         return new CelestiaPlanetarySystem(ptr);
     }
 
     public @NonNull List<String> getAlternateSurfaceNames() {
-        List<String> results = c_getAlternateSurfaceNames();
+        List<String> results = c_getAlternateSurfaceNames(pointer);
         if (results == null)
             return Collections.emptyList();
         return results;
     }
 
     // C functions
-    private native int c_getType();
-    private native String c_getName();
-    private native boolean c_hasRings();
-    private native boolean c_hasAtmosphere();
-    private native boolean c_isEllipsoid();
-    private native float c_getRadius();
+    private static native int c_getType(long pointer);
+    private static native String c_getName(long pointer);
+    private static native boolean c_hasRings(long pointer);
+    private static native boolean c_hasAtmosphere(long pointer);
+    private static native boolean c_isEllipsoid(long pointer);
+    private static native float c_getRadius(long pointer);
 
-    private native String c_getWebInfoURL();
+    private static native String c_getWebInfoURL(long pointer);
 
-    private native long c_getOrbitAtTime(double julianDay);
-    private native long c_getRotationModelAtTime(double julianDay);
-    private native long c_getPlanetarySystem();
-    private native List<String> c_getAlternateSurfaceNames();
+    private static native long c_getOrbitAtTime(long pointer, double julianDay);
+    private static native long c_getRotationModelAtTime(long pointer, double julianDay);
+    private static native long c_getPlanetarySystem(long pointer);
+    private static native List<String> c_getAlternateSurfaceNames(long pointer);
 }

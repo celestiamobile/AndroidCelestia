@@ -21,43 +21,43 @@ public class CelestiaSimulation {
 
     public @NonNull
     CelestiaSelection getSelection() {
-        return new CelestiaSelection(c_getSelection());
+        return new CelestiaSelection(c_getSelection(pointer));
     }
 
     public void setSelection(@NonNull CelestiaSelection selection) {
-        c_setSelection(selection.pointer);
+        c_setSelection(pointer, selection.pointer);
     }
 
     public @NonNull List<String> completionForText(@NonNull String text, int limit) {
-        return c_completionForText(text, limit);
+        return c_completionForText(pointer, text, limit);
     }
 
     public @NonNull CelestiaSelection findObject(@NonNull String name) {
-        return new CelestiaSelection(c_findObject(name));
+        return new CelestiaSelection(c_findObject(pointer, name));
     }
 
     public @NonNull
     CelestiaUniverse getUniverse() {
         if (universe == null)
-            universe = new CelestiaUniverse(c_getUniverse());
+            universe = new CelestiaUniverse(c_getUniverse(pointer));
         return universe;
     }
 
     public @NonNull
     CelestiaStarBrowser getStarBrowser(int kind) {
-        return new CelestiaStarBrowser(c_getStarBrowser(kind));
+        return new CelestiaStarBrowser(c_getStarBrowser(pointer, kind));
     }
 
     public void reverseObserverOrientation() {
-        c_reverseObserverOrientation();
+        c_reverseObserverOrientation(pointer);
     }
 
     protected CelestiaSimulation(long ptr) {
         pointer = ptr;
     }
 
-    public double getTime() { return c_getTime(); }
-    public void setTime(double time) { c_setTime(time); }
+    public double getTime() { return c_getTime(pointer); }
+    public void setTime(double time) { c_setTime(pointer, time); }
 
     public void goToEclipse(CelestiaEclipseFinder.Eclipse eclipse) {
         CelestiaPlanetarySystem system = eclipse.receiver.getSystem();
@@ -70,11 +70,11 @@ public class CelestiaSimulation {
         CelestiaSelection ref = CelestiaSelection.create(star);
         if (target == null || ref == null)
             return;
-        c_goToEclipse(eclipse.startTimeJulian, ref.pointer, target.pointer);
+        c_goToEclipse(pointer, eclipse.startTimeJulian, ref.pointer, target.pointer);
     }
 
     public @NonNull CelestiaObserver getActiveObserver() {
-        return new CelestiaObserver(c_getActiveObserver());
+        return new CelestiaObserver(c_getActiveObserver(pointer));
     }
 
     public void goTo(@NonNull CelestiaDestination destination) {
@@ -82,16 +82,16 @@ public class CelestiaSimulation {
     }
 
     // C functions
-    private native long c_getSelection();
-    private native void c_setSelection(long ptr);
-    private native long c_getUniverse();
-    private native List<String> c_completionForText(String text, int limit);
-    private native long c_findObject(String name);
-    private native long c_getStarBrowser(int kind);
-    private native void c_reverseObserverOrientation();
-    private native double c_getTime();
-    private native void c_setTime(double time);
-    private native void c_goToEclipse(double time, long ref, long target);
-    private native long c_getActiveObserver();
+    private static native long c_getSelection(long pointer);
+    private static native void c_setSelection(long pointer, long ptr);
+    private static native long c_getUniverse(long pointer);
+    private static native List<String> c_completionForText(long pointer, String text, int limit);
+    private static native long c_findObject(long pointer, String name);
+    private static native long c_getStarBrowser(long pointer, int kind);
+    private static native void c_reverseObserverOrientation(long pointer);
+    private static native double c_getTime(long pointer);
+    private static native void c_setTime(long pointer, double time);
+    private static native void c_goToEclipse(long pointer, double time, long ref, long target);
+    private static native long c_getActiveObserver(long pointer);
     private static native void c_goToDestination(long ptr, String target, double distance);
 }

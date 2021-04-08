@@ -24,7 +24,7 @@ public class CelestiaSelection {
 
     protected long pointer;
 
-    protected CelestiaSelection(long ptr) {
+    public CelestiaSelection(long ptr) {
         pointer = ptr;
     }
 
@@ -43,21 +43,21 @@ public class CelestiaSelection {
     }
 
     public boolean isEmpty() {
-        return c_isEmpty();
+        return c_isEmpty(pointer);
     }
 
     @Nullable
     public CelestiaAstroObject getObject() {
-        int type = c_getSelectionType();
+        int type = c_getSelectionType(pointer);
         switch (type) {
             case SELECTION_TYPE_STAR:
-                return new CelestiaStar(c_getSelectionPtr());
+                return new CelestiaStar(c_getSelectionPtr(pointer));
             case SELECTION_TYPE_LOCATION:
-                return new CelestiaLocation(c_getSelectionPtr());
+                return new CelestiaLocation(c_getSelectionPtr(pointer));
             case SELECTION_TYPE_DEEP_SKY:
-                return new CelestiaDSO(c_getSelectionPtr());
+                return new CelestiaDSO(c_getSelectionPtr(pointer));
             case SELECTION_TYPE_BODY:
-                return new CelestiaBody(c_getSelectionPtr());
+                return new CelestiaBody(c_getSelectionPtr(pointer));
         }
         return null;
     }
@@ -106,18 +106,23 @@ public class CelestiaSelection {
         return null;
     }
 
+    public long createCopy() {
+        return c_clone(pointer);
+    }
+
     @Override
     protected void finalize() throws Throwable {
-        destroy();
+        c_destroy(pointer);
         super.finalize();
     }
 
     // C functions
-    private native boolean c_isEmpty();
-    private native int c_getSelectionType();
-    private native long c_getSelectionPtr();
-    private native String c_getName();
-    private native void destroy();
+    private static native boolean c_isEmpty(long pointer);
+    private static native int c_getSelectionType(long pointer);
+    private static native long c_getSelectionPtr(long pointer);
+    private static native String c_getName(long pointer);
+    private static native void c_destroy(long pointer);
+    private static native long c_clone(long pointer);
 
     private static native long c_createSelection(int type, long pointer);
 }

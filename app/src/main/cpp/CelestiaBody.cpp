@@ -14,83 +14,83 @@
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getType(JNIEnv *env, jobject thiz) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getType(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     return body->getClassification();
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getName(JNIEnv *env, jobject thiz) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getName(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     return env->NewStringUTF(body->getName(true).c_str());
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1hasRings(JNIEnv *env, jobject thiz) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1hasRings(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     return (jboolean)(body->getRings() ? JNI_TRUE : JNI_FALSE);
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1hasAtmosphere(JNIEnv *env, jobject thiz) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1hasAtmosphere(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     return (jboolean)(body->getAtmosphere() ? JNI_TRUE : JNI_FALSE);
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1isEllipsoid(JNIEnv *env, jobject thiz) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1isEllipsoid(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     return (jboolean)(body->isEllipsoid() ? JNI_TRUE : JNI_FALSE);
 }
 
 extern "C"
 JNIEXPORT jfloat JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getRadius(JNIEnv *env, jobject thiz) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getRadius(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     return body->getRadius();
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getWebInfoURL(JNIEnv *env, jobject thiz) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getWebInfoURL(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     return env->NewStringUTF(body->getInfoURL().c_str());
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getOrbitAtTime(JNIEnv *env, jobject thiz,
+Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getOrbitAtTime(JNIEnv *env, jclass clazz, jlong pointer,
                                                                        jdouble julian_day) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+    auto body = (Body *)pointer;
     return (jlong)(body->getOrbit(julian_day));
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getRotationModelAtTime(JNIEnv *env,
-                                                                               jobject thiz,
+                                                                               jclass clazz, jlong pointer,
                                                                                jdouble julian_day) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+    auto body = (Body *)pointer;
     return (jlong)(body->getRotationModel(julian_day));
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getPlanetarySystem(JNIEnv *env,
-                                                                           jobject thiz) {
-    Body *body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+                                                                           jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     return (jlong)(body->getSystem());
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaBody_c_1getAlternateSurfaceNames(JNIEnv *env,
-                                                                                 jobject thiz) {
-    auto body = (Body *)env->GetLongField(thiz, caoPtrFieldID);
+                                                                                 jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
     std::vector<std::string> *altSurfaces = body->getAlternateSurfaceNames();
     if (!altSurfaces || altSurfaces->empty())
         return  nullptr;

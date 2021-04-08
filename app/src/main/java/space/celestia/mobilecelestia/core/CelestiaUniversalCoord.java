@@ -42,7 +42,7 @@ public class CelestiaUniversalCoord {
 
     @Override
     protected void finalize() throws Throwable {
-        c_destroy();
+        c_destroy(pointer);
         super.finalize();
     }
 
@@ -53,5 +53,5 @@ public class CelestiaUniversalCoord {
     private static native long c_differenceFrom(long ptr1, long ptr2);
     private static native CelestiaVector c_offsetFrom(long ptr1, long ptr2);
 
-    private native void c_destroy();
+    private static native void c_destroy(long pointer);
 }

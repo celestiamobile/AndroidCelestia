@@ -22,19 +22,19 @@ public class CelestiaStarCatalog {
 
     @NonNull
     public String getStarName(CelestiaStar star) {
-        return c_getStarName(star.pointer);
+        return c_getStarName(pointer, star.pointer);
     }
 
     public int getCount() {
-        return c_getCount();
+        return c_getCount(pointer);
     }
 
     public CelestiaStar getStar(int index) {
-        return new CelestiaStar(c_getStar(index));
+        return new CelestiaStar(c_getStar(pointer, index));
     }
 
     // C functions
-    private native String c_getStarName(long pointer);
-    private native int c_getCount();
-    private native long c_getStar(int index);
+    private static native String c_getStarName(long ptr, long pointer);
+    private static native int c_getCount(long ptr);
+    private static native long c_getStar(long ptr, int index);
 }

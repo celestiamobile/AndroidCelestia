@@ -28,15 +28,15 @@ public class CelestiaStarBrowser {
 
     public @NonNull
     List<CelestiaStar> getStars() {
-        return c_getStars();
+        return c_getStars(pointer);
     }
 
     @Override
     protected void finalize() throws Throwable {
-        c_destroy();
+        c_destroy(pointer);
         super.finalize();
     }
 
-    private native void c_destroy();
-    private native List<CelestiaStar> c_getStars();
+    private static native void c_destroy(long ptr);
+    private static native List<CelestiaStar> c_getStars(long ptr);
 }

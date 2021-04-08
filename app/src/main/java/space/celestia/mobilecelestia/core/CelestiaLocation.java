@@ -20,9 +20,9 @@ public class CelestiaLocation extends CelestiaAstroObject {
 
     @NonNull
     public String getName() {
-        return c_getName();
+        return c_getName(pointer);
     }
 
     // C functions
-    private native String c_getName();
+    private static native String c_getName(long pointer);
 }
