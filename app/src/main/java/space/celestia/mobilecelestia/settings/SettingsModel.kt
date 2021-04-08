@@ -42,7 +42,9 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowRingShadows("Ring Shadows"),
     ShowCometTails("Comet Tails"),
     ShowEclipseShadows("Eclipse Shadows"),
-    ShowOrbits("Orbits"),
+    ShowOrbits("Show Orbits"),
+    ShowFadingOrbits("Fading Orbits"),
+    ShowPartialTrajectories("Partial Trajectories"),
     ShowStellarOrbits("Stars"),
     ShowPlanetOrbits("Planets"),
     ShowDwarfPlanetOrbits("Dwarf Planets"),
@@ -55,7 +57,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowEclipticGrid("Ecliptic"),
     ShowHorizonGrid("Horizontal"),
     ShowGalacticGrid("Galactic"),
-    ShowDiagrams("Constellations"),
+    ShowDiagrams("Show Constellations"),
     ShowConstellationLabels("Constellation Labels"),
     ShowLatinConstellationLabels("Constellations in Latin"),
     ShowBoundaries("Show Boundaries"),
@@ -71,7 +73,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowNebulaLabels("Nebulae"),
     ShowGlobularLabels("Globulars"),
     ShowOpenClusterLabels("Open Clusters"),
-    ShowLocationLabels("Locations"),
+    ShowLocationLabels("Show Locations"),
     ShowCityLabels("Cities"),
     ShowObservatoryLabels("Observatories"),
     ShowLandingSiteLabels("Landing Sites"),
@@ -81,7 +83,10 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowVallisLabels("Valles (Valleys)"),
     ShowTerraLabels("Terrae (Land masses)"),
     ShowEruptiveCenterLabels("Volcanoes"),
+    ShowOtherLabels("Other"),
     ShowMarkers("Show Markers"),
+    ShowEcliptic("Ecliptic Line"),
+    ShowTintedIllumination("Tinted Illumination"),
     // Int values
     TimeZone("Time Zone"),
     DateFormat("Date Format"),
@@ -122,6 +127,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 ShowCometTails,
                 ShowEclipseShadows,
                 ShowOrbits,
+                ShowFadingOrbits,
+                ShowPartialTrajectories,
                 ShowStellarOrbits,
                 ShowPlanetOrbits,
                 ShowDwarfPlanetOrbits,
@@ -134,6 +141,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 ShowEclipticGrid,
                 ShowHorizonGrid,
                 ShowGalacticGrid,
+                ShowEcliptic,
+                ShowTintedIllumination,
                 ShowDiagrams,
                 ShowConstellationLabels,
                 ShowLatinConstellationLabels,
@@ -160,7 +169,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 ShowVallisLabels,
                 ShowTerraLabels,
                 ShowEruptiveCenterLabels,
-                ShowMarkers
+                ShowOtherLabels,
+                ShowMarkers,
             )
 
         val allIntCases: List<SettingsKey>
@@ -286,26 +296,39 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowCometTails),
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowEclipseShadows)
     )),
-    SettingsMultiSelectionItem(SettingsKey.ShowOrbits, listOf(
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowStellarOrbits),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowPlanetOrbits),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowDwarfPlanetOrbits),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowMoonOrbits),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowMinorMoonOrbits),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowAsteroidOrbits),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowCometOrbits),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowSpacecraftOrbits)
+    SettingsCommonItem(CelestiaString("Orbits", ""), listOf(
+        SettingsCommonItem.Section(listOf(
+            SettingsSwitchItem(SettingsKey.ShowOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowFadingOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowPartialTrajectories, SettingsSwitchItem.Representation.Checkmark),
+        )),
+        SettingsCommonItem.Section(listOf(
+            SettingsSwitchItem(SettingsKey.ShowStellarOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowPlanetOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowDwarfPlanetOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowMoonOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowMinorMoonOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowAsteroidOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowCometOrbits, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowSpacecraftOrbits, SettingsSwitchItem.Representation.Checkmark)
+        )),
     )),
-    SettingsMultiSelectionItem("Grids", listOf(
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowCelestialSphere),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowEclipticGrid),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowHorizonGrid),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowGalacticGrid)
+    SettingsCommonItem(CelestiaString("Grids", ""), listOf(
+        SettingsCommonItem.Section(listOf(
+            SettingsSwitchItem(SettingsKey.ShowCelestialSphere, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowEclipticGrid, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowHorizonGrid, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowGalacticGrid, SettingsSwitchItem.Representation.Checkmark),
+        )),
+        SettingsCommonItem.Section(listOf(
+            SettingsSwitchItem(SettingsKey.ShowEcliptic, SettingsSwitchItem.Representation.Checkmark),
+        )),
     )),
-    SettingsMultiSelectionItem(SettingsKey.ShowDiagrams, listOf(
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowConstellationLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowLatinConstellationLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowBoundaries)
+    SettingsCommonItem.create(CelestiaString("Constellations", ""), listOf(
+        SettingsSwitchItem(SettingsKey.ShowDiagrams, SettingsSwitchItem.Representation.Checkmark),
+        SettingsSwitchItem(SettingsKey.ShowConstellationLabels, SettingsSwitchItem.Representation.Checkmark),
+        SettingsSwitchItem(SettingsKey.ShowLatinConstellationLabels, SettingsSwitchItem.Representation.Checkmark),
+        SettingsSwitchItem(SettingsKey.ShowBoundaries, SettingsSwitchItem.Representation.Checkmark),
     )),
     SettingsMultiSelectionItem("Object Labels", listOf(
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowStarLabels),
@@ -321,16 +344,23 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowGlobularLabels),
         SettingsMultiSelectionItem.Selection(SettingsKey.ShowOpenClusterLabels)
     )),
-    SettingsMultiSelectionItem(SettingsKey.ShowLocationLabels, listOf(
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowCityLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowObservatoryLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowLandingSiteLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowMonsLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowMareLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowCraterLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowVallisLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowTerraLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowEruptiveCenterLabels)
+    SettingsCommonItem(CelestiaString("Locations", ""), listOf(
+        SettingsCommonItem.Section(listOf(
+            SettingsSwitchItem(SettingsKey.ShowLocationLabels, SettingsSwitchItem.Representation.Switch),
+            SettingsSliderItem(SettingsKey.MinimumFeatureSize, 0.0, 99.0),
+        )),
+        SettingsCommonItem.Section(listOf(
+            SettingsSwitchItem(SettingsKey.ShowCityLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowObservatoryLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowLandingSiteLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowMonsLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowMareLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowCraterLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowVallisLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowTerraLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowEruptiveCenterLabels, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowOtherLabels, SettingsSwitchItem.Representation.Checkmark),
+        )),
     )),
     SettingsCommonItem.create(CelestiaString("Markers", ""), listOf(
         SettingsSwitchItem(SettingsKey.ShowMarkers, SettingsSwitchItem.Representation.Switch),
@@ -412,8 +442,10 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(
         SettingsCommonItem.Section(listOf(
             SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0),
+            SettingsSwitchItem(SettingsKey.ShowTintedIllumination, SettingsSwitchItem.Representation.Switch),
+        )),
+        SettingsCommonItem.Section(listOf(
             SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0),
-            SettingsSliderItem(SettingsKey.MinimumFeatureSize, 0.0, 99.0),
             SettingsSliderItem(SettingsKey.GalaxyBrightness, 0.0, 1.0)
         )),
         SettingsCommonItem.Section(listOf(

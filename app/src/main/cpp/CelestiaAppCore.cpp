@@ -690,6 +690,7 @@ RENDERMETHODS(CometTails)
 RENDERMETHODS(PlanetRings)
 RENDERMETHODS(Markers)
 RENDERMETHODS(Orbits)
+RENDERMETHODS(FadingOrbits)
 RENDERMETHODS(PartialTrajectories)
 RENDERMETHODS(SmoothLines)
 RENDERMETHODS(EclipseShadows)
@@ -700,6 +701,8 @@ RENDERMETHODS(CelestialSphere)
 RENDERMETHODS(EclipticGrid)
 RENDERMETHODS(HorizonGrid)
 RENDERMETHODS(GalacticGrid)
+RENDERMETHODS(Ecliptic)
+RENDERMETHODS(TintedIllumination)
 
 #define LABELMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getShow##flag##Labels (JNIEnv *env, jobject thiz) { \

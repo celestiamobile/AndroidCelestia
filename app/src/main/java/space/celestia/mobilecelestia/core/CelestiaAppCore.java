@@ -398,6 +398,10 @@ public class CelestiaAppCore {
     public void setShowOrbits(boolean showOrbits) { c_setShowOrbits(showOrbits); }
     private native void c_setShowOrbits(boolean showOrbits);
     private native boolean c_getShowOrbits();
+    public boolean getShowFadingOrbits() { return c_getShowFadingOrbits(); }
+    public void setShowFadingOrbits(boolean showFadingOrbits) { c_setShowFadingOrbits(showFadingOrbits); }
+    private native void c_setShowFadingOrbits(boolean showFadingOrbits);
+    private native boolean c_getShowFadingOrbits();
     public boolean getShowPartialTrajectories() { return c_getShowPartialTrajectories(); }
     public void setShowPartialTrajectories(boolean showPartialTrajectories) { c_setShowPartialTrajectories(showPartialTrajectories); }
     private native void c_setShowPartialTrajectories(boolean showPartialTrajectories);
@@ -438,6 +442,14 @@ public class CelestiaAppCore {
     public void setShowGalacticGrid(boolean showGalacticGrid) { c_setShowGalacticGrid(showGalacticGrid); }
     private native void c_setShowGalacticGrid(boolean showGalacticGrid);
     private native boolean c_getShowGalacticGrid();
+    public boolean getShowEcliptic() { return c_getShowEcliptic(); }
+    public void setShowEcliptic(boolean showEcliptic) { c_setShowEcliptic(showEcliptic); }
+    private native void c_setShowEcliptic(boolean showEcliptic);
+    private native boolean c_getShowEcliptic();
+    public boolean getShowTintedIllumination() { return c_getShowTintedIllumination(); }
+    public void setShowTintedIllumination(boolean showTintedIllumination) { c_setShowTintedIllumination(showTintedIllumination); }
+    private native void c_setShowTintedIllumination(boolean showTintedIllumination);
+    private native boolean c_getShowTintedIllumination();
 
     public boolean getShowStarLabels() { return c_getShowStarLabels(); }
     public void setShowStarLabels(boolean showStarLabels) { c_setShowStarLabels(showStarLabels); }
