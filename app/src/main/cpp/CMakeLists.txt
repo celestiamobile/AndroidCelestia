@@ -218,9 +218,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/constellation.h
         ${CELESTIA_SRC_DIR}/celengine/curveplot.cpp
         ${CELESTIA_SRC_DIR}/celengine/curveplot.h
-        ${CELESTIA_SRC_DIR}/celengine/dds.cpp
-        ${CELESTIA_SRC_DIR}/celengine/dds_decompress.cpp
-        ${CELESTIA_SRC_DIR}/celengine/dds_decompress.h
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.cpp
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
         ${CELESTIA_SRC_DIR}/celengine/dispmap.cpp
@@ -360,6 +357,16 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/virtualtex.h
         ${CELESTIA_SRC_DIR}/celengine/visibleregion.cpp
         ${CELESTIA_SRC_DIR}/celengine/visibleregion.h
+        )
+
+list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_SRC_DIR}/celimage/bmp.cpp
+        ${CELESTIA_SRC_DIR}/celimage/dds.cpp
+        ${CELESTIA_SRC_DIR}/celimage/dds_decompress.cpp
+        ${CELESTIA_SRC_DIR}/celimage/dds_decompress.h
+        ${CELESTIA_SRC_DIR}/celimage/imageformats.h
+        ${CELESTIA_SRC_DIR}/celimage/jpeg.cpp
+        ${CELESTIA_SRC_DIR}/celimage/png.cpp
         )
 
 list(APPEND CELESTIA_SOURCES
