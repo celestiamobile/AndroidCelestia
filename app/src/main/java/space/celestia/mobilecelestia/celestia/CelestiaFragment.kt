@@ -53,7 +53,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var addonToLoad: String? = null
     private var enableMultisample = false
     private var enableFullResolution = false
-    private var languageOverride: String? = null
+    private lateinit var languageOverride: String
 
     // MARK: Celestia
     private val core by lazy { CelestiaAppCore.shared() }
@@ -94,7 +94,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             addonToLoad = it.getString(ARG_ADDON_DIR)
             enableMultisample = it.getBoolean(ARG_MULTI_SAMPLE)
             enableFullResolution = it.getBoolean(ARG_FULL_RESOLUTION)
-            languageOverride = it.getString(ARG_LANG_OVERRIDE)
+            languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
         }
 
         if (savedInstanceState == null) {
@@ -263,8 +263,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         CelestiaAppCore.chdir(data)
 
         // Set up locale
-        val language = languageOverride ?: Locale.getDefault().toString()
-        CelestiaAppCore.setLocaleDirectoryPath("$data/locale", language)
+        CelestiaAppCore.setLocaleDirectoryPath("$data/locale", languageOverride)
 
         val extraDirs = if (addon != null) arrayOf(addon) else null
 
@@ -278,7 +277,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
                 if (fallbackConfigPath != cfg || fallbackDataPath != data) {
                     lis.celestiaFragmentLoadingFromFallback()
                     CelestiaAppCore.chdir(fallbackDataPath)
-                    CelestiaAppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", language)
+                    CelestiaAppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride)
                     if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
                         AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
                         return false
@@ -631,7 +630,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, languageOverride: String?) =
+        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, languageOverride: String) =
             CelestiaFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)

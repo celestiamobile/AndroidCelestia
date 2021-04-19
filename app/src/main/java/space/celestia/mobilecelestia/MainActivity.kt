@@ -146,6 +146,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val fontDirPath: String
         get() = "$celestiaParentPath/$CELESTIA_FONT_FOLDER_NAME"
 
+    private lateinit var language: String
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         val reporter = AppStatusReporter.shared()
@@ -487,7 +489,42 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             availableLanguageCodes = languageCodes.sorted()
         }
 
-        languageOverride = preferenceManager[PreferenceManager.PredefinedKey.Language]
+        var languageFromSettings = preferenceManager[PreferenceManager.PredefinedKey.Language]
+        if (languageFromSettings == null) {
+            val locale = Locale.getDefault()
+            var lang = locale.language
+            var country = locale.country
+            if (lang == "zh") {
+                // Special handling for Chinese script
+                // Basically mapping zh_CN => zh_Hans
+                //                   zh_TW => zh_Hant
+                if (locale.script.contains("Hans"))
+                    country = "CN"
+                else if (locale.script.contains("Hant"))
+                    country = "TW"
+                // Is it possible for script to be empty?
+                // Singapore uses Hans, Hong Kong, Macao uses Hant
+                else if (country == "SG")
+                    country = "CN"
+                else if (country == "HK" || country == "MO")
+                    country = "TW"
+            }
+            var localeString = "${lang}_${country}"
+            if (availableLanguageCodes.contains(localeString)) {
+                language = localeString
+            } else {
+                localeString = lang
+                if (availableLanguageCodes.contains(localeString)) {
+                    language = localeString
+                } else {
+                    language = "en"
+                }
+            }
+        } else {
+            languageOverride = languageFromSettings
+            language = languageFromSettings
+        }
+
         enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
         enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
 
@@ -746,7 +783,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 addonPath,
                 enableMultisample,
                 enableHiDPI,
-                languageOverride
+                language
             )
             ResourceManager.shared.addonDirectory = addonPath
             supportFragmentManager
