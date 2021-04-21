@@ -25,16 +25,6 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
         return ResourceCategoryListFragment.newInstance()
     }
 
-    override fun menuItemClicked(id: Int): Boolean {
-        when (id) {
-            MENU_ITEM_MANAGE_INSTALLED -> {
-                val fragment = InstalledResourceListFragment.newInstance()
-                pushFragment(fragment)
-            } else -> {}
-        }
-        return true
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Listener) {
@@ -64,7 +54,5 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
 
     companion object {
         fun newInstance() = ResourceFragment()
-
-        const val MENU_ITEM_MANAGE_INSTALLED = ResourceCategoryListFragment.MENU_ITEM_MANAGE_INSTALLED
     }
 }

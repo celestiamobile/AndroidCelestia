@@ -43,7 +43,8 @@ class SettingsItemFragment : SettingsBaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Settings", "")
+        if (savedInstanceState == null)
+            title = CelestiaString("Settings", "")
     }
 
     override fun onAttach(context: Context) {

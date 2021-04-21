@@ -96,7 +96,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = ""
+        if (savedInstanceState == null)
+            title = ""
     }
 
     override fun onAttach(context: Context) {

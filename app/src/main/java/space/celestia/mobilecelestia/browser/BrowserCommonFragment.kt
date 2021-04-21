@@ -56,7 +56,8 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = browserItem?.alternativeName ?: browserItem?.name ?: ""
+        if (savedInstanceState == null)
+            title = browserItem?.alternativeName ?: browserItem?.name ?: ""
     }
 
     override fun onAttach(context: Context) {

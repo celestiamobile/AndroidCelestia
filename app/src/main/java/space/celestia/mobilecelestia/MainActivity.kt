@@ -295,7 +295,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 if (!isActive) return@launch
                 loadConfig()
                 if (!isActive) return@launch
-                with(Dispatchers.Main) {
+                withContext(Dispatchers.Main) {
                     loadConfigSuccess(null)
                 }
             } catch (error: Throwable) {

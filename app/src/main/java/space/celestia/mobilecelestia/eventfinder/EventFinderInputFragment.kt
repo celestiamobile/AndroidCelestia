@@ -106,7 +106,8 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Eclipse Finder", "")
+        if (savedInstanceState == null)
+            title = CelestiaString("Eclipse Finder", "")
     }
 
     override fun onAttach(context: Context) {

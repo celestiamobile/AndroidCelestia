@@ -58,15 +58,6 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
         frag.reload()
     }
 
-    override fun menuItemClicked(id: Int): Boolean {
-        when (id) {
-            MENU_ITEM_ADD -> {
-                listener?.addFavoriteItem(currentFrag.favoriteItem as MutableFavoriteBaseItem)
-            } else -> {}
-        }
-        return true
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Listener) {
@@ -83,7 +74,6 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     interface Listener {
-        fun addFavoriteItem(item: MutableFavoriteBaseItem)
         fun saveFavorites()
     }
 
@@ -97,7 +87,5 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
                     putSerializable(ARG_ITEM, item)
                 }
             }
-
-        const val MENU_ITEM_ADD = 0
     }
 }

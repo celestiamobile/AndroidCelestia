@@ -45,7 +45,8 @@ class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = category?.name ?: ""
+        if (savedInstanceState == null)
+            title = category?.name ?: ""
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

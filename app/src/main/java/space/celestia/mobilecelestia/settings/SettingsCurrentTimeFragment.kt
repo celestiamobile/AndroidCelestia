@@ -46,7 +46,8 @@ class SettingsCurrentTimeFragment : SettingsBaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Current Time", "")
+        if (savedInstanceState == null)
+            title = CelestiaString("Current Time", "")
     }
 
     override fun onAttach(context: Context) {

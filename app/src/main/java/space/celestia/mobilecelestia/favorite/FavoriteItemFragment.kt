@@ -58,14 +58,16 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = favoriteItem?.title ?: ""
-        var items: List<NavigationFragment.MenuItem> = listOf()
-        if (favoriteItem is MutableFavoriteBaseItem) {
-            items = listOf(
-                NavigationFragment.MenuItem(FavoriteFragment.MENU_ITEM_ADD, CelestiaString("Add", ""), R.drawable.ic_add)
-            )
+        if (savedInstanceState == null) {
+            title = favoriteItem?.title ?: ""
+            var items: List<NavigationFragment.BarButtonItem> = listOf()
+            if (favoriteItem is MutableFavoriteBaseItem) {
+                items = listOf(
+                    NavigationFragment.BarButtonItem(MENU_ITEM_ADD, CelestiaString("Add", ""), R.drawable.ic_add_tint)
+                )
+            }
+            rightNavigationBarItems = items
         }
-        menuItems = items
     }
 
     override fun onAttach(context: Context) {
@@ -75,6 +77,15 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
         } else {
             throw RuntimeException("$context must implement FavoriteItemFragment.Listener")
         }
+    }
+
+    override fun menuItemClicked(groupId: Int, id: Int): Boolean {
+        when (id) {
+            MENU_ITEM_ADD -> {
+                listener?.addFavoriteItem(favoriteItem as MutableFavoriteBaseItem)
+            } else -> {}
+        }
+        return true
     }
 
     override fun onDetach() {
@@ -91,10 +102,12 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
         fun onFavoriteItemSelected(item: FavoriteBaseItem)
         fun deleteFavoriteItem(index: Int)
         fun renameFavoriteItem(item: MutableFavoriteBaseItem)
+        fun addFavoriteItem(item: MutableFavoriteBaseItem)
     }
 
     companion object {
         const val ARG_ITEM = "item"
+        const val MENU_ITEM_ADD = 0
 
         @JvmStatic
         fun newInstance(item: FavoriteBaseItem) =

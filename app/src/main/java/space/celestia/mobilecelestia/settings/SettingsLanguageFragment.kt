@@ -47,7 +47,8 @@ class SettingsLanguageFragment : SettingsBaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Language", "")
+        if (savedInstanceState == null)
+            title = CelestiaString("Language", "")
     }
 
     override fun onAttach(context: Context) {

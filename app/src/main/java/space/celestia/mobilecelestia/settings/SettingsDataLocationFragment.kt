@@ -48,7 +48,8 @@ class SettingsDataLocationFragment : SettingsBaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Data Location", "")
+        if (savedInstanceState == null)
+            title = CelestiaString("Data Location", "")
     }
 
     override fun onAttach(context: Context) {

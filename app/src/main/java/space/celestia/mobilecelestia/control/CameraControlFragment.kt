@@ -47,7 +47,8 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Camera Control", "")
+        if (savedInstanceState == null)
+            title = CelestiaString("Camera Control", "")
     }
 
     override fun onAttach(context: Context) {

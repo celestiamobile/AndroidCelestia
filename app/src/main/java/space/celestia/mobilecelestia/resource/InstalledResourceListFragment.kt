@@ -25,7 +25,8 @@ class InstalledResourceListFragment : AsyncListFragment<ResourceItem>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Installed", "")
+        if (savedInstanceState == null)
+            title = CelestiaString("Installed", "")
     }
 
     override fun refresh(success: (List<ResourceItem>) -> Unit, failure: (String) -> Unit) {

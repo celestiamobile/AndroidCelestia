@@ -29,8 +29,16 @@ import space.celestia.mobilecelestia.utils.commonHandler
 class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title = CelestiaString("Categories", "")
-        menuItems = listOf(NavigationFragment.MenuItem(MENU_ITEM_MANAGE_INSTALLED, CelestiaString("Installed", "")))
+
+        if (savedInstanceState == null) {
+            title = CelestiaString("Categories", "")
+            rightNavigationBarItems = listOf(
+                NavigationFragment.BarButtonItem(
+                    MENU_ITEM_MANAGE_INSTALLED,
+                    CelestiaString("Installed", "")
+                )
+            )
+        }
     }
 
     override fun refresh(success: (List<ResourceCategory>) -> Unit, failure: (String) -> Unit) {
@@ -48,6 +56,16 @@ class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
                 }
             }
         }
+    }
+
+    override fun menuItemClicked(groupId: Int, id: Int): Boolean {
+        when (id) {
+            MENU_ITEM_MANAGE_INSTALLED -> {
+                val fragment = InstalledResourceListFragment.newInstance()
+                (parentFragment as? NavigationFragment)?.pushFragment(fragment)
+            } else -> {}
+        }
+        return true
     }
 
     companion object {

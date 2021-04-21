@@ -51,7 +51,8 @@ class SettingsCommonFragment : SettingsBaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = item?.name ?: ""
+        if (savedInstanceState == null)
+            title = item?.name ?: ""
     }
 
     override fun onAttach(context: Context) {

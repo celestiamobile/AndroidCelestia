@@ -12,38 +12,207 @@
 package space.celestia.mobilecelestia.common
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.View
-import android.view.ViewGroup
+import android.os.Parcel
+import android.os.Parcelable
+import android.view.*
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 
 abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClickListener {
-    class MenuItem(val id: Int, val title: String, val icon: Int? = null)
+    interface NavigationBarItem: Parcelable
+
+    class BarButtonItem(val id: Int, val title: String?, val icon: Int? = null, val enabled: Boolean = true, val checked: Boolean? = null): NavigationBarItem {
+        constructor(parcel: Parcel) : this(
+            parcel.readInt(),
+            parcel.readString(),
+            parcel.readValue(Int::class.java.classLoader) as? Int,
+            parcel.readByte() != 0.toByte(),
+            parcel.readValue(Boolean::class.java.classLoader) as? Boolean) {
+        }
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeInt(id)
+            parcel.writeString(title)
+            parcel.writeValue(icon)
+            parcel.writeByte(if (enabled) 1 else 0)
+            parcel.writeValue(checked)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<BarButtonItem> {
+            override fun createFromParcel(parcel: Parcel): BarButtonItem {
+                return BarButtonItem(parcel)
+            }
+
+            override fun newArray(size: Int): Array<BarButtonItem?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
+
+    interface NavigationBarItemGroup: NavigationBarItem {
+        val id: Int
+        val title: String?
+        val icon: Int?
+        val items: List<BarButtonItem>
+    }
+
+    class BarButtonItemGroup(override val id: Int, override val title: String?, override val icon: Int? = null, override val items: List<BarButtonItem>): NavigationBarItemGroup {
+        constructor(parcel: Parcel) : this(
+            parcel.readInt(),
+            parcel.readString(),
+            parcel.readValue(Int::class.java.classLoader) as? Int,
+            parcel.createTypedArrayList(BarButtonItem) ?: listOf()) {
+        }
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeInt(id)
+            parcel.writeString(title)
+            parcel.writeValue(icon)
+            parcel.writeTypedList(items)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<BarButtonItemGroup> {
+            override fun createFromParcel(parcel: Parcel): BarButtonItemGroup {
+                return BarButtonItemGroup(parcel)
+            }
+
+            override fun newArray(size: Int): Array<BarButtonItemGroup?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
+
+    class SingleChoiceItem(override val id: Int, override val title: String?, override val icon: Int? = null, override val items: List<BarButtonItem>): NavigationBarItemGroup {
+        constructor(parcel: Parcel) : this(
+            parcel.readInt(),
+            parcel.readString(),
+            parcel.readValue(Int::class.java.classLoader) as? Int,
+            parcel.createTypedArrayList(BarButtonItem) ?: listOf()) {
+        }
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeInt(id)
+            parcel.writeString(title)
+            parcel.writeValue(icon)
+            parcel.writeTypedList(items)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<SingleChoiceItem> {
+            override fun createFromParcel(parcel: Parcel): SingleChoiceItem {
+                return SingleChoiceItem(parcel)
+            }
+
+            override fun newArray(size: Int): Array<SingleChoiceItem?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
+
+    class MultiChoiceItem(override val id: Int, override val title: String?, override val icon: Int? = null, override val items: List<BarButtonItem>): NavigationBarItemGroup {
+        constructor(parcel: Parcel) : this(
+            parcel.readInt(),
+            parcel.readString(),
+            parcel.readValue(Int::class.java.classLoader) as? Int,
+            parcel.createTypedArrayList(BarButtonItem) ?: listOf()) {
+        }
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeInt(id)
+            parcel.writeString(title)
+            parcel.writeValue(icon)
+            parcel.writeTypedList(items)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<MultiChoiceItem> {
+            override fun createFromParcel(parcel: Parcel): MultiChoiceItem {
+                return MultiChoiceItem(parcel)
+            }
+
+            override fun newArray(size: Int): Array<MultiChoiceItem?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
 
     abstract class SubFragment: Fragment() {
-        var title: String = ""
-            set(value: String) {
-                field = value
+        var title: String
+            get() = innerTitle
+            set(value) {
+                innerTitle = value
                 updateParentFragment()
             }
-        var menuItems: List<MenuItem> = listOf()
-            set(value: List<MenuItem>) {
-                field = value
+        var rightNavigationBarItems: List<NavigationBarItem>
+            get() = innerRightNavigationBarItems
+            set(value) {
+                innerRightNavigationBarItems = value
                 updateParentFragment()
             }
+        var leftNavigationBarItem: BarButtonItem?
+            get() = innerLeftNavigationBarItem
+            set(value) {
+                innerLeftNavigationBarItem = value
+                updateParentFragment()
+            }
+
+        private var innerTitle: String = ""
+        private var innerRightNavigationBarItems: List<NavigationBarItem> = listOf()
+        private var innerLeftNavigationBarItem: BarButtonItem? = null
 
         private fun updateParentFragment() {
             val parent = parentFragment
             if (parent is NavigationFragment)
-                parent.configureToolbar(title, menuItems)
+                parent.configureToolbar(title, rightNavigationBarItems, leftNavigationBarItem, parent.lastGoBack)
+        }
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+
+            if (savedInstanceState != null) {
+                innerTitle = savedInstanceState.getString(ARG_TITLE, "")
+                innerLeftNavigationBarItem = savedInstanceState.getParcelable(ARG_LEFT_ITEM)
+                innerRightNavigationBarItems = savedInstanceState.getParcelableArrayList<NavigationBarItem>(ARG_RIGHT_ITEMS) ?: listOf()
+            }
+        }
+
+        override fun onSaveInstanceState(outState: Bundle) {
+            outState.putString(ARG_TITLE, innerTitle)
+            outState.putParcelable(ARG_LEFT_ITEM, innerLeftNavigationBarItem)
+            outState.putParcelableArrayList(ARG_RIGHT_ITEMS, ArrayList(innerRightNavigationBarItems))
+            super.onSaveInstanceState(outState)
+        }
+
+        open fun menuItemClicked(groupId: Int, id: Int): Boolean {
+            return true
         }
     }
 
     private val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
+
+    private var lastTitle: String = ""
+    private var lastLeftItem: BarButtonItem? = null
+    private var lastRightItems: List<NavigationBarItem> = listOf()
+    private var lastGoBack = false
+
+    val top: SubFragment?
+        get() = childFragmentManager.findFragmentById(R.id.fragment_container) as? SubFragment
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,60 +223,119 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
 
     abstract fun createInitialFragment(savedInstanceState: Bundle?): SubFragment
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(ARG_TITLE, lastTitle)
+        outState.putParcelable(ARG_LEFT_ITEM, lastLeftItem)
+        outState.putParcelableArrayList(ARG_RIGHT_ITEMS, ArrayList(lastRightItems))
+        outState.putBoolean(ARG_BACK, lastGoBack)
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         toolbar.setOnMenuItemClickListener(this)
-        toolbar.setNavigationOnClickListener {
-            popFragment()
-        }
         if (savedInstanceState == null) {
             replaceFragment(createInitialFragment(savedInstanceState))
         } else {
-            configureToolbar(null, null, canPop())
+            configureToolbar(
+                savedInstanceState.getString(ARG_TITLE, ""),
+                savedInstanceState.getParcelableArrayList<NavigationBarItem>(ARG_RIGHT_ITEMS) ?: listOf(),
+                savedInstanceState.getParcelable(ARG_LEFT_ITEM),
+                savedInstanceState.getBoolean(ARG_BACK)
+            )
         }
     }
 
     fun replaceFragment(fragment: SubFragment) {
         replace(fragment, R.id.fragment_container)
-        configureToolbar(fragment.title, fragment.menuItems, false)
+        configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false)
     }
 
     fun pushFragment(fragment: SubFragment) {
         push(fragment, R.id.fragment_container)
-        configureToolbar(fragment.title, fragment.menuItems, true)
+        configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true)
     }
 
-    private fun configureToolbar(name: String?, menuItems: List<MenuItem>?, canGoBack: Boolean? = null) {
-        if (name != null)
-            toolbar.title = name
+    private fun configureToolbar(name: String, rightNavigationBarItems: List<NavigationBarItem>, leftNavigationBarItem: BarButtonItem?, canGoBack: Boolean) {
+        toolbar.title = name
 
-        if (canGoBack != null)
-            toolbar.navigationIcon = if (canGoBack) ResourcesCompat.getDrawable(resources, R.drawable.ic_action_arrow_back, null) else null
-
-        if (menuItems == null) return
         toolbar.menu.clear()
-        for (menuItem in menuItems) {
-            val item = toolbar.menu.add(Menu.NONE, menuItem.id, Menu.NONE, menuItem.title)
-            val icon = menuItem.icon
-            if (icon != null)
-                item.setIcon(icon)
+        for (barItem in rightNavigationBarItems) {
+            if (barItem is BarButtonItem) {
+                val item = toolbar.menu.add(Menu.NONE, barItem.id, Menu.NONE, barItem.title)
+                item.isEnabled = barItem.enabled
+                item.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+                val icon = barItem.icon
+                val checked = barItem.checked
+                if (icon != null)
+                    item.setIcon(icon)
+                if (checked != null)
+                    item.isChecked = checked
+            } else if (barItem is NavigationBarItemGroup) {
+                val subMenu = toolbar.menu.addSubMenu(barItem.id, Menu.NONE, Menu.NONE, barItem.title)
+                val icon = barItem.icon
+                if (icon != null)
+                    subMenu.setIcon(icon)
+                for (item in barItem.items) {
+                    val subItem = subMenu.add(barItem.id, item.id, Menu.NONE, item.title)
+                    subItem.isEnabled = item.enabled
+                    val subIcon = item.icon
+                    if (subIcon != null)
+                        subItem.setIcon(subIcon)
+                    if (barItem is SingleChoiceItem || barItem is MultiChoiceItem) {
+                        subItem.isCheckable = true
+                        subItem.isChecked = item.checked ?: false
+                    }
+                }
+                if (barItem is SingleChoiceItem) {
+                    subMenu.setGroupCheckable(barItem.id, true, true)
+                } else if (barItem is MultiChoiceItem) {
+                    subMenu.setGroupCheckable(barItem.id, true, false)
+                } else {
+                    subMenu.setGroupCheckable(barItem.id, false, false)
+                }
+            }
         }
+
+        if (leftNavigationBarItem?.icon != null) {
+            toolbar.setNavigationIcon(leftNavigationBarItem.icon)
+            toolbar.setNavigationOnClickListener {
+                menuItemClicked(Menu.NONE, leftNavigationBarItem.id)
+            }
+        } else {
+            if (canGoBack) {
+                toolbar.setNavigationIcon(R.drawable.ic_action_arrow_back)
+            } else {
+                toolbar.navigationIcon = null
+            }
+            toolbar.setNavigationOnClickListener {
+                popFragment()
+            }
+        }
+
+        lastRightItems = rightNavigationBarItems
+        lastLeftItem = leftNavigationBarItem
+        lastTitle = name
+        lastGoBack = canGoBack
     }
 
-    override fun onMenuItemClick(item: android.view.MenuItem?): Boolean {
+    override fun onMenuItemClick(item: MenuItem?): Boolean {
         if (item == null) return true
-        return menuItemClicked(item.itemId)
+        return menuItemClicked(item.groupId,  item.itemId)
     }
 
-    open fun menuItemClicked(id: Int): Boolean {
-        return true
+    private fun menuItemClicked(groupId: Int, id: Int): Boolean {
+        return top?.menuItemClicked(groupId, id) ?: true
     }
 
     override fun canPop(): Boolean {
+        if (!isAdded()) return false
         return childFragmentManager.backStackEntryCount > 0
     }
 
     override fun popLast() {
-        popFragment()
+        if (canPop()) {
+            popFragment()
+        }
     }
 
     private fun popFragment() {
@@ -116,9 +344,17 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         if (index == 0) {
             // no more return
             toolbar.navigationIcon = null
+            lastGoBack = false
         }
         val frag = childFragmentManager.fragments[index]
         if (frag is SubFragment)
-            configureToolbar(frag.title, frag.menuItems)
+            configureToolbar(frag.title, frag.rightNavigationBarItems, frag.leftNavigationBarItem, lastGoBack)
+    }
+
+    private companion object {
+        const val ARG_LEFT_ITEM = "left"
+        const val ARG_RIGHT_ITEMS = "right"
+        const val ARG_TITLE = "title"
+        const val ARG_BACK = "back"
     }
 }

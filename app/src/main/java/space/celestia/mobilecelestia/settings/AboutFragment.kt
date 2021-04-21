@@ -47,7 +47,8 @@ class AboutFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("About", "")
+        if (savedInstanceState == null)
+            title = CelestiaString("About", "")
     }
 
     private fun createAboutItems(): List<List<AboutItem>> {

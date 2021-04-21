@@ -46,7 +46,8 @@ class SimpleTextFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = textTitle ?: ""
+        if (savedInstanceState == null)
+            title = textTitle ?: ""
     }
 
     companion object {
