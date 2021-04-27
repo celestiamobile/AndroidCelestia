@@ -305,8 +305,8 @@ class FavoriteItemItemTouchCallback :
     ): Boolean {
         if (viewHolder is BaseTextItemHolder && target is BaseTextItemHolder) {
             val adapter = recyclerView.adapter as FavoriteItemRecyclerViewAdapter
-            val fromPos = viewHolder.adapterPosition
-            val toPos = target.adapterPosition
+            val fromPos = viewHolder.bindingAdapterPosition
+            val toPos = target.bindingAdapterPosition
             return adapter.swapItem(fromPos, toPos)
         }
         return false
