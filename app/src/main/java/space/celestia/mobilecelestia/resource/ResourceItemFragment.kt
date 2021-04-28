@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.ProgressButton
+import space.celestia.mobilecelestia.common.ProgressView
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
@@ -40,7 +40,8 @@ import java.util.*
 
 class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
     private var item: ResourceItem? = null
-    private var progressButton: ProgressButton? = null
+    private lateinit var progressView: ProgressView
+    private lateinit var progressViewText: TextView
     private var currentState: ResourceItemState = ResourceItemState.None
 
     private var imageView: ImageView? = null
@@ -84,11 +85,11 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         val releaseDate = view.findViewById<TextView>(R.id.publish_time)
         footnote.text = CelestiaString("Note: restarting Celestia is needed to use any new installed add-on.", "")
 
-        val progressButton = view.findViewById<ProgressButton>(R.id.progress_button)
-        progressButton.setOnClickListener {
-            onProgressButtonClick()
+        progressView = view.findViewById(R.id.progress_button)
+        progressViewText = view.findViewById(R.id.progress_view_text)
+        progressView.setOnClickListener {
+            onProgressViewClick()
         }
-        this.progressButton = progressButton
         this.titleLabel = title
         this.descriptionLabel = content
         this.imageView = image
@@ -125,7 +126,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onDestroy()
     }
 
-    private fun onProgressButtonClick() {
+    private fun onProgressViewClick() {
         val item = this.item ?: return
         val activity = this.activity ?: return
 
@@ -187,7 +188,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         if (identifier != id) { return }
 
         currentState = ResourceItemState.Downloading
-        progressButton?.setProgress(progress * 100f)
+        progressView.setProgress(progress * 100f)
         updateUI()
     }
 
@@ -224,7 +225,6 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     }
 
     private fun updateUI() {
-        val button = progressButton ?: return
         val id = item?.id ?: return
 
         // Ensure we are up to date with these cases
@@ -236,15 +236,15 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         when (currentState) {
             ResourceItemState.None -> {
-                button.reset()
-                button.setText(CelestiaString("DOWNLOAD", ""))
+                progressView.reset()
+                progressViewText.text = CelestiaString("DOWNLOAD", "")
             }
             ResourceItemState.Downloading -> {
-                button.setText(CelestiaString("DOWNLOADING", ""))
+                progressViewText.text = CelestiaString("DOWNLOADING", "")
             }
             ResourceItemState.Installed -> {
-                button.setProgress(100f)
-                button.setText(CelestiaString("INSTALLED", ""))
+                progressView.setProgress(100f)
+                progressViewText.text = CelestiaString("INSTALLED", "")
             }
         }
     }

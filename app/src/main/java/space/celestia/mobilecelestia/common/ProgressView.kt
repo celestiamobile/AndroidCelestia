@@ -1,5 +1,5 @@
 /*
- * ProgressButton.kt
+ * ProgressView.kt
  *
  * Copyright (C) 2001-2020, Celestia Development Team
  *
@@ -19,14 +19,11 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
 import space.celestia.mobilecelestia.R
+import java.util.*
 
-class ProgressButton : View {
-    private var textPaint: Paint
+class ProgressView : View {
     private var backgroundPaint: Paint
     private var progressPaint: Paint
-    private var text: String = ""
-    private var textSize = 0
-    private var textColor = 0
     private var backgroundColor = 0
     private var progressColor = 0
     private val cornerRadius = 10f
@@ -37,21 +34,13 @@ class ProgressButton : View {
     constructor(context: Context?) : this(context, null)
 
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
-        textSize = resources.getDimensionPixelSize(R.dimen.progress_button_text_size_default)
         val attributeArray =
-            getContext().theme.obtainStyledAttributes(attrs, R.styleable.ProgressButton, 0, 0)
+            getContext().theme.obtainStyledAttributes(attrs, R.styleable.ProgressView, 0, 0)
         try {
             backgroundColor =
-                attributeArray.getColor(R.styleable.ProgressButton_backgroundColor, ResourcesCompat.getColor(resources, R.color.colorProgressBackground, null))
+                attributeArray.getColor(R.styleable.ProgressView_backgroundColor, ResourcesCompat.getColor(resources, R.color.colorProgressBackground, null))
             progressColor =
-                attributeArray.getColor(R.styleable.ProgressButton_progressColor, ResourcesCompat.getColor(resources, R.color.colorProgressForeground, null))
-            textColor =
-                attributeArray.getColor(R.styleable.ProgressButton_textColor, Color.WHITE)
-            textSize = attributeArray.getDimensionPixelSize(
-                R.styleable.ProgressButton_textSize,
-                textSize
-            )
-            text = attributeArray.getString(R.styleable.ProgressButton_text) ?: ""
+                attributeArray.getColor(R.styleable.ProgressView_progressColor, ResourcesCompat.getColor(resources, R.color.colorProgressForeground, null))
         } finally {
             attributeArray.recycle()
         }
@@ -61,10 +50,6 @@ class ProgressButton : View {
         progressPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         progressPaint.color = progressColor
         progressPaint.style = Paint.Style.FILL_AND_STROKE
-        textPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        textPaint.color = textColor
-        textPaint.textSize = textSize.toFloat()
-        textPaint.style = Paint.Style.FILL_AND_STROKE
     }
 
     override fun setBackgroundColor(bgColor: Int) {
@@ -76,23 +61,6 @@ class ProgressButton : View {
     fun setProgressColor(progColor: Int) {
         progressColor = progColor
         progressPaint.color = progColor
-        invalidate()
-    }
-
-    fun setTextColor(textColor: Int) {
-        this.textColor = textColor
-        textPaint.color = textColor
-        invalidate()
-    }
-
-    fun setTextSize(size: Int) {
-        textSize = size
-        textPaint.textSize = size.toFloat()
-        invalidate()
-    }
-
-    fun setText(text: String) {
-        this.text = text
         invalidate()
     }
 
@@ -116,6 +84,7 @@ class ProgressButton : View {
         setMeasuredDimension(width, height)
     }
 
+    @ExperimentalStdlibApi
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawDeterminateProgress(canvas)
@@ -155,7 +124,6 @@ class ProgressButton : View {
             bgRectf, cornerRadius, cornerRadius,
             backgroundPaint
         )
-        drawText(canvas)
     }
 
     private fun onDrawProgress(canvas: Canvas) {
@@ -176,7 +144,6 @@ class ProgressButton : View {
             progRect, cornerRadius, cornerRadius,
             progressPaint
         )
-        drawText(canvas)
     }
 
     private fun onDrawFinished(canvas: Canvas) {
@@ -196,16 +163,6 @@ class ProgressButton : View {
             progRect, cornerRadius, cornerRadius,
             progressPaint
         )
-        drawText(canvas)
-    }
-
-    private fun drawText(canvas: Canvas) {
-        val bounds = Rect()
-        textPaint.getTextBounds(text, topX.toInt(), text.length, bounds)
-        val xPos = (canvas.width - bounds.width()) / 2
-        val textAdjust = (textPaint.descent() + textPaint.ascent()).toInt() / 2
-        val yPos = canvas.height / 2 - textAdjust
-        canvas.drawText(text, xPos.toFloat(), yPos.toFloat(), textPaint)
     }
 
     fun setProgress(currentProgress: Float) {

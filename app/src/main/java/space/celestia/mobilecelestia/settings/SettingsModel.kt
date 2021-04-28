@@ -298,9 +298,9 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
     )),
     SettingsCommonItem(CelestiaString("Orbits", ""), listOf(
         SettingsCommonItem.Section(listOf(
-            SettingsSwitchItem(SettingsKey.ShowOrbits, SettingsSwitchItem.Representation.Checkmark),
-            SettingsSwitchItem(SettingsKey.ShowFadingOrbits, SettingsSwitchItem.Representation.Checkmark),
-            SettingsSwitchItem(SettingsKey.ShowPartialTrajectories, SettingsSwitchItem.Representation.Checkmark),
+            SettingsSwitchItem(SettingsKey.ShowOrbits, SettingsSwitchItem.Representation.Switch),
+            SettingsSwitchItem(SettingsKey.ShowFadingOrbits, SettingsSwitchItem.Representation.Switch),
+            SettingsSwitchItem(SettingsKey.ShowPartialTrajectories, SettingsSwitchItem.Representation.Switch),
         )),
         SettingsCommonItem.Section(listOf(
             SettingsSwitchItem(SettingsKey.ShowStellarOrbits, SettingsSwitchItem.Representation.Checkmark),

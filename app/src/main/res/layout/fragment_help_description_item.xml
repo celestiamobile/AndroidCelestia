@@ -25,11 +25,10 @@
 
     <TextView
         android:id="@+id/description"
+        style="@style/HelpText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginVertical="12dp"
-        android:layout_marginEnd="16dp"
-        android:textAppearance="?attr/textAppearanceListItem"
-        style="@style/PrimaryLabel"/>
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp" />
 </LinearLayout>

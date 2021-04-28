@@ -13,13 +13,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="44dp"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"
     style="@style/ListItemGrouped">
 
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="12dp"
         android:layout_weight="1">
         <TextView
             android:id="@+id/title"
@@ -28,10 +29,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:textAppearance="?attr/textAppearanceListItem"
-            android:lines="1"
-            android:ellipsize="end"
-            style="@style/PrimaryLabel"/>
+            style="@style/PrimaryListItemLabel"/>
 
         <TextView
             android:id="@+id/detail"
@@ -41,10 +39,7 @@
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
             android:textAlignment="textEnd"
-            android:textAppearance="?attr/textAppearanceListItem"
-            android:lines="1"
-            android:ellipsize="end"
-            style="@style/SecondaryLabel"
+            style="@style/SecondaryListItemLabel"
             tools:ignore="NestedWeights" />
     </LinearLayout>
 

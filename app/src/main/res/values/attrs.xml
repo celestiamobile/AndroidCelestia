@@ -11,11 +11,8 @@
   -->
 
 <resources>
-    <declare-styleable name="ProgressButton">
+    <declare-styleable name="ProgressView">
         <attr name="backgroundColor" format="color" />
         <attr name="progressColor" format="color" />
-        <attr name="textColor" format="color" />
-        <attr name="textSize" format="dimension" />
-        <attr name="text" format="string" />
     </declare-styleable>
 </resources>

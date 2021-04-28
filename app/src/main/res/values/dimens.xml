@@ -11,10 +11,8 @@
   -->
 
 <resources>
-    <dimen name="text_margin">16dp</dimen>
     <dimen name="dialog_input_padding_normal">16dp</dimen>
 
-    <dimen name="progress_button_text_size_default">16sp</dimen>
     <dimen name="progress_button_default_width">150dp</dimen>
-    <dimen name="progress_button_default_height">40dp</dimen>
+    <dimen name="progress_button_default_height">36dp</dimen>
 </resources>

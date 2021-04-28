@@ -72,29 +72,55 @@
         <item name="android:textColor">@color/colorLabel</item>
     </style>
 
+    <style name="ActionButtonLabel" parent="PrimaryLabel">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Button</item>
+    </style>
+
+    <style name="HelpText" parent="PrimaryLabel">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
+    </style>
+
+    <style name="LoadingText" parent="PrimaryLabel">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Medium</item>
+    </style>
+
+    <style name="CaptionText" parent="PrimaryLabel">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Caption</item>
+    </style>
+
+    <style name="PrimaryListItemLabel" parent="PrimaryLabel">
+        <item name="android:textAppearance">?attr/textAppearanceListItem</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="SecondaryListItemLabel" parent="SecondaryLabel">
+        <item name="android:textAppearance">?attr/textAppearanceListItemSecondary</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
     <style name="LargeTitleLabel" parent="PrimaryLabel">
-        <item name="android:textSize">28sp</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Display1</item>
     </style>
 
     <style name="HeadlineLabel" parent="PrimaryLabel">
-        <item name="android:textSize">18sp</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Title</item>
     </style>
 
     <style name="SecondaryLabel">
         <item name="android:textColor">@color/colorSecondaryLabel</item>
     </style>
 
+    <style name="BodyLabel" parent="SecondaryLabel">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
+    </style>
+
     <style name="FooterLabel" parent="SecondaryLabel">
-        <item name="android:textSize">14sp</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Caption</item>
     </style>
 
-    <style name="ResourceItemTitleLabel" parent="PrimaryLabel">
-        <item name="android:textSize">22sp</item>
-    </style>
+    <style name="ResourceItemTitleLabel" parent="HeadlineLabel"/>
 
-    <style name="ResourceItemContentLabel" parent="SecondaryLabel">
-        <item name="android:textSize">17sp</item>
-    </style>
+    <style name="ResourceItemContentLabel" parent="BodyLabel"/>
     
     <style name="EditText" parent="PrimaryLabel">
         <item name="backgroundTint">@color/colorEditTextHairLine</item>
