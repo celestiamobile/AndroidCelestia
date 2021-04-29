@@ -72,6 +72,13 @@ Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getName(JNIEnv *env
 }
 
 extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getRadius(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto sel = (Selection *)pointer;
+    return sel->radius();
+}
+
+extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1createSelection(JNIEnv *env,
                                                                              jclass clazz,

@@ -69,4 +69,33 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToDestination(JN
     env->ReleaseStringUTFChars(target, str);
 }
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToLocation(JNIEnv *env,
+                                                                           jobject clazz,
+                                                                           jlong pointer,
+                                                                           jlong selectionPtr,
+                                                                           jdouble distance,
+                                                                           jdouble duration) {
+    auto sim = (Simulation *)pointer;
+    sim->setSelection(*(Selection *)selectionPtr);
+    sim->geosynchronousFollow();
+    sim->gotoSelection(duration, distance, Eigen::Vector3f(0, 1, 0), ObserverFrame::ObserverLocal);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToLocationLongLat(JNIEnv *env,
+                                                                           jobject clazz,
+                                                                           jlong pointer,
+                                                                           jlong selectionPtr,
+                                                                           jfloat longitude,
+                                                                           jfloat latitude,
+                                                                           jdouble distance,
+                                                                           jdouble duration) {
+    auto sim = (Simulation *)pointer;
+    sim->setSelection(*(Selection *)selectionPtr);
+    sim->geosynchronousFollow();
+    sim->gotoSelectionLongLat(duration, distance, longitude * (float)M_PI / 180.0f, latitude * (float)M_PI / 180.0f, Eigen::Vector3f(0, 1, 0));
+}
 

@@ -106,6 +106,10 @@ public class CelestiaSelection {
         return null;
     }
 
+    public double getRadius() {
+        return c_getRadius(pointer);
+    }
+
     public long createCopy() {
         return c_clone(pointer);
     }
@@ -121,6 +125,7 @@ public class CelestiaSelection {
     private static native int c_getSelectionType(long pointer);
     private static native long c_getSelectionPtr(long pointer);
     private static native String c_getName(long pointer);
+    private static native double c_getRadius(long pointer);
     private static native void c_destroy(long pointer);
     private static native long c_clone(long pointer);
 

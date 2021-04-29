@@ -52,6 +52,8 @@ import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
 import space.celestia.mobilecelestia.favorite.*
+import space.celestia.mobilecelestia.goto.GoToContainerFragment
+import space.celestia.mobilecelestia.goto.GoToInputFragment
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
@@ -109,7 +111,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     ResourceFragment.Listener,
     AsyncListFragment.Listener<Any>,
     DestinationDetailFragment.Listener,
-    SearchResultFragment.Listener {
+    SearchResultFragment.Listener,
+    GoToInputFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -849,6 +852,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ToolbarAction.Addons -> {
                 showOnlineResource()
             }
+            ToolbarAction.Paperplane -> {
+                showGoTo()
+            }
         }
     }
 
@@ -1574,6 +1580,29 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             } else if (item is ResourceItem) {
                 frag.pushItem(item)
             }
+        }
+    }
+
+    private fun showGoTo() {
+        showEndFragment(GoToContainerFragment.newInstance())
+    }
+
+    override fun onGoToObject(
+        objectName: String,
+        longitude: Float,
+        latitude: Float,
+        distance: Double,
+        distanceUnit: CelestiaGoToLocation.DistanceUnit
+    ) {
+        val selection = core.simulation.findObject(objectName)
+        if (selection.isEmpty) {
+            showAlert(CelestiaString("Object not found", ""))
+            return
+        }
+
+        val location = CelestiaGoToLocation(selection, longitude, latitude, distance, distanceUnit)
+        CelestiaView.callOnRenderThread {
+            core.simulation.goToLocation(location)
         }
     }
 

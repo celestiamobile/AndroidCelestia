@@ -21,4 +21,5 @@ public class CelestiaUtils {
     public static native @NonNull CelestiaVector eclipticToEquatorial(@NonNull CelestiaVector ecliptic);
     public static native @NonNull CelestiaVector equatorialToGalactic(@NonNull CelestiaVector equatorial);
     public static native @NonNull CelestiaVector rectToSpherical(@NonNull CelestiaVector rect);
+    public static native double AUToKilometers(double au);
 }

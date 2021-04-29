@@ -81,6 +81,18 @@ public class CelestiaSimulation {
         c_goToDestination(pointer, destination.target, destination.distance);
     }
 
+    public void goToLocation(@NonNull CelestiaGoToLocation location) {
+        double distance = location.selection.getRadius() * 5.0;
+        if ((location.fieldMask & CelestiaGoToLocation.FieldMaskDistance) != 0) {
+            distance = location.distance;
+        }
+        if (((location.fieldMask & CelestiaGoToLocation.FieldMaskLongitude) != 0) && ((location.fieldMask & CelestiaGoToLocation.FieldMaskLatitude) != 0 )) {
+            c_goToLocationLongLat(pointer, location.selection.pointer, location.longitude, location.latitude, distance, location.duration);
+        } else {
+            c_goToLocation(pointer, location.selection.pointer, distance, location.duration);
+        }
+    }
+
     // C functions
     private static native long c_getSelection(long pointer);
     private static native void c_setSelection(long pointer, long ptr);
@@ -94,4 +106,6 @@ public class CelestiaSimulation {
     private static native void c_goToEclipse(long pointer, double time, long ref, long target);
     private static native long c_getActiveObserver(long pointer);
     private static native void c_goToDestination(long ptr, String target, double distance);
+    private static native void c_goToLocation(long pointer, long selectionPtr, double distance, double duration);
+    private static native void c_goToLocationLongLat(long pointer, long selectionPtr, float longitude, float latitude, double distance, double duration);
 }

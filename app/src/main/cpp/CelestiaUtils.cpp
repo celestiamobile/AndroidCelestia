@@ -99,3 +99,9 @@ Java_space_celestia_mobilecelestia_core_CelestiaUtils_rectToSpherical(JNIEnv *en
 
     return createVectorForVector3d(env, Eigen::Vector3d(theta, phi, r));
 }
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaUtils_AUToKilometers(JNIEnv *env, jclass clazz, jdouble au) {
+    return astro::AUtoKilometers(au);
+}

@@ -33,7 +33,7 @@ class EventFinderInputRecyclerViewAdapter(
     private val chooseTimeCallback: (Boolean) -> Unit,
     private val chooseObjectCallback: (String) -> Unit,
     private val proceedCallback: () -> Unit,
-    var objectName: String = "Earth",
+    var objectName: String = CelestiaAppCore.getLocalizedString("Earth", "celestia"),
     var startDate: Date = Date(Date().time - DEFAULT_SEARCHING_INTERVAL),
     var endDate: Date = Date()
 ) : SeparatorHeaderRecyclerViewAdapter(createSections(objectName, startDate, endDate)) {
@@ -84,7 +84,7 @@ class EventFinderInputRecyclerViewAdapter(
         if (item is EventFinderObjectItem && holder is CommonTextViewHolder) {
             holder.title.text = CelestiaString("Object", "")
             holder.detail.visibility = View.VISIBLE
-            holder.detail.text = CelestiaAppCore.getLocalizedString(item.objectName, "celestia")
+            holder.detail.text = item.objectName
             return
         }
         if (item is EventFinderProceedButton && holder is CommonTextViewHolder) {
