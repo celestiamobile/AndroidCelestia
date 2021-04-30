@@ -236,6 +236,20 @@ class FavoriteItemRecyclerViewAdapter private constructor(
                     }
                     return@setOnLongClickListener true
                 }
+                holder.itemView.setOnContextClickListener {
+                    val popup = PopupMenu(it.context, it)
+                    setupPopupMenu(popup, actions) { menuItem ->
+                        when (menuItem) {
+                            FavoriteItemAction.Delete -> {
+                                listener?.deleteFavoriteItem(children.indexOf(item))
+                            }
+                            FavoriteItemAction.Rename -> {
+                                listener?.renameFavoriteItem(item)
+                            }
+                        }
+                    }
+                    return@setOnContextClickListener true
+                }
             } else {
                 holder.itemView.setOnLongClickListener(null)
             }
