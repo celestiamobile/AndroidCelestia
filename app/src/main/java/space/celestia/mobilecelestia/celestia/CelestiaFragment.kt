@@ -142,7 +142,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         activeControlView.listener = this
         inactiveControlView.listener = this
 
-        if (currentState == AppStatusReporter.State.SUCCESS) {
+        if (currentState.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
             loadingFinished()
         }
 
@@ -198,7 +198,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
-        if (newState == AppStatusReporter.State.SUCCESS)
+        if (newState.value >= AppStatusReporter.State.LOADING_SUCCESS.value)
             loadingFinished()
     }
 
@@ -320,7 +320,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         core.tick()
         core.start()
 
-        AppStatusReporter.shared().updateState(AppStatusReporter.State.SUCCESS)
+        AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_SUCCESS)
         return true
     }
 

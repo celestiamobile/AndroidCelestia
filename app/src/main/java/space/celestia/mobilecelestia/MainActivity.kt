@@ -149,8 +149,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val fontDirPath: String
         get() = "$celestiaParentPath/$CELESTIA_FONT_FOLDER_NAME"
 
-    private lateinit var language: String
-
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         val reporter = AppStatusReporter.shared()
@@ -224,11 +222,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (currentState == AppStatusReporter.State.NONE || currentState == AppStatusReporter.State.EXTERNAL_LOADING)  {
             loadExternalConfig(savedState)
-        } else {
-            loadConfigSuccess(savedState)
-            if (currentState == AppStatusReporter.State.SUCCESS) {
-                celestiaLoadingSucceeded()
-            }
+        } else if (currentState == AppStatusReporter.State.LOADING) {
+            // Do nothing
+        } else if (currentState == AppStatusReporter.State.LOADING_SUCCESS) {
+            celestiaLoadingSucceeded()
+        } else if (currentState == AppStatusReporter.State.FINISHED) {
+            celestiaLoadingFinished()
         }
 
         if (savedState != null) {
@@ -299,7 +298,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 loadConfig()
                 if (!isActive) return@launch
                 withContext(Dispatchers.Main) {
-                    loadConfigSuccess(null)
+                    loadConfigSuccess()
                 }
             } catch (error: Throwable) {
                 withContext(Dispatchers.Main) {
@@ -349,7 +348,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun celestiaLoadingProgress(status: String) {}
 
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
-        if (newState == AppStatusReporter.State.SUCCESS) {
+        if (newState == AppStatusReporter.State.FINISHED) {
+            celestiaLoadingFinished()
+        } else if (newState == AppStatusReporter.State.LOADING_SUCCESS) {
             celestiaLoadingSucceeded()
         } else if (newState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE || newState == AppStatusReporter.State.LOADING_FAILURE) {
             celestiaLoadingFailed()
@@ -357,17 +358,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     fun celestiaLoadingSucceeded() {
+        CelestiaView.callOnRenderThread {
+            readSettings()
+
+            AppStatusReporter.shared().updateState(AppStatusReporter.State.FINISHED)
+        }
+    }
+
+    fun celestiaLoadingFinished() {
         lifecycleScope.launch {
-            // hide the loading container
             supportFragmentManager.findFragmentById(R.id.loading_fragment_container)?.let {
                 supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
             }
             findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
 
-            // apply setting
-            readSettings()
+            ResourceManager.shared.addonDirectory = addonPath
 
-            // open url/script if present
             readyForInteraction = true
             runScriptOrOpenURLIfNeeded()
 
@@ -530,8 +536,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
         enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
-
-        AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FINISHED)
     }
 
     private fun showWelcomeIfNeeded() {
@@ -775,25 +779,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } catch (ignored: Throwable) {}
     }
 
-    private fun loadConfigSuccess(savedInstanceState: Bundle?) {
-        ResourceManager.shared.addonDirectory = addonPath
-
-        if (savedInstanceState == null) {
-            // Add gl fragment
-            val celestiaFragment = CelestiaFragment.newInstance(
-                celestiaDataDirPath,
-                celestiaConfigFilePath,
-                addonPath,
-                enableMultisample,
-                enableHiDPI,
-                language
-            )
-            ResourceManager.shared.addonDirectory = addonPath
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.celestia_fragment_container, celestiaFragment)
-                .commitAllowingStateLoss()
-        }
+    private fun loadConfigSuccess() {
+        // Add gl fragment
+        val celestiaFragment = CelestiaFragment.newInstance(
+            celestiaDataDirPath,
+            celestiaConfigFilePath,
+            addonPath,
+            enableMultisample,
+            enableHiDPI,
+            language
+        )
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.celestia_fragment_container, celestiaFragment)
+            .commitAllowingStateLoss()
     }
 
     private fun loadConfigFailed(error: Throwable) {
@@ -1689,6 +1688,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
+        private var language: String = "en"
         private var addonPath: String? = null
         private var extraScriptPath: String? = null
         private var languageOverride: String? = null

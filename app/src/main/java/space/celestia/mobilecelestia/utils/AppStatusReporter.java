@@ -29,9 +29,9 @@ public class AppStatusReporter implements CelestiaAppCore.ProgressWatcher {
         LOADING_FAILURE(-1),
         NONE(0),
         EXTERNAL_LOADING(1),
-        EXTERNAL_LOADING_FINISHED(2),
-        LOADING(3),
-        SUCCESS(4);
+        LOADING(2),
+        LOADING_SUCCESS(3),
+        FINISHED(4);
 
         private int value;
 
