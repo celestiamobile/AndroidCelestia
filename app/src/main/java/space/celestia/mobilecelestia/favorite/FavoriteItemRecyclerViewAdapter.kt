@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.favorite
 
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -236,19 +237,21 @@ class FavoriteItemRecyclerViewAdapter private constructor(
                     }
                     return@setOnLongClickListener true
                 }
-                holder.itemView.setOnContextClickListener {
-                    val popup = PopupMenu(it.context, it)
-                    setupPopupMenu(popup, actions) { menuItem ->
-                        when (menuItem) {
-                            FavoriteItemAction.Delete -> {
-                                listener?.deleteFavoriteItem(children.indexOf(item))
-                            }
-                            FavoriteItemAction.Rename -> {
-                                listener?.renameFavoriteItem(item)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    holder.itemView.setOnContextClickListener {
+                        val popup = PopupMenu(it.context, it)
+                        setupPopupMenu(popup, actions) { menuItem ->
+                            when (menuItem) {
+                                FavoriteItemAction.Delete -> {
+                                    listener?.deleteFavoriteItem(children.indexOf(item))
+                                }
+                                FavoriteItemAction.Rename -> {
+                                    listener?.renameFavoriteItem(item)
+                                }
                             }
                         }
+                        return@setOnContextClickListener true
                     }
-                    return@setOnContextClickListener true
                 }
             } else {
                 holder.itemView.setOnLongClickListener(null)

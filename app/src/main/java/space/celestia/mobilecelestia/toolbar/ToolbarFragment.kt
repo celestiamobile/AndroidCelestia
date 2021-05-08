@@ -49,7 +49,7 @@ enum class ToolbarAction : Serializable {
 
     val imageName: String
         get() {
-            return "toolbar_" + toString().toLowerCase(Locale.ENGLISH)
+            return "toolbar_" + toString().lowercase(Locale.US)
         }
 
     companion object {
