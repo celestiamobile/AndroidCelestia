@@ -60,7 +60,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
         val view = inflater.inflate(R.layout.fragment_info_list, container, false)
 
         if (embeddedInNavigation)
-            view.setBackgroundResource(R.color.colorBackground)
+            view.setBackgroundResource(R.color.colorBackgroundElevated)
 
         val core = CelestiaAppCore.shared()
         val overview = core.getOverviewForSelection(selection)

@@ -29,7 +29,7 @@ open class CommonSection(val items: List<RecyclerViewItem>,
 
 open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
                                         private val separatorLeft: Int = 16,
-                                        private val separatorBackgroundColor: Int = R.color.colorSecondaryBackground,
+                                        private val separatorBackgroundColor: Int = R.color.colorSecondaryBackgroundElevated,
                                         sections: List<CommonSection> = listOf(),
                                         private val fullSection: Boolean = true) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {

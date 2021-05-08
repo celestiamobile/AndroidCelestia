@@ -35,8 +35,16 @@
         <item name="android:background">@color/colorBackground</item>
     </style>
 
+    <style name="BackgroundElevated">
+        <item name="android:background">@color/colorBackgroundElevated</item>
+    </style>
+
     <style name="SecondaryBackground">
         <item name="android:background">@color/colorSecondaryBackground</item>
+    </style>
+
+    <style name="SecondaryBackgroundElevated">
+        <item name="android:background">@color/colorSecondaryBackgroundElevated</item>
     </style>
 
     <style name="ControlViewBackground">
@@ -127,7 +135,7 @@
     </style>
 
     <style name="Toolbar">
-        <item name="android:background">@color/colorBarBackground</item>
+        <item name="android:background">@color/colorBarBackgroundElevated</item>
         <item name="titleTextColor">@color/colorLabel</item>
         <item name="theme">@style/ToolbarTheme</item>
     </style>
@@ -137,7 +145,7 @@
     </style>
 
     <style name="BottomNav">
-        <item name="android:background">@color/colorBarBackground</item>
+        <item name="android:background">@color/colorBarBackgroundElevated</item>
         <item name="itemTextColor">@color/bottom_nav_color</item>
         <item name="itemIconTint">@color/bottom_nav_color</item>
     </style>

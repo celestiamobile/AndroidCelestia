@@ -56,7 +56,7 @@
             android:layout_height="match_parent"
             android:visibility="invisible"
             android:layout_gravity="end"
-            style="@style/Background"/>
+            style="@style/BackgroundElevated"/>
     </FrameLayout>
 
     <FrameLayout

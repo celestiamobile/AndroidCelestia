@@ -801,7 +801,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbar() {
-        showEndFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_end_container)
+        showEndFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_end_container, R.color.colorSecondaryBackgroundElevated)
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
@@ -1416,7 +1416,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInfo(selection: CelestiaSelection) {
-        showEndFragment(InfoFragment.newInstance(selection))
+        showEndFragment(InfoFragment.newInstance(selection), backgroundColor = R.color.colorSecondaryBackgroundElevated)
     }
 
     private fun showSearch() {
@@ -1606,19 +1606,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Utilities
-    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
+    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container, backgroundColor: Int = R.color.colorBackgroundElevated) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {
             ref.get()?.let {
-                showEndFragmentDirect(it, containerID)
+                showEndFragmentDirect(it, containerID, backgroundColor)
             }
         }
     }
 
-    private fun showEndFragmentDirect(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
+    private fun showEndFragmentDirect(fragment: Fragment, containerID: Int = R.id.normal_end_container, backgroundColor: Int = R.color.colorBackgroundElevated) {
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
-        findViewById<View>(R.id.end_notch).visibility = View.VISIBLE
+        val endNotch = findViewById<View>(R.id.end_notch)
+        endNotch.visibility = View.VISIBLE
+        endNotch.setBackgroundResource(backgroundColor)
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
 

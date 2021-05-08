@@ -12,8 +12,11 @@
 
 <resources>
     <color name="colorBackground">#000000</color>
+    <color name="colorBackgroundElevated">#1C1C1E</color>
     <color name="colorSecondaryBackground">#1C1C1E</color>
+    <color name="colorSecondaryBackgroundElevated">#2C2C2E</color>
     <color name="colorBarBackground">#0E0E0F</color>
+    <color name="colorBarBackgroundElevated">#242426</color>
     <color name="colorLabel">#FFFFFF</color>
     <color name="colorSecondaryLabel">#99EBEBF5</color>
     <color name="colorTertiaryLabel">#4DEBEBF5</color>
