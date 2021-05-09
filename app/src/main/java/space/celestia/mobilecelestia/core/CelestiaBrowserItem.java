@@ -11,8 +11,13 @@
 
 package space.celestia.mobilecelestia.core;
 
+import android.icu.text.Collator;
+import android.icu.text.RuleBasedCollator;
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,6 +37,9 @@ public class CelestiaBrowserItem {
     private final static int TYPE_LOCATION = 1;
     private final static String POINTER_KEY = "pointer";
     private final static String CHILDREN_KEY = "children";
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private static RuleBasedCollator collator = null;
 
     public interface ChildrenProvider {
         Map<String, CelestiaBrowserItem> childrenForItem(CelestiaBrowserItem item);
@@ -149,8 +157,22 @@ public class CelestiaBrowserItem {
             return;
         }
         childrenKeys = new ArrayList<>(children.keySet());
-        // TODO: better sorting
-        Collections.sort(childrenKeys);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (collator == null) {
+                Collator newCollator = Collator.getInstance();
+                if (newCollator instanceof RuleBasedCollator) {
+                    collator = (RuleBasedCollator) newCollator;
+                    collator.setNumericCollation(true);
+                }
+            }
+            if (collator != null) {
+                Collections.sort(childrenKeys, collator);
+            } else {
+                Collections.sort(childrenKeys);
+            }
+        } else {
+            Collections.sort(childrenKeys);
+        }
 
         childrenValues = new ArrayList<>();
         for (int i = 0; i < childrenKeys.size(); i++) {

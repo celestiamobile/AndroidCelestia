@@ -12,6 +12,7 @@
 package space.celestia.mobilecelestia.core;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Map;
 
@@ -71,7 +72,8 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
     }
 
     @Override
-    public Map<String, CelestiaBrowserItem> childrenForItem(CelestiaBrowserItem item) {
+    @Nullable
+    public Map<String, CelestiaBrowserItem> childrenForItem(@NonNull CelestiaBrowserItem item) {
         CelestiaAstroObject obj = item.getObject();
 
         if (obj == null) { return null; }
