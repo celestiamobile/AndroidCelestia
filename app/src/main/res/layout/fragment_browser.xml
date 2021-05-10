@@ -17,7 +17,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".browser.BrowserFragment"
-    style="@style/BackgroundElevated">
+    style="@style/Background">
 
     <FrameLayout
         android:id="@+id/navigation_container"

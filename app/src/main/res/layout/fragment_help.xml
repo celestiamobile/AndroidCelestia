@@ -15,7 +15,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    style="@style/SecondaryBackgroundElevated">
+    style="@style/SecondaryBackground">
 
     <TextView
         android:id="@+id/welcome_message"

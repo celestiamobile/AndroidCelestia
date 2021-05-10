@@ -66,11 +66,6 @@ android {
     convertPO.mustRunAfter copyGeneralData
     preBuild.dependsOn copyGeneralData
     preBuild.dependsOn convertPO
-
-    compileOptions {
-        targetCompatibility = "8"
-        sourceCompatibility = "8"
-    }
 }
 
 dependencies {

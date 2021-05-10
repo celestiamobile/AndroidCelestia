@@ -16,7 +16,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clickable="true"
-    style="@style/BackgroundElevated"
+    style="@style/Background"
     android:paddingHorizontal="16dp"
     android:paddingVertical="12dp">
     <ScrollView

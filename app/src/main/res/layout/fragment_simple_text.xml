@@ -15,7 +15,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".settings.SimpleTextFragment"
-    style="@style/BackgroundElevated">
+    style="@style/Background">
 
     <ScrollView
         android:layout_width="match_parent"

@@ -12,5 +12,5 @@
 
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
         android:color="@color/colorSelection">
-    <item android:drawable="@color/colorSecondaryBackgroundElevated"/>
+    <item android:drawable="@color/colorSecondaryBackground"/>
 </ripple>

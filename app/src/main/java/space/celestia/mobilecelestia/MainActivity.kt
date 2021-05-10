@@ -801,7 +801,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbar() {
-        showEndFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_end_container, R.color.colorSecondaryBackgroundElevated)
+        showEndFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_end_container, R.color.colorSecondaryBackground)
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
@@ -1416,7 +1416,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInfo(selection: CelestiaSelection) {
-        showEndFragment(InfoFragment.newInstance(selection), backgroundColor = R.color.colorSecondaryBackgroundElevated)
+        showEndFragment(InfoFragment.newInstance(selection), backgroundColor = R.color.colorSecondaryBackground)
     }
 
     private fun showSearch() {
@@ -1606,7 +1606,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Utilities
-    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container, backgroundColor: Int = R.color.colorBackgroundElevated) {
+    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container, backgroundColor: Int = R.color.colorBackground) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {
             ref.get()?.let {
@@ -1615,7 +1615,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun showEndFragmentDirect(fragment: Fragment, containerID: Int = R.id.normal_end_container, backgroundColor: Int = R.color.colorBackgroundElevated) {
+    private fun showEndFragmentDirect(fragment: Fragment, containerID: Int = R.id.normal_end_container, backgroundColor: Int = R.color.colorBackground) {
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
         val endNotch = findViewById<View>(R.id.end_notch)
