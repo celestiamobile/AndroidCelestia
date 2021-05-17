@@ -497,7 +497,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1runScript(JNIEnv *env
                                                                      jstring path) {
     auto core = (CelestiaCore *)ptr;
     const char *str = env->GetStringUTFChars(path, nullptr);
-    core->runScript(str);
+    core->runScript(str, false);
     env->ReleaseStringUTFChars(path, str);
 }
 
