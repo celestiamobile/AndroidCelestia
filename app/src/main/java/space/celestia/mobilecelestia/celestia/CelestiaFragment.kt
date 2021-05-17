@@ -11,7 +11,6 @@
 
 package space.celestia.mobilecelestia.celestia
 
-import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -24,7 +23,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.MainActivity
@@ -61,6 +60,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var pendingTarget: CelestiaSelection? = null
     private var browserItems: ArrayList<CelestiaBrowserItem> = arrayListOf()
     private var density: Float = 1f
+
+    private var isControlViewVisible = true
+    private var hideAnimator: ObjectAnimator? = null
+    private var showAnimator: ObjectAnimator? = null
 
     private val scaleFactor: Float
         get() = if (enableFullResolution) 1.0f else (1.0f / density)
@@ -123,24 +126,16 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
             CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),
             CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu),
-            CelestiaTapButton(R.drawable.control_hide, CelestiaControlAction.Hide)
-        ))
-        val inactiveControlView = CelestiaControlView(inflater.context, listOf(
-            CelestiaTapButton(R.drawable.control_show, CelestiaControlAction.Show)
+            CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide)
         ))
         val activeControlContainer = view.findViewById<FrameLayout>(R.id.active_control_view_container)
-        val inactiveControlContainer = view.findViewById<FrameLayout>(R.id.inactive_control_view_container)
 
         activeControlContainer.addView(activeControlView)
-        inactiveControlContainer.addView(inactiveControlView)
 
         val layoutParamsForControls = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
         layoutParamsForControls.setMargins(controlMargin, controlMargin, controlMargin, controlMargin)
         activeControlView.layoutParams = layoutParamsForControls
-        inactiveControlView.layoutParams = layoutParamsForControls
-
         activeControlView.listener = this
-        inactiveControlView.listener = this
 
         if (currentState.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
             loadingFinished()
@@ -333,7 +328,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             view.isContextClickable = true
         }
         interaction.isReady = true
-        view.setOnTouchListener(interaction)
+        view.setOnTouchListener { v, event ->
+            showControlViewIfNeeded()
+            interaction.onTouch(v, event)
+        }
         view.setOnKeyListener(interaction)
         view.setOnGenericMotionListener(interaction)
         core.setContextMenuHandler(this)
@@ -481,72 +479,61 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
                 listener?.celestiaFragmentDidRequestObjectInfo()
             }
             CelestiaControlAction.Hide -> {
-                hideCurrentControlViewToShow(R.id.inactive_control_view_container)
+                hideControlView()
             }
             CelestiaControlAction.Show -> {
-                hideCurrentControlViewToShow(R.id.active_control_view_container)
+                showControlView()
             }
             else -> {}
         }
     }
 
-    private fun hideCurrentControlViewToShow(anotherView: Int) {
-        val current = view?.findViewById<FrameLayout>(currentControlViewID) ?: return
-        val new = view?.findViewById<FrameLayout>(anotherView) ?: return
-
-        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-
-        if (current == new) { return }
-
-        var maxValue = current.width + controlContainerTrailingMargin
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            maxValue += if (ltr)
-                current.rootWindowInsets.displayCutout?.safeInsetRight ?: 0
-            else
-                current.rootWindowInsets.displayCutout?.safeInsetLeft ?: 0
+    private fun hideControlView() {
+        val controlView = view?.findViewById<FrameLayout>(R.id.active_control_view_container) ?: return
+        if (hideAnimator != null) return
+        showAnimator?.let {
+            it.cancel()
+            showAnimator = null
         }
 
-        // Reserve 1 dp to ensure it does not completely fall off the screen
-        val hideAnimator = ObjectAnimator.ofFloat(current, "translationX", 0f, (if (ltr) 1 else -1) * (maxValue - density))
-        hideAnimator.duration = 200
-        hideAnimator.start()
+        val animator = ObjectAnimator.ofFloat(controlView, View.ALPHA, 1f, 0f)
+        animator.duration = 200
+        animator.doOnEnd {
+            hideAnimator = null
+            isControlViewVisible = false
+        }
+        animator.start()
+        hideAnimator = animator
+    }
 
-        val finishBlock: (Animator) -> Unit = {
-            val currentLayoutParams = current.layoutParams as? ConstraintLayout.LayoutParams
-            val newLayoutParams = new.layoutParams as? ConstraintLayout.LayoutParams
-            if (currentLayoutParams != null && newLayoutParams != null) {
-                currentLayoutParams.startToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-                currentLayoutParams.endToEnd = ConstraintLayout.LayoutParams.UNSET
-                currentLayoutParams.marginEnd = 0
-                current.layoutParams = currentLayoutParams
-                current.translationX = -1 * density
-
-                newLayoutParams.startToEnd = ConstraintLayout.LayoutParams.UNSET
-                newLayoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-
-                var insetEnd = 0
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    insetEnd = if (ltr)
-                        new.rootWindowInsets.displayCutout?.safeInsetRight ?: 0
-                    else
-                        new.rootWindowInsets.displayCutout?.safeInsetLeft ?: 0
-                }
-
-                newLayoutParams.marginEnd = insetEnd + controlContainerTrailingMargin
-                new.layoutParams = newLayoutParams
-                new.translationX = 0f
-            }
-            currentControlViewID = anotherView
+    private fun showControlView() {
+        val controlView = view?.findViewById<FrameLayout>(R.id.active_control_view_container) ?: return
+        if (showAnimator != null) return
+        hideAnimator?.let {
+            it.cancel()
+            hideAnimator = null
         }
 
-        val showAnimator = ObjectAnimator.ofFloat(new, "translationX", 0f, -maxValue.toFloat())
+        val animator = ObjectAnimator.ofFloat(controlView, View.ALPHA, 0f, 1f)
+        animator.duration = 200
+        animator.doOnEnd {
+            showAnimator = null
+            isControlViewVisible = true
+        }
+        animator.start()
+        showAnimator = animator
+    }
 
-        hideAnimator.addListener(onEnd = {
-            showAnimator.duration = 200
-            showAnimator.start()
-        }, onCancel = finishBlock)
+    private fun showControlViewIfNeeded() {
+        if (!isControlViewVisible) {
+            showControlView()
+        }
+    }
 
-        showAnimator.addListener(onEnd = finishBlock, onCancel = finishBlock)
+    private fun hideControlViewIfNeeded() {
+        if (isControlViewVisible) {
+            showControlView()
+        }
     }
 
     override fun didToggleToMode(action: CelestiaControlAction) {
