@@ -42,7 +42,7 @@ JNIEXPORT jobject JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1completionForText(JNIEnv *env, jclass clazz, jlong pointer, jstring text, jint limit) {
     auto sim = (Simulation *)pointer;
     const char *str = env->GetStringUTFChars(text, nullptr);
-    std::vector<std::string> results = sim->getObjectCompletion(str);
+    std::vector<std::string> results = sim->getObjectCompletion(str, true);
     env->ReleaseStringUTFChars(text, str);
     jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)results.size());
     int count = 0;

@@ -26,6 +26,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
@@ -60,6 +62,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var pendingTarget: CelestiaSelection? = null
     private var browserItems: ArrayList<CelestiaBrowserItem> = arrayListOf()
     private var density: Float = 1f
+    private var previousDensity: Float = 0f
+    @RequiresApi(Build.VERSION_CODES.P)
+    private var savedCutout: DisplayCutout? = null
 
     private var isControlViewVisible = true
     private var hideAnimator: ObjectAnimator? = null
@@ -91,6 +96,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         super.onCreate(savedInstanceState)
 
         density = resources.displayMetrics.density
+
         arguments?.let {
             pathToLoad = it.getString(ARG_DATA_DIR)
             cfgToLoad = it.getString(ARG_CFG_FILE)
@@ -105,7 +111,14 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             renderer.setEngineStartedListener {
                 loadCelestia()
             }
+        } else {
+            previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putFloat(KEY_PREVIOUS_DENSITY, density)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateView(
@@ -193,7 +206,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
-        if (newState.value >= AppStatusReporter.State.LOADING_SUCCESS.value)
+        if (newState == AppStatusReporter.State.LOADING_SUCCESS)
             loadingFinished()
     }
 
@@ -201,7 +214,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun applyCutout(cutout: DisplayCutout) {
-        if (!loadSuccess) { return }
+        if (!loadSuccess) {
+            savedCutout = cutout
+            return
+        }
 
         val insets = cutout.safeInsets().scaleBy(scaleFactor)
         CelestiaView.callOnRenderThread {
@@ -296,8 +312,34 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         // Prepare for browser items
         core.simulation.createAllBrowserItems()
 
+        updateContentScale()
+
+        // Display
+        core.tick()
+        core.start()
+
+        AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_SUCCESS)
+
+        return true
+    }
+
+    private fun updateContentScale() {
+        if (density == previousDensity) return
+
+        renderer.makeContextCurrent()
+
         core.setDPI((96 * density * scaleFactor).toInt())
         core.setPickTolerance(10f * density * scaleFactor)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val cutout = savedCutout
+            if (cutout != null) {
+                core.setSafeAreaInsets(cutout.safeInsets().scaleBy(scaleFactor))
+                savedCutout = null
+            }
+        }
+
+        core.clearFonts()
 
         // Use installed font
         val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
@@ -310,16 +352,19 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             core.setRendererFont(font.filePath, font.collectionIndex, 9, CelestiaAppCore.RENDER_FONT_STYLE_NORMAL)
             core.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
         }
-
-        // Display
-        core.tick()
-        core.start()
-
-        AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_SUCCESS)
-        return true
+        previousDensity = density
     }
 
     private fun loadingFinished() {
+        renderer.enqueueTask {
+            updateContentScale()
+            lifecycleScope.launch {
+                setupInteractions()
+            }
+        }
+    }
+
+    private fun setupInteractions() {
         val interaction = viewInteraction ?: return
         val view = glView ?: return
 
@@ -606,6 +651,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         private const val GROUP_WEB_INFO = 5
         private const val GROUP_BROWSER_ITEM_GO = 6
         private const val GROUP_BROWSER_ITEM = 7
+        private const val KEY_PREVIOUS_DENSITY = "density"
 
         val availableMarkers: List<String>
             get() = listOf(

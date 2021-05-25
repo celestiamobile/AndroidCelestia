@@ -918,6 +918,13 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setRendererFont(JNIEn
 }
 
 extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1clearFonts(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto core = (CelestiaCore *)ptr;
+    core->clearFonts();
+}
+
+extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getReferenceMarkEnabled(JNIEnv *env,
                                                                                    jclass clazz,

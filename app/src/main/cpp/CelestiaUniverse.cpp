@@ -267,7 +267,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1mark(JNIEnv *env, jc
                                                                  jlong ptr, jlong selection,
                                                                  jint marker) {
     auto u = (Universe *)ptr;
-    u->markObject(*(Selection *)selection, MarkerRepresentation(MarkerRepresentation::Symbol(marker), 10.0f, Color(0.0f, 1.0f, 0.0f, 0.9f)), 1);
+    u->markObject(*(Selection *)selection, celestia::MarkerRepresentation(celestia::MarkerRepresentation::Symbol(marker), 10.0f, Color(0.0f, 1.0f, 0.0f, 0.9f)), 1);
 }
 
 extern "C"

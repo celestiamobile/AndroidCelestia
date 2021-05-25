@@ -50,6 +50,10 @@ public class CelestiaRenderer {
         return sharedRenderer;
     }
 
+    public void makeContextCurrent() {
+        c_makeContextCurrent(pointer);
+    }
+
     public void enqueueTask(@NonNull Callback task) {
         synchronized (taskLock) {
             tasks.add(task);
@@ -126,4 +130,5 @@ public class CelestiaRenderer {
     private native void c_setSurface(long pointer, Surface surface);
     private native void c_setCorePointer(long pointer, long corePtr);
     private native void c_setSurfaceSize(long pointer, int width, int height);
+    private native void c_makeContextCurrent(long pointer);
 }

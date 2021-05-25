@@ -46,6 +46,7 @@ public:
     void setSurface(JNIEnv *env, jobject surface);
     void setSize(int width, int height);
     void setCorePointer(CelestiaCore *core);
+    void makeContextCurrent();
 
     jobject javaObject = nullptr;
 
@@ -301,6 +302,11 @@ void CelestiaRenderer::setCorePointer(CelestiaCore *m_core)
     unlock();
 }
 
+void CelestiaRenderer::makeContextCurrent()
+{
+    eglMakeCurrent(display, surface, surface, context);
+}
+
 void *CelestiaRenderer::threadCallback(void *self)
 {
     auto renderer = (CelestiaRenderer *)self;
@@ -460,6 +466,15 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setSurfaceSize(JNIEn
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setSize(width, height);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1makeContextCurrent(JNIEnv *env,
+                                                                               jobject thiz,
+                                                                               jlong ptr) {
+    auto renderer = (CelestiaRenderer *)ptr;
+    renderer->makeContextCurrent();
 }
 
 extern "C"
