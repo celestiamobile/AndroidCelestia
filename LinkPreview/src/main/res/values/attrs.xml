@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="LPLinkView">
+        <attr name="titleTextColor" format="color" />
+        <attr name="titleTextSize" format="dimension" />
+        <attr name="footnoteTextColor" format="color" />
+        <attr name="footnoteTextSize" format="dimension" />
+        <attr name="textContentPaddingVertical" format="dimension" />
+        <attr name="textContentPaddingHorizontal" format="dimension" />
+        <attr name="textContentSpacing" format="dimension" />
+        <attr name="favIconPadding" format="dimension" />
+    </declare-styleable>
+</resources>

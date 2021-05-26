@@ -19,19 +19,30 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.Dispatcher
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.utils.getOverviewForSelection
+import space.celestia.ui.linkpreview.LPLinkMetadata
+import space.celestia.ui.linkpreview.LPMetadataProvider
+import java.net.MalformedURLException
+import java.net.URL
 
 class InfoFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
     private lateinit var selection: CelestiaSelection
     private var embeddedInNavigation = false
+    private var linkMetadata: LPLinkMetadata? = null
+
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,40 +68,13 @@ class InfoFragment : NavigationFragment.SubFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_info_list, container, false)
+        recyclerView = inflater.inflate(R.layout.fragment_info_list, container, false) as RecyclerView
 
         if (embeddedInNavigation)
-            view.setBackgroundResource(R.color.colorBackground)
+            recyclerView.setBackgroundResource(R.color.colorBackground)
 
-        val core = CelestiaAppCore.shared()
-        val overview = core.getOverviewForSelection(selection)
-        val name = core.simulation.universe.getNameForSelection(selection)
-        val hasWebInfo = selection.webInfoURL != null
-        val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
-
-        val descriptionItem = InfoDescriptionItem(name, overview, hasWebInfo, hasAltSurface)
-
-        // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
-                val manager = GridLayoutManager(context, 2)
-                manager.spanSizeLookup = SizeLookup()
-                layoutManager = manager
-                val actions = ArrayList<InfoItem>()
-                actions.add(descriptionItem)
-                val otherActions = ArrayList(InfoActionItem.infoActions)
-                if (descriptionItem.hasWebInfo)
-                    otherActions.add(InfoWebActionItem())
-                if (descriptionItem.hasAlternateSurfaces)
-                    otherActions.add(AlternateSurfacesItem())
-                otherActions.add(SubsystemActionItem())
-                otherActions.add(MarkItem())
-                actions.addAll(otherActions)
-                adapter = InfoRecyclerViewAdapter(actions, selection, listener)
-                addItemDecoration(SpaceItemDecoration())
-            }
-        }
-        return view
+        reload()
+        return recyclerView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -116,16 +100,70 @@ class InfoFragment : NavigationFragment.SubFragment() {
 
     interface Listener {
         fun onInfoActionSelected(action: InfoActionItem, selection: CelestiaSelection)
+        fun onInfoLinkMetaDataClicked(url: URL)
     }
 
-    inner class SizeLookup: GridLayoutManager.SpanSizeLookup() {
+    private fun reload() {
+        val core = CelestiaAppCore.shared()
+        val overview = core.getOverviewForSelection(selection)
+        val name = core.simulation.universe.getNameForSelection(selection)
+        val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
+
+        var hasWebInfo = false
+        var hideWebInfo = false
+        val webInfoURL = selection.webInfoURL
+        if (webInfoURL != null) {
+            try {
+                val url = URL(webInfoURL)
+                hasWebInfo = true
+                val fetcher = LPMetadataProvider()
+                if (linkMetadata == null) {
+                    hideWebInfo = true
+                    fetcher.startFetchMetadataForURL(lifecycleScope, url) { metaData, _ ->
+                        if (metaData == null) { return@startFetchMetadataForURL }
+                        withContext(Dispatchers.Main) {
+                            linkMetadata = metaData
+                            reload()
+                        }
+                    }
+                }
+            } catch (ignored: MalformedURLException) {}
+        }
+
+        val metadata = linkMetadata
+
+        val descriptionItem = InfoDescriptionItem(name, overview, hasWebInfo && !hideWebInfo, hasAltSurface)
+        val manager = GridLayoutManager(context, 2)
+        val firstSingleColumnItem = if (metadata == null) 1 else 2
+        manager.spanSizeLookup = SizeLookup(firstSingleColumnItem)
+        recyclerView.layoutManager = manager
+        val actions = ArrayList<InfoItem>()
+        actions.add(descriptionItem)
+        if (metadata != null)
+            actions.add(InfoMetadataItem(metadata))
+        val otherActions = ArrayList(InfoActionItem.infoActions)
+        if (descriptionItem.hasWebInfo)
+            otherActions.add(InfoWebActionItem())
+        if (descriptionItem.hasAlternateSurfaces)
+            otherActions.add(AlternateSurfacesItem())
+        otherActions.add(SubsystemActionItem())
+        otherActions.add(MarkItem())
+        actions.addAll(otherActions)
+        recyclerView.adapter = InfoRecyclerViewAdapter(actions, selection, listener)
+        while (recyclerView.getItemDecorationCount() > 0) {
+            recyclerView.removeItemDecorationAt(0)
+        }
+        recyclerView.addItemDecoration(SpaceItemDecoration(firstSingleColumnItem))
+    }
+
+    inner class SizeLookup(private val firstSingleColumnItem: Int): GridLayoutManager.SpanSizeLookup() {
         override fun getSpanSize(position: Int): Int {
-            if (position == 0) { return 2 }
+            if (position < firstSingleColumnItem) { return 2 }
             return 1
         }
     }
 
-    inner class SpaceItemDecoration : RecyclerView.ItemDecoration() {
+    inner class SpaceItemDecoration(private val firstSingleColumnItem: Int) : RecyclerView.ItemDecoration() {
         override fun getItemOffsets(
             outRect: Rect,
             view: View,
@@ -136,15 +174,15 @@ class InfoFragment : NavigationFragment.SubFragment() {
             val spacing = (16 * density).toInt()
 
             val pos = parent.getChildLayoutPosition(view)
-            if (pos == 0) {
+            if (pos < firstSingleColumnItem) {
                 outRect.left = spacing
                 outRect.right = spacing
                 outRect.top = spacing
-                outRect.bottom = spacing
+                outRect.bottom = if (pos == firstSingleColumnItem - 1) spacing else 0
             } else {
                 outRect.top = 0
                 outRect.bottom = spacing
-                if (pos % 2 == 0) {
+                if ((pos - firstSingleColumnItem) % 2 == 1) {
                     outRect.left = spacing / 2
                     outRect.right = spacing
                 } else {

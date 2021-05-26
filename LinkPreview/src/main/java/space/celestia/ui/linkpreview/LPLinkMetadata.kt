@@ -1,5 +1,5 @@
 /*
- * settings.gradle
+ * LPLinkMetadata.kt
  *
  * Copyright (C) 2001-2020, Celestia Development Team
  *
@@ -9,6 +9,9 @@
  * of the License, or (at your option) any later version.
  */
 
-rootProject.name='Celestia'
-include ':app'
-include ':LinkPreview'
+package space.celestia.ui.linkpreview
+
+import java.io.Serializable
+import java.net.URL
+
+class LPLinkMetadata(val url: URL, val originalURL: URL, val title: String, val imageURL: URL?, val iconURL: URL) : Serializable
