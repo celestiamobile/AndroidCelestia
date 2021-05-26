@@ -81,6 +81,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var zoomTimer: Timer? = null
 
     private var loadSuccess = false
+    private var haveSurface = false
 
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
@@ -149,10 +150,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         layoutParamsForControls.setMargins(controlMargin, controlMargin, controlMargin, controlMargin)
         activeControlView.layoutParams = layoutParamsForControls
         activeControlView.listener = this
-
-        if (currentState.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
-            loadingFinished()
-        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             view.setOnApplyWindowInsetsListener { _, insets ->
@@ -356,7 +353,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     private fun loadingFinished() {
-        renderer.enqueueTask {
+        if (!haveSurface) return
+        CelestiaView.callOnRenderThread {
             updateContentScale()
             lifecycleScope.launch {
                 setupInteractions()
@@ -503,6 +501,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         renderer.setSurface(holder.surface)
+        haveSurface = true
+        if (AppStatusReporter.shared().state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
+            loadingFinished()
+        }
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
