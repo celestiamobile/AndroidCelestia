@@ -35,8 +35,8 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigat
 
     private var savedFragments: ArrayList<Pair<Fragment, String>?> = arrayListOf(null, null, null)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
         if (savedInstanceState != null) {
             currentPath = savedInstanceState.getString(ARG_PATH_TAG, "")

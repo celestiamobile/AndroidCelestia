@@ -26,19 +26,15 @@ class SubsystemBrowserFragment : NavigationFragment(), BrowserRootFragment {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arguments?.let {
-            val path = it.getString(ARG_ROOT_PATH, SUBSYSTEM_DEFAULT_PREFIX)
-            rootPath = path
-            currentPath = path
-        }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
         if (savedInstanceState != null) {
             rootPath = savedInstanceState.getString(ARG_ROOT_PATH, SUBSYSTEM_DEFAULT_PREFIX)
             currentPath = savedInstanceState.getString(ARG_CURR_PATH, rootPath)
+        } else {
+            arguments?.let {
+                val path = it.getString(ARG_ROOT_PATH, SUBSYSTEM_DEFAULT_PREFIX)
+                rootPath = path
+                currentPath = path
+            }
         }
     }
 

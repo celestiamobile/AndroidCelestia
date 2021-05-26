@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         style="@style/Toolbar"/>
 
-    <View style="@style/BarSeparator"/>
+    <View android:id="@+id/separator" style="@style/BarSeparator"/>
 
     <FrameLayout
         android:id="@+id/fragment_container"

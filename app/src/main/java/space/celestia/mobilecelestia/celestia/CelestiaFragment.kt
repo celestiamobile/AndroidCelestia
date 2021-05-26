@@ -127,7 +127,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         savedInstanceState: Bundle?
     ): View? {
         val reporter = AppStatusReporter.shared()
-        val currentState = reporter.state
         reporter.register(this)
 
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)

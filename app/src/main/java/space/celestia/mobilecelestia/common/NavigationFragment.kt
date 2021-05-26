@@ -214,6 +214,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
     }
 
     private val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
+    private val separator by lazy { requireView().findViewById<View>(R.id.separator) }
 
     private var lastTitle: String = ""
     private var lastLeftItem: BarButtonItem? = null
@@ -269,12 +270,13 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
 
     fun pushFragment(fragment: SubFragment) {
         push(fragment, R.id.fragment_container)
-        configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true, fragment.showNavigationBar, true)
+        configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true, fragment.showNavigationBar)
     }
 
-    private fun configureToolbar(name: String, rightNavigationBarItems: List<NavigationBarItem>, leftNavigationBarItem: BarButtonItem?, canGoBack: Boolean, showNavigationBar: Boolean, animated: Boolean = false) {
+    private fun configureToolbar(name: String, rightNavigationBarItems: List<NavigationBarItem>, leftNavigationBarItem: BarButtonItem?, canGoBack: Boolean, showNavigationBar: Boolean) {
         toolbar.title = name
         toolbar.visibility = if (showNavigationBar) View.VISIBLE else  View.GONE
+        separator.visibility = if (showNavigationBar) View.VISIBLE else  View.GONE
 
         toolbar.menu.clear()
         for (barItem in rightNavigationBarItems) {
@@ -367,7 +369,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         }
         val frag = childFragmentManager.fragments[index]
         if (frag is SubFragment)
-            configureToolbar(frag.title, frag.rightNavigationBarItems, frag.leftNavigationBarItem, lastGoBack, frag.showNavigationBar, true)
+            configureToolbar(frag.title, frag.rightNavigationBarItems, frag.leftNavigationBarItem, lastGoBack, frag.showNavigationBar)
     }
 
     private companion object {

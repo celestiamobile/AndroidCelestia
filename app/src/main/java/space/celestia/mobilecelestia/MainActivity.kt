@@ -24,12 +24,16 @@ import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.contains
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
@@ -235,7 +239,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
             val endFragmentVisible = savedState.getBoolean(END_FRAGMENT_VISIBLE_TAG, false)
             val bottomFragmentVisible = savedState.getBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, false)
-            currentGoToData = savedState.getBoolean(GO_TO_DATA_TAG, false) as? GoToInputFragment.GoToData
+            currentGoToData = savedState.getSerializable(GO_TO_DATA_TAG) as? GoToInputFragment.GoToData
 
             findViewById<View>(R.id.bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.toolbar_bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
@@ -313,38 +317,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun hideSystemUI() {
-        // Enables sticky immersive mode.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
-            window.insetsController?.let {
-                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-        } else {
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    // Set the content to appear under the system bars so that the
-                    // content doesn't resize when the system bars hide and show.
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    // Hide the nav bar and status bar
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
-        }
-    }
-
-    // Shows the system bars by removing all the flags
-    // except for the ones that make the content appear under the system bars.
-    private fun showSystemUI() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(true)
-            window.insetsController?.let {
-                it.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-            }
-        } else {
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, findViewById(R.id.main_container)).let { controller ->
+            controller.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 
@@ -1209,17 +1185,35 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                 intent.type = "*/*"
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                if (intent.resolveActivity(packageManager) != null)
-                    startActivityForResult(intent, CONFIG_FILE_REQUEST)
-                else
+                if (intent.resolveActivity(packageManager) != null) {
+                    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                        val uri = it.data?.data ?: return@registerForActivityResult
+                        val path = RealPathUtils.getRealPath(this, uri)
+                        if (path == null) {
+                            showWrongPathProvided()
+                        } else {
+                            setConfigFilePath(path)
+                            reloadSettings()
+                        }
+                    }.launch(intent)
+                } else
                     showUnsupportedAction()
             }
             DataType.DataDirectory -> {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                if (intent.resolveActivity(packageManager) != null)
-                    startActivityForResult(intent, DATA_DIR_REQUEST)
-                else
+                if (intent.resolveActivity(packageManager) != null) {
+                    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                        val uri = it.data?.data ?: return@registerForActivityResult
+                        val path = RealPathUtils.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
+                        if (path == null) {
+                            showWrongPathProvided()
+                        } else {
+                            setDataDirectoryPath(path)
+                            reloadSettings()
+                        }
+                    }
+                } else
                     showUnsupportedAction()
             }
         }
@@ -1286,28 +1280,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun setConfigFilePath(path: String?) {
         preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath] = path
         customConfigFilePath = path
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        val uri = data?.data ?: return
-        if (requestCode == CONFIG_FILE_REQUEST) {
-            val path = RealPathUtils.getRealPath(this, uri)
-            if (path == null) {
-                showWrongPathProvided()
-            } else {
-                setConfigFilePath(path)
-                reloadSettings()
-            }
-        } else if (requestCode == DATA_DIR_REQUEST) {
-            val path = RealPathUtils.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
-            if (path == null) {
-                showWrongPathProvided()
-            } else {
-                setDataDirectoryPath(path)
-                reloadSettings()
-            }
-        }
     }
 
     private fun showWrongPathProvided() {
@@ -1436,6 +1408,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showSearch() {
+        currentGoToData = null
         showEndFragment(SearchContainerFragment.newInstance())
     }
 
@@ -1521,8 +1494,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 try {
                     val result = service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java)
                     withContext(Dispatchers.Main) {
-                        val intent = ShareCompat.IntentBuilder
-                            .from(this@MainActivity)
+                        val intent = ShareCompat.IntentBuilder(this@MainActivity)
                             .setType("text/plain")
                             .setChooserTitle(name)
                             .setText(result.publicURL)
@@ -1563,8 +1535,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun shareFile(file: File, mimeType: String) {
         val uri = FileProvider.getUriForFile(this, "space.celestia.mobilecelestia.fileprovider", file)
-        val intent = ShareCompat.IntentBuilder
-            .from(this)
+        val intent = ShareCompat.IntentBuilder(this)
             .setType(mimeType)
             .setStream(uri)
             .intent
@@ -1695,10 +1666,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CELESTIA_CFG_NAME = "celestia.cfg"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"
-
-        private const val DATA_DIR_REQUEST = 1
-        private const val CONFIG_FILE_REQUEST = 2
-        private const val WRITE_EXTERNAL_STORAGE_PERMISSION_CODE = 101
 
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
         private const val END_FRAGMENT_VISIBLE_TAG = "end_visible"
