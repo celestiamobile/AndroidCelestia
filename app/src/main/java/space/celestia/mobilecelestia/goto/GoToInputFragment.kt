@@ -11,10 +11,8 @@
 
 package space.celestia.mobilecelestia.goto
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,15 +20,32 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaGoToLocation
 import space.celestia.mobilecelestia.utils.*
+import java.io.Serializable
 import java.util.*
 
 class GoToInputFragment : NavigationFragment.SubFragment() {
+    class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: CelestiaGoToLocation.DistanceUnit) :
+        Serializable
+
     private var listener: Listener? = null
 
     private var adapter: GoToInputRecyclerViewAdapter? = null
+
+    private lateinit var goToData: GoToInputFragment.GoToData
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (savedInstanceState != null) {
+            goToData = savedInstanceState.getSerializable(ARG_DATA) as GoToData
+        } else {
+            arguments?.let {
+                goToData = it.getSerializable(ARG_DATA) as GoToInputFragment.GoToData
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,16 +55,18 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
 
         val recView = view.findViewById<RecyclerView>(R.id.list)
         recView.layoutManager = LinearLayoutManager(context)
-        adapter = GoToInputRecyclerViewAdapter(longitude = 0.0f, latitude = 0.0f, distance = 8.0, unit = CelestiaGoToLocation.DistanceUnit.radii, objectName = CelestiaAppCore.getLocalizedString("Earth", "celestia"), chooseFloatValueCallback = {
+        adapter = GoToInputRecyclerViewAdapter(longitude = goToData.longitude, latitude = goToData.latitude, distance = goToData.distance, unit = goToData.distanceUnit, objectName = goToData.objectName, chooseFloatValueCallback = {
             type, value ->
             val ac = activity ?: return@GoToInputRecyclerViewAdapter
             ac.showTextInput("", String.format("%.2f", value)) { newValue ->
                 val floatValue = newValue.toFloatOrNull() ?: return@showTextInput
                 when (type) {
                     GoToFloatValueType.Longitude -> {
+                        goToData.longitude = floatValue
                         adapter?.longitude = floatValue
                     }
                     GoToFloatValueType.Latitude -> {
+                        goToData.latitude = floatValue
                         adapter?.latitude = floatValue
                     }
                 }
@@ -63,61 +80,45 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                 val doubleValue = newValue.toDoubleOrNull() ?: return@showTextInput
                 when (type) {
                     GoToDoubleValueType.Distance -> {
+                        goToData.distance = doubleValue
                         adapter?.distance = doubleValue
                     }
                 }
                 adapter?.reload()
                 adapter?.notifyDataSetChanged()
             }
-        }, chooseObjectCallback = { current ->
-            val ac = activity ?: return@GoToInputRecyclerViewAdapter
-            ac.showTextInput(CelestiaString("Please enter an object name.", ""), current) { objectName ->
-                adapter?.objectName = objectName
-                adapter?.reload()
-                adapter?.notifyDataSetChanged()
-            }
+        }, chooseObjectCallback = { _ ->
+            listener?.onEditGoToObject(goToData)
         }, chooseUnitCallback = { current ->
             val ac = activity ?: return@GoToInputRecyclerViewAdapter
             val index = distanceUnits.indexOf(current)
             ac.showSingleSelection("", distanceUnits.map { value -> CelestiaString(value.name, "") }, index, { newIndex ->
-                adapter?.unit = distanceUnits[newIndex]
+                val unit = distanceUnits[newIndex]
+                adapter?.unit = unit
+                goToData.distanceUnit = unit
                 adapter?.reload()
                 adapter?.notifyDataSetChanged()
             })
 
         }, proceedCallback = {
             adapter?.let {
-                listener?.onGoToObject(it.objectName, it.longitude, it.latitude, it.distance, it.unit)
+                listener?.onGoToObject(goToData)
             }
         })
 
-        if (savedInstanceState != null) {
-            val objectName = savedInstanceState.getString(OBJECT_TAG, CelestiaAppCore.getLocalizedString("Earth", "celestia"))
-            val longitude = savedInstanceState.getFloat(LONGITUDE_TAG, 0.0f)
-            val latitude = savedInstanceState.getFloat(LATITUDE_TAG, 0.0f)
-            val distance = savedInstanceState.getDouble(DISTANCE_TAG, 8.0)
-            val unit = savedInstanceState.getSerializable(UNIT_TAG) as? CelestiaGoToLocation.DistanceUnit ?: CelestiaGoToLocation.DistanceUnit.radii
-
-            adapter?.objectName = objectName
-            adapter?.longitude = longitude
-            adapter?.latitude = latitude
-            adapter?.distance = distance
-            adapter?.unit = unit
-            adapter?.reload()
-        }
+        adapter?.objectName = goToData.objectName
+        adapter?.longitude = goToData.longitude
+        adapter?.latitude = goToData.latitude
+        adapter?.distance = goToData.distance
+        adapter?.unit = goToData.distanceUnit
+        adapter?.reload()
 
         recView.adapter = adapter
         return view
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        adapter?.let {
-            outState.putFloat(LONGITUDE_TAG, it.longitude)
-            outState.putFloat(LATITUDE_TAG, it.latitude)
-            outState.putDouble(DISTANCE_TAG, it.distance)
-            outState.putString(OBJECT_TAG, it.objectName)
-            outState.putSerializable(UNIT_TAG, it.unit)
-        }
+        outState.putSerializable(ARG_DATA, goToData)
 
         super.onSaveInstanceState(outState)
     }
@@ -145,11 +146,13 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     }
 
     interface Listener {
-        fun onGoToObject(objectName: String, longitude: Float, latitude: Float, distance: Double, distanceUnit: CelestiaGoToLocation.DistanceUnit)
+        fun onGoToObject(goToData: GoToData)
+        fun onEditGoToObject(goToData: GoToData)
     }
 
     companion object {
         private const val TAG = "GoToInput"
+        private const val ARG_DATA = "data"
 
         private val distanceUnits = listOf(
             CelestiaGoToLocation.DistanceUnit.radii,
@@ -164,7 +167,11 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         private const val UNIT_TAG = "unit"
 
         @JvmStatic
-        fun newInstance() =
-            GoToInputFragment()
+        fun newInstance(goToData: GoToData) =
+            GoToInputFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable(ARG_DATA, goToData)
+                }
+            }
     }
 }

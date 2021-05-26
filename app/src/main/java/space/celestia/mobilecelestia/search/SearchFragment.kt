@@ -21,10 +21,9 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.ImageButton
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -35,20 +34,20 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.utils.CelestiaString
 
 @ExperimentalCoroutinesApi
 fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
     return callbackFlow<Pair<String, Boolean>> {
         val listener = object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                offer(Pair(newText ?: "", false))
+                trySend(Pair(newText ?: "", false))
                 return true
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
-                offer(Pair(query ?: "", true))
+                trySend(Pair(query ?: "", true))
                 return true
             }
         }
@@ -57,20 +56,21 @@ fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
     }
 }
 
-class SearchFragment : Fragment() {
+class SearchFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
     private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
 
-    private var searchView: SearchView? = null
-
-    private val toolbar: Toolbar
-        get() = requireView().findViewById<Toolbar>(R.id.toolbar)
+    private lateinit var searchView: SearchView
+    private lateinit var backButton: ImageButton
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_search_item_list, container, false)
+
+        searchView = view.findViewById(R.id.search_view)
+        backButton = view.findViewById(R.id.back_button)
 
         // Set the adapter
         with(view.findViewById<RecyclerView>(R.id.list)) {
@@ -86,25 +86,21 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar.title = CelestiaString("Search", "")
-        toolbar.inflateMenu(R.menu.search_view_menu)
-        val searchItem = toolbar.menu.findItem(R.id.action_search)
-        val searchView = searchItem.actionView
-        if (searchView is SearchView) {
-            ViewCompat.setBackground(searchView.findViewById<View>(R.id.search_plate), ColorDrawable(Color.TRANSPARENT))
-            searchView.findViewById<EditText>(R.id.search_src_text).hint = ""
-            searchView.imeOptions = EditorInfo.IME_ACTION_SEARCH or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
-            this.searchView = searchView
-        }
+        ViewCompat.setBackground(searchView.findViewById<View>(R.id.search_plate), ColorDrawable(Color.TRANSPARENT))
+        searchView.findViewById<EditText>(R.id.search_src_text).hint = ""
+        searchView.imeOptions = EditorInfo.IME_ACTION_SEARCH or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
+        searchView.setIconifiedByDefault(false)
 
         setupSearchSearchView()
-        searchItem.expandActionView()
+
+        if (savedInstanceState == null) {
+            showNavigationBar = false
+        }
     }
 
     @FlowPreview
     @ExperimentalCoroutinesApi
     private fun setupSearchSearchView() {
-        val searchView = this.searchView ?: return
         searchView.setOnQueryTextFocusChangeListener { v, hasFocus ->
             if (hasFocus)
                 (v as? SearchView)?.isIconified = false
@@ -161,7 +157,7 @@ class SearchFragment : Fragment() {
     }
 
     companion object {
-        const val SEARCH_RESULT_LIMIT = 20
+        private const val SEARCH_RESULT_LIMIT = 20
 
         @JvmStatic
         fun newInstance() = SearchFragment()

@@ -171,15 +171,22 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
                 innerLeftNavigationBarItem = value
                 updateParentFragment()
             }
+        var showNavigationBar: Boolean
+            get() = innerShowNavigationBar
+            set(value) {
+                innerShowNavigationBar = value
+                updateParentFragment()
+            }
 
         private var innerTitle: String = ""
         private var innerRightNavigationBarItems: List<NavigationBarItem> = listOf()
         private var innerLeftNavigationBarItem: BarButtonItem? = null
+        private var innerShowNavigationBar: Boolean = true
 
         private fun updateParentFragment() {
             val parent = parentFragment
             if (parent is NavigationFragment)
-                parent.configureToolbar(title, rightNavigationBarItems, leftNavigationBarItem, parent.lastGoBack)
+                parent.configureToolbar(title, rightNavigationBarItems, leftNavigationBarItem, parent.lastGoBack, showNavigationBar)
         }
 
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -189,6 +196,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
                 innerTitle = savedInstanceState.getString(ARG_TITLE, "")
                 innerLeftNavigationBarItem = savedInstanceState.getParcelable(ARG_LEFT_ITEM)
                 innerRightNavigationBarItems = savedInstanceState.getParcelableArrayList<NavigationBarItem>(ARG_RIGHT_ITEMS) ?: listOf()
+                innerShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
             }
         }
 
@@ -196,6 +204,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
             outState.putString(ARG_TITLE, innerTitle)
             outState.putParcelable(ARG_LEFT_ITEM, innerLeftNavigationBarItem)
             outState.putParcelableArrayList(ARG_RIGHT_ITEMS, ArrayList(innerRightNavigationBarItems))
+            outState.putBoolean(ARG_SHOW_BAR, innerShowNavigationBar)
             super.onSaveInstanceState(outState)
         }
 
@@ -210,6 +219,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
     private var lastLeftItem: BarButtonItem? = null
     private var lastRightItems: List<NavigationBarItem> = listOf()
     private var lastGoBack = false
+    private var lastShowNavigationBar: Boolean = true
 
     val top: SubFragment?
         get() = childFragmentManager.findFragmentById(R.id.fragment_container) as? SubFragment
@@ -228,6 +238,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         outState.putParcelable(ARG_LEFT_ITEM, lastLeftItem)
         outState.putParcelableArrayList(ARG_RIGHT_ITEMS, ArrayList(lastRightItems))
         outState.putBoolean(ARG_BACK, lastGoBack)
+        outState.putBoolean(ARG_SHOW_BAR, lastShowNavigationBar)
         super.onSaveInstanceState(outState)
     }
 
@@ -236,27 +247,34 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         if (savedInstanceState == null) {
             replaceFragment(createInitialFragment(savedInstanceState))
         } else {
+            lastTitle = savedInstanceState.getString(ARG_TITLE, "")
+            lastRightItems = savedInstanceState.getParcelableArrayList<NavigationBarItem>(ARG_RIGHT_ITEMS) ?: listOf()
+            lastLeftItem = savedInstanceState.getParcelable(ARG_LEFT_ITEM)
+            lastGoBack = savedInstanceState.getBoolean(ARG_BACK)
+            lastShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
             configureToolbar(
-                savedInstanceState.getString(ARG_TITLE, ""),
-                savedInstanceState.getParcelableArrayList<NavigationBarItem>(ARG_RIGHT_ITEMS) ?: listOf(),
-                savedInstanceState.getParcelable(ARG_LEFT_ITEM),
-                savedInstanceState.getBoolean(ARG_BACK)
+                lastTitle,
+                lastRightItems,
+                lastLeftItem,
+                lastGoBack,
+                lastShowNavigationBar
             )
         }
     }
 
     fun replaceFragment(fragment: SubFragment) {
         replace(fragment, R.id.fragment_container)
-        configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false)
+        configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false, fragment.showNavigationBar)
     }
 
     fun pushFragment(fragment: SubFragment) {
         push(fragment, R.id.fragment_container)
-        configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true)
+        configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true, fragment.showNavigationBar, true)
     }
 
-    private fun configureToolbar(name: String, rightNavigationBarItems: List<NavigationBarItem>, leftNavigationBarItem: BarButtonItem?, canGoBack: Boolean) {
+    private fun configureToolbar(name: String, rightNavigationBarItems: List<NavigationBarItem>, leftNavigationBarItem: BarButtonItem?, canGoBack: Boolean, showNavigationBar: Boolean, animated: Boolean = false) {
         toolbar.title = name
+        toolbar.visibility = if (showNavigationBar) View.VISIBLE else  View.GONE
 
         toolbar.menu.clear()
         for (barItem in rightNavigationBarItems) {
@@ -316,6 +334,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         lastLeftItem = leftNavigationBarItem
         lastTitle = name
         lastGoBack = canGoBack
+        lastShowNavigationBar = showNavigationBar
     }
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {
@@ -348,7 +367,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         }
         val frag = childFragmentManager.fragments[index]
         if (frag is SubFragment)
-            configureToolbar(frag.title, frag.rightNavigationBarItems, frag.leftNavigationBarItem, lastGoBack)
+            configureToolbar(frag.title, frag.rightNavigationBarItems, frag.leftNavigationBarItem, lastGoBack, frag.showNavigationBar, true)
     }
 
     private companion object {
@@ -356,5 +375,6 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         const val ARG_RIGHT_ITEMS = "right"
         const val ARG_TITLE = "title"
         const val ARG_BACK = "back"
+        const val ARG_SHOW_BAR = "show-bar"
     }
 }

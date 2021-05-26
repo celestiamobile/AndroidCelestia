@@ -67,7 +67,6 @@ import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.search.SearchContainerFragment
 import space.celestia.mobilecelestia.search.SearchFragment
-import space.celestia.mobilecelestia.search.SearchResultFragment
 import space.celestia.mobilecelestia.search.hideKeyboard
 import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.share.ShareAPI
@@ -80,6 +79,7 @@ import space.celestia.mobilecelestia.utils.*
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
+import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -111,7 +111,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     ResourceFragment.Listener,
     AsyncListFragment.Listener<Any>,
     DestinationDetailFragment.Listener,
-    SearchResultFragment.Listener,
     GoToInputFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
@@ -148,6 +147,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val fontDirPath: String
         get() = "$celestiaParentPath/$CELESTIA_FONT_FOLDER_NAME"
+
+    private var currentGoToData: GoToInputFragment.GoToData? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -234,6 +235,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
             val endFragmentVisible = savedState.getBoolean(END_FRAGMENT_VISIBLE_TAG, false)
             val bottomFragmentVisible = savedState.getBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, false)
+            currentGoToData = savedState.getBoolean(GO_TO_DATA_TAG, false) as? GoToInputFragment.GoToData
 
             findViewById<View>(R.id.bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.toolbar_bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
@@ -253,6 +255,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_end_container).visibility == View.VISIBLE)
         outState.putBoolean(END_FRAGMENT_VISIBLE_TAG, findViewById<View>(R.id.normal_end_container).visibility == View.VISIBLE)
         outState.putBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, findViewById<View>(R.id.toolbar_bottom_container).visibility == View.VISIBLE)
+        outState.putSerializable(GO_TO_DATA_TAG, currentGoToData)
         super.onSaveInstanceState(outState)
     }
 
@@ -911,13 +914,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onSearchBackButtonPressed() {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? SearchContainerFragment ?: return
-        frag.backToSearch()
+    override fun onInfoLinkMetaDataClicked(url: URL) {
+        openURL(url.toString())
     }
 
     override fun onSearchItemSelected(text: String) {
         hideKeyboard()
+
+        val savedGoToData = currentGoToData
+        if (savedGoToData != null) {
+            savedGoToData.objectName = text
+            showGoTo(savedGoToData)
+            return
+        }
 
         val sel = core.simulation.findObject(text)
         if (sel.isEmpty) {
@@ -925,8 +934,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? SearchContainerFragment ?: return
-        frag.pushSearchResult(sel)
+        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        if (frag is SearchContainerFragment) {
+            frag.pushSearchResult(sel)
+        }
     }
 
     override fun onSearchItemSubmit(text: String) {
@@ -1040,6 +1051,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 frag.pushItem(item)
             }
         }
+    }
+
+    override fun onEditGoToObject(goToData: GoToInputFragment.GoToData) {
+        currentGoToData = goToData
+        showEndFragment(SearchContainerFragment.newInstance())
     }
 
     override fun onGoToDestination(destination: CelestiaDestination) {
@@ -1582,24 +1598,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun showGoTo() {
-        showEndFragment(GoToContainerFragment.newInstance())
+    private fun showGoTo(data: GoToInputFragment.GoToData? = null) {
+        val inputData = data ?: GoToInputFragment.GoToData(
+            CelestiaAppCore.getLocalizedString("Earth", "celestia"),
+            0.0f,
+            0.0f,
+            8.0,
+            CelestiaGoToLocation.DistanceUnit.radii
+        )
+        showEndFragment(GoToContainerFragment.newInstance(inputData))
     }
 
-    override fun onGoToObject(
-        objectName: String,
-        longitude: Float,
-        latitude: Float,
-        distance: Double,
-        distanceUnit: CelestiaGoToLocation.DistanceUnit
-    ) {
-        val selection = core.simulation.findObject(objectName)
+    override fun onGoToObject(goToData: GoToInputFragment.GoToData) {
+        val selection = core.simulation.findObject(goToData.objectName)
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return
         }
 
-        val location = CelestiaGoToLocation(selection, longitude, latitude, distance, distanceUnit)
+        val location = CelestiaGoToLocation(selection, goToData.longitude, goToData.latitude, goToData.distance, goToData.distanceUnit)
         CelestiaView.callOnRenderThread {
             core.simulation.goToLocation(location)
         }
@@ -1686,6 +1703,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
         private const val END_FRAGMENT_VISIBLE_TAG = "end_visible"
         private const val BOTTOM_FRAGMENT_VISIBLE_TAG = "bottom_visible"
+        private const val GO_TO_DATA_TAG = "go_to"
 
         private const val TAG = "MainActivity"
 

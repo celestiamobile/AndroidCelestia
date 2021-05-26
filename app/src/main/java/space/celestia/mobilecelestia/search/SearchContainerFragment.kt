@@ -17,43 +17,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.Poppable
-import space.celestia.mobilecelestia.common.pop
-import space.celestia.mobilecelestia.common.push
-import space.celestia.mobilecelestia.common.replace
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.core.CelestiaSelection
+import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
-class SearchContainerFragment : Fragment(), Poppable {
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_general_container, container, false)
-        return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if (savedInstanceState != null)
-            return
-
-        replace(SearchFragment.newInstance(), R.id.fragment_container)
+class SearchContainerFragment : NavigationFragment() {
+    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
+        return SearchFragment.newInstance()
     }
 
     fun pushSearchResult(selection: CelestiaSelection) {
-        push(SearchResultFragment.newInstance(selection), R.id.fragment_container)
-    }
-
-    fun backToSearch() {
-        popLast()
-    }
-
-    override fun canPop(): Boolean {
-        return childFragmentManager.backStackEntryCount > 0
-    }
-
-    override fun popLast() {
-        pop()
+        pushFragment(InfoFragment.newInstance(selection))
     }
 
     companion object {
