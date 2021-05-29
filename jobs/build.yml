@@ -77,7 +77,7 @@ jobs:
     condition: eq( variables['outputFormat'], 'aab' )
 
   - script: |
-      jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(keyStoreFile.secureFilePath) -storepass $(JARSIGNER_KEYSTORE_PASSWORD) -keypass $(JARSIGNER_KEY_PASSWORD) $(system.defaultWorkingDirectory)/**/*.aab celestia
+      jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(keyStoreFile.secureFilePath) -storepass $(JARSIGNER_KEYSTORE_PASSWORD) -keypass $(JARSIGNER_KEY_PASSWORD) $(system.defaultworkingdirectory)/app/build/outputs/bundle/release/*.aab celestia
     displayName: "Sign AAB"
     condition: eq( variables['outputFormat'], 'aab' )
 
