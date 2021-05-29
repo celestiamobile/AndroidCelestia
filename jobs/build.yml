@@ -66,6 +66,13 @@ jobs:
       targetFolder: '$(build.artifactStagingDirectory)'
     displayName: 'Copy Symbols'
 
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: '$(outputFormat)'
+      publishLocation: 'Container'
+    displayName: 'Publish Build Artifacts'
+
   - task: AppCenterDistribute@3
     inputs:
       serverEndpoint: 'AndroidCelestiaAppCenter'
