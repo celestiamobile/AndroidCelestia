@@ -19,6 +19,12 @@ jobs:
         brew install gettext
     displayName: 'Install Gettext'
 
+  - script: |
+      cd AndroidCelestia
+      git cherry-pick origin/asset-pack-integration
+    displayName: 'Cherry-Pick Asset Pack Integration'
+    condition: eq( variables['outputFormat'], 'aab' )
+
   - task: android-manifest-version@1
     inputs:
       sourcePath: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml'
