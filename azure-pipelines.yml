@@ -2,7 +2,6 @@ resources:
   repositories:
   - repository: Celestia
     type: github
-    ref: $(System.PullRequest.TargetBranch)
     endpoint: GithubAuth
     name: levinli303/Celestia
 

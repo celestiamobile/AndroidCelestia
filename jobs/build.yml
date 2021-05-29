@@ -9,15 +9,26 @@ jobs:
 
   steps:
   - checkout: Celestia
-    submodules: true
   - checkout: self
     submodules: true
 
-  - task: CmdLine@2
-    inputs:
-      script: |
-        brew install gettext
+  - script: |
+      brew install gettext
     displayName: 'Install Gettext'
+
+  - script: |
+      cd Celestia
+      git checkout origin/$(Build.SourceBranchName)
+      git submodule update --init
+    displayName: 'Checkout Branch'
+    condition: ne( variables['Build.Reason'], 'PullRequest' )
+
+  - script: |
+      cd Celestia
+      git checkout origin/$(System.PullRequest.TargetBranch)
+      git submodule update --init
+    displayName: 'Checkout Branch (PR)'
+    condition: eq( variables['Build.Reason'], 'PullRequest' )
 
   - script: |
       cd AndroidCelestia
@@ -91,6 +102,7 @@ jobs:
       sourceFolder: '$(system.defaultWorkingDirectory)'
       contents: '**/*.$(outputFormat)'
       targetFolder: '$(build.artifactStagingDirectory)'
+      flattenFolders: true
     displayName: 'Copy APK/AAB'
 
   - task: CopyFiles@2
@@ -117,4 +129,5 @@ jobs:
       destinationType: 'groups'
       symbolsOption: 'Android'
       nativeLibrariesPath: '$(build.artifactStagingDirectory)/**/*.so'
-    displayName: 'Publish APK/AAB to AppCenter'
+    displayName: 'Publish APK to App Center'
+    condition: eq( variables['outputFormat'], 'apk' )
