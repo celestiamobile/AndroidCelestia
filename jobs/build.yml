@@ -81,6 +81,11 @@ jobs:
     displayName: "Sign AAB"
     condition: eq( variables['outputFormat'], 'aab' )
 
+  - script: |
+      rm -rf $(system.defaultworkingdirectory)/AndroidCelestia/app/build/intermediates/intermediary_bundle/*
+    displayName: 'Remove Redundant AAB'
+    condition: eq( variables['outputFormat'], 'aab' )
+
   - task: CopyFiles@2
     inputs:
       sourceFolder: '$(system.defaultWorkingDirectory)'
