@@ -37,8 +37,19 @@ jobs:
       publishJUnitResults: false
       testResultsFiles: '**/TEST-*.xml'
       tasks: 'assembleRelease'
-    displayName: 'Build'
+    displayName: 'Build APK'
     condition: eq( variables['outputFormat'], 'apk' )
+
+  - task: Gradle@2
+    inputs:
+      workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
+      gradleWrapperFile: '$(system.defaultWorkingDirectory)/AndroidCelestia/gradlew'
+      gradleOptions: '-Xmx3072m'
+      publishJUnitResults: false
+      testResultsFiles: '**/TEST-*.xml'
+      tasks: 'bundleRelease'
+    displayName: 'Build AAB'
+    condition: eq( variables['outputFormat'], 'aab' )
 
   - task: AndroidSigning@2
     inputs:
@@ -52,12 +63,24 @@ jobs:
     displayName: 'Sign APK'
     condition: eq( variables['outputFormat'], 'apk' )
 
+  - task: DownloadSecureFile@1
+    name: keyStoreFile
+    displayName: 'Download KeyStore File'
+    inputs:
+      secureFile: 'celestia.jks'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - script: |
+      jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(keyStoreFile.secureFilePath) -storepass $(JARSIGNER_KEYSTORE_PASSWORD) -keypass $(JARSIGNER_KEY_PASSWORD) $(system.defaultWorkingDirectory)/**/*.aab celestia
+    displayName: "Sign AAB"
+    condition: eq( variables['outputFormat'], 'aab' )
+
   - task: CopyFiles@2
     inputs:
       sourceFolder: '$(system.defaultWorkingDirectory)'
-      contents: '**/*.$()'
+      contents: '**/*.$(outputFormat)'
       targetFolder: '$(build.artifactStagingDirectory)'
-    displayName: 'Copy APK'
+    displayName: 'Copy APK/AAB'
 
   - task: CopyFiles@2
     inputs:
@@ -83,4 +106,4 @@ jobs:
       destinationType: 'groups'
       symbolsOption: 'Android'
       nativeLibrariesPath: '$(build.artifactStagingDirectory)/**/*.so'
-    displayName: 'Publish APK to AppCenter'
+    displayName: 'Publish APK/AAB to AppCenter'

@@ -22,3 +22,10 @@ stages:
   - template: jobs/build.yml
     parameters:
       outputFormat: apk
+- stage: Build_AAB
+  displayName: 'Build AAB'
+  dependsOn: []
+  jobs:
+  - template: jobs/build.yml
+    parameters:
+      outputFormat: aab
