@@ -2,73 +2,23 @@ resources:
   repositories:
   - repository: Celestia
     type: github
+    ref: $(System.PullRequest.TargetBranch)
     endpoint: GithubAuth
     name: levinli303/Celestia
 
 trigger:
-- main
+  branches:
+    include:
+    - releases/*
+    - master
 
 pool:
   vmImage: 'macos-latest'
 
-steps:
-- checkout: Celestia
-  submodules: true
-- checkout: self
-  submodules: true
-
-- task: CmdLine@2
-  inputs:
-    script: |
-      brew install gettext
-
-- task: android-manifest-version@1
-  inputs:
-    sourcePath: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml'
-    versionCodeOption: 'buildid'
-    versionCode: '$(Build.BuildId)'
-    versionCodeOffset: '140'
-    versionName: 
-    printFile: true
-
-- task: Gradle@2
-  inputs:
-    workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
-    gradleWrapperFile: '$(system.defaultWorkingDirectory)/AndroidCelestia/gradlew'
-    gradleOptions: '-Xmx3072m'
-    publishJUnitResults: false
-    testResultsFiles: '**/TEST-*.xml'
-    tasks: 'assembleRelease'
-
-- task: AndroidSigning@2
-  inputs:
-    apkFiles: '$(system.defaultWorkingDirectory)/**/*.apk'
-    jarsign: true
-    jarsignerKeystoreFile: 'celestia.jks'
-    jarsignerKeystorePassword: '$(JARSIGNER_KEYSTORE_PASSWORD)'
-    jarsignerKeystoreAlias: 'celestia'
-    jarsignerKeyPassword: '$(JARSIGNER_KEY_PASSWORD)'
-    zipalign: true
-
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: '$(system.defaultWorkingDirectory)'
-    contents: '**/*.apk'
-    targetFolder: '$(build.artifactStagingDirectory)'
-
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj'
-    contents: '**/*.so'
-    targetFolder: '$(build.artifactStagingDirectory)'
-
-- task: AppCenterDistribute@3
-  inputs:
-    serverEndpoint: 'AndroidCelestiaAppCenter'
-    appSlug: 'CelestiaProject/Celestia-1'
-    appFile: '$(build.artifactstagingdirectory)/**/*.apk'
-    releaseNotesOption: 'input'
-    releaseNotesInput: 'Internal testing only.'
-    destinationType: 'groups'
-    symbolsOption: 'Android'
-    nativeLibrariesPath: '$(build.artifactStagingDirectory)/**/*.so'
+stages:
+- stage: Build_APK
+  displayName: 'Build APK'
+  jobs:
+  - template: jobs/build.yml
+    parameters:
+      outputFormat: apk

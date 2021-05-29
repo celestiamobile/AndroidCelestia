@@ -1,0 +1,79 @@
+jobs:
+- job: Build
+  displayName: 'Build'
+  pool:
+    vmImage: 'macos-latest'
+
+  variables:
+    outputFormat: ${{ parameters.outputFormat }}
+
+  steps:
+  - checkout: Celestia
+    submodules: true
+  - checkout: self
+    submodules: true
+
+  - task: CmdLine@2
+    inputs:
+      script: |
+        brew install gettext
+    displayName: 'Install Gettext'
+
+  - task: android-manifest-version@1
+    inputs:
+      sourcePath: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml'
+      versionCodeOption: 'buildid'
+      versionCode: '$(Build.BuildId)'
+      versionCodeOffset: '140'
+      versionName:
+      printFile: true
+    displayName: 'Update Bundle Version'
+
+  - task: Gradle@2
+    inputs:
+      workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
+      gradleWrapperFile: '$(system.defaultWorkingDirectory)/AndroidCelestia/gradlew'
+      gradleOptions: '-Xmx3072m'
+      publishJUnitResults: false
+      testResultsFiles: '**/TEST-*.xml'
+      tasks: 'assembleRelease'
+    displayName: 'Build'
+    condition: eq( variables['outputFormat'], 'apk' )
+
+  - task: AndroidSigning@2
+    inputs:
+      apkFiles: '$(system.defaultWorkingDirectory)/**/*.apk'
+      jarsign: true
+      jarsignerKeystoreFile: 'celestia.jks'
+      jarsignerKeystorePassword: '$(JARSIGNER_KEYSTORE_PASSWORD)'
+      jarsignerKeystoreAlias: 'celestia'
+      jarsignerKeyPassword: '$(JARSIGNER_KEY_PASSWORD)'
+      zipalign: true
+    displayName: 'Sign APK'
+    condition: eq( variables['outputFormat'], 'apk' )
+
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(system.defaultWorkingDirectory)'
+      contents: '**/*.$()'
+      targetFolder: '$(build.artifactStagingDirectory)'
+    displayName: 'Copy APK'
+
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj'
+      contents: '**/*.so'
+      targetFolder: '$(build.artifactStagingDirectory)'
+    displayName: 'Copy Symbols'
+
+  - task: AppCenterDistribute@3
+    inputs:
+      serverEndpoint: 'AndroidCelestiaAppCenter'
+      appSlug: 'CelestiaProject/Celestia-1'
+      appFile: '$(build.artifactstagingdirectory)/**/*.$(outputFormat)'
+      releaseNotesOption: 'input'
+      releaseNotesInput: 'Internal testing only.'
+      destinationType: 'groups'
+      symbolsOption: 'Android'
+      nativeLibrariesPath: '$(build.artifactStagingDirectory)/**/*.so'
+    displayName: 'Publish APK to AppCenter'
