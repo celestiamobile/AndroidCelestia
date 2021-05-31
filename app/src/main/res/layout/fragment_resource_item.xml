@@ -76,6 +76,12 @@
         android:layout_width="wrap_content"
         android:layout_height="8dp"/>
 
+    <include layout="@layout/common_action_button"
+        android:id="@+id/button_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"/>
+
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

@@ -66,6 +66,7 @@ import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.resource.AsyncListFragment
 import space.celestia.mobilecelestia.resource.DestinationDetailFragment
 import space.celestia.mobilecelestia.resource.ResourceFragment
+import space.celestia.mobilecelestia.resource.ResourceItemFragment
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
@@ -115,7 +116,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     ResourceFragment.Listener,
     AsyncListFragment.Listener<Any>,
     DestinationDetailFragment.Listener,
-    GoToInputFragment.Listener {
+    GoToInputFragment.Listener,
+    ResourceItemFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -922,6 +924,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onActionSelected(item: CelestiaAction) {
         CelestiaView.callOnRenderThread { core.charEnter(item.value) }
+    }
+
+    override fun objectExistsWithName(name: String): Boolean {
+        return !core.simulation.findObject(name).isEmpty
+    }
+
+    override fun onGoToObject(name: String) {
+        val sel = core.simulation.findObject(name)
+        if (sel.isEmpty) {
+            showAlert(CelestiaString("Object not found", ""))
+            return
+        }
+        CelestiaView.callOnRenderThread {
+            core.simulation.selection = sel
+            core.charEnter(CelestiaAction.GoTo.value)
+        }
     }
 
     override fun onBottomControlHide() {

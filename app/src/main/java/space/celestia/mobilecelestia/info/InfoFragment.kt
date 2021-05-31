@@ -67,7 +67,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         recyclerView = inflater.inflate(R.layout.fragment_info_list, container, false) as RecyclerView
 
         if (embeddedInNavigation)

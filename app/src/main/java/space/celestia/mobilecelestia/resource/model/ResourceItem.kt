@@ -21,4 +21,5 @@ class ResourceItem(val id: String,
                    val item: String,
                    val image: String?,
                    val authors: List<String>?,
-                   val publishTime: Date?): AsyncListTextItem, Serializable
+                   val publishTime: Date?,
+                   val objectName: String?): AsyncListTextItem, Serializable

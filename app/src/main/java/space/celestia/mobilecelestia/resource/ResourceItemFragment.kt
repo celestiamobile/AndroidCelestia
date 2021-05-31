@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.resource
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -42,6 +43,8 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     private var item: ResourceItem? = null
     private lateinit var progressView: ProgressView
     private lateinit var progressViewText: TextView
+    private lateinit var goToButtonContainer: View
+    private lateinit var goToButtonTextView: TextView
     private var currentState: ResourceItemState = ResourceItemState.None
 
     private var imageView: ImageView? = null
@@ -50,7 +53,14 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     private var authorsLabel: TextView? = null
     private var releaseDateLabel: TextView? = null
 
+    private var listener: Listener? = null
+
     private val formatter = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
+
+    interface Listener {
+        fun objectExistsWithName(name: String): Boolean
+        fun onGoToObject(name: String)
+    }
 
     class GlideUrlCustomCacheKey(url: String, val key: String) : GlideUrl(url) {
         override fun getCacheKey(): String {
@@ -95,6 +105,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         this.imageView = image
         this.authorsLabel = authors
         this.releaseDateLabel = releaseDate
+        goToButtonContainer = view.findViewById(R.id.button_container)
+        goToButtonTextView = view.findViewById(R.id.button)
+        goToButtonTextView.text = CelestiaString("Go", "")
+        goToButtonContainer.visibility = View.GONE
         updateContents()
         updateUI()
 
@@ -118,6 +132,20 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 }
             } catch (ignored: Throwable) {}
         }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is Listener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement ResourceItemFragment.Listener")
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        listener = null
     }
 
     override fun onDestroy() {
@@ -225,13 +253,13 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     }
 
     private fun updateUI() {
-        val id = item?.id ?: return
+        val item = this.item ?: return
 
         // Ensure we are up to date with these cases
         val dm = ResourceManager.shared
-        if (dm.isInstalled(id))
+        if (dm.isInstalled(item.id))
             currentState = ResourceItemState.Installed
-        if (dm.isDownloading(id))
+        if (dm.isDownloading(item.id))
             currentState = ResourceItemState.Downloading
 
         when (currentState) {
@@ -246,6 +274,16 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 progressView.setProgress(100f)
                 progressViewText.text = CelestiaString("INSTALLED", "")
             }
+        }
+
+        val objectName = item.objectName
+        if (currentState == ResourceItemState.Installed && objectName != null && listener?.objectExistsWithName(objectName) == true) {
+            goToButtonContainer.visibility = View.VISIBLE
+            goToButtonContainer.setOnClickListener {
+                listener?.onGoToObject(objectName)
+            }
+        } else {
+            goToButtonContainer.visibility = View.GONE
         }
     }
 
