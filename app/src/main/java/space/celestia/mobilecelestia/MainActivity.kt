@@ -24,6 +24,7 @@ import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -134,6 +135,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val defaultConfigFilePath by lazy { "$defaultDataDirectoryPath/$CELESTIA_CFG_NAME" }
     private val defaultDataDirectoryPath by lazy { "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME" }
+
+    private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
+    private lateinit var directoryChooserLauncher: ActivityResultLauncher<Intent>
 
     private val celestiaConfigFilePath: String
         get() {
@@ -252,6 +256,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
             findViewById<View>(R.id.overlay_container).visibility = if (toolbarVisible || endFragmentVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.end_notch).visibility = if (toolbarVisible || endFragmentVisible) View.VISIBLE else View.GONE
+        }
+
+        fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val uri = it.data?.data ?: return@registerForActivityResult
+            val path = RealPathUtils.getRealPath(this, uri)
+            if (path == null) {
+                showWrongPathProvided()
+            } else {
+                setConfigFilePath(path)
+                reloadSettings()
+            }
+        }
+
+        directoryChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val uri = it.data?.data ?: return@registerForActivityResult
+            val path = RealPathUtils.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
+            if (path == null) {
+                showWrongPathProvided()
+            } else {
+                setDataDirectoryPath(path)
+                reloadSettings()
+            }
         }
 
         handleIntent(intent)
@@ -1204,16 +1230,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 intent.type = "*/*"
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
                 if (intent.resolveActivity(packageManager) != null) {
-                    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                        val uri = it.data?.data ?: return@registerForActivityResult
-                        val path = RealPathUtils.getRealPath(this, uri)
-                        if (path == null) {
-                            showWrongPathProvided()
-                        } else {
-                            setConfigFilePath(path)
-                            reloadSettings()
-                        }
-                    }.launch(intent)
+                    fileChooserLauncher.launch(intent)
                 } else
                     showUnsupportedAction()
             }
@@ -1221,16 +1238,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
                 if (intent.resolveActivity(packageManager) != null) {
-                    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                        val uri = it.data?.data ?: return@registerForActivityResult
-                        val path = RealPathUtils.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
-                        if (path == null) {
-                            showWrongPathProvided()
-                        } else {
-                            setDataDirectoryPath(path)
-                            reloadSettings()
-                        }
-                    }
+                    directoryChooserLauncher.launch(intent)
                 } else
                     showUnsupportedAction()
             }
