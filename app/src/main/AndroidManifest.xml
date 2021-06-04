@@ -29,7 +29,7 @@
         <activity
             android:name="space.celestia.mobilecelestia.MainActivity"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="fullSensor"
             android:launchMode="singleInstance"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
