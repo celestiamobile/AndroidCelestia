@@ -25,15 +25,15 @@ fun CelestiaSimulation.createAllBrowserItems() {
     dsoRoot = universe.createDSOBrowserRoot()
 }
 
-private fun CelestiaUniverse.createSolBrowserRoot(): CelestiaBrowserItem {
-    val sol = findObject("Sol").star!!
+private fun CelestiaUniverse.createSolBrowserRoot(): CelestiaBrowserItem? {
+    val sol = findObject("Sol").star ?: return null
     return CelestiaBrowserItem(starCatalog.getStarName(sol), CelestiaString("Solar System", ""), sol, this)
 }
 
-fun CelestiaUniverse.solBrowserRoot(): CelestiaBrowserItem {
+fun CelestiaUniverse.solBrowserRoot(): CelestiaBrowserItem? {
     if (solRoot == null)
         solRoot = createSolBrowserRoot()
-    return solRoot!!
+    return solRoot
 }
 
 private fun CelestiaSimulation.createStarBrowserRoot(): CelestiaBrowserItem {

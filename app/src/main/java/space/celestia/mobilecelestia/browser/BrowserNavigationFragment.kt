@@ -12,23 +12,10 @@
 package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.pop
-import space.celestia.mobilecelestia.core.CelestiaAppCore
 
 class BrowserNavigationFragment : NavigationFragment() {
-    private val browserItemMenu by lazy {
-        val sim = CelestiaAppCore.shared().simulation
-        listOf(
-            BrowserItemMenu(sim.universe.solBrowserRoot(), R.drawable.browser_tab_sso),
-            BrowserItemMenu(sim.starBrowserRoot(), R.drawable.browser_tab_star),
-            BrowserItemMenu(sim.universe.dsoBrowserRoot(), R.drawable.browser_tab_dso)
-        )
-    }
-
     private var path: String = ""
-    private var root: BrowserItemMenu? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

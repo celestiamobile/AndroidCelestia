@@ -119,11 +119,15 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigat
 
         private val browserItemMenu by lazy {
             val sim = CelestiaAppCore.shared().simulation
-            listOf(
-                BrowserItemMenu(sim.universe.solBrowserRoot(), R.drawable.browser_tab_sso),
+            var list = arrayListOf(
                 BrowserItemMenu(sim.starBrowserRoot(), R.drawable.browser_tab_star),
                 BrowserItemMenu(sim.universe.dsoBrowserRoot(), R.drawable.browser_tab_dso)
             )
+            val solRoot = sim.universe.solBrowserRoot()
+            if (solRoot != null) {
+                list.add(0, BrowserItemMenu(solRoot, R.drawable.browser_tab_sso))
+            }
+            list
         }
 
         @JvmStatic
