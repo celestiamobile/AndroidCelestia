@@ -22,12 +22,13 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.Log
 import android.view.*
-import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.Guideline
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
@@ -418,37 +419,30 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val endView = findViewById<View>(R.id.normal_end_container)
         val toolbarView = findViewById<View>(R.id.toolbar_end_container)
         val bottomView = findViewById<View>(R.id.toolbar_bottom_container)
+        val toolbarGuideLine = findViewById<Guideline>(R.id.toolbar_width_guideline)
+        val endGuideLine = findViewById<Guideline>(R.id.normal_width_guideline)
 
         val endNotch = findViewById<View>(R.id.end_notch)
 
-        (endView.layoutParams as? FrameLayout.LayoutParams)?.let {
-            it.width = (300 * density).toInt() + safeInsetEnd
-            endView.layoutParams = it
-        }
+        endGuideLine.setGuidelineEnd((300 * density).toInt() + safeInsetEnd)
         if (ltr)
             endView.setPadding(0, 0, safeInsetEnd, 0)
         else
             endView.setPadding(safeInsetEnd, 0, 0, 0)
 
-        (toolbarView.layoutParams as? FrameLayout.LayoutParams)?.let {
-            it.width = (220 * density).toInt() + safeInsetEnd
-            toolbarView.layoutParams = it
-        }
+        toolbarGuideLine.setGuidelineEnd((220 * density).toInt() + safeInsetEnd)
         if (ltr)
             toolbarView.setPadding(0, 0, safeInsetEnd, 0)
         else
             toolbarView.setPadding(safeInsetEnd, 0, 0, 0)
 
-        (bottomView.layoutParams as? FrameLayout.LayoutParams)?.let {
+        (bottomView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
             it.marginStart = safeInsetStart + (16 * density).toInt()
             it.bottomMargin = cutout.safeInsetBottom + (8 * density).toInt()
             bottomView.layoutParams = it
         }
 
-        (endNotch.layoutParams as? FrameLayout.LayoutParams)?.let {
-            it.width = safeInsetEnd
-            endNotch.layoutParams = it
-        }
+        endNotch.layoutParams.width = safeInsetEnd
     }
 
     private fun removeCelestiaFragment() {

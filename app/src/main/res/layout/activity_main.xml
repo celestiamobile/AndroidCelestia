@@ -16,6 +16,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     android:id="@+id/main_container"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/Background">
 
     <FrameLayout
@@ -24,48 +25,97 @@
         android:layout_height="match_parent"
         style="@style/Container"/>
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/overlay_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="invisible"
         style="@style/DimmingBackground">
 
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/percent_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.4" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/toolbar_width_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="220dp" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/normal_width_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="300dp" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/toolbar_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="end"
+            app:constraint_referenced_ids="toolbar_width_guideline, percent_guideline"/>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/normal_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="end"
+            app:constraint_referenced_ids="normal_width_guideline, percent_guideline"/>
+
+        <FrameLayout
+            android:id="@+id/end_notch"
+            style="@style/Background"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clickable="true"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <FrameLayout
             android:id="@+id/normal_end_container"
-            android:layout_width="300dp"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="0dp"
-            android:layout_gravity="end"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:visibility="invisible"
             android:clickable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/normal_barrier"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             style="@style/Container" />
 
         <FrameLayout
             android:id="@+id/toolbar_end_container"
-            android:layout_width="220dp"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="0dp"
-            android:layout_gravity="end"
-            android:visibility="invisible"
-            android:clickable="true"
-            style="@style/Container"/>
-
-        <FrameLayout
-            android:id="@+id/end_notch"
+            style="@style/Container"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:clickable="true"
             android:visibility="invisible"
-            android:layout_gravity="end"
-            style="@style/Background"/>
-    </FrameLayout>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/toolbar_barrier"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottom_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="invisible"
         style="@style/Container">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/bottom_end_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.8"/>
 
         <FrameLayout
             android:id="@+id/toolbar_bottom_container"
@@ -73,10 +123,14 @@
             android:layout_height="64dp"
             android:layout_marginStart="16dp"
             android:layout_marginBottom="8dp"
-            android:layout_gravity="bottom|start"
             android:visibility="invisible"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/bottom_end_guideline"
             android:clickable="true"/>
-    </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <FrameLayout
         android:id="@+id/loading_fragment_container"
