@@ -21,16 +21,15 @@ import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
+import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.core.*
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
@@ -38,13 +37,12 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
+class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
     private var activity: Activity? = null
 
     // MARK: GL View
-    private var glViewContainer: FrameLayout? = null
-    private var glView: CelestiaView? = null
-    private var viewInteraction: CelestiaInteraction? = null
+    private lateinit var glView: CelestiaView
+    private lateinit var viewInteraction: CelestiaInteraction
 
     private var currentControlViewID = R.id.active_control_view_container
 
@@ -63,8 +61,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var browserItems: ArrayList<CelestiaBrowserItem> = arrayListOf()
     private var density: Float = 1f
     private var previousDensity: Float = 0f
-    @RequiresApi(Build.VERSION_CODES.P)
-    private var savedCutout: DisplayCutout? = null
+    private var savedInsets: EdgeInsets? = null
 
     private var isControlViewVisible = true
     private var hideAnimator: ObjectAnimator? = null
@@ -130,8 +127,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         reporter.register(this)
 
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
-        glViewContainer = view.findViewById(R.id.celestia_gl_view)
-        setupGLView()
+        setupGLView(view.findViewById(R.id.celestia_gl_view))
 
         val activeControlView = CelestiaControlView(inflater.context, listOf(
             CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera),
@@ -149,16 +145,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         layoutParamsForControls.setMargins(controlMargin, controlMargin, controlMargin, controlMargin)
         activeControlView.layoutParams = layoutParamsForControls
         activeControlView.listener = this
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            view.setOnApplyWindowInsetsListener { _, insets ->
-                insets.displayCutout?.let {
-                    applyCutout(it)
-                }
-                return@setOnApplyWindowInsetsListener insets
-            }
-        }
-
         return view
     }
 
@@ -208,22 +194,33 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     override fun celestiaLoadingProgress(status: String) {}
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun applyCutout(cutout: DisplayCutout) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        handleInsetChanged(view, currentSafeInsets)
+    }
+
+    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
+        super.onInsetChanged(view, newInset)
+
+        handleInsetChanged(view, newInset)
+    }
+
+    private fun handleInsetChanged(view: View, newInset: EdgeInsets) {
         if (!loadSuccess) {
-            savedCutout = cutout
+            savedInsets = newInset
             return
         }
 
-        val insets = cutout.safeInsets().scaleBy(scaleFactor)
+        val insets = newInset.scaleBy(scaleFactor)
         CelestiaView.callOnRenderThread {
             core.setSafeAreaInsets(insets)
         }
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-        val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
+        val safeInsetEnd = if (ltr) newInset.right else newInset.left
 
-        val controlView = view?.findViewById<FrameLayout>(currentControlViewID) ?: return
+        val controlView = view.findViewById<FrameLayout>(currentControlViewID) ?: return
         val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
         if (params != null) {
             params.marginEnd = controlContainerTrailingMargin + safeInsetEnd
@@ -231,9 +228,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    private fun setupGLView() {
+    private fun setupGLView(container: FrameLayout) {
         val activity = this.activity ?: return
-        val container = glViewContainer ?: return
         val view = CelestiaView(activity, scaleFactor)
 
         registerForContextMenu(view)
@@ -327,12 +323,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         core.setDPI((96 * density * scaleFactor).toInt())
         core.setPickTolerance(10f * density * scaleFactor)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val cutout = savedCutout
-            if (cutout != null) {
-                core.setSafeAreaInsets(cutout.safeInsets().scaleBy(scaleFactor))
-                savedCutout = null
-            }
+        val insets = savedInsets
+        if (insets != null) {
+            core.setSafeAreaInsets(insets.scaleBy(scaleFactor))
+            savedInsets = null
         }
 
         core.clearFonts()
@@ -362,31 +356,26 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     private fun setupInteractions() {
-        val interaction = viewInteraction ?: return
-        val view = glView ?: return
+        val thisView = view ?: return
 
-        view.isReady = true
+        glView.isReady = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            view.isContextClickable = true
+            glView.isContextClickable = true
         }
-        interaction.isReady = true
-        view.setOnTouchListener { v, event ->
+        viewInteraction.isReady = true
+        glView.setOnTouchListener { v, event ->
             showControlViewIfNeeded()
-            interaction.onTouch(v, event)
+            viewInteraction.onTouch(v, event)
         }
-        view.setOnKeyListener(interaction)
-        view.setOnGenericMotionListener(interaction)
+        glView.setOnKeyListener(viewInteraction)
+        glView.setOnGenericMotionListener(viewInteraction)
         core.setContextMenuHandler(this)
-        registerForContextMenu(view)
+        registerForContextMenu(glView)
         loadSuccess = true
 
         Log.d(TAG, "Ready to display")
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            activity?.runOnUiThread {
-                this.view?.rootWindowInsets?.displayCutout?.let { applyCutout(it) }
-            }
-        }
+        handleInsetChanged(thisView, currentSafeInsets)
     }
 
     override fun onCreateContextMenu(
@@ -583,8 +572,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun didToggleToMode(action: CelestiaControlAction) {
-        val viewInteraction = this.viewInteraction ?: return
-
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
                 viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
@@ -603,8 +590,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun didStartPressingAction(action: CelestiaControlAction) {
-        val viewInteraction = this.viewInteraction ?: return
-
         when (action) {
             CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
             CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
@@ -622,7 +607,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     override fun didEndPressingAction(action: CelestiaControlAction) {
         zoomTimer?.cancel()
         zoomTimer = null
-        viewInteraction?.zoomMode = null
+        viewInteraction.zoomMode = null
     }
 
     override fun requestContextMenu(x: Float, y: Float, selection: CelestiaSelection) {
@@ -633,7 +618,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         // Show context menu on main thread
         activity?.runOnUiThread {
-            glView?.showContextMenu(x / scaleFactor, y / scaleFactor)
+            glView.showContextMenu(x / scaleFactor, y / scaleFactor)
         }
     }
 
@@ -680,22 +665,15 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 }
 
-class Insets(val left: Int, val top: Int, val right: Int, val bottom: Int) {
-    fun scaleBy(factor: Float): Insets {
-        return Insets(
-            (left * factor).toInt(),
-            (top * factor).toInt(),
-            (right * factor).toInt(),
-            (bottom * factor).toInt()
-         )
-    }
+fun InsetAwareFragment.EdgeInsets.scaleBy(factor: Float): InsetAwareFragment.EdgeInsets {
+    return InsetAwareFragment.EdgeInsets(
+        (left * factor).toInt(),
+        (top * factor).toInt(),
+        (right * factor).toInt(),
+        (bottom * factor).toInt()
+    )
 }
 
-@RequiresApi(Build.VERSION_CODES.P)
-fun DisplayCutout.safeInsets(): Insets {
-    return Insets(safeInsetLeft, safeInsetTop, safeInsetRight, safeInsetBottom)
-}
-
-fun CelestiaAppCore.setSafeAreaInsets(insets: Insets) {
+fun CelestiaAppCore.setSafeAreaInsets(insets: InsetAwareFragment.EdgeInsets) {
     setSafeAreaInsets(insets.left, insets.top, insets.right, insets.bottom)
 }

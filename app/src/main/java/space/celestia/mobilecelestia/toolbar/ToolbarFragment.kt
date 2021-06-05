@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
@@ -66,7 +67,7 @@ enum class ToolbarAction : Serializable {
     }
 }
 
-class ToolbarFragment : Fragment() {
+class ToolbarFragment : InsetAwareFragment() {
 
     private var existingActions: List<List<ToolbarAction>> = ArrayList()
     private var listener: Listener? = null
@@ -101,6 +102,18 @@ class ToolbarFragment : Fragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        view.setPadding(0, currentSafeInsets.top, currentSafeInsets.right, currentSafeInsets.bottom)
+    }
+
+    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
+        super.onInsetChanged(view, newInset)
+
+        view.setPadding(0, newInset.top, newInset.right, newInset.bottom)
     }
 
     override fun onAttach(context: Context) {

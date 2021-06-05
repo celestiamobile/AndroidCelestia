@@ -256,7 +256,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             findViewById<View>(R.id.toolbar_end_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
 
             findViewById<View>(R.id.overlay_container).visibility = if (toolbarVisible || endFragmentVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.end_notch).visibility = if (toolbarVisible || endFragmentVisible) View.VISIBLE else View.GONE
         }
 
         fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -416,33 +415,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
         val safeInsetStart = if (ltr) cutout.safeInsetLeft else cutout.safeInsetRight
 
-        val endView = findViewById<View>(R.id.normal_end_container)
-        val toolbarView = findViewById<View>(R.id.toolbar_end_container)
         val bottomView = findViewById<View>(R.id.toolbar_bottom_container)
         val toolbarGuideLine = findViewById<Guideline>(R.id.toolbar_width_guideline)
         val endGuideLine = findViewById<Guideline>(R.id.normal_width_guideline)
 
-        val endNotch = findViewById<View>(R.id.end_notch)
-
         endGuideLine.setGuidelineEnd((300 * density).toInt() + safeInsetEnd)
-        if (ltr)
-            endView.setPadding(0, 0, safeInsetEnd, 0)
-        else
-            endView.setPadding(safeInsetEnd, 0, 0, 0)
-
         toolbarGuideLine.setGuidelineEnd((220 * density).toInt() + safeInsetEnd)
-        if (ltr)
-            toolbarView.setPadding(0, 0, safeInsetEnd, 0)
-        else
-            toolbarView.setPadding(safeInsetEnd, 0, 0, 0)
 
         (bottomView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
             it.marginStart = safeInsetStart + (16 * density).toInt()
             it.bottomMargin = cutout.safeInsetBottom + (8 * density).toInt()
             bottomView.layoutParams = it
         }
-
-        endNotch.layoutParams.width = safeInsetEnd
     }
 
     private fun removeCelestiaFragment() {
@@ -802,7 +786,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbar() {
-        showEndFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_end_container, R.color.colorSecondaryBackground)
+        showEndFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_end_container)
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
@@ -1354,7 +1338,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         hideFragment(animated, R.id.normal_end_container, true) {
             hideFragment(animated, R.id.toolbar_end_container, true) {
                 findViewById<View>(R.id.overlay_container).visibility = View.INVISIBLE
-                findViewById<View>(R.id.end_notch).visibility = View.INVISIBLE
                 hideFragment(animated, R.id.toolbar_bottom_container, false) {
                     findViewById<View>(R.id.bottom_container).visibility = View.INVISIBLE
                     if (callback != null)
@@ -1424,7 +1407,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInfo(selection: CelestiaSelection) {
-        showEndFragment(InfoFragment.newInstance(selection), backgroundColor = R.color.colorSecondaryBackground)
+        showEndFragment(InfoFragment.newInstance(selection))
     }
 
     private fun showSearch() {
@@ -1614,21 +1597,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Utilities
-    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container, backgroundColor: Int = R.color.colorBackground) {
+    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {
             ref.get()?.let {
-                showEndFragmentDirect(it, containerID, backgroundColor)
+                showEndFragmentDirect(it, containerID)
             }
         }
     }
 
-    private fun showEndFragmentDirect(fragment: Fragment, containerID: Int = R.id.normal_end_container, backgroundColor: Int = R.color.colorBackground) {
+    private fun showEndFragmentDirect(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
         findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
         findViewById<View>(containerID).visibility = View.VISIBLE
-        val endNotch = findViewById<View>(R.id.end_notch)
-        endNotch.visibility = View.VISIBLE
-        endNotch.setBackgroundResource(backgroundColor)
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
 

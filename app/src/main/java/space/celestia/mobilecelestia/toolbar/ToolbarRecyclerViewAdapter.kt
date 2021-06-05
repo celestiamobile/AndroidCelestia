@@ -31,7 +31,7 @@ class ToolbarRecyclerViewAdapter(
 ) : SeparatorRecyclerViewAdapter(separatorHeight = 6, separatorLeft = 32, sections = values.map { CommonSection(it,
     showSectionSeparator = true,
     showRowSeparator = false
-) }, fullSection = false) {
+) }, fullSection = false, showFirstAndLastSeparator = false) {
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is ToolbarActionItem) {

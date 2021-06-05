@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Dispatcher
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.common.RightSubFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.model.*
@@ -82,6 +83,20 @@ class InfoFragment : NavigationFragment.SubFragment() {
 
         if (savedInstanceState == null)
             title = ""
+
+        if (embeddedInNavigation)
+            view.setPadding(0, 0, currentSafeInsets.right, currentSafeInsets.bottom)
+        else
+            view.setPadding(0, currentSafeInsets.top, currentSafeInsets.right, currentSafeInsets.bottom)
+    }
+
+    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
+        super.onInsetChanged(view, newInset)
+
+        if (embeddedInNavigation)
+            view.setPadding(0, 0, newInset.right, newInset.bottom)
+        else
+            view.setPadding(0, newInset.top, newInset.right, newInset.bottom)
     }
 
     override fun onAttach(context: Context) {

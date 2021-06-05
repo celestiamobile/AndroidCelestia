@@ -19,6 +19,12 @@
     android:orientation="vertical"
     style="@style/Background">
 
+    <View
+        android:id="@+id/top_padding"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Toolbar"/>
+
     <LinearLayout
         android:id="@+id/toolbar"
         android:layout_width="match_parent"

@@ -13,13 +13,13 @@ package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.common.RightNavgationFragment
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
 import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
-class SubsystemBrowserFragment : NavigationFragment(), BrowserRootFragment {
+class SubsystemBrowserFragment : RightNavgationFragment(), BrowserRootFragment {
     private var currentPath = ""
     private var rootPath = ""
 

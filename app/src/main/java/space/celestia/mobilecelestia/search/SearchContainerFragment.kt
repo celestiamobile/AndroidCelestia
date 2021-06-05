@@ -22,7 +22,7 @@ import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
-class SearchContainerFragment : NavigationFragment() {
+class SearchContainerFragment : RightNavgationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return SearchFragment.newInstance()
     }

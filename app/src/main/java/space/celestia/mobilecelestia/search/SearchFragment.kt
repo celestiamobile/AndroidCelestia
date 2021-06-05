@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.common.RightSubFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 
 @ExperimentalCoroutinesApi
@@ -62,6 +63,8 @@ class SearchFragment : NavigationFragment.SubFragment() {
 
     private lateinit var searchView: SearchView
     private lateinit var backButton: ImageButton
+    private lateinit var topPadding: View
+    private lateinit var listView: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,12 +74,12 @@ class SearchFragment : NavigationFragment.SubFragment() {
 
         searchView = view.findViewById(R.id.search_view)
         backButton = view.findViewById(R.id.back_button)
+        topPadding = view.findViewById(R.id.top_padding)
 
         // Set the adapter
-        with(view.findViewById<RecyclerView>(R.id.list)) {
-            layoutManager = LinearLayoutManager(context)
-            adapter = listAdapter
-        }
+        listView = view.findViewById(R.id.list)
+        listView.layoutManager = LinearLayoutManager(context)
+        listView.adapter = listAdapter
         return view
     }
 
@@ -96,6 +99,18 @@ class SearchFragment : NavigationFragment.SubFragment() {
         if (savedInstanceState == null) {
             showNavigationBar = false
         }
+
+        topPadding.layoutParams.height = currentSafeInsets.top
+        searchView.setPadding(0, 0, currentSafeInsets.right, 0)
+        listView.setPadding(0, 0, currentSafeInsets.right, currentSafeInsets.bottom)
+    }
+
+    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
+        super.onInsetChanged(view, newInset)
+
+        topPadding.layoutParams.height = newInset.top
+        searchView.setPadding(0, 0, newInset.right, 0)
+        listView.setPadding(0, 0, newInset.right, newInset.bottom)
     }
 
     @FlowPreview

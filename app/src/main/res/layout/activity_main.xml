@@ -68,17 +68,6 @@
             app:constraint_referenced_ids="normal_width_guideline, percent_guideline"/>
 
         <FrameLayout
-            android:id="@+id/end_notch"
-            style="@style/Background"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:clickable="true"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <FrameLayout
             android:id="@+id/normal_end_container"
             android:layout_width="0dp"
             android:layout_height="0dp"

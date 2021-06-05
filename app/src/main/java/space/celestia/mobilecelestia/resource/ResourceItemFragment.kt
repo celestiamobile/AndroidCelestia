@@ -25,8 +25,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.ProgressView
+import space.celestia.mobilecelestia.common.RightSubFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
@@ -39,7 +39,7 @@ import java.io.File
 import java.text.DateFormat
 import java.util.*
 
-class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
+class ResourceItemFragment : RightSubFragment(), ResourceManager.Listener {
     private var item: ResourceItem? = null
     private lateinit var progressView: ProgressView
     private lateinit var progressViewText: TextView

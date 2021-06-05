@@ -31,7 +31,8 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
                                         private val separatorLeft: Int = 16,
                                         private val separatorBackgroundColor: Int = R.color.colorSecondaryBackground,
                                         sections: List<CommonSection> = listOf(),
-                                        private val fullSection: Boolean = true) :
+                                        private val fullSection: Boolean = true,
+                                        private val showFirstAndLastSeparator: Boolean = true) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private class SeparatorItem(val full: Boolean) : ViewItem
@@ -123,16 +124,17 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
     fun updateSections(sections: List<CommonSection>) {
         val data = ArrayList<ViewItem>()
         var prevSectionHasSep = false
-        for (section in sections) {
+        for (i in 0 until sections.size) {
+            val section = sections[i]
             // add a separator to section top
             val showSectionSeparator = section.showSectionSeparator && section.items.count() > 0
             if (!prevSectionHasSep && showSectionSeparator) {
                 data.add(SeparatorItem(fullSection))
             }
-            for (i in 0 until section.items.count()) {
-                data.add(section.items[i])
+            for (j in 0 until section.items.count()) {
+                data.add(section.items[j])
                 // add separators to in between
-                if (section.showRowSeparator && i != section.items.count() - 1) {
+                if (section.showRowSeparator && j != section.items.count() - 1) {
                     data.add(SeparatorItem(false))
                 }
             }
@@ -141,6 +143,14 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
                 data.add(SeparatorItem(fullSection))
             }
             prevSectionHasSep = showSectionSeparator
+        }
+        if (!showFirstAndLastSeparator && data.size > 1) {
+            if (data[0] is SeparatorItem) {
+                data.removeAt(0)
+            }
+            if (data[data.size - 1] is SeparatorItem) {
+                data.removeAt(data.size - 1)
+            }
         }
         values = data
     }

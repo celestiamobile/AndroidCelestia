@@ -12,9 +12,9 @@
 package space.celestia.mobilecelestia.control
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.common.RightNavgationFragment
 
-class CameraControlContainerFragment : NavigationFragment() {
+class CameraControlContainerFragment : RightNavgationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return CameraControlFragment.newInstance()
     }

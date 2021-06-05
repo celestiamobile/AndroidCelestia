@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class HelpAction {
@@ -48,7 +49,7 @@ private val staticHelpActionItems: List<ActionItem> by lazy {
     )
 }
 
-class HelpFragment : Fragment() {
+class HelpFragment : InsetAwareFragment() {
 
     private var listener: Listener? = null
 
@@ -66,6 +67,18 @@ class HelpFragment : Fragment() {
             adapter = HelpRecyclerViewAdapter(listOf(staticHelpDescriptionItems, staticHelpURLItems, staticHelpActionItems), listener)
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        view.setPadding(0, currentSafeInsets.top, currentSafeInsets.right, currentSafeInsets.bottom)
+    }
+
+    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
+        super.onInsetChanged(view, newInset)
+
+        view.setPadding(0, newInset.top, newInset.right, newInset.bottom)
     }
 
     override fun onAttach(context: Context) {

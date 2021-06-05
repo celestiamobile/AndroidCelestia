@@ -20,7 +20,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
 
-abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClickListener {
+abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMenuItemClickListener {
     interface NavigationBarItem: Parcelable
 
     class BarButtonItem(val id: Int, val title: String?, val icon: Int? = null, val enabled: Boolean = true, val checked: Boolean? = null): NavigationBarItem {
@@ -152,7 +152,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         }
     }
 
-    abstract class SubFragment: Fragment() {
+    abstract class SubFragment: InsetAwareFragment() {
         var title: String
             get() = innerTitle
             set(value) {
@@ -213,7 +213,7 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         }
     }
 
-    private val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
+    val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
     private val separator by lazy { requireView().findViewById<View>(R.id.separator) }
 
     private var lastTitle: String = ""
@@ -244,6 +244,8 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         toolbar.setOnMenuItemClickListener(this)
         if (savedInstanceState == null) {
             replaceFragment(createInitialFragment(savedInstanceState))

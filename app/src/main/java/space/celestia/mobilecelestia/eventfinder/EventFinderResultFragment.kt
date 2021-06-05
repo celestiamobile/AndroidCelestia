@@ -19,11 +19,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.common.RightSubFragment
 import space.celestia.mobilecelestia.core.CelestiaEclipseFinder
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-class EventFinderResultFragment : NavigationFragment.SubFragment() {
+class EventFinderResultFragment : RightSubFragment() {
     private var listener: Listener? = null
 
     override fun onCreateView(
