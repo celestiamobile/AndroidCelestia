@@ -50,14 +50,14 @@ class CelestiaActionItem(val action: CelestiaAction, val image: Int)
 class BottomControlFragment : Fragment() {
 
     private var listener: Listener? = null
-    private var items: List<CelestiaAction>? = null
+    private var items: List<CelestiaAction> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
             @Suppress("UNCHECKED_CAST")
-            items = it.getSerializable(ARG_ACTIONS) as? List<CelestiaAction>
+            items = it.getSerializable(ARG_ACTIONS) as? List<CelestiaAction> ?: listOf()
         }
     }
 
@@ -74,7 +74,7 @@ class BottomControlFragment : Fragment() {
             manager.orientation = LinearLayoutManager.HORIZONTAL
             layoutManager = manager
             adapter = BottomControlRecyclerViewAdapter(
-                items!!.map {
+                items.map {
                     CelestiaActionItem(
                         it,
                         it.imageID() ?: 0
@@ -105,7 +105,6 @@ class BottomControlFragment : Fragment() {
     }
 
     companion object {
-
         const val ARG_ACTIONS = "action"
 
         @JvmStatic

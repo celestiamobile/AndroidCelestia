@@ -119,7 +119,7 @@ class ResourceManager {
             val call = client.newCall(Request.Builder().url(item.item).get().build())
             try {
                 val response = call.execute()
-                val body = response.body()
+                val body = response.body
                 if (!response.isSuccessful || body == null) {
                     return@executeAsyncTask false
                 }

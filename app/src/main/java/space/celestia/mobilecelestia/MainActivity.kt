@@ -25,7 +25,6 @@ import android.view.*
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Guideline
@@ -33,9 +32,7 @@ import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.contains
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
@@ -196,15 +193,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         reporter.register(this)
 
         // Handle notch
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val rootView = findViewById<View>(android.R.id.content).rootView
-            rootView.setOnApplyWindowInsetsListener { _, insets ->
-                insets.displayCutout?.let {
-                    applyCutout(it)
-                }
-                return@setOnApplyWindowInsetsListener insets
+        ViewCompat.setOnApplyWindowInsetsListener( findViewById<View>(android.R.id.content).rootView, { _, insets ->
+            insets?.displayCutout?.let {
+                applyDisplayCutout(it)
             }
-        }
+            return@setOnApplyWindowInsetsListener insets
+        })
 
         findViewById<View>(R.id.overlay_container).setOnTouchListener { _, e ->
             if (e.actionMasked == MotionEvent.ACTION_UP) {
@@ -399,16 +393,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val rootView = findViewById<View>(android.R.id.content).rootView
-            rootView.rootWindowInsets.displayCutout?.let {
-                applyCutout(it)
-            }
+        val rootView = findViewById<View>(android.R.id.content).rootView
+        ViewCompat.getRootWindowInsets(rootView)?.displayCutout?.let {
+            applyDisplayCutout(it)
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun applyCutout(cutout: DisplayCutout) {
+    private fun applyDisplayCutout(cutout: DisplayCutoutCompat) {
         val density = resources.displayMetrics.density
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
