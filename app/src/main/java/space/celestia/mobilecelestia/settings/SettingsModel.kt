@@ -14,7 +14,7 @@ package space.celestia.mobilecelestia.settings
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.common.RightSubFragment
+import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.io.Serializable
@@ -500,6 +500,6 @@ class SettingsCommonItem(override val name: String, val sections: List<Section>)
     }
 }
 
-open class SettingsBaseFragment: RightSubFragment() {
+open class SettingsBaseFragment: EndSubFragment() {
     open fun reload() {}
 }

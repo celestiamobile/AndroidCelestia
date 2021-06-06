@@ -14,10 +14,10 @@ package space.celestia.mobilecelestia.settings
 import android.os.Bundle
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaView
-import space.celestia.mobilecelestia.common.RightNavgationFragment
+import space.celestia.mobilecelestia.common.EndNavgationFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 
-class SettingsFragment : RightNavgationFragment() {
+class SettingsFragment : EndNavgationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return SettingsItemFragment.newInstance()
     }

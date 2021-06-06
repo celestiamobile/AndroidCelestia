@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.ProgressView
-import space.celestia.mobilecelestia.common.RightSubFragment
+import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
@@ -39,11 +39,11 @@ import java.io.File
 import java.text.DateFormat
 import java.util.*
 
-class ResourceItemFragment : RightSubFragment(), ResourceManager.Listener {
+class ResourceItemFragment : EndSubFragment(), ResourceManager.Listener {
     private var item: ResourceItem? = null
     private lateinit var progressView: ProgressView
     private lateinit var progressViewText: TextView
-    private lateinit var goToButtonContainer: View
+    private lateinit var goToButton: View
     private lateinit var goToButtonTextView: TextView
     private var currentState: ResourceItemState = ResourceItemState.None
 
@@ -105,10 +105,10 @@ class ResourceItemFragment : RightSubFragment(), ResourceManager.Listener {
         this.imageView = image
         this.authorsLabel = authors
         this.releaseDateLabel = releaseDate
-        goToButtonContainer = view.findViewById(R.id.button_container)
+        goToButton = view.findViewById(R.id.go_to_button)
         goToButtonTextView = view.findViewById(R.id.button)
         goToButtonTextView.text = CelestiaString("Go", "")
-        goToButtonContainer.visibility = View.GONE
+        goToButton.visibility = View.GONE
         updateContents()
         updateUI()
 
@@ -278,12 +278,12 @@ class ResourceItemFragment : RightSubFragment(), ResourceManager.Listener {
 
         val objectName = item.objectName
         if (currentState == ResourceItemState.Installed && objectName != null && listener?.objectExistsWithName(objectName) == true) {
-            goToButtonContainer.visibility = View.VISIBLE
-            goToButtonContainer.setOnClickListener {
+            goToButton.visibility = View.VISIBLE
+            goToButton.setOnClickListener {
                 listener?.onGoToObject(objectName)
             }
         } else {
-            goToButtonContainer.visibility = View.GONE
+            goToButton.visibility = View.GONE
         }
     }
 

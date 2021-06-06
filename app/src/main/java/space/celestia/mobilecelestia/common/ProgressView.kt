@@ -11,29 +11,30 @@
 
 package space.celestia.mobilecelestia.common
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.RippleDrawable
 import android.util.AttributeSet
-import android.view.MotionEvent
 import android.view.View
+import android.widget.FrameLayout
 import androidx.core.content.res.ResourcesCompat
 import space.celestia.mobilecelestia.R
-import java.util.*
 
-class ProgressView : View {
-    private var backgroundPaint: Paint
-    private var progressPaint: Paint
+class ProgressView : FrameLayout {
     private var backgroundColor = 0
     private var progressColor = 0
-    private val cornerRadius = 10f
-    private val topX = 0f
-    private val topY = 0f
+    private var rippleColor = 0
+    private var cornerRadius = 10
     private var progress = 0f
 
-    constructor(context: Context?) : this(context, null)
+    private var rippleDrawable: RippleDrawable? = null
+    private var progressLayerId: Int = 0
 
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
+    constructor(context: Context) : this(context, null)
+
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val attributeArray =
             getContext().theme.obtainStyledAttributes(attrs, R.styleable.ProgressView, 0, 0)
         try {
@@ -41,137 +42,73 @@ class ProgressView : View {
                 attributeArray.getColor(R.styleable.ProgressView_backgroundColor, ResourcesCompat.getColor(resources, R.color.colorProgressBackground, null))
             progressColor =
                 attributeArray.getColor(R.styleable.ProgressView_progressColor, ResourcesCompat.getColor(resources, R.color.colorProgressForeground, null))
+            rippleColor =
+                attributeArray.getColor(R.styleable.ProgressView_rippleColor, ResourcesCompat.getColor(resources, R.color.colorProgressForeground, null))
+            cornerRadius =
+                attributeArray.getDimensionPixelSize(R.styleable.ProgressView_cornerRadius, (resources.displayMetrics.density * 4).toInt())
         } finally {
             attributeArray.recycle()
         }
-        backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        backgroundPaint.color = backgroundColor
-        backgroundPaint.style = Paint.Style.FILL_AND_STROKE
-        progressPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        progressPaint.color = progressColor
-        progressPaint.style = Paint.Style.FILL_AND_STROKE
     }
 
     override fun setBackgroundColor(bgColor: Int) {
         backgroundColor = bgColor
-        backgroundPaint.color = bgColor
-        invalidate()
+
+        updateDrawable()
     }
 
     fun setProgressColor(progColor: Int) {
         progressColor = progColor
-        progressPaint.color = progColor
-        invalidate()
+
+        updateDrawable()
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val height: Int
-        val width: Int
-        val specWidth = MeasureSpec.getSize(widthMeasureSpec)
-        val specHeight = MeasureSpec.getSize(heightMeasureSpec)
-        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
-        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
-        height = when (heightMode) {
-            MeasureSpec.EXACTLY -> specHeight
-            MeasureSpec.UNSPECIFIED, MeasureSpec.AT_MOST -> resources.getDimensionPixelSize(R.dimen.progress_button_default_height)
-            else -> resources.getDimensionPixelSize(R.dimen.progress_button_default_height)
-        }
-        width = when (widthMode) {
-            MeasureSpec.EXACTLY -> specWidth
-            MeasureSpec.UNSPECIFIED, MeasureSpec.AT_MOST -> resources.getDimensionPixelSize(R.dimen.progress_button_default_width)
-            else -> resources.getDimensionPixelSize(R.dimen.progress_button_default_width)
-        }
-        setMeasuredDimension(width, height)
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+
+        updateDrawable()
     }
 
-    @ExperimentalStdlibApi
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        drawDeterminateProgress(canvas)
-    }
+    fun updateDrawable() {
+        val isRTL = resources.configuration.layoutDirection == LAYOUT_DIRECTION_RTL
 
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (event != null) {
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    alpha = 0.3f
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    alpha = 1f
+        val backgroundDrawable = GradientDrawable()
+        backgroundDrawable.shape = GradientDrawable.RECTANGLE
+        backgroundDrawable.cornerRadius = cornerRadius.toFloat()
+        backgroundDrawable.color = ColorStateList(arrayOf(intArrayOf()), intArrayOf(backgroundColor))
+        val progressDrawable = GradientDrawable()
+        progressDrawable.shape = GradientDrawable.RECTANGLE
+        progressDrawable.cornerRadius = cornerRadius.toFloat()
+        progressDrawable.color = ColorStateList(arrayOf(intArrayOf()), intArrayOf(progressColor))
+        val layerDrawable = LayerDrawable(arrayOf(backgroundDrawable, progressDrawable))
+
+        layerDrawable.setLayerInset(0, 0, 0, 0, 0)
+        layerDrawable.setLayerInset(1, if (isRTL) (width - progress * width / 100).toInt() else 0, 0, if (isRTL) 0 else (width - progress * width / 100).toInt(), 0)
+        layerDrawable.setBounds(0, 0, width, height)
+
+        if (rippleDrawable == null) {
+            val ripple = RippleDrawable(ColorStateList(arrayOf(intArrayOf()), intArrayOf(rippleColor)), layerDrawable, null)
+            rippleDrawable = ripple
+            for (i in 0 until ripple.numberOfLayers) {
+                if (ripple.getDrawable(i) == layerDrawable) {
+                    progressLayerId = ripple.getId(i)
+                    break
                 }
             }
-        }
-        return super.onTouchEvent(event)
-    }
-
-    private fun drawDeterminateProgress(canvas: Canvas) {
-        if (progress == 0f) {
-            onDrawInit(canvas)
-        } else if (progress > 0f && progress < 100f) {
-            onDrawProgress(canvas)
+            background = rippleDrawable
         } else {
-            onDrawFinished(canvas)
+            rippleDrawable?.setDrawableByLayerId(progressLayerId, layerDrawable)
         }
-    }
-
-    private fun onDrawInit(canvas: Canvas) {
-        val bgRectf = RectF(
-            topX, topY,
-            canvas.width.toFloat(), canvas.height.toFloat()
-        )
-        canvas.drawRoundRect(
-            bgRectf, cornerRadius, cornerRadius,
-            backgroundPaint
-        )
-    }
-
-    private fun onDrawProgress(canvas: Canvas) {
-        val bgRectf = RectF(
-            topX, topY,
-            canvas.width.toFloat(), canvas.height.toFloat()
-        )
-        canvas.drawRoundRect(
-            bgRectf, cornerRadius, cornerRadius,
-            backgroundPaint
-        )
-        val progressPoint = canvas.width / 100 * progress
-        val progRect = RectF(
-            topX, topY, progressPoint,
-            canvas.height.toFloat()
-        )
-        canvas.drawRoundRect(
-            progRect, cornerRadius, cornerRadius,
-            progressPaint
-        )
-    }
-
-    private fun onDrawFinished(canvas: Canvas) {
-        val bgRectf = RectF(
-            topX, topY,
-            canvas.width.toFloat(), canvas.height.toFloat()
-        )
-        canvas.drawRoundRect(
-            bgRectf, cornerRadius, cornerRadius,
-            backgroundPaint
-        )
-        val progRect = RectF(
-            topX, topY,
-            canvas.width.toFloat(), canvas.height.toFloat()
-        )
-        canvas.drawRoundRect(
-            progRect, cornerRadius, cornerRadius,
-            progressPaint
-        )
+        invalidate()
     }
 
     fun setProgress(currentProgress: Float) {
         progress = currentProgress
-        invalidate()
+        updateDrawable()
     }
 
     fun reset() {
         progress = 0f
-        invalidate()
+        updateDrawable()
     }
 }

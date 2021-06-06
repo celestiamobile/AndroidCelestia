@@ -12,6 +12,7 @@
 package space.celestia.mobilecelestia.eventfinder
 
 import android.annotation.SuppressLint
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.common.CommonSectionV2
@@ -55,6 +56,7 @@ class EventFinderResultRecyclerViewAdapter(
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (item is EventFinderEclipseItem && holder is CommonTextViewHolder) {
             holder.title.text = "${item.eclipse.occulter.name} -> ${item.eclipse.receiver.name}"
+            holder.detail.visibility = View.VISIBLE
             holder.detail.text = formatter.format(createDateFromJulianDay(item.eclipse.startTimeJulian))
             return
         }

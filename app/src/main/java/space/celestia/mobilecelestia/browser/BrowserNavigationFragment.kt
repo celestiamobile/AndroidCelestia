@@ -12,9 +12,9 @@
 package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.common.RightNavgationFragment
+import space.celestia.mobilecelestia.common.EndNavgationFragment
 
-class BrowserNavigationFragment : RightNavgationFragment() {
+class BrowserNavigationFragment : EndNavgationFragment() {
     private var path: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {

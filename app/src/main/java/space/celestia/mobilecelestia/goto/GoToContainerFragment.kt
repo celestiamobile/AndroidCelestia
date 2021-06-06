@@ -12,9 +12,9 @@
 package space.celestia.mobilecelestia.goto
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.common.RightNavgationFragment
+import space.celestia.mobilecelestia.common.EndNavgationFragment
 
-class GoToContainerFragment : RightNavgationFragment() {
+class GoToContainerFragment : EndNavgationFragment() {
     private lateinit var goToData: GoToInputFragment.GoToData
 
     override fun onCreate(savedInstanceState: Bundle?) {

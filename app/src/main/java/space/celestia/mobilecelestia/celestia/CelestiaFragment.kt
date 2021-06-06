@@ -197,28 +197,28 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        handleInsetChanged(view, currentSafeInsets)
+        handleInsetsChanged(view, currentSafeInsets)
     }
 
-    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
-        super.onInsetChanged(view, newInset)
+    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
+        super.onInsetChanged(view, newInsets)
 
-        handleInsetChanged(view, newInset)
+        handleInsetsChanged(view, newInsets)
     }
 
-    private fun handleInsetChanged(view: View, newInset: EdgeInsets) {
+    private fun handleInsetsChanged(view: View, newInsets: EdgeInsets) {
         if (!loadSuccess) {
-            savedInsets = newInset
+            savedInsets = newInsets
             return
         }
 
-        val insets = newInset.scaleBy(scaleFactor)
+        val insets = newInsets.scaleBy(scaleFactor)
         CelestiaView.callOnRenderThread {
             core.setSafeAreaInsets(insets)
         }
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-        val safeInsetEnd = if (ltr) newInset.right else newInset.left
+        val safeInsetEnd = if (ltr) newInsets.right else newInsets.left
 
         val controlView = view.findViewById<FrameLayout>(currentControlViewID) ?: return
         val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
@@ -375,7 +375,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         Log.d(TAG, "Ready to display")
 
-        handleInsetChanged(thisView, currentSafeInsets)
+        handleInsetsChanged(thisView, currentSafeInsets)
     }
 
     override fun onCreateContextMenu(

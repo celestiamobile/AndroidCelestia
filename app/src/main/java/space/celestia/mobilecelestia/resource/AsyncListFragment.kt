@@ -22,12 +22,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.RightSubFragment
+import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.createLoadingDrawable
 import space.celestia.mobilecelestia.utils.showAlert
 
-open class AsyncListFragment<T: AsyncListTextItem>: RightSubFragment() {
+open class AsyncListFragment<T: AsyncListTextItem>: EndSubFragment() {
     private var selectListener: Listener<T>? = null
 
     private var imageView: ImageView? = null

@@ -15,6 +15,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.LayoutDirection
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +28,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Dispatcher
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.RightSubFragment
+import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.core.CelestiaSelection
 import space.celestia.mobilecelestia.info.model.*
@@ -84,19 +85,13 @@ class InfoFragment : NavigationFragment.SubFragment() {
         if (savedInstanceState == null)
             title = ""
 
-        if (embeddedInNavigation)
-            view.setPadding(0, 0, currentSafeInsets.right, currentSafeInsets.bottom)
-        else
-            view.setPadding(0, currentSafeInsets.top, currentSafeInsets.right, currentSafeInsets.bottom)
+        applyPadding(view,currentSafeInsets)
     }
 
-    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
-        super.onInsetChanged(view, newInset)
+    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
+        super.onInsetChanged(view, newInsets)
 
-        if (embeddedInNavigation)
-            view.setPadding(0, 0, newInset.right, newInset.bottom)
-        else
-            view.setPadding(0, newInset.top, newInset.right, newInset.bottom)
+        applyPadding(view, newInsets)
     }
 
     override fun onAttach(context: Context) {
@@ -111,6 +106,15 @@ class InfoFragment : NavigationFragment.SubFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    private fun applyPadding(view: View, insets: EdgeInsets) {
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        val top = if (embeddedInNavigation) 0 else insets.top
+        if (isRTL)
+            view.setPadding(insets.left, top, 0, insets.bottom)
+        else
+            view.setPadding(0, top, insets.right, insets.bottom)
     }
 
     interface Listener {
@@ -185,7 +189,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
             parent: RecyclerView,
             state: RecyclerView.State
         ) {
-            val density = Resources.getSystem().displayMetrics.density
+            val density =  parent.resources.displayMetrics.density
+            val isRTL = parent.resources.configuration.layoutDirection == LayoutDirection.RTL
             val spacing = (16 * density).toInt()
 
             val pos = parent.getChildLayoutPosition(view)
@@ -198,11 +203,11 @@ class InfoFragment : NavigationFragment.SubFragment() {
                 outRect.top = 0
                 outRect.bottom = spacing
                 if ((pos - firstSingleColumnItem) % 2 == 1) {
-                    outRect.left = spacing / 2
-                    outRect.right = spacing
+                    outRect.left = if (isRTL) spacing else (spacing / 2)
+                    outRect.right = if (isRTL) (spacing / 2) else spacing
                 } else {
-                    outRect.left = spacing
-                    outRect.right = spacing / 2
+                    outRect.left = if (isRTL) (spacing / 2) else spacing
+                    outRect.right = if (isRTL) spacing else (spacing / 2)
                 }
             }
         }

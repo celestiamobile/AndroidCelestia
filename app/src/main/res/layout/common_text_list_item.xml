@@ -12,36 +12,51 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     style="@style/ListItemGrouped">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginVertical="12dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_weight="1">
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            tools:ignore="MissingConstraints"
             style="@style/PrimaryListItemLabel"/>
 
         <TextView
             android:id="@+id/detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            tools:ignore="MissingConstraints"
+            android:visibility="gone"
+            style="@style/SecondaryListItemLabel" />
+
+        <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/flow"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|end"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:textAlignment="textEnd"
-            style="@style/SecondaryListItemLabel"
-            tools:ignore="NestedWeights" />
-    </LinearLayout>
+            android:orientation="horizontal"
+            app:constraint_referenced_ids="title,detail"
+            app:flow_horizontalStyle="spread_inside"
+            app:flow_wrapMode="chain"
+            app:flow_verticalGap="6dp"
+            app:flow_verticalAlign="center"
+            app:flow_horizontalGap="8dp"
+            app:flow_horizontalBias="0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
         android:id="@+id/accessory"

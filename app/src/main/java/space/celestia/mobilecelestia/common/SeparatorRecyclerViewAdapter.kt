@@ -11,8 +11,10 @@
 
 package space.celestia.mobilecelestia.common
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 
@@ -207,21 +209,25 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (holder is HeaderViewHolder && item is HeaderRecyclerViewItem) {
-            holder.view.textView.text = item.title
+            holder.textView.text = item.title
             return
         }
         if (holder is FooterViewHolder && item is FooterRecyclerViewItem) {
-            holder.view.textView.text = item.title
+            holder.textView.text = item.title
             return
         }
         throw RuntimeException("$this must deal with item type $item")
     }
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewType == HEADER)
-            return HeaderViewHolder(SectionHeaderView(parent.context))
-        if (viewType == FOOTER)
-            return FooterViewHolder(SectionFooterView(parent.context))
+        if (viewType == HEADER) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_section_header, parent, false)
+            return HeaderViewHolder(view)
+        }
+        if (viewType == FOOTER) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_section_footer, parent, false)
+            return FooterViewHolder(view)
+        }
         throw RuntimeException("$this must deal with item type $viewType")
     }
 
@@ -229,8 +235,13 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
         updateSections(sections.transformed())
     }
 
-    inner class HeaderViewHolder(val view: SectionHeaderView) : RecyclerView.ViewHolder(view)
-    inner class FooterViewHolder(val view: SectionFooterView) : RecyclerView.ViewHolder(view)
+    inner class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView by lazy { itemView.findViewById(R.id.text) }
+    }
+
+    inner class FooterViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView by lazy { itemView.findViewById(R.id.text) }
+    }
 
     companion object {
         const val HEADER = 99997

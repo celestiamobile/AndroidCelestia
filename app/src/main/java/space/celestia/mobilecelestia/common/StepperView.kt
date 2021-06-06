@@ -14,6 +14,7 @@ package space.celestia.mobilecelestia.common
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.util.LayoutDirection
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -21,8 +22,8 @@ import android.widget.LinearLayout
 import space.celestia.mobilecelestia.R
 
 class StepperView(context: Context, attrs: AttributeSet): LinearLayout(context, attrs) {
-    private val leftView by lazy { findViewById<View>(R.id.stepper_left) }
-    private val rightView by lazy { findViewById<View>(R.id.stepper_right) }
+    private val startView by lazy { findViewById<View>(R.id.stepper_start) }
+    private val endView by lazy { findViewById<View>(R.id.stepper_end) }
 
     var listener: Listener? = null
 
@@ -30,10 +31,10 @@ class StepperView(context: Context, attrs: AttributeSet): LinearLayout(context, 
     private val subViewListener: OnTouchListener = OnTouchListener { view, event ->
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                listener?.stepperTouchDown(this, view == leftView)
+                listener?.stepperTouchDown(this, view == startView)
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                listener?.stepperTouchUp(this, view == leftView)
+                listener?.stepperTouchUp(this, view == startView)
             }
         }
         view.onTouchEvent(event)
@@ -42,8 +43,11 @@ class StepperView(context: Context, attrs: AttributeSet): LinearLayout(context, 
     init {
         View.inflate(context, R.layout.stepper_view, this)
 
-        leftView.setOnTouchListener(subViewListener)
-        rightView.setOnTouchListener(subViewListener)
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        startView.setBackgroundResource(if (isRTL) R.drawable.stepper_right else R.drawable.stepper_left)
+        endView.setBackgroundResource(if (isRTL) R.drawable.stepper_left else R.drawable.stepper_right)
+        startView.setOnTouchListener(subViewListener)
+        endView.setOnTouchListener(subViewListener)
     }
 
     interface Listener {

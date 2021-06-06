@@ -20,6 +20,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
+import android.util.LayoutDirection
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -404,7 +405,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
         val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
-        val safeInsetStart = if (ltr) cutout.safeInsetLeft else cutout.safeInsetRight
 
         val bottomView = findViewById<View>(R.id.toolbar_bottom_container)
         val toolbarGuideLine = findViewById<Guideline>(R.id.toolbar_width_guideline)
@@ -413,11 +413,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         endGuideLine.setGuidelineEnd((300 * density).toInt() + safeInsetEnd)
         toolbarGuideLine.setGuidelineEnd((220 * density).toInt() + safeInsetEnd)
 
-        (bottomView.layoutParams as? ConstraintLayout.LayoutParams)?.let {
-            it.marginStart = safeInsetStart + (16 * density).toInt()
-            it.bottomMargin = cutout.safeInsetBottom + (8 * density).toInt()
-            bottomView.layoutParams = it
-        }
+        bottomView.layoutParams.height = cutout.safeInsetBottom + (72 * density).toInt()
     }
 
     private fun removeCelestiaFragment() {
@@ -1411,14 +1407,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showTimeControl() {
-        showBottomFragment(
-            BottomControlFragment.newInstance(
-                listOf(
-                    CelestiaAction.Slower,
-                    CelestiaAction.PlayPause,
-                    CelestiaAction.Faster,
-                    CelestiaAction.Reverse
-                )))
+        val actions: List<CelestiaAction>
+        if (resources.configuration.layoutDirection == LayoutDirection.RTL) {
+            actions = listOf(
+                CelestiaAction.Faster,
+                CelestiaAction.PlayPause,
+                CelestiaAction.Slower,
+                CelestiaAction.Reverse
+            )
+        } else {
+            actions = listOf(
+                CelestiaAction.Slower,
+                CelestiaAction.PlayPause,
+                CelestiaAction.Faster,
+                CelestiaAction.Reverse
+            )
+        }
+        showBottomFragment(BottomControlFragment.newInstance(actions))
     }
 
     private fun showScriptControl() {

@@ -11,7 +11,7 @@
 
 <resources>
 
-    <style name="DefaultTheme" parent="@style/Theme.AppCompat.NoActionBar">
+    <style name="DefaultTheme" parent="@style/Theme.MaterialComponents.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowFullscreen">true</item>
@@ -52,7 +52,7 @@
     </style>
 
     <style name="ButtonBackground">
-        <item name="android:background">@drawable/button_background_selector</item>
+        <item name="android:background">@drawable/ripple_button_background</item>
     </style>
 
     <style name="DimmingBackground">
@@ -81,11 +81,12 @@
     </style>
 
     <style name="ActionButtonLabel" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Button</item>
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Button</item>
     </style>
 
     <style name="HelpText" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body1</item>
+        <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="LoadingText" parent="PrimaryLabel">
@@ -93,25 +94,30 @@
     </style>
 
     <style name="CaptionText" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Caption</item>
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Subtitle1</item>
+        <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="PrimaryListItemLabel" parent="PrimaryLabel">
         <item name="android:textAppearance">?attr/textAppearanceListItem</item>
         <item name="android:ellipsize">end</item>
+        <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="SecondaryListItemLabel" parent="SecondaryLabel">
         <item name="android:textAppearance">?attr/textAppearanceListItemSecondary</item>
         <item name="android:ellipsize">end</item>
+        <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="LargeTitleLabel" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Display1</item>
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Headline4</item>
+        <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="HeadlineLabel" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Title</item>
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Headline6</item>
+        <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="SecondaryLabel">
@@ -119,17 +125,30 @@
     </style>
 
     <style name="BodyLabel" parent="SecondaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body1</item>
+        <item name="android:textAlignment">viewStart</item>
+    </style>
+
+    <style name="SectionHeaderLabel" parent="SecondaryLabel">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Caption</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="FooterLabel" parent="SecondaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Caption</item>
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Caption</item>
+        <item name="android:textAlignment">viewStart</item>
+    </style>
+
+    <style name="SectionFooterLabel" parent="SecondaryLabel">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Caption</item>
+        <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="ResourceItemTitleLabel" parent="HeadlineLabel"/>
 
     <style name="ResourceItemContentLabel" parent="BodyLabel"/>
-    
+
     <style name="EditText" parent="PrimaryLabel">
         <item name="backgroundTint">@color/colorEditTextHairLine</item>
     </style>

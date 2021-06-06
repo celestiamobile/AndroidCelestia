@@ -12,6 +12,7 @@
 package space.celestia.ui.linkpreview
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -71,10 +72,14 @@ class LPLinkView(context: Context, val attrs: AttributeSet) : CardView(context, 
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_PX, titleLabelSize)
         titleView.setTextColor(ContextCompat.getColor(context, titleLabelColor))
         titleView.text = metaData.title
+        titleView.textAlignment = TEXT_ALIGNMENT_VIEW_START
+        titleView.setBackgroundColor(Color.TRANSPARENT)
         val urlView = TextView(context)
         urlView.text = metaData.url.host
         urlView.setTextSize(TypedValue.COMPLEX_UNIT_PX, footerLabelSize)
         urlView.setTextColor(ContextCompat.getColor(context, footerLabelColor))
+        urlView.textAlignment = TEXT_ALIGNMENT_VIEW_START
+        urlView.setBackgroundColor(Color.TRANSPARENT)
 
         (urlView.layoutParams as? MarginLayoutParams)?.topMargin = textContentSpacing
 

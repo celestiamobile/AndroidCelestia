@@ -79,35 +79,14 @@
             android:layout_height="8dp"/>
 
         <include layout="@layout/common_action_button"
-            android:id="@+id/button_container"
+            android:id="@+id/go_to_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"/>
 
-        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <include layout="@layout/common_progress_button"
+            android:id="@+id/progress_button"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <space.celestia.mobilecelestia.common.ProgressView
-                android:id="@+id/progress_button"
-                android:clickable="true"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                style="@style/Container">
-                <TextView
-                    android:id="@+id/progress_view_text"
-                    android:gravity="center"
-                    android:layout_marginVertical="12dp"
-                    android:layout_gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/ActionButtonLabel" />
-            </FrameLayout>
-        </FrameLayout>
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 </FrameLayout>

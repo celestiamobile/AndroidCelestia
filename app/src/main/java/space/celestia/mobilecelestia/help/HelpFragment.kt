@@ -13,6 +13,7 @@ package space.celestia.mobilecelestia.help
 
 import android.content.Context
 import android.os.Bundle
+import android.util.LayoutDirection
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -72,13 +73,13 @@ class HelpFragment : InsetAwareFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.setPadding(0, currentSafeInsets.top, currentSafeInsets.right, currentSafeInsets.bottom)
+        applyPadding(view, currentSafeInsets)
     }
 
-    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
-        super.onInsetChanged(view, newInset)
+    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
+        super.onInsetChanged(view, newInsets)
 
-        view.setPadding(0, newInset.top, newInset.right, newInset.bottom)
+        applyPadding(view, newInsets)
     }
 
     override fun onAttach(context: Context) {
@@ -93,6 +94,14 @@ class HelpFragment : InsetAwareFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    private fun applyPadding(view: View, insets: EdgeInsets) {
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        if (isRTL)
+            view.setPadding(insets.left, insets.top, 0, insets.bottom)
+        else
+            view.setPadding(0, insets.top, insets.right, insets.bottom)
     }
 
     interface Listener {

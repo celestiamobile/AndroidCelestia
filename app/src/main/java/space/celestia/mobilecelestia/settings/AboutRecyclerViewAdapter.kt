@@ -95,6 +95,7 @@ class AboutRecyclerViewAdapter(
             when (item) {
                 is VersionItem -> {
                     holder.title.text = item.title
+                    holder.detail.visibility = View.VISIBLE
                     holder.detail.text = item.versionName
                 }
                 is ActionItem -> {

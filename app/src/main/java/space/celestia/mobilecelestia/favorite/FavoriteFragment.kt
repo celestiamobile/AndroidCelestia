@@ -14,9 +14,9 @@ package space.celestia.mobilecelestia.favorite
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
-import space.celestia.mobilecelestia.common.RightNavgationFragment
+import space.celestia.mobilecelestia.common.EndNavgationFragment
 
-class FavoriteFragment : RightNavgationFragment(), Toolbar.OnMenuItemClickListener {
+class FavoriteFragment : EndNavgationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
     private var initialItem: FavoriteBaseItem? = null
 

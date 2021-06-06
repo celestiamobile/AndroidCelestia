@@ -19,10 +19,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.RightSubFragment
+import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.core.CelestiaBrowserItem
 
-class BrowserCommonFragment : RightSubFragment() {
+class BrowserCommonFragment : EndSubFragment() {
 
     private var listener: Listener? = null
     private var browserItem: CelestiaBrowserItem? = null

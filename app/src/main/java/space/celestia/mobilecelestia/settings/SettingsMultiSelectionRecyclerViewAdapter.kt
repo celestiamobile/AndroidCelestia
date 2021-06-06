@@ -86,7 +86,7 @@ class SettingsMultiSelectionRecyclerViewAdapter(
         val core = CelestiaAppCore.shared()
         if (item is SettingsMultiSelectionItem.Selection && holder is CommonTextViewHolder) {
             holder.title.text = item.name
-            holder.accessory.visibility = if (core.getBooleanValueForPield(item.key)) View.VISIBLE else View.INVISIBLE
+            holder.accessory.visibility = if (core.getBooleanValueForPield(item.key)) View.VISIBLE else View.GONE
             return
         }
         if (item is MasterSwitch && holder is MasterViewHolder) {

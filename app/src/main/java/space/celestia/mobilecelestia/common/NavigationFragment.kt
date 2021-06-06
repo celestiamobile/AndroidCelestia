@@ -325,7 +325,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             }
         } else {
             if (canGoBack) {
-                toolbar.setNavigationIcon(R.drawable.ic_action_arrow_back)
+                toolbar.setNavigationIcon(R.drawable.ic_action_back_tint)
             } else {
                 toolbar.navigationIcon = null
             }

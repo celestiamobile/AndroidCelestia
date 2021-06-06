@@ -17,6 +17,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.LayoutDirection
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -35,7 +36,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.RightSubFragment
+import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 
 @ExperimentalCoroutinesApi
@@ -100,17 +101,25 @@ class SearchFragment : NavigationFragment.SubFragment() {
             showNavigationBar = false
         }
 
-        topPadding.layoutParams.height = currentSafeInsets.top
-        searchView.setPadding(0, 0, currentSafeInsets.right, 0)
-        listView.setPadding(0, 0, currentSafeInsets.right, currentSafeInsets.bottom)
+        applyPadding(currentSafeInsets)
     }
 
-    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
-        super.onInsetChanged(view, newInset)
+    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
+        super.onInsetChanged(view, newInsets)
 
-        topPadding.layoutParams.height = newInset.top
-        searchView.setPadding(0, 0, newInset.right, 0)
-        listView.setPadding(0, 0, newInset.right, newInset.bottom)
+        applyPadding(newInsets)
+    }
+
+    fun applyPadding(insets: EdgeInsets) {
+        topPadding.layoutParams.height = insets.top
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        if (isRTL) {
+            searchView.setPadding(insets.left, 0, 0, 0)
+            listView.setPadding(insets.left, 0, 0, insets.bottom)
+        } else {
+            searchView.setPadding(0, 0, insets.right, 0)
+            listView.setPadding(0, 0, insets.right, insets.bottom)
+        }
     }
 
     @FlowPreview

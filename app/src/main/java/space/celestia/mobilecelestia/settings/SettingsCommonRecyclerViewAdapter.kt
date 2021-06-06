@@ -80,15 +80,15 @@ class SettingsCommonRecyclerViewAdapter(
         if (holder is CommonTextViewHolder) {
             when (item) {
                 is SettingsActionItem -> {
-                    holder.configure(item.name)
+                    holder.title.text = item.name
                 }
                 is SettingsUnknownTextItem -> {
-                    holder.configure(item.name)
+                    holder.title.text = item.name
                 }
                 is SettingsSwitchItem -> {
                     val on = dataSource?.commonSettingSwitchState(item.key) ?: false
                     holder.title.text = item.name
-                    holder.accessory.visibility = if (on) View.VISIBLE else View.INVISIBLE
+                    holder.accessory.visibility = if (on) View.VISIBLE else View.GONE
                 }
             }
             return

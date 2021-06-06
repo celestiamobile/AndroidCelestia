@@ -63,7 +63,7 @@ class SettingsSingleSelectionRecyclerViewAdapter(
         val current = core.getIntValueForField(this.item.key)
         if (item is SettingsSingleSelectionItem.Selection && holder is CommonTextViewHolder) {
             holder.title.text = item.name
-            holder.accessory.visibility = if (current == item.value) View.VISIBLE else View.INVISIBLE
+            holder.accessory.visibility = if (current == item.value) View.VISIBLE else View.GONE
             return
         }
         super.bindVH(holder, item)

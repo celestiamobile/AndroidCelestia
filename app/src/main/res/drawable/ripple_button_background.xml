@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ button_background_selector.xml
+  ~ ripple_grouped_background.xml
   ~
   ~ Copyright (C) 2001-2020, Celestia Development Team
   ~
@@ -10,7 +10,8 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<shape android:shape="rectangle" xmlns:android="http://schemas.android.com/apk/res/android" >
-    <solid android:color="@color/colorThemeBackground"/>
-    <corners android:radius="4dp" />
-</shape>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/mtrl_btn_ripple_color">
+    <item android:drawable="@drawable/button_background_selector"></item>
+</ripple>
+

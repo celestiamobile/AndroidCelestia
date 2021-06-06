@@ -21,12 +21,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.RightSubFragment
+import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.core.CelestiaAppCore
 import space.celestia.mobilecelestia.utils.*
 import java.util.*
 
-class EventFinderInputFragment : RightSubFragment() {
+class EventFinderInputFragment : EndSubFragment() {
     private var listener: Listener? = null
 
     private var adapter: EventFinderInputRecyclerViewAdapter? = null

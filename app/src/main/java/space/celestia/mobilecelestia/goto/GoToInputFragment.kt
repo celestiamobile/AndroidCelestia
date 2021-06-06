@@ -19,13 +19,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.RightSubFragment
+import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.core.CelestiaGoToLocation
 import space.celestia.mobilecelestia.utils.*
 import java.io.Serializable
 import java.util.*
 
-class GoToInputFragment : RightSubFragment() {
+class GoToInputFragment : EndSubFragment() {
     class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: CelestiaGoToLocation.DistanceUnit) :
         Serializable
 

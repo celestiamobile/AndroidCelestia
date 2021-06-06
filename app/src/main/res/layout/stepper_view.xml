@@ -17,12 +17,11 @@
     style="@style/Container">
 
     <FrameLayout
-        android:id="@+id/stepper_left"
+        android:id="@+id/stepper_start"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:clickable="true"
-        android:background="@drawable/stepper_left">
+        android:clickable="true">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,12 +36,11 @@
         android:layout_height="match_parent"/>
 
     <FrameLayout
-        android:id="@+id/stepper_right"
+        android:id="@+id/stepper_end"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:clickable="true"
-        android:background="@drawable/stepper_right">
+        android:clickable="true">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

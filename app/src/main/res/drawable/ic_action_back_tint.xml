@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ button_background_selector.xml
+  ~ ic_action_back_tint.xml
   ~
-  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~ Copyright (C) 2001-2021, Celestia Development Team
   ~
   ~ This program is free software; you can redistribute it and/or
   ~ modify it under the terms of the GNU General Public License
@@ -10,7 +10,6 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<shape android:shape="rectangle" xmlns:android="http://schemas.android.com/apk/res/android" >
-    <solid android:color="@color/colorThemeBackground"/>
-    <corners android:radius="4dp" />
-</shape>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/ic_action_arrow_back"
+    android:autoMirrored="true"/>

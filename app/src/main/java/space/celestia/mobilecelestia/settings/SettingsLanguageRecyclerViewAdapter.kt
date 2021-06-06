@@ -121,7 +121,7 @@ class SettingsLanguageRecyclerViewAdapter(
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (item is SpecificLanguageItem && holder is CommonTextViewHolder) {
             holder.title.text = item.title
-            holder.accessory.visibility = if (dataSource?.currentOverrideLanguage() == item.language) View.VISIBLE else View.INVISIBLE
+            holder.accessory.visibility = if (dataSource?.currentOverrideLanguage() == item.language) View.VISIBLE else View.GONE
             return
         }
         if (item is LanguageItem && holder is CommonTextViewHolder) {

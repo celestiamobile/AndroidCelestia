@@ -24,7 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:imeOptions="actionDone|flagNoExtractUi|flagNoFullscreen"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:background="@android:color/transparent"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 </FrameLayout>

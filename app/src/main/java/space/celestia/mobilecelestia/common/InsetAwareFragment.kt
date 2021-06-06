@@ -45,5 +45,5 @@ open class InsetAwareFragment: Fragment() {
         })
     }
 
-    open fun onInsetChanged(view: View, newInset: EdgeInsets) {}
+    open fun onInsetChanged(view: View, newInsets: EdgeInsets) {}
 }

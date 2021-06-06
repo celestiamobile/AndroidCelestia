@@ -14,5 +14,7 @@
     <declare-styleable name="ProgressView">
         <attr name="backgroundColor" format="color" />
         <attr name="progressColor" format="color" />
+        <attr name="rippleColor" format="color" />
+        <attr name="cornerRadius" format="dimension" />
     </declare-styleable>
 </resources>

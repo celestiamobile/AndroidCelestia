@@ -1,5 +1,5 @@
 /*
- * RightNavgationFragment.kt
+ * EndNavgationFragment.kt
  *
  * Copyright (C) 2001-2021, Celestia Development Team
  *
@@ -12,32 +12,50 @@
 package space.celestia.mobilecelestia.common
 
 import android.os.Bundle
+import android.util.LayoutDirection
 import android.view.View
+import androidx.appcompat.widget.Toolbar
 
-abstract class RightNavgationFragment: NavigationFragment() {
+abstract class EndNavgationFragment: NavigationFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar.setPadding(0, currentSafeInsets.top, currentSafeInsets.right, 0)
+        applyPadding(toolbar, currentSafeInsets)
     }
 
-    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
-        super.onInsetChanged(view, newInset)
+    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
+        super.onInsetChanged(view, newInsets)
 
-        toolbar.setPadding(0, newInset.top, newInset.right, 0)
+        applyPadding(toolbar, newInsets)
+    }
+
+    private fun applyPadding(toolbar: Toolbar, insets: EdgeInsets) {
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        if (isRTL)
+            toolbar.setPadding(insets.left, insets.top, 0, 0)
+        else
+            toolbar.setPadding(0, insets.top, insets.right, 0)
     }
 }
 
-abstract class RightSubFragment: NavigationFragment.SubFragment() {
+abstract class EndSubFragment: NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.setPadding(0, 0, currentSafeInsets.right, currentSafeInsets.bottom)
+        applyPadding(view, currentSafeInsets)
     }
 
-    override fun onInsetChanged(view: View, newInset: EdgeInsets) {
-        super.onInsetChanged(view, newInset)
+    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
+        super.onInsetChanged(view, newInsets)
 
-        view.setPadding(0, 0, newInset.right, newInset.bottom)
+        applyPadding(view, newInsets)
+    }
+
+    private fun applyPadding(view: View, insets: EdgeInsets) {
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        if (isRTL)
+            view.setPadding(insets.left, 0, 0, insets.bottom)
+        else
+            view.setPadding(0, 0, insets.right, insets.bottom)
     }
 }

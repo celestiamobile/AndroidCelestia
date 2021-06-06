@@ -109,9 +109,7 @@
         <FrameLayout
             android:id="@+id/toolbar_bottom_container"
             android:layout_width="wrap_content"
-            android:layout_height="64dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="8dp"
+            android:layout_height="72dp"
             android:visibility="invisible"
             app:layout_constrainedWidth="true"
             app:layout_constraintHorizontal_bias="0"

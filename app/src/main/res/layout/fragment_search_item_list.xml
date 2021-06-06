@@ -40,7 +40,7 @@
             android:layout_gravity="center"
             android:padding="6dp"
             android:visibility="gone"
-            android:src="@drawable/ic_action_arrow_back" />
+            android:src="@drawable/ic_action_back_tint" />
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/search_view"
