@@ -70,37 +70,48 @@ public class AppStatusReporter implements CelestiaAppCore.ProgressWatcher {
     }
 
     public void register(Listener listener) {
-        if (!listeners.contains(listener))
-            listeners.add(listener);
+        synchronized (lock) {
+            if (!listeners.contains(listener))
+                listeners.add(listener);
+        }
     }
 
     public void unregister(Listener listener) {
-        listeners.remove(listener);
+        synchronized (lock) {
+            listeners.remove(listener);
+        }
     }
 
     @Override
     public void onCelestiaProgress(@NonNull String progress) {
-        synchronized (lock) {
-            String result = String.format(CelestiaAppCore.getLocalizedString("Loading: %s"), progress);
-            updateStatus(result);
-        }
+        updateStatus(String.format(CelestiaAppCore.getLocalizedString("Loading: %s"), progress));
     }
 
     public void updateState(@NonNull State state) {
+        ArrayList<Listener> currentListeners;
         synchronized (lock) {
             this.state = state;
+            currentListeners = new ArrayList<>(listeners.size());
             for (Listener listener : listeners) {
-                listener.celestiaLoadingStateChanged(state);
+                currentListeners.add(listener);
             }
+        }
+        for (Listener listener : currentListeners) {
+            listener.celestiaLoadingStateChanged(state);
         }
     }
 
     public void updateStatus(@NonNull String status) {
+        ArrayList<Listener> currentListeners;
         synchronized (lock) {
             this.status = status;
+            currentListeners = new ArrayList<>(listeners.size());
             for (Listener listener : listeners) {
-                listener.celestiaLoadingProgress(status);
+                currentListeners.add(listener);
             }
+        }
+        for (Listener listener : currentListeners) {
+            listener.celestiaLoadingProgress(status);
         }
     }
 }
