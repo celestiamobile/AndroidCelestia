@@ -26,7 +26,7 @@
         style="@style/Container"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/overlay_container"
+        android:id="@+id/menu_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="invisible"
@@ -40,47 +40,21 @@
             app:layout_constraintGuide_percent="0.4" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/toolbar_width_guideline"
+            android:id="@+id/menu_width_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_end="220dp" />
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/normal_width_guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_end="300dp" />
-
         <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/toolbar_barrier"
+            android:id="@+id/menu_barrier"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:barrierDirection="end"
-            app:constraint_referenced_ids="toolbar_width_guideline, percent_guideline"/>
-
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/normal_barrier"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="end"
-            app:constraint_referenced_ids="normal_width_guideline, percent_guideline"/>
+            app:constraint_referenced_ids="menu_width_guideline, percent_guideline"/>
 
         <FrameLayout
-            android:id="@+id/normal_end_container"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="invisible"
-            android:clickable="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/normal_barrier"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            style="@style/Container" />
-
-        <FrameLayout
-            android:id="@+id/toolbar_end_container"
+            android:id="@+id/menu_container"
             style="@style/Container"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -88,12 +62,12 @@
             android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/toolbar_barrier"
+            app:layout_constraintStart_toEndOf="@id/menu_barrier"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/bottom_container"
+        android:id="@+id/toolbar_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="invisible"
@@ -107,9 +81,11 @@
             app:layout_constraintGuide_percent="0.8"/>
 
         <FrameLayout
-            android:id="@+id/toolbar_bottom_container"
+            android:id="@+id/toolbar_container"
             android:layout_width="wrap_content"
-            android:layout_height="72dp"
+            android:layout_height="64dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="16dp"
             android:visibility="invisible"
             app:layout_constrainedWidth="true"
             app:layout_constraintHorizontal_bias="0"
@@ -118,6 +94,51 @@
             app:layout_constraintEnd_toEndOf="@id/bottom_end_guideline"
             android:clickable="true"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <space.celestia.mobilecelestia.common.SheetLayout
+        android:id="@+id/bottom_sheet_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        style="@style/Container">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottom_sheet_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardCornerRadius="6dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp">
+                    <ImageView
+                        android:id="@+id/close_button"
+                        android:src="@drawable/ic_close"
+                        android:layout_gravity="center_vertical|start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        style="@style/SecondaryImage"/>
+                    <ImageView
+                        android:layout_width="35dp"
+                        android:layout_height="6dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/grabber"
+                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                </FrameLayout>
+                <FrameLayout
+                    android:id="@+id/bottom_sheet"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:clickable="true" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </space.celestia.mobilecelestia.common.SheetLayout>
 
     <FrameLayout
         android:id="@+id/loading_fragment_container"

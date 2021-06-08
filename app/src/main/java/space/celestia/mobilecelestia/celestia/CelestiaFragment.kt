@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
+import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.core.*
 import space.celestia.mobilecelestia.info.model.CelestiaAction
@@ -302,7 +303,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         }
 
         // Prepare for browser items
-        core.simulation.createAllBrowserItems()
+//        core.simulation.createAllBrowserItems()
 
         updateContentScale()
 
@@ -665,8 +666,8 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     }
 }
 
-fun InsetAwareFragment.EdgeInsets.scaleBy(factor: Float): InsetAwareFragment.EdgeInsets {
-    return InsetAwareFragment.EdgeInsets(
+fun EdgeInsets.scaleBy(factor: Float): EdgeInsets {
+    return EdgeInsets(
         (left * factor).toInt(),
         (top * factor).toInt(),
         (right * factor).toInt(),
@@ -674,6 +675,6 @@ fun InsetAwareFragment.EdgeInsets.scaleBy(factor: Float): InsetAwareFragment.Edg
     )
 }
 
-fun CelestiaAppCore.setSafeAreaInsets(insets: InsetAwareFragment.EdgeInsets) {
+fun CelestiaAppCore.setSafeAreaInsets(insets: EdgeInsets) {
     setSafeAreaInsets(insets.left, insets.top, insets.right, insets.bottom)
 }

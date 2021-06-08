@@ -64,7 +64,6 @@ class SearchFragment : NavigationFragment.SubFragment() {
 
     private lateinit var searchView: SearchView
     private lateinit var backButton: ImageButton
-    private lateinit var topPadding: View
     private lateinit var listView: RecyclerView
 
     override fun onCreateView(
@@ -75,7 +74,6 @@ class SearchFragment : NavigationFragment.SubFragment() {
 
         searchView = view.findViewById(R.id.search_view)
         backButton = view.findViewById(R.id.back_button)
-        topPadding = view.findViewById(R.id.top_padding)
 
         // Set the adapter
         listView = view.findViewById(R.id.list)
@@ -90,35 +88,19 @@ class SearchFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ViewCompat.setBackground(searchView.findViewById<View>(R.id.search_plate), ColorDrawable(Color.TRANSPARENT))
+        ViewCompat.setBackground(
+            searchView.findViewById<View>(R.id.search_plate),
+            ColorDrawable(Color.TRANSPARENT)
+        )
         searchView.findViewById<EditText>(R.id.search_src_text).hint = ""
-        searchView.imeOptions = EditorInfo.IME_ACTION_SEARCH or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
+        searchView.imeOptions =
+            EditorInfo.IME_ACTION_SEARCH or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
         searchView.setIconifiedByDefault(false)
 
         setupSearchSearchView()
 
         if (savedInstanceState == null) {
             showNavigationBar = false
-        }
-
-        applyPadding(currentSafeInsets)
-    }
-
-    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
-        super.onInsetChanged(view, newInsets)
-
-        applyPadding(newInsets)
-    }
-
-    fun applyPadding(insets: EdgeInsets) {
-        topPadding.layoutParams.height = insets.top
-        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        if (isRTL) {
-            searchView.setPadding(insets.left, 0, 0, 0)
-            listView.setPadding(insets.left, 0, 0, insets.bottom)
-        } else {
-            searchView.setPadding(0, 0, insets.right, 0)
-            listView.setPadding(0, 0, insets.right, insets.bottom)
         }
     }
 

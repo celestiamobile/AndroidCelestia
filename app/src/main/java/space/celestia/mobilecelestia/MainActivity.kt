@@ -14,8 +14,7 @@ package space.celestia.mobilecelestia
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.PointF
-import android.graphics.RectF
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -23,16 +22,15 @@ import android.provider.DocumentsContract
 import android.util.LayoutDirection
 import android.util.Log
 import android.view.*
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
-import androidx.core.graphics.contains
 import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -46,6 +44,8 @@ import org.json.JSONObject
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaView
+import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.control.BottomControlFragment
 import space.celestia.mobilecelestia.control.CameraControlAction
@@ -195,31 +195,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         // Handle notch
         ViewCompat.setOnApplyWindowInsetsListener( findViewById<View>(android.R.id.content).rootView, { _, insets ->
-            insets?.displayCutout?.let {
-                applyDisplayCutout(it)
-            }
+            updateConfiguration(resources.configuration, insets?.displayCutout)
             return@setOnApplyWindowInsetsListener insets
         })
 
-        findViewById<View>(R.id.overlay_container).setOnTouchListener { _, e ->
+        findViewById<View>(R.id.menu_overlay).setOnTouchListener { _, e ->
             if (e.actionMasked == MotionEvent.ACTION_UP) {
                 hideOverlay(true)
             }
             return@setOnTouchListener true
         }
 
-        findViewById<View>(R.id.interaction_filter).setOnTouchListener { v, e ->
-            if (interactionBlocked) { return@setOnTouchListener true }
+        findViewById<View>(R.id.close_button).setOnClickListener {
+            hideOverlay(true)
+        }
 
-            val point = PointF(e.x, e.y)
-            val safeAreaParam = v.resources.displayMetrics.density * 16 // reserve 16 DP on each side for system gestures
-            val safeArea = RectF(safeAreaParam, safeAreaParam, v.width - safeAreaParam, v.height - safeAreaParam)
-            if (safeArea.contains(point)) {
-                // Pass through
-                return@setOnTouchListener false
-            }
-            // Excluded
-            return@setOnTouchListener true
+        findViewById<View>(R.id.interaction_filter).setOnTouchListener { _, _ ->
+            if (interactionBlocked) { return@setOnTouchListener true }
+            // Pass through
+            return@setOnTouchListener false
         }
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
@@ -239,18 +233,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (savedState != null) {
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
-            val endFragmentVisible = savedState.getBoolean(END_FRAGMENT_VISIBLE_TAG, false)
-            val bottomFragmentVisible = savedState.getBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, false)
+            val menuVisible = savedState.getBoolean(MENU_VISIBLE_TAG, false)
+            val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
             currentGoToData = savedState.getSerializable(GO_TO_DATA_TAG) as? GoToInputFragment.GoToData
 
-            findViewById<View>(R.id.bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.toolbar_bottom_container).visibility = if (bottomFragmentVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
 
-            findViewById<View>(R.id.normal_end_container).visibility = if (endFragmentVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.menu_overlay).visibility = if (menuVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.menu_container).visibility = if (menuVisible) View.VISIBLE else View.GONE
 
-            findViewById<View>(R.id.toolbar_end_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-
-            findViewById<View>(R.id.overlay_container).visibility = if (toolbarVisible || endFragmentVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.bottom_sheet_card).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
         }
 
         fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -275,13 +269,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
+        val rootView = findViewById<View>(android.R.id.content).rootView
+        updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView)?.displayCutout)
+
         handleIntent(intent)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_end_container).visibility == View.VISIBLE)
-        outState.putBoolean(END_FRAGMENT_VISIBLE_TAG, findViewById<View>(R.id.normal_end_container).visibility == View.VISIBLE)
-        outState.putBoolean(BOTTOM_FRAGMENT_VISIBLE_TAG, findViewById<View>(R.id.toolbar_bottom_container).visibility == View.VISIBLE)
+        outState.putBoolean(MENU_VISIBLE_TAG, findViewById<View>(R.id.menu_container).visibility == View.VISIBLE)
+        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_card).visibility == View.VISIBLE)
+        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
         outState.putSerializable(GO_TO_DATA_TAG, currentGoToData)
         super.onSaveInstanceState(outState)
     }
@@ -294,11 +291,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onDestroy()
     }
 
-    override fun onBackPressed() {
-        var frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
-        if (frag == null)
-            frag = supportFragmentManager.findFragmentById(R.id.toolbar_end_container)
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
 
+        val rootView = findViewById<View>(android.R.id.content).rootView
+        updateConfiguration(newConfig, ViewCompat.getRootWindowInsets(rootView)?.displayCutout)
+    }
+
+    override fun onBackPressed() {
+        var frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet_card)
         if (frag is Poppable && frag.canPop()) {
             frag.popLast()
         } else {
@@ -309,6 +310,38 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
+    }
+
+
+    private fun updateConfiguration(configuration: Configuration, displayCutout: DisplayCutoutCompat? = null) {
+        val density = resources.displayMetrics.density
+        var safeInsetEnd = 0
+        var safeInsetStart = 0
+        var safeInsetBottom = 0
+        var safeInsetTop = 0
+        val isRTL = configuration.layoutDirection == LayoutDirection.RTL
+
+        if (displayCutout != null) {
+            safeInsetStart = if (isRTL) displayCutout.safeInsetRight else displayCutout.safeInsetLeft
+            safeInsetEnd = if (isRTL) displayCutout.safeInsetLeft else displayCutout.safeInsetRight
+            safeInsetBottom = displayCutout.safeInsetBottom
+            safeInsetTop = displayCutout.safeInsetTop
+        }
+
+        val toolbarContainer = findViewById<View>(R.id.toolbar_overlay)
+        val menuWidthGuideLine = findViewById<Guideline>(R.id.menu_width_guideline)
+
+        menuWidthGuideLine.setGuidelineEnd((220 * density).toInt() + safeInsetEnd)
+
+        val toolbarParams = toolbarContainer.layoutParams as FrameLayout.LayoutParams
+        toolbarParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
+        toolbarParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
+        toolbarParams.topMargin = safeInsetTop
+        toolbarParams.bottomMargin = safeInsetBottom
+
+        val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
+        bottomSheetContainer.edgeInsets = EdgeInsets(displayCutout)
+        bottomSheetContainer.postInvalidate()
     }
 
     private fun loadExternalConfig(savedInstanceState: Bundle?) {
@@ -395,25 +428,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onAttachedToWindow()
 
         val rootView = findViewById<View>(android.R.id.content).rootView
-        ViewCompat.getRootWindowInsets(rootView)?.displayCutout?.let {
-            applyDisplayCutout(it)
-        }
-    }
-
-    private fun applyDisplayCutout(cutout: DisplayCutoutCompat) {
-        val density = resources.displayMetrics.density
-
-        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-        val safeInsetEnd = if (ltr) cutout.safeInsetRight else cutout.safeInsetLeft
-
-        val bottomView = findViewById<View>(R.id.toolbar_bottom_container)
-        val toolbarGuideLine = findViewById<Guideline>(R.id.toolbar_width_guideline)
-        val endGuideLine = findViewById<Guideline>(R.id.normal_width_guideline)
-
-        endGuideLine.setGuidelineEnd((300 * density).toInt() + safeInsetEnd)
-        toolbarGuideLine.setGuidelineEnd((220 * density).toInt() + safeInsetEnd)
-
-        bottomView.layoutParams.height = cutout.safeInsetBottom + (72 * density).toInt()
+        updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView)?.displayCutout)
     }
 
     private fun removeCelestiaFragment() {
@@ -773,7 +788,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbar() {
-        showEndFragment(ToolbarFragment.newInstance(listOf()), R.id.toolbar_end_container)
+        showMenuFragment(ToolbarFragment.newInstance(listOf()))
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
@@ -847,7 +862,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             is SubsystemActionItem -> {
                 val entry = selection.`object` ?: return
                 val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, entry, core.simulation.universe)
-                showEndFragment(SubsystemBrowserFragment.newInstance(browserItem))
+                showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
                 return
             }
             is AlternateSurfacesItem -> {
@@ -903,7 +918,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is SearchContainerFragment) {
             frag.pushSearchResult(sel)
         }
@@ -938,7 +953,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBrowserItemSelected(item: BrowserItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container) as? BrowserRootFragment ?: return
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet) as? BrowserRootFragment ?: return
         if (!item.isLeaf) {
             frag.pushItem(item.item)
         } else {
@@ -984,7 +999,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun addFavoriteItem(item: MutableFavoriteBaseItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
             val bookmark = core.currentBookmark
             if (bookmark == null) {
@@ -1025,13 +1040,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 runScriptOrOpenURLIfNeeded()
             } else if (item is FavoriteDestinationItem) {
                 val destination = item.destination
-                val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+                val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
                 if (frag is FavoriteFragment) {
                     frag.pushFragment(DestinationDetailFragment.newInstance(destination))
                 }
             }
         } else {
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
             if (frag is FavoriteFragment) {
                 frag.pushItem(item)
             }
@@ -1040,7 +1055,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onEditGoToObject(goToData: GoToInputFragment.GoToData) {
         currentGoToData = goToData
-        showEndFragment(SearchContainerFragment.newInstance())
+        showBottomSheetFragment(SearchContainerFragment.newInstance())
     }
 
     override fun onGoToDestination(destination: CelestiaDestination) {
@@ -1048,7 +1063,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun deleteFavoriteItem(index: Int) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is FavoriteFragment) {
             frag.remove(index)
         }
@@ -1056,7 +1071,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun renameFavoriteItem(item: MutableFavoriteBaseItem) {
         showTextInput(CelestiaString("Rename", ""), item.title) { text ->
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
             if (frag is FavoriteFragment) {
                 frag.rename(item, text)
             }
@@ -1064,7 +1079,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onMainSettingItemSelected(item: SettingsItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is SettingsFragment) {
             frag.pushMainSettingItem(item)
         }
@@ -1250,7 +1265,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             EventFinderResultFragment.eclipses = results
             if (alert.isShowing) alert.dismiss()
-            val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
             if (frag is EventFinderContainerFragment) {
                 frag.showResult()
             }
@@ -1315,57 +1330,118 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun reloadSettings() {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is SettingsFragment) {
             frag.reload()
         }
     }
 
-    private fun hideOverlay(animated: Boolean = false, callback: (() -> Unit)? = null) {
-        hideFragment(animated, R.id.normal_end_container, true) {
-            hideFragment(animated, R.id.toolbar_end_container, true) {
-                findViewById<View>(R.id.overlay_container).visibility = View.INVISIBLE
-                hideFragment(animated, R.id.toolbar_bottom_container, false) {
-                    findViewById<View>(R.id.bottom_container).visibility = View.INVISIBLE
-                    if (callback != null)
-                        callback()
+    private fun hideOverlay(animated: Boolean = false, completion: (() -> Unit)? = null) {
+        hideMenu(animated) {
+            hideToolbar(animated) {
+                hideBottomSheet(animated) {
+                    if (completion != null)
+                        completion()
                 }
             }
         }
     }
 
-    private fun hideFragment(animated: Boolean, containerID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
-        val frag = supportFragmentManager.findFragmentById(containerID)
-        val view = findViewById<ViewGroup>(containerID)
-        if (view == null || frag == null) {
-            if (frag != null)
-                supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
+    private fun hideMenu(animated: Boolean, completion: (() -> Unit)? = null) {
+        hideView(animated, R.id.menu_container, true) {
+            findViewById<View>(R.id.menu_overlay).visibility = View.INVISIBLE
+            val fragment = supportFragmentManager.findFragmentById(R.id.menu_container)
+            if (fragment != null)
+                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
+            if (completion != null)
+                completion()
+        }
+    }
 
-            if (view != null)
-                view.visibility = View.INVISIBLE
+    private fun hideToolbar(animated: Boolean, completion: (() -> Unit)? = null) {
+        hideView(animated, R.id.toolbar_container, false) {
+            findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
+            val fragment = supportFragmentManager.findFragmentById(R.id.toolbar_container)
+            if (fragment != null)
+                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
+            if (completion != null)
+                completion()
+        }
+    }
 
-            completion()
-            return@hideFragment
+    private fun hideBottomSheet(animated: Boolean, completion: (() -> Unit)? = null) {
+        hideView(animated, R.id.bottom_sheet_card, false) {
+            findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
+            val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+            if (fragment != null)
+                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
+            if (completion != null)
+                completion()
+        }
+    }
+
+    private fun showView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
+        val view = findViewById<View>(viewID)
+
+        val parent = view.parent as? View
+        if (parent == null) return
+
+        view.visibility = View.VISIBLE
+
+        var destination: Float
+        if (horizontal) {
+            val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+            destination = (if (ltr) view.width else -view.width).toFloat()
+        } else {
+            destination = view.height.toFloat()
         }
 
-        val fragView = frag.view
         val executionBlock = {
-            supportFragmentManager.beginTransaction().hide(frag).remove(frag).commitAllowingStateLoss()
-            view.visibility = View.INVISIBLE
-
             completion()
         }
 
-        if (fragView == null || !animated) {
+        if (!animated) {
             executionBlock()
         } else {
-            val hideAnimator: ObjectAnimator
-            if (horizontal) {
-                val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-                hideAnimator = ObjectAnimator.ofFloat(fragView, "translationX", 0f, (if (ltr) 1 else -1) * fragView.width.toFloat())
-            } else {
-                hideAnimator = ObjectAnimator.ofFloat(fragView, "translationY", 0f, fragView.height.toFloat())
-            }
+            val showAnimator = ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", destination, 0f)
+
+            showAnimator.duration = 200
+            showAnimator.addListener(onStart = {
+                interactionBlocked = true
+            }, onEnd = {
+                interactionBlocked = false
+                executionBlock()
+            }, onCancel = {
+                interactionBlocked = false
+                executionBlock()
+            })
+            showAnimator.start()
+        }
+    }
+
+    private fun hideView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
+        val view = findViewById<View>(viewID)
+
+        val parent = view.parent as? View
+        if (parent == null) return
+
+        var destination: Float
+        if (horizontal) {
+            val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+            destination = (if (ltr) (parent.width - view.left) else -(view.right)).toFloat()
+        } else {
+            destination = (parent.height - view.top).toFloat()
+        }
+
+        val executionBlock = {
+            view.visibility = View.INVISIBLE
+            completion()
+        }
+
+        if (view.visibility != View.VISIBLE || !animated) {
+            executionBlock()
+        } else {
+            val hideAnimator = ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", 0f, destination)
             hideAnimator.duration = 200
             hideAnimator.addListener(onStart = {
                 interactionBlocked = true
@@ -1394,16 +1470,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInfo(selection: CelestiaSelection) {
-        showEndFragment(InfoFragment.newInstance(selection))
+        showBottomSheetFragment(InfoFragment.newInstance(selection))
     }
 
     private fun showSearch() {
         currentGoToData = null
-        showEndFragment(SearchContainerFragment.newInstance())
+        showBottomSheetFragment(SearchContainerFragment.newInstance())
     }
 
     private fun showBrowser() {
-        showEndFragment(BrowserFragment.newInstance())
+        showBottomSheetFragment(BrowserFragment.newInstance())
     }
 
     private fun showTimeControl() {
@@ -1423,11 +1499,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 CelestiaAction.Reverse
             )
         }
-        showBottomFragment(BottomControlFragment.newInstance(actions))
+        showToolbarFragment(BottomControlFragment.newInstance(actions))
     }
 
     private fun showScriptControl() {
-        showBottomFragment(
+        showToolbarFragment(
             BottomControlFragment.newInstance(
                 listOf(
                     CelestiaAction.PlayPause,
@@ -1436,11 +1512,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showCameraControl() {
-        showEndFragment(CameraControlContainerFragment.newInstance())
+        showBottomSheetFragment(CameraControlContainerFragment.newInstance())
     }
 
     private fun showHelp() {
-        showEndFragment(HelpFragment.newInstance())
+        showBottomSheetFragment(HelpFragment.newInstance())
     }
 
     private fun showFavorite() {
@@ -1451,16 +1527,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         updateCurrentScripts(scripts)
         updateCurrentDestinations(core.destinations)
-        showEndFragment(FavoriteFragment.newInstance(FavoriteRoot()))
+        showBottomSheetFragment(FavoriteFragment.newInstance(FavoriteRoot()))
     }
 
     private fun showDestinations() {
         updateCurrentDestinations(core.destinations)
-        showEndFragment(FavoriteFragment.newInstance(FavoriteTypeItem(FavoriteType.Destination)))
+        showBottomSheetFragment(FavoriteFragment.newInstance(FavoriteTypeItem(FavoriteType.Destination)))
     }
 
     private fun showSettings() {
-        showEndFragment(SettingsFragment.newInstance())
+        showBottomSheetFragment(SettingsFragment.newInstance())
     }
 
     private fun showShare() {
@@ -1545,7 +1621,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showEventFinder() {
-        showEndFragment(EventFinderContainerFragment.newInstance())
+        showBottomSheetFragment(EventFinderContainerFragment.newInstance())
     }
 
     private fun showShareError() {
@@ -1554,11 +1630,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     // Resource
     private fun showOnlineResource() {
-        showEndFragment(ResourceFragment.newInstance())
+        showBottomSheetFragment(ResourceFragment.newInstance())
     }
 
     override fun onAsyncListItemSelected(item: Any) {
-        val frag = supportFragmentManager.findFragmentById(R.id.normal_end_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is ResourceFragment) {
             if (item is ResourceCategory) {
                 frag.pushItem(item)
@@ -1576,7 +1652,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             8.0,
             CelestiaGoToLocation.DistanceUnit.radii
         )
-        showEndFragment(GoToContainerFragment.newInstance(inputData))
+        showBottomSheetFragment(GoToContainerFragment.newInstance(inputData))
     }
 
     override fun onGoToObject(goToData: GoToInputFragment.GoToData) {
@@ -1593,50 +1669,58 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Utilities
-    private fun showEndFragment(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
+    private fun showMenuFragment(fragment: Fragment) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {
             ref.get()?.let {
-                showEndFragmentDirect(it, containerID)
+                showMenuFragmentDirect(it)
             }
         }
     }
 
-    private fun showEndFragmentDirect(fragment: Fragment, containerID: Int = R.id.normal_end_container) {
-        findViewById<View>(R.id.overlay_container).visibility = View.VISIBLE
-        findViewById<View>(containerID).visibility = View.VISIBLE
-
-        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-
-        val ani1 = if (ltr) R.anim.enter_from_right else R.anim.enter_from_left
-        val ani2 = if (ltr) R.anim.exit_to_left else R.anim.exit_to_right
-        val ani3 = if (ltr) R.anim.enter_from_left else R.anim.enter_from_right
-        val ani4 = if (ltr) R.anim.exit_to_right else R.anim.exit_to_left
-
+    private fun showMenuFragmentDirect(fragment: Fragment) {
+        findViewById<View>(R.id.menu_overlay).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
-            .setCustomAnimations(ani1, ani2, ani3, ani4)
-            .add(containerID, fragment)
+            .add(R.id.menu_container, fragment)
             .commitAllowingStateLoss()
+        showView(true, R.id.menu_container, true)
     }
 
-    private fun showBottomFragment(fragment: Fragment) {
+    private fun showBottomSheetFragment(fragment: Fragment) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {
             ref.get()?.let {
-                showBottomFragmentDirect(it)
+                showBottomSheetFragmentDirect(it)
             }
         }
     }
 
-    private fun showBottomFragmentDirect(fragment: Fragment) {
-        findViewById<View>(R.id.bottom_container).visibility = View.VISIBLE
-        findViewById<View>(R.id.toolbar_bottom_container).visibility = View.VISIBLE
+    private fun showBottomSheetFragmentDirect(fragment: Fragment) {
+        findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
-            .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top, R.anim.enter_from_top, R.anim.exit_to_bottom)
-            .add(R.id.toolbar_bottom_container, fragment)
+            .add(R.id.bottom_sheet, fragment)
             .commitAllowingStateLoss()
+        showView(true, R.id.bottom_sheet_card, false)
+    }
+
+    private fun showToolbarFragment(fragment: Fragment) {
+        val ref = WeakReference(fragment)
+        hideOverlay(true) {
+            ref.get()?.let {
+                showToolbarFragmentDirect(it)
+            }
+        }
+    }
+
+    private fun showToolbarFragmentDirect(fragment: Fragment) {
+        findViewById<View>(R.id.toolbar_overlay).visibility = View.VISIBLE
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.toolbar_container, fragment)
+            .commitAllowingStateLoss()
+        showView(true, R.id.toolbar_container, false)
     }
 
     companion object {
@@ -1664,8 +1748,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"
 
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
-        private const val END_FRAGMENT_VISIBLE_TAG = "end_visible"
-        private const val BOTTOM_FRAGMENT_VISIBLE_TAG = "bottom_visible"
+        private const val MENU_VISIBLE_TAG = "menu_visible"
+        private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
         private const val GO_TO_DATA_TAG = "go_to"
 
         private const val TAG = "MainActivity"
