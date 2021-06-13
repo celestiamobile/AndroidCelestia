@@ -1687,6 +1687,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         init {
             System.loadLibrary("nativecrashhandler")
             System.loadLibrary("celestia")
+            CelestiaAppCore.setUpLocale()
         }
     }
 }

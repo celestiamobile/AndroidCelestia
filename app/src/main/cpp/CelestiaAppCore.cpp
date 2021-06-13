@@ -534,10 +534,6 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setLocaleDirectoryPat
     const char *str = env->GetStringUTFChars(locale, nullptr);
     setenv("LANG", str, true);
     env->ReleaseStringUTFChars(locale, str);
-
-    // Gettext integration
-    setlocale(LC_ALL, "");
-    setlocale(LC_NUMERIC, "C");
     str = env->GetStringUTFChars(path, nullptr);
     bindtextdomain("celestia", str);
     bind_textdomain_codeset("celestia", "UTF-8");
@@ -547,6 +543,13 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setLocaleDirectoryPat
     bind_textdomain_codeset("celestia_ui", "UTF-8");
     textdomain("celestia");
     env->ReleaseStringUTFChars(path, str);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setUpLocale(JNIEnv *env, jclass clazz) {
+    setlocale(LC_ALL, "");
+    setlocale(LC_NUMERIC, "C");
 }
 
 extern "C"
