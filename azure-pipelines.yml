@@ -1,0 +1,30 @@
+resources:
+  repositories:
+  - repository: Celestia
+    type: github
+    endpoint: GithubAuth
+    name: levinli303/Celestia
+
+trigger:
+  branches:
+    include:
+    - releases/*
+    - master
+
+pool:
+  vmImage: 'macos-latest'
+
+stages:
+- stage: Build_APK
+  displayName: 'Build APK'
+  jobs:
+  - template: jobs/build.yml
+    parameters:
+      outputFormat: apk
+- stage: Build_AAB
+  displayName: 'Build AAB'
+  dependsOn: []
+  jobs:
+  - template: jobs/build.yml
+    parameters:
+      outputFormat: aab

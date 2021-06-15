@@ -1,0 +1,139 @@
+jobs:
+- job: Build
+  displayName: 'Build'
+  pool:
+    vmImage: 'macos-latest'
+
+  variables:
+    outputFormat: ${{ parameters.outputFormat }}
+
+  steps:
+  - checkout: Celestia
+  - checkout: self
+    submodules: true
+
+  - script: |
+      brew install gettext
+    displayName: 'Install Gettext'
+
+  - script: |
+      set -ex
+      NODE_VERSION="14.9.0"
+      curl "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}.pkg" > "$HOME/Downloads/node-installer.pkg"
+      sudo installer -store -pkg "$HOME/Downloads/node-installer.pkg" -target "/"
+      npm install -g appcenter-cli
+    displayName: 'Install AppCenter-CLI'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - script: |
+      cd Celestia
+      git checkout origin/$(Build.SourceBranchName)
+      git submodule update --init
+    displayName: 'Checkout Branch'
+    condition: ne( variables['Build.Reason'], 'PullRequest' )
+
+  - script: |
+      cd Celestia
+      git checkout origin/$(System.PullRequest.TargetBranch)
+      git submodule update --init
+    displayName: 'Checkout Branch (PR)'
+    condition: eq( variables['Build.Reason'], 'PullRequest' )
+
+  - script: |
+      cd AndroidCelestia
+      git cherry-pick origin/asset-pack-integration
+    displayName: 'Cherry-Pick Asset Pack Integration'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - task: Gradle@2
+    inputs:
+      workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
+      gradleWrapperFile: '$(system.defaultWorkingDirectory)/AndroidCelestia/gradlew'
+      gradleOptions: '-Xmx3072m'
+      publishJUnitResults: false
+      testResultsFiles: '**/TEST-*.xml'
+      tasks: 'assembleRelease'
+    displayName: 'Build APK'
+    condition: eq( variables['outputFormat'], 'apk' )
+
+  - task: Gradle@2
+    inputs:
+      workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
+      gradleWrapperFile: '$(system.defaultWorkingDirectory)/AndroidCelestia/gradlew'
+      gradleOptions: '-Xmx3072m'
+      publishJUnitResults: false
+      testResultsFiles: '**/TEST-*.xml'
+      tasks: 'bundleRelease'
+    displayName: 'Build AAB'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - task: AndroidSigning@2
+    inputs:
+      apkFiles: '$(system.defaultWorkingDirectory)/**/*.apk'
+      jarsign: true
+      jarsignerKeystoreFile: 'celestia.jks'
+      jarsignerKeystorePassword: '$(JARSIGNER_KEYSTORE_PASSWORD)'
+      jarsignerKeystoreAlias: 'celestia'
+      jarsignerKeyPassword: '$(JARSIGNER_KEY_PASSWORD)'
+      zipalign: true
+    displayName: 'Sign APK'
+    condition: eq( variables['outputFormat'], 'apk' )
+
+  - task: DownloadSecureFile@1
+    name: keyStoreFile
+    displayName: 'Download KeyStore File'
+    inputs:
+      secureFile: 'celestia.jks'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - script: |
+      jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(keyStoreFile.secureFilePath) -storepass $(JARSIGNER_KEYSTORE_PASSWORD) -keypass $(JARSIGNER_KEY_PASSWORD) $(system.defaultworkingdirectory)/AndroidCelestia/app/build/outputs/bundle/release/*.aab celestia
+    displayName: "Sign AAB"
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - script: |
+      rm -rf $(system.defaultworkingdirectory)/AndroidCelestia/app/build/intermediates/intermediary_bundle/*
+    displayName: 'Remove Redundant AAB'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(system.defaultWorkingDirectory)'
+      contents: '**/*.$(outputFormat)'
+      targetFolder: '$(build.artifactStagingDirectory)'
+      flattenFolders: true
+    displayName: 'Copy APK/AAB'
+
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj'
+      contents: '**/*.so'
+      targetFolder: '$(build.artifactStagingDirectory)'
+    displayName: 'Copy Symbols'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: '$(outputFormat)'
+      publishLocation: 'Container'
+    displayName: 'Publish Build Artifacts'
+
+  - task: AppCenterDistribute@3
+    inputs:
+      serverEndpoint: 'AndroidCelestiaAppCenter'
+      appSlug: 'CelestiaProject/Celestia-1'
+      appFile: '$(build.artifactstagingdirectory)/**/*.$(outputFormat)'
+      releaseNotesOption: 'input'
+      releaseNotesInput: 'Internal testing only.'
+      destinationType: 'groups'
+      symbolsOption: 'Android'
+      nativeLibrariesPath: '$(build.artifactStagingDirectory)/**/*.so'
+    displayName: 'Publish APK to App Center'
+    condition: eq( variables['outputFormat'], 'apk' )
+
+  - script: |
+      cd $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj
+      zip -vr symbols.zip * -x "*.DS_Store"
+      appcenter crashes upload-symbols --breakpad symbols.zip --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
+    displayName: 'Upload Symbols (AAB)'
+    condition: eq( variables['outputFormat'], 'aab' )
