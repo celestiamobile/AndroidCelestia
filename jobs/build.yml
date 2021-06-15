@@ -135,5 +135,5 @@ jobs:
       cd $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj
       zip -vr symbols.zip * -x "*.DS_Store"
       appcenter crashes upload-symbols --breakpad symbols.zip --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
-    displayName: 'Upload Symbols'
+    displayName: 'Upload Symbols (AAB)'
     condition: eq( variables['outputFormat'], 'aab' )
