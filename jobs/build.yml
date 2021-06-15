@@ -36,16 +36,6 @@ jobs:
     displayName: 'Cherry-Pick Asset Pack Integration'
     condition: eq( variables['outputFormat'], 'aab' )
 
-  - task: android-manifest-version@1
-    inputs:
-      sourcePath: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml'
-      versionCodeOption: 'buildid'
-      versionCode: '$(Build.BuildId)'
-      versionCodeOffset: '140'
-      versionName:
-      printFile: true
-    displayName: 'Update Bundle Version'
-
   - task: Gradle@2
     inputs:
       workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
