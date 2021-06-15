@@ -17,6 +17,15 @@ jobs:
     displayName: 'Install Gettext'
 
   - script: |
+      set -ex
+      NODE_VERSION="14.9.0"
+      curl "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}.pkg" > "$HOME/Downloads/node-installer.pkg"
+      sudo installer -store -pkg "$HOME/Downloads/node-installer.pkg" -target "/"
+      npm install -g appcenter-cli
+    displayName: 'Install AppCenter-CLI'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - script: |
       cd Celestia
       git checkout origin/$(Build.SourceBranchName)
       git submodule update --init
@@ -121,3 +130,10 @@ jobs:
       nativeLibrariesPath: '$(build.artifactStagingDirectory)/**/*.so'
     displayName: 'Publish APK to App Center'
     condition: eq( variables['outputFormat'], 'apk' )
+
+  - script: |
+      cd $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj
+      zip -vr symbols.zip * -x "*.DS_Store"
+      appcenter crashes upload-symbols --breakpad symbols.zip --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
+    displayName: 'Upload Symbols'
+    condition: eq( variables['outputFormat'], 'aab' )
