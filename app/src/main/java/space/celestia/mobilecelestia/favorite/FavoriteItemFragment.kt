@@ -104,6 +104,7 @@ class FavoriteItemFragment : EndSubFragment() {
         fun deleteFavoriteItem(index: Int)
         fun renameFavoriteItem(item: MutableFavoriteBaseItem)
         fun addFavoriteItem(item: MutableFavoriteBaseItem)
+        fun shareFavoriteItem(item: MutableFavoriteBaseItem)
     }
 
     companion object {

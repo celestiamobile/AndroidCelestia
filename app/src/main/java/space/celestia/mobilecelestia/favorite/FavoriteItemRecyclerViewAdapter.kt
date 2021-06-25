@@ -30,7 +30,7 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
 enum class FavoriteItemAction {
-    Delete, Rename
+    Delete, Rename, Share
 }
 
 interface FavoriteBaseItem : RecyclerViewItem, Serializable {
@@ -124,7 +124,7 @@ open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBas
     override val isLeaf: Boolean
         get() = bookmark.isLeaf
     override val supportedItemActions: List<FavoriteItemAction>
-        get() = listOf(FavoriteItemAction.Delete, FavoriteItemAction.Rename)
+        get() = listOf(FavoriteItemAction.Delete, FavoriteItemAction.Rename, FavoriteItemAction.Share)
 
     override fun insert(newItem: FavoriteBaseItem, index: Int) {
         if (newItem !is FavoriteBookmarkItem)
@@ -233,6 +233,11 @@ class FavoriteItemRecyclerViewAdapter private constructor(
                             FavoriteItemAction.Rename -> {
                                 listener?.renameFavoriteItem(item)
                             }
+                            FavoriteItemAction.Share -> {
+                                if (item.isLeaf) {
+                                    listener?.shareFavoriteItem(item)
+                                }
+                            }
                         }
                     }
                     return@setOnLongClickListener true
@@ -247,6 +252,11 @@ class FavoriteItemRecyclerViewAdapter private constructor(
                                 }
                                 FavoriteItemAction.Rename -> {
                                     listener?.renameFavoriteItem(item)
+                                }
+                                FavoriteItemAction.Share -> {
+                                    if (item.isLeaf) {
+                                        listener?.shareFavoriteItem(item)
+                                    }
                                 }
                             }
                         }

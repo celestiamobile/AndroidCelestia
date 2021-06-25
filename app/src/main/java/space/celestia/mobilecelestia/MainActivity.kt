@@ -1012,6 +1012,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun shareFavoriteItem(item: MutableFavoriteBaseItem) {
+        if (item is FavoriteBookmarkItem && item.bookmark.isLeaf) {
+            shareURL(item.bookmark.url, item.bookmark.name)
+        }
+    }
+
     private fun readFavorites() {
         var favorites = arrayListOf<BookmarkNode>()
         try {
@@ -1558,18 +1564,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun shareURL() {
-        val orig = core.currentURL
-        val bytes = orig.toByteArray()
-        val url = android.util.Base64.encodeToString(bytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
-        val sel = core.simulation.selection
-        val name = core.simulation.universe.getNameForSelection(sel)
+        CelestiaView.callOnRenderThread {
+            val orig = core.currentURL
+            val sel = core.simulation.selection
+            val name = core.simulation.universe.getNameForSelection(sel)
+            lifecycleScope.launch {
+                shareURL(orig, name)
+            }
+        }
+    }
 
+    private fun shareURL(url: String, name: String) {
+        val encodedURL = android.util.Base64.encodeToString(url.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
         showTextInput(CelestiaString("Share", ""), name) { title ->
             Toast.makeText(this, CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT).show()
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val result = service.create(title, url, versionCode.toString()).commonHandler(URLCreationResponse::class.java)
+                    val result = service.create(title, encodedURL, versionCode.toString()).commonHandler(URLCreationResponse::class.java)
                     withContext(Dispatchers.Main) {
                         val intent = ShareCompat.IntentBuilder(this@MainActivity)
                             .setType("text/plain")
