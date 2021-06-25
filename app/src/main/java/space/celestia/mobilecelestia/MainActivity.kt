@@ -822,7 +822,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSettings()
             }
             ToolbarAction.Share -> {
-                showShare()
+                hideOverlay {
+                    showShare()
+                }
             }
             ToolbarAction.Home -> {
                 CelestiaView.callOnRenderThread {
