@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString

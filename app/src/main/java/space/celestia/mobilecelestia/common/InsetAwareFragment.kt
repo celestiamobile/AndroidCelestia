@@ -19,14 +19,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 
 open class InsetAwareFragment: Fragment() {
-    class EdgeInsets(val left: Int, val top: Int, val right: Int, val bottom: Int) {
-        constructor(insets: WindowInsetsCompat?) : this(
-            insets?.displayCutout?.safeInsetLeft ?: 0,
-            insets?.displayCutout?.safeInsetTop ?: 0,
-            insets?.displayCutout?.safeInsetRight ?: 0,
-            insets?.displayCutout?.safeInsetBottom ?: 0)
-    }
-
     val currentSafeInsets: EdgeInsets
     get() {
         val rootView = view

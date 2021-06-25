@@ -110,6 +110,7 @@ class LPLinkView(context: Context, val attrs: AttributeSet) : CardView(context, 
             container.orientation = LinearLayout.VERTICAL
 
             val imageView = ImageView(context)
+            imageView.adjustViewBounds = true
             container.addView(imageView)
 
             val params = imageView.layoutParams

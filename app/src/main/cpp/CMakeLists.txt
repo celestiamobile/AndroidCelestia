@@ -19,8 +19,6 @@ set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/favorites.h
         ${CELESTIA_SRC_DIR}/celestia/helper.cpp
         ${CELESTIA_SRC_DIR}/celestia/helper.h
-        ${CELESTIA_SRC_DIR}/celestia/imagecapture.cpp
-        ${CELESTIA_SRC_DIR}/celestia/imagecapture.h
         ${CELESTIA_SRC_DIR}/celestia/moviecapture.h
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.cpp
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.h

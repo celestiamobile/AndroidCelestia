@@ -84,14 +84,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
 
         if (savedInstanceState == null)
             title = ""
-
-        applyPadding(view,currentSafeInsets)
-    }
-
-    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
-        super.onInsetChanged(view, newInsets)
-
-        applyPadding(view, newInsets)
     }
 
     override fun onAttach(context: Context) {
@@ -106,15 +98,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
-    }
-
-    private fun applyPadding(view: View, insets: EdgeInsets) {
-        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        val top = if (embeddedInNavigation) 0 else insets.top
-        if (isRTL)
-            view.setPadding(insets.left, top, 0, insets.bottom)
-        else
-            view.setPadding(0, top, insets.right, insets.bottom)
     }
 
     interface Listener {
