@@ -25,6 +25,8 @@
             android:layout_height="wrap_content"
             android:imeOptions="actionDone|flagNoExtractUi|flagNoFullscreen"
             android:inputType="textPersonName"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
             android:background="@android:color/transparent"/>
 
     </com.google.android.material.textfield.TextInputLayout>
