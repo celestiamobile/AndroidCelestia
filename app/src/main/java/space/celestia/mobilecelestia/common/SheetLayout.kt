@@ -89,8 +89,8 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val containerWidth = resolveSizeAndState(0, widthMeasureSpec, 0)
         val containerHeight = resolveSizeAndState(0, heightMeasureSpec, 0)
-        val isLandScape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val density = resources.displayMetrics.density
+        val shouldNotOccupyFullWidth = (containerWidth / density) > sheetMaxFullWidthDp
 
         for (i in 0 until childCount) {
             val child = getChildAt(i)
@@ -98,7 +98,7 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
             if (child.visibility == GONE)
                 continue
 
-            val childWidth = if (isLandScape) calculateChildWidth(containerWidth, density) else (containerWidth - edgeInsets.left - edgeInsets.right)
+            val childWidth = if (shouldNotOccupyFullWidth) calculateChildWidth(containerWidth, density) else (containerWidth - edgeInsets.left - edgeInsets.right)
             val childHeight = min(containerHeight - edgeInsets.top, (containerHeight * sheetMaxHeightRatio).toInt())
             child.measure(MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.EXACTLY))
         }
@@ -106,12 +106,13 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        val isLandScape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
         val density = resources.displayMetrics.density
 
         val containerWidth = right - left
         val containerHeight = bottom - top
+
+        val shouldNotOccupyFullWidth = (containerWidth / density) > sheetMaxFullWidthDp
 
         for (i in 0 until childCount) {
             val child = getChildAt(i)
@@ -127,21 +128,21 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
             }
 
             var sheetHeight = min(containerHeight - edgeInsets.top, (containerHeight * sheetMaxHeightRatio).toInt())
-            if (!isLandScape) {
+            if (!shouldNotOccupyFullWidth) {
                 child.layout(edgeInsets.left, y, containerWidth - edgeInsets.right, y + sheetHeight)
             } else {
                 val width = calculateChildWidth(containerWidth, density)
                 if (isRTL) {
-                    child.layout((containerWidth - edgeInsets.right - width - sheetPaddingLandscapeDp * density).toInt(), y, (containerWidth - edgeInsets.right - sheetPaddingLandscapeDp * density).toInt(), y + sheetHeight)
+                    child.layout((containerWidth - edgeInsets.right - width - sheetPaddingNonFullWidthDp * density).toInt(), y, (containerWidth - edgeInsets.right - sheetPaddingNonFullWidthDp * density).toInt(), y + sheetHeight)
                 } else {
-                    child.layout((sheetPaddingLandscapeDp * density + edgeInsets.left).toInt(), y, (width + sheetPaddingLandscapeDp * density + edgeInsets.left).toInt(), y + sheetHeight)
+                    child.layout((sheetPaddingNonFullWidthDp * density + edgeInsets.left).toInt(), y, (width + sheetPaddingNonFullWidthDp * density + edgeInsets.left).toInt(), y + sheetHeight)
                 }
             }
         }
     }
 
     private fun calculateChildWidth(containerWidth: Int, density: Float): Int {
-        var widthUpperBound = containerWidth - edgeInsets.left - edgeInsets.right - sheetPaddingLandscapeDp * 2 * density
+        var widthUpperBound = containerWidth - edgeInsets.left - edgeInsets.right - sheetPaddingNonFullWidthDp * 2 * density
         widthUpperBound = min(widthUpperBound, containerWidth * sheetMaxWidthRatio)
         val widthLowerBound = min(widthUpperBound, containerWidth * sheetMinWidthRatio)
         return max(widthLowerBound, min(widthUpperBound, sheetStandardWidthDp * density)).toInt()
@@ -149,11 +150,12 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
 
     private companion object {
         const val TAG = "SheetLayout"
-        const val sheetPaddingLandscapeDp = 16
+        const val sheetPaddingNonFullWidthDp = 16
         const val sheetStandardWidthDp = 320
         const val sheetMinWidthRatio = 0.3f
         const val sheetMaxWidthRatio = 0.5f
         const val sheetMaxHeightRatio = 0.9
         const val sheetHandleHeight = 30
+        const val sheetMaxFullWidthDp = 600
     }
 }
