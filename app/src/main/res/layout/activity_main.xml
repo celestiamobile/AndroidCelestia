@@ -104,6 +104,7 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/bottom_sheet_card"
+            app:cardBackgroundColor="@color/colorSecondaryBackground"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:cardCornerRadius="6dp">
