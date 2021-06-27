@@ -182,6 +182,8 @@ bool CelestiaRenderer::initialize()
             destroy();
             return false;
         }
+    } else {
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     }
     return true;
 }
@@ -275,6 +277,14 @@ void CelestiaRenderer::setSurface(JNIEnv *env, jobject m_surface)
 {
     lock();
     msg = CelestiaRenderer::MSG_WINDOW_SET;
+
+    if (surface != EGL_NO_SURFACE)
+    {
+        if (!eglDestroySurface(display, surface))
+            LOG_ERROR("eglDestroySurface() returned error %d", eglGetError());
+        else
+            surface = EGL_NO_SURFACE;
+    }
 
     // Release current window
     if (window)
