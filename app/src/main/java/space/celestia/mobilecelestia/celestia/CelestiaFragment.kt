@@ -303,7 +303,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         }
 
         // Prepare for browser items
-//        core.simulation.createAllBrowserItems()
+        core.simulation.createAllBrowserItems()
 
         updateContentScale()
 
