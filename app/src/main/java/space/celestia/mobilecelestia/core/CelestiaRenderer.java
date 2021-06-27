@@ -111,12 +111,16 @@ public class CelestiaRenderer {
     }
 
     private void flushTasks() {
+        ArrayList<Callback> taskCopy = new ArrayList<>();
         synchronized (taskLock) {
-            if (tasks.isEmpty()) { return; }
+            if (tasks.isEmpty()) return;
             for (Callback task : tasks) {
-                task.call();
+                taskCopy.add(task);
             }
             tasks = new ArrayList<>();
+        }
+        for (Callback task : taskCopy) {
+            task.call();
         }
     }
 
