@@ -15,6 +15,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationBarView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
@@ -29,7 +30,7 @@ interface BrowserRootFragment {
     fun showInfo(selection: CelestiaSelection)
 }
 
-class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigationView.OnNavigationItemSelectedListener {
+class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBarView.OnItemSelectedListener {
     private var currentPath = ""
     private var selectedItemIndex = 0
 
@@ -66,7 +67,7 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, BottomNavigat
             nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.alternativeName ?: item.item.name).setIcon(item.icon)
         }
         nav.selectedItemId = selectedItemIndex
-        nav.setOnNavigationItemSelectedListener(this)
+        nav.setOnItemSelectedListener(this)
 
         if (savedInstanceState == null)
             showTab(selectedItemIndex)
