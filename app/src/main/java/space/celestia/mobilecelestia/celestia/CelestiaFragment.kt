@@ -35,6 +35,7 @@ import space.celestia.mobilecelestia.core.*
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.showToast
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
@@ -576,15 +577,11 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
                 viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
-                activity?.let {
-                    Toast.makeText(it, CelestiaString("Switched to camera mode", ""), Toast.LENGTH_SHORT).show()
-                }
+                activity?.showToast(CelestiaString("Switched to camera mode", ""), Toast.LENGTH_SHORT)
             }
             CelestiaControlAction.ToggleModeToObject -> {
                 viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
-                activity?.let {
-                    Toast.makeText(it, CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT).show()
-                }
+                activity?.showToast(CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT)
             }
             else -> {}
         }

@@ -21,6 +21,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 fun Activity.showTextInput(title: String, placeholder: String? = null, handler: (String) -> Unit) {
+    if (isFinishing || isDestroyed)
+        return
+
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
     val customView = LayoutInflater.from(this).inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
@@ -42,6 +45,9 @@ fun Activity.showTextInput(title: String, placeholder: String? = null, handler: 
 }
 
 fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Unit) {
+    if (isFinishing || isDestroyed)
+        return
+
     val formatter = SimpleDateFormat(format, Locale.US)
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
@@ -68,6 +74,9 @@ fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Un
 }
 
 fun Activity.showSingleSelection(title: String, selections: List<String>, checkedIndex: Int, handler: (Int) -> Unit) {
+    if (isFinishing || isDestroyed)
+        return
+
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
     builder.setSingleChoiceItems(selections.toTypedArray(), checkedIndex) { dialog, index ->
@@ -79,6 +88,9 @@ fun Activity.showSingleSelection(title: String, selections: List<String>, checke
 }
 
 fun Activity.showOptions(title: String, options: Array<String>, handler: (Int) -> Unit) {
+    if (isFinishing || isDestroyed)
+        return
+
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
     builder.setItems(options) { _, index ->
@@ -87,7 +99,10 @@ fun Activity.showOptions(title: String, options: Array<String>, handler: (Int) -
     builder.show()
 }
 
-fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): AlertDialog {
+fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): AlertDialog? {
+    if (isFinishing || isDestroyed)
+        return null
+
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
     if (cancelHandler != null) {
@@ -103,6 +118,9 @@ fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): Al
 }
 
 fun Activity.showAlert(title: String, handler: (() -> Unit)? = null) {
+    if (isFinishing || isDestroyed)
+        return
+
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
     builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->

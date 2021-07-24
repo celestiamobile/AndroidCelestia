@@ -13,6 +13,7 @@ package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
@@ -540,7 +541,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun handleIntent(intent: Intent?) {
         val uri = intent?.data ?: return
 
-        Toast.makeText(this, CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT).show()
+        showToast(CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT)
         if (uri.scheme == "content") {
             handleContentURI(uri)
         } else if (uri.scheme == "cel") {
@@ -1262,7 +1263,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val finder = CelestiaEclipseFinder(body)
         val alert = showLoading(CelestiaString("Calculating…", "")) {
             finder.abort()
-        }
+        } ?: return
         lifecycleScope.launch {
             val results = withContext(Dispatchers.IO) {
                 finder.search(
@@ -1577,7 +1578,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun shareURL(url: String, name: String) {
         val encodedURL = android.util.Base64.encodeToString(url.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
         showTextInput(CelestiaString("Share", ""), name) { title ->
-            Toast.makeText(this, CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT).show()
+            showToast(CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT)
             val service = ShareAPI.shared.create(ShareAPIService::class.java)
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
@@ -1616,7 +1617,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             } else {
                 lifecycleScope.launch {
-                    Toast.makeText(this@MainActivity, CelestiaString("Unable to generate image.", ""), Toast.LENGTH_SHORT).show()
+                    showToast(CelestiaString("Unable to generate image.", ""), Toast.LENGTH_SHORT)
                 }
             }
         }
