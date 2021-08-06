@@ -45,6 +45,13 @@ jobs:
     displayName: 'Cherry-Pick Asset Pack Integration'
     condition: eq( variables['outputFormat'], 'aab' )
 
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: '11'
+      jdkArchitectureOption: 'x64'
+      jdkSourceOption: 'PreInstalled'
+    displayName: 'Install Java 11'
+
   - task: Gradle@2
     inputs:
       workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
