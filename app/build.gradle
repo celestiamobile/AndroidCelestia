@@ -15,7 +15,7 @@ apply plugin: 'kotlin-android'
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
-    ndkVersion "22.1.7171670"
+    ndkVersion "23.0.7599858"
 
     defaultConfig {
         applicationId "space.celestia.mobilecelestia"
@@ -81,7 +81,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
 
     implementation "com.google.android.material:material:$material_version"
-    implementation "com.google.code.gson:gson:2.8.7"
+    implementation "com.google.code.gson:gson:2.8.8"
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
     implementation "com.squareup.okhttp3:okhttp:4.9.1"
@@ -93,7 +93,7 @@ dependencies {
 
     implementation project(path: ':LinkPreview')
 
-    def appCenterSdkVersion = '4.2.0'
+    def appCenterSdkVersion = '4.3.1'
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
