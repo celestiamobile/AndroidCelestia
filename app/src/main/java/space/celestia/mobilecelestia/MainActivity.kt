@@ -185,20 +185,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
-        if (preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] == null && Locale.getDefault().country == Locale.CHINA.country) {
+        if (preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
             val builder = AlertDialog.Builder(this)
             builder.setTitle(R.string.privacy_policy_alert_title)
             builder.setMessage(R.string.privacy_policy_alert_detail)
             builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
-                finish()
                 openURL("https://celestia.mobi/privacy.html")
+                finishAndRemoveTask()
+                System.exit(0)
             }
             builder.setPositiveButton(R.string.privacy_policy_alert_accept_button_title) { _, _ ->
                 preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] = "true"
             }
             builder.setNegativeButton(R.string.privacy_policy_alert_decline_button_title) { dialog, _ ->
                 dialog.cancel()
-                finish()
+                finishAndRemoveTask()
+                System.exit(0)
             }
             builder.show()
         }
