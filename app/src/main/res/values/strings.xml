@@ -11,4 +11,9 @@
 
 <resources>
     <string name="app_name">Celestia</string>
+    <string name="privacy_policy_alert_title">Privacy Policy and Service Agreement</string>
+    <string name="privacy_policy_alert_detail">Please read Privacy Policy and Service Agreement carefully.</string>
+    <string name="privacy_policy_alert_show_policy_button_title">View Policy</string>
+    <string name="privacy_policy_alert_accept_button_title">Agree</string>
+    <string name="privacy_policy_alert_decline_button_title">Not Now</string>
 </resources>

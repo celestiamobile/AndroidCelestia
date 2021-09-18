@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ strings.xml
+  ~
+  ~ Copyright (C) 2001-2021, Celestia Development Team
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License
+  ~ as published by the Free Software Foundation; either version 2
+  ~ of the License, or (at your option) any later version.
+  -->
+
+<resources>
+    <string name="app_name">Celestia</string>
+    <string name="privacy_policy_alert_decline_button_title">暂不同意</string>
+    <string name="privacy_policy_alert_show_policy_button_title">查看协议</string>
+    <string name="privacy_policy_alert_title">隐私政策与服务协议</string>
+    <string name="privacy_policy_alert_detail">请您务必仔细阅读，充分理解服务协议和隐私政策各条款。如果您同意，请点击下方的\"同意\"按钮。</string>
+    <string name="privacy_policy_alert_accept_button_title">同意</string>
+</resources>

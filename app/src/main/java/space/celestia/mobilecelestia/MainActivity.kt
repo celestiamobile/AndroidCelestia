@@ -27,6 +27,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.animation.addListener
@@ -182,6 +183,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     CrashHandler.setupNativeCrashesListener(path)
                 }
             }
+        }
+
+        if (preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] == null && Locale.getDefault().country == Locale.CHINA.country) {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(R.string.privacy_policy_alert_title)
+            builder.setMessage(R.string.privacy_policy_alert_detail)
+            builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
+                finish()
+                openURL("https://celestia.mobi/privacy.html")
+            }
+            builder.setPositiveButton(R.string.privacy_policy_alert_accept_button_title) { _, _ ->
+                preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] = "true"
+            }
+            builder.setNegativeButton(R.string.privacy_policy_alert_decline_button_title) { dialog, _ ->
+                dialog.cancel()
+                finish()
+            }
+            builder.show()
         }
 
         // Handle notch
@@ -1739,7 +1758,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "23"
+        private const val CURRENT_DATA_VERSION = "24"
+        // 24: 1.4.2 Localization update
         // 23: 1.3.3 Localization update
         // 22: 1.3.0 Localization update
         // 21: 1.2.10 Update content to commit 2a80a7695f1dea73de20d3411bfdf8eff94155e5

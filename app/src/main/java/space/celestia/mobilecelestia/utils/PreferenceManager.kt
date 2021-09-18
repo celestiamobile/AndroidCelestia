@@ -30,7 +30,8 @@ class PreferenceManager(context: Context, name: String) {
         ConfigFilePath,
         FullDPI,
         MSAA,
-        Language;
+        Language,
+        PrivacyPolicyAccepted;
 
         override val valueString: String
             get() = toString()
