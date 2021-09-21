@@ -74,14 +74,14 @@ jobs:
     displayName: 'Build AAB'
     condition: eq( variables['outputFormat'], 'aab' )
 
-  - task: AndroidSigning@2
+  - task: AndroidSigning@3
     inputs:
       apkFiles: '$(system.defaultWorkingDirectory)/**/*.apk'
-      jarsign: true
-      jarsignerKeystoreFile: 'celestia.jks'
-      jarsignerKeystorePassword: '$(JARSIGNER_KEYSTORE_PASSWORD)'
-      jarsignerKeystoreAlias: 'celestia'
-      jarsignerKeyPassword: '$(JARSIGNER_KEY_PASSWORD)'
+      apksign: true
+      apksignerKeystoreFile: 'celestia.jks'
+      apksignerKeystorePassword: '$(JARSIGNER_KEYSTORE_PASSWORD)'
+      apksignerKeystoreAlias: 'celestia'
+      apksignerKeyPassword: '$(JARSIGNER_KEY_PASSWORD)'
       zipalign: true
     displayName: 'Sign APK'
     condition: eq( variables['outputFormat'], 'apk' )
