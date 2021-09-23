@@ -49,6 +49,7 @@ public:
     void setSize(int width, int height);
     void setCorePointer(CelestiaCore *core);
     void makeContextCurrent();
+    void updateSwapInterval(int swapInterval);
 
     jobject javaObject = nullptr;
 
@@ -152,6 +153,10 @@ bool CelestiaRenderer::initialize()
             destroy();
             return false;
         }
+        eglPresentationTimeANDROID
+        EGLint maxSwapInterval, minSwapInterval;
+        eglGetConfigAttrib(display, config, EGL_MAX_SWAP_INTERVAL, &maxSwapInterval);
+        eglGetConfigAttrib(display, config, EGL_MIN_SWAP_INTERVAL, &minSwapInterval);
 
         const EGLint contextAttributes[] = {
                 EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -187,6 +192,7 @@ bool CelestiaRenderer::initialize()
     } else {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     }
+    eglSwapInterval(display, 2);
     return true;
 }
 
@@ -319,6 +325,11 @@ void CelestiaRenderer::setCorePointer(CelestiaCore *m_core)
 void CelestiaRenderer::makeContextCurrent()
 {
     eglMakeCurrent(display, surface, surface, context);
+}
+
+void CelestiaRenderer::updateSwapInterval(int swapInterval)
+{
+    eglSwapInterval(display, swapInterval);
 }
 
 void *CelestiaRenderer::threadCallback(void *self)
@@ -496,6 +507,17 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1makeContextCurrent(J
                                                                                jlong ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
     renderer->makeContextCurrent();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1updateSwapInterval(JNIEnv *env,
+                                                                               jobject thiz,
+                                                                               jlong ptr,
+                                                                               jint swapInterval) {
+    auto renderer = (CelestiaRenderer *)ptr;
+
+    renderer->updateSwapInterval(swapInterval);
 }
 
 extern "C"

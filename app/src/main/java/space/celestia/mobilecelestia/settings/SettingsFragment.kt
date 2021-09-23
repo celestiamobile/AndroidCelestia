@@ -44,6 +44,9 @@ class SettingsFragment : EndNavgationFragment() {
                     }
                 }
             }
+            is SettingsRefreshRateItem -> {
+                pushFragment(SettingsRefreshRateFragment.newInstance())
+            }
             is SettingsAboutItem -> {
                 pushFragment(AboutFragment.newInstance())
             }

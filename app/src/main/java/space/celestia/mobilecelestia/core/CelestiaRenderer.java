@@ -53,6 +53,9 @@ public class CelestiaRenderer {
     public void makeContextCurrent() {
         c_makeContextCurrent(pointer);
     }
+    public void updateSwapInterval(int swapInterval) {
+        c_updateSwapInterval(pointer, swapInterval);
+    }
 
     public void enqueueTask(@NonNull Callback task) {
         synchronized (taskLock) {
@@ -135,4 +138,5 @@ public class CelestiaRenderer {
     private native void c_setCorePointer(long pointer, long corePtr);
     private native void c_setSurfaceSize(long pointer, int width, int height);
     private native void c_makeContextCurrent(long pointer);
+    private native void c_updateSwapInterval(long pointer, int swapInterval);
 }

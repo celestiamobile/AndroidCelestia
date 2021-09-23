@@ -422,6 +422,11 @@ class SettingsDataLocationItem : SettingsItem, Serializable {
         get() = CelestiaString("Data Location", "")
 }
 
+class SettingsRefreshRateItem : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString("Refresh Rate", "")
+}
+
 private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsSingleSelectionItem(SettingsKey.Resolution, listOf(
         SettingsSingleSelectionItem.Selection("Low", 0),
@@ -454,6 +459,7 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
         ),  footer =  CelestiaString("Configuration will take effect after a restart.", ""))
     )),
+    SettingsRefreshRateItem(),
     SettingsDataLocationItem()
 )
 
