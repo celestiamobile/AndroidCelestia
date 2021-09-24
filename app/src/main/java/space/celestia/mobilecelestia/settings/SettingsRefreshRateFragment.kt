@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.core.CelestiaRenderer
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class SettingsRefreshRateFragment : SettingsBaseFragment() {
@@ -43,7 +44,8 @@ class SettingsRefreshRateFragment : SettingsBaseFragment() {
         if (view is RecyclerView) {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
-                listAdapter.update(availableRefreshRates())
+                val refreshRateParam = availableRefreshRates()
+                listAdapter.update(refreshRateParam?.first, refreshRateParam?.second, MainActivity.customFrameRateOption)
                 adapter = listAdapter
             }
         }
@@ -54,7 +56,7 @@ class SettingsRefreshRateFragment : SettingsBaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         if (savedInstanceState == null)
-            title = CelestiaString("Refresh Rate", "")
+            title = CelestiaString("Frame Rate", "")
     }
 
     override fun onAttach(context: Context) {
@@ -71,28 +73,27 @@ class SettingsRefreshRateFragment : SettingsBaseFragment() {
         listener = null
     }
 
-    private fun availableRefreshRates(): List<Pair<Int, Float>> {
-        val activity = this.activity ?: return listOf()
+    private fun availableRefreshRates(): Pair<List<Pair<Int, Int>>, Int>? {
+        val activity = this.activity ?: return null
         val displayManager = DisplayManagerCompat.getInstance(activity)
-        val display = displayManager.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf()
+        val display = displayManager.getDisplay(Display.DEFAULT_DISPLAY) ?: return null
         val supportedRefreshRates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display.supportedModes.map { it.refreshRate } else display.supportedRefreshRates.toList()
-        val maxRefreshRate = supportedRefreshRates.maxOrNull() ?: return listOf()
-        return listOf(
-            Pair(1, maxRefreshRate),
-            Pair(2, maxRefreshRate / 2),
-            Pair(3, maxRefreshRate / 3),
-            Pair(4, maxRefreshRate / 4),
-            Pair(5, maxRefreshRate / 5)
-        )
+        val maxRefreshRate = supportedRefreshRates.maxOrNull()?.toInt() ?: return null
+        return Pair(listOf(
+            Pair(CelestiaRenderer.FRAME_60FPS, 60),
+            Pair(CelestiaRenderer.FRAME_30FPS, 30),
+            Pair(CelestiaRenderer.FRAME_20FPS, 20),
+        ).filter { it.second <= maxRefreshRate }, maxRefreshRate)
     }
 
     override fun reload() {
-        listAdapter.update(availableRefreshRates())
+        val refreshRateParam = availableRefreshRates()
+        listAdapter.update(refreshRateParam?.first, refreshRateParam?.second, MainActivity.customFrameRateOption)
         listAdapter.notifyDataSetChanged()
     }
 
     interface Listener {
-        fun onRefreshRateChanged(newSwapInterval: Int?)
+        fun onRefreshRateChanged(frameRateOption: Int)
     }
 
     companion object {

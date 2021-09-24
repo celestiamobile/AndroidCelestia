@@ -424,7 +424,7 @@ class SettingsDataLocationItem : SettingsItem, Serializable {
 
 class SettingsRefreshRateItem : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString("Refresh Rate", "")
+        get() = CelestiaString("Frame Rate", "")
 }
 
 private val staticAdvancedItems: List<SettingsItem> = listOf(

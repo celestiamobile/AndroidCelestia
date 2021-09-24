@@ -499,7 +499,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // Read custom paths here
         customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
         customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
-        customSwapInterval = preferenceManager[PreferenceManager.PredefinedKey.SwapInterval]?.toIntOrNull()
+        customFrameRateOption = preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: CelestiaRenderer.FRAME_DEFAULT
 
         val localeDirectory = File("${celestiaDataDirPath}/locale")
         if (localeDirectory.exists()) {
@@ -798,7 +798,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             addonPath,
             enableMultisample,
             enableHiDPI,
-            customSwapInterval ?: 1,
+            customFrameRateOption,
             language
         )
         supportFragmentManager
@@ -1143,11 +1143,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         applyBooleanValue(value, field, true, volatile)
     }
 
-    override fun onRefreshRateChanged(newSwapInterval: Int?) {
-        preferenceManager[PreferenceManager.PredefinedKey.SwapInterval] = newSwapInterval?.toString()
-        customSwapInterval = newSwapInterval
+    override fun onRefreshRateChanged(frameRateOption: Int) {
+        preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption] = frameRateOption.toString()
+        customFrameRateOption = frameRateOption
         reloadSettings()
-        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateSwapInterval(newSwapInterval ?: 1)
+        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
     private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
@@ -1803,7 +1803,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
-        var customSwapInterval: Int? = null
+        var customFrameRateOption: Int = CelestiaRenderer.FRAME_DEFAULT
         private var language: String = "en"
         private var addonPath: String? = null
         private var extraScriptPath: String? = null

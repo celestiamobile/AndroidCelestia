@@ -26,6 +26,11 @@
 
 #include "CelestiaJNI.h"
 
+#define CELESTIA_RENDERER_FRAME_DEFAULT         0
+#define CELESTIA_RENDERER_FRAME_60FPS           1
+#define CELESTIA_RENDERER_FRAME_30FPS           2
+#define CELESTIA_RENDERER_FRAME_20FPS           3
+
 pthread_key_t javaEnvKey;
 
 class CelestiaRenderer
@@ -49,7 +54,7 @@ public:
     void setSize(int width, int height);
     void setCorePointer(CelestiaCore *core);
     void makeContextCurrent();
-    void updateSwapInterval(int swapInterval);
+    void setFrameRateOption(int frameRateOption);
 
     jobject javaObject = nullptr;
 
@@ -153,10 +158,6 @@ bool CelestiaRenderer::initialize()
             destroy();
             return false;
         }
-        eglPresentationTimeANDROID
-        EGLint maxSwapInterval, minSwapInterval;
-        eglGetConfigAttrib(display, config, EGL_MAX_SWAP_INTERVAL, &maxSwapInterval);
-        eglGetConfigAttrib(display, config, EGL_MIN_SWAP_INTERVAL, &minSwapInterval);
 
         const EGLint contextAttributes[] = {
                 EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -327,9 +328,24 @@ void CelestiaRenderer::makeContextCurrent()
     eglMakeCurrent(display, surface, surface, context);
 }
 
-void CelestiaRenderer::updateSwapInterval(int swapInterval)
+void CelestiaRenderer::setFrameRateOption(int frameRateOption)
 {
-    eglSwapInterval(display, swapInterval);
+    switch (frameRateOption)
+    {
+        case CELESTIA_RENDERER_FRAME_20FPS:
+            SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_20FPS);
+            break;
+        case CELESTIA_RENDERER_FRAME_30FPS:
+            SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_30FPS);
+            break;
+        case CELESTIA_RENDERER_FRAME_60FPS:
+            SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_60FPS);
+            break;
+        case CELESTIA_RENDERER_FRAME_DEFAULT:
+        default:
+            SwappyGL_setSwapIntervalNS(SwappyGL_getRefreshPeriodNanos());
+            break;
+    }
 }
 
 void *CelestiaRenderer::threadCallback(void *self)
@@ -428,8 +444,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1start(JNIEnv *env, j
                                                                   jboolean enable_multisample) {
     SwappyGL_init(env, activity);
     // By default, Swappy will adjust the swap interval based on actual frame rendering time.
-    // SwappyGL_setAutoSwapInterval(false);
-    // SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_60FPS);
+    SwappyGL_setAutoSwapInterval(false);
 
     LOG_INFO("Creating renderer thread");
 
@@ -511,13 +526,13 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1makeContextCurrent(J
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1updateSwapInterval(JNIEnv *env,
+Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setFrameRateOption(JNIEnv *env,
                                                                                jobject thiz,
                                                                                jlong ptr,
-                                                                               jint swapInterval) {
+                                                                               jint frame_rate_option) {
     auto renderer = (CelestiaRenderer *)ptr;
 
-    renderer->updateSwapInterval(swapInterval);
+    renderer->setFrameRateOption(frame_rate_option);
 }
 
 extern "C"

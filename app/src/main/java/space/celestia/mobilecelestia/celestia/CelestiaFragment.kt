@@ -55,7 +55,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private var addonToLoad: String? = null
     private var enableMultisample = false
     private var enableFullResolution = false
-    private var swapIntervalOverride: Int = 1
+    private var frameRateOption = CelestiaRenderer.FRAME_DEFAULT
     private lateinit var languageOverride: String
 
     // MARK: Celestia
@@ -106,7 +106,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             enableMultisample = it.getBoolean(ARG_MULTI_SAMPLE)
             enableFullResolution = it.getBoolean(ARG_FULL_RESOLUTION)
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
-            swapIntervalOverride = it.getInt(ARG_SWAP_INTERVAL)
+            frameRateOption = it.getInt(ARG_FRAME_RATE_OPTION)
         }
 
         if (savedInstanceState == null) {
@@ -116,15 +116,15 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             }
         } else {
             previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
-            if (savedInstanceState.containsKey(ARG_SWAP_INTERVAL)) {
-                swapIntervalOverride = savedInstanceState.getInt(ARG_SWAP_INTERVAL)
+            if (savedInstanceState.containsKey(ARG_FRAME_RATE_OPTION)) {
+                frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION)
             }
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putFloat(KEY_PREVIOUS_DENSITY, density)
-        outState.putInt(ARG_SWAP_INTERVAL, swapIntervalOverride)
+        outState.putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
         super.onSaveInstanceState(outState)
     }
 
@@ -215,10 +215,10 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         handleInsetsChanged(view, newInsets)
     }
 
-    fun updateSwapInterval(swapInterval: Int) {
-        swapIntervalOverride = swapInterval
+    fun updateFrameRateOption(newFrameRateOption: Int) {
+        frameRateOption = newFrameRateOption
         CelestiaView.callOnRenderThread {
-            renderer.updateSwapInterval(swapInterval)
+            renderer.setFrameRateOption(newFrameRateOption)
         }
     }
 
@@ -505,7 +505,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         renderer.setSurface(holder.surface)
-        renderer.updateSwapInterval(swapIntervalOverride)
+        renderer.setFrameRateOption(frameRateOption)
         haveSurface = true
         if (AppStatusReporter.shared().state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
             loadingFinished()
@@ -641,7 +641,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         private const val ARG_ADDON_DIR = "addon"
         private const val ARG_MULTI_SAMPLE = "multisample"
         private const val ARG_FULL_RESOLUTION = "fullresolution"
-        private const val ARG_SWAP_INTERVAL = "swapinterval"
+        private const val ARG_FRAME_RATE_OPTION = "framerateoption"
         private const val ARG_LANG_OVERRIDE = "lang"
         private const val GROUP_ACTION = 0
         private const val GROUP_ALT_SURFACE_TOP = 1
@@ -663,7 +663,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, swapInterval: Int, languageOverride: String) =
+        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, frameRateOption: Int, languageOverride: String) =
             CelestiaFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)
@@ -671,7 +671,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                     putBoolean(ARG_MULTI_SAMPLE, enableMultisample)
                     putBoolean(ARG_FULL_RESOLUTION, enableFullResolution)
                     putString(ARG_LANG_OVERRIDE, languageOverride)
-                    putInt(ARG_SWAP_INTERVAL, swapInterval)
+                    putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
                     if (addon != null) {
                         putString(ARG_ADDON_DIR, addon)
                     }

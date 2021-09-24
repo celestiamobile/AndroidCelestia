@@ -11,17 +11,22 @@
 
 package space.celestia.mobilecelestia.settings
 
+import android.content.res.ColorStateList
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import space.celestia.mobilecelestia.core.CelestiaRenderer
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-class RefreshRateItem(val swapInterval: Int, val rate: Float) : RecyclerViewItem
-class ResetRefreshRateItem() : RecyclerViewItem
+class RefreshRateItem(val frameRateOption: Int, val frameRate: Int, val checked: Boolean) : RecyclerViewItem
+class ResetRefreshRateItem(val frameRate: Int, val checked: Boolean) : RecyclerViewItem
 
 class SettingsRefreshRateRecyclerViewAdapter(
     private val listener: SettingsRefreshRateFragment.Listener?
@@ -29,10 +34,10 @@ class SettingsRefreshRateRecyclerViewAdapter(
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is RefreshRateItem) {
-            listener?.onRefreshRateChanged(item.swapInterval)
+            listener?.onRefreshRateChanged(item.frameRateOption)
         }
         if (item is ResetRefreshRateItem) {
-            listener?.onRefreshRateChanged(null)
+            listener?.onRefreshRateChanged(CelestiaRenderer.FRAME_DEFAULT)
         }
     }
 
@@ -44,26 +49,34 @@ class SettingsRefreshRateRecyclerViewAdapter(
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == SETTING_ITEM) {
-            return CommonTextViewHolder(parent)
+            val holder =  CommonTextViewHolder(parent)
+            holder.accessory.setImageResource(R.drawable.ic_check)
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(
+                ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null)))
+            return holder
         }
         return super.createVH(parent, viewType)
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (item is RefreshRateItem && holder is CommonTextViewHolder) {
-            holder.title.text = item.rate.toString()
+            holder.title.text = CelestiaString("%d FPS", "").format(item.frameRate)
+            holder.accessory.visibility = if (item.checked) View.VISIBLE else View.GONE
             return
         }
         if (item is ResetRefreshRateItem && holder is CommonTextViewHolder) {
-            holder.title.text = CelestiaString("Reset to Default", "")
+            holder.title.text = CelestiaString("Default (%d FPS)", "").format(item.frameRate)
+            holder.accessory.visibility = if (item.checked) View.VISIBLE else View.GONE
             return
         }
         super.bindVH(holder, item)
     }
 
-    fun update(availableRefreshRates: List<Pair<Int, Float>>) {
-        val section = CommonSectionV2(availableRefreshRates.map { RefreshRateItem(it.first, it.second) })
-        updateSectionsWithHeader(listOf(section, CommonSectionV2((listOf(ResetRefreshRateItem())))))
+    fun update(availableRefreshRates: List<Pair<Int, Int>>?, maxRefreshRate: Int?, selectedRateOption: Int) {
+        val items: ArrayList<RecyclerViewItem> = ArrayList(availableRefreshRates?.map { RefreshRateItem(it.first, it.second, selectedRateOption == it.first) } ?: listOf())
+        if (maxRefreshRate != null)
+            items.add(0, ResetRefreshRateItem(maxRefreshRate, selectedRateOption == CelestiaRenderer.FRAME_DEFAULT))
+        updateSectionsWithHeader(listOf(CommonSectionV2(items)))
     }
 
     private companion object {
