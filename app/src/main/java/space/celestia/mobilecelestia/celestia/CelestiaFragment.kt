@@ -55,7 +55,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private var addonToLoad: String? = null
     private var enableMultisample = false
     private var enableFullResolution = false
-    private var frameRateOption = CelestiaRenderer.FRAME_DEFAULT
+    private var frameRateOption = CelestiaRenderer.FRAME_60FPS
     private lateinit var languageOverride: String
 
     // MARK: Celestia

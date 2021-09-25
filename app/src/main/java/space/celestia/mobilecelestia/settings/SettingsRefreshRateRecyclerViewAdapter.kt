@@ -37,7 +37,7 @@ class SettingsRefreshRateRecyclerViewAdapter(
             listener?.onRefreshRateChanged(item.frameRateOption)
         }
         if (item is ResetRefreshRateItem) {
-            listener?.onRefreshRateChanged(CelestiaRenderer.FRAME_DEFAULT)
+            listener?.onRefreshRateChanged(CelestiaRenderer.FRAME_MAX)
         }
     }
 
@@ -65,7 +65,7 @@ class SettingsRefreshRateRecyclerViewAdapter(
             return
         }
         if (item is ResetRefreshRateItem && holder is CommonTextViewHolder) {
-            holder.title.text = CelestiaString("Default (%d FPS)", "").format(item.frameRate)
+            holder.title.text = CelestiaString("Maximum (%d FPS)", "").format(item.frameRate)
             holder.accessory.visibility = if (item.checked) View.VISIBLE else View.GONE
             return
         }
@@ -75,7 +75,7 @@ class SettingsRefreshRateRecyclerViewAdapter(
     fun update(availableRefreshRates: List<Pair<Int, Int>>?, maxRefreshRate: Int?, selectedRateOption: Int) {
         val items: ArrayList<RecyclerViewItem> = ArrayList(availableRefreshRates?.map { RefreshRateItem(it.first, it.second, selectedRateOption == it.first) } ?: listOf())
         if (maxRefreshRate != null)
-            items.add(0, ResetRefreshRateItem(maxRefreshRate, selectedRateOption == CelestiaRenderer.FRAME_DEFAULT))
+            items.add(0, ResetRefreshRateItem(maxRefreshRate, selectedRateOption == CelestiaRenderer.FRAME_MAX))
         updateSectionsWithHeader(listOf(CommonSectionV2(items)))
     }
 

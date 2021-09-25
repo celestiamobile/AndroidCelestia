@@ -26,7 +26,7 @@
 
 #include "CelestiaJNI.h"
 
-#define CELESTIA_RENDERER_FRAME_DEFAULT         0
+#define CELESTIA_RENDERER_FRAME_MAX             0
 #define CELESTIA_RENDERER_FRAME_60FPS           1
 #define CELESTIA_RENDERER_FRAME_30FPS           2
 #define CELESTIA_RENDERER_FRAME_20FPS           3
@@ -341,7 +341,7 @@ void CelestiaRenderer::setFrameRateOption(int frameRateOption)
         case CELESTIA_RENDERER_FRAME_60FPS:
             SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_60FPS);
             break;
-        case CELESTIA_RENDERER_FRAME_DEFAULT:
+        case CELESTIA_RENDERER_FRAME_MAX:
         default:
             SwappyGL_setSwapIntervalNS(SwappyGL_getRefreshPeriodNanos());
             break;

@@ -499,7 +499,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // Read custom paths here
         customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
         customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
-        customFrameRateOption = preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: CelestiaRenderer.FRAME_DEFAULT
+        customFrameRateOption = preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: CelestiaRenderer.FRAME_60FPS
 
         val localeDirectory = File("${celestiaDataDirPath}/locale")
         if (localeDirectory.exists()) {
@@ -1803,7 +1803,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
-        var customFrameRateOption: Int = CelestiaRenderer.FRAME_DEFAULT
+        var customFrameRateOption: Int = CelestiaRenderer.FRAME_60FPS
         private var language: String = "en"
         private var addonPath: String? = null
         private var extraScriptPath: String? = null
