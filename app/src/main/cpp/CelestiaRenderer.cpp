@@ -193,7 +193,6 @@ bool CelestiaRenderer::initialize()
     } else {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     }
-    eglSwapInterval(display, 2);
     return true;
 }
 
