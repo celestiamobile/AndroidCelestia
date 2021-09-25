@@ -12,7 +12,6 @@
 package space.celestia.mobilecelestia.settings
 
 import android.content.Context
-import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
 import android.view.Display
@@ -20,7 +19,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.hardware.display.DisplayManagerCompat
-import androidx.core.view.DisplayCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.MainActivity

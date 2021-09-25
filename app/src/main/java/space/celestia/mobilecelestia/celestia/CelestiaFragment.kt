@@ -37,7 +37,6 @@ import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.showToast
 import java.util.*
-import javax.microedition.khronos.egl.EGL
 import kotlin.concurrent.fixedRateTimer
 
 class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
@@ -116,9 +115,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             }
         } else {
             previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
-            if (savedInstanceState.containsKey(ARG_FRAME_RATE_OPTION)) {
-                frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION)
-            }
+            frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, CelestiaRenderer.FRAME_60FPS)
         }
     }
 
