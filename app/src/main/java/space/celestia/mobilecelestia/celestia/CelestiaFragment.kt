@@ -54,6 +54,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private var addonToLoad: String? = null
     private var enableMultisample = false
     private var enableFullResolution = false
+    private var frameRateOption = CelestiaRenderer.FRAME_60FPS
     private lateinit var languageOverride: String
 
     // MARK: Celestia
@@ -104,6 +105,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             enableMultisample = it.getBoolean(ARG_MULTI_SAMPLE)
             enableFullResolution = it.getBoolean(ARG_FULL_RESOLUTION)
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
+            frameRateOption = it.getInt(ARG_FRAME_RATE_OPTION)
         }
 
         if (savedInstanceState == null) {
@@ -113,11 +115,13 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             }
         } else {
             previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
+            frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, CelestiaRenderer.FRAME_60FPS)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putFloat(KEY_PREVIOUS_DENSITY, density)
+        outState.putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
         super.onSaveInstanceState(outState)
     }
 
@@ -206,6 +210,13 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         super.onInsetChanged(view, newInsets)
 
         handleInsetsChanged(view, newInsets)
+    }
+
+    fun updateFrameRateOption(newFrameRateOption: Int) {
+        frameRateOption = newFrameRateOption
+        CelestiaView.callOnRenderThread {
+            renderer.setFrameRateOption(newFrameRateOption)
+        }
     }
 
     private fun handleInsetsChanged(view: View, newInsets: EdgeInsets) {
@@ -491,6 +502,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         renderer.setSurface(holder.surface)
+        renderer.setFrameRateOption(frameRateOption)
         haveSurface = true
         if (AppStatusReporter.shared().state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
             loadingFinished()
@@ -626,6 +638,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         private const val ARG_ADDON_DIR = "addon"
         private const val ARG_MULTI_SAMPLE = "multisample"
         private const val ARG_FULL_RESOLUTION = "fullresolution"
+        private const val ARG_FRAME_RATE_OPTION = "framerateoption"
         private const val ARG_LANG_OVERRIDE = "lang"
         private const val GROUP_ACTION = 0
         private const val GROUP_ALT_SURFACE_TOP = 1
@@ -647,7 +660,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, languageOverride: String) =
+        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, frameRateOption: Int, languageOverride: String) =
             CelestiaFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)
@@ -655,6 +668,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                     putBoolean(ARG_MULTI_SAMPLE, enableMultisample)
                     putBoolean(ARG_FULL_RESOLUTION, enableFullResolution)
                     putString(ARG_LANG_OVERRIDE, languageOverride)
+                    putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
                     if (addon != null) {
                         putString(ARG_ADDON_DIR, addon)
                     }

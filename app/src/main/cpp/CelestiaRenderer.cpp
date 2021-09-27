@@ -13,6 +13,8 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <epoxy/egl.h>
+#include <swappy/swappyGL.h>
+#include <swappy/swappyGL_extra.h>
 #include <celestia/celestiacore.h>
 
 #include <android/log.h>
@@ -23,6 +25,11 @@
 #define LOG_TAG "Renderer"
 
 #include "CelestiaJNI.h"
+
+#define CELESTIA_RENDERER_FRAME_MAX             0
+#define CELESTIA_RENDERER_FRAME_60FPS           1
+#define CELESTIA_RENDERER_FRAME_30FPS           2
+#define CELESTIA_RENDERER_FRAME_20FPS           3
 
 pthread_key_t javaEnvKey;
 
@@ -47,6 +54,7 @@ public:
     void setSize(int width, int height);
     void setCorePointer(CelestiaCore *core);
     void makeContextCurrent();
+    void setFrameRateOption(int frameRateOption);
 
     jobject javaObject = nullptr;
 
@@ -294,6 +302,8 @@ void CelestiaRenderer::setSurface(JNIEnv *env, jobject m_surface)
         window = ANativeWindow_fromSurface(env, m_surface);
     else
         window = nullptr;
+    if (window)
+        SwappyGL_setWindow(window);
     unlock();
 }
 
@@ -315,6 +325,26 @@ void CelestiaRenderer::setCorePointer(CelestiaCore *m_core)
 void CelestiaRenderer::makeContextCurrent()
 {
     eglMakeCurrent(display, surface, surface, context);
+}
+
+void CelestiaRenderer::setFrameRateOption(int frameRateOption)
+{
+    switch (frameRateOption)
+    {
+        case CELESTIA_RENDERER_FRAME_20FPS:
+            SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_20FPS);
+            break;
+        case CELESTIA_RENDERER_FRAME_30FPS:
+            SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_30FPS);
+            break;
+        case CELESTIA_RENDERER_FRAME_60FPS:
+            SwappyGL_setSwapIntervalNS(SWAPPY_SWAP_60FPS);
+            break;
+        case CELESTIA_RENDERER_FRAME_MAX:
+        default:
+            SwappyGL_setSwapIntervalNS(SwappyGL_getRefreshPeriodNanos());
+            break;
+    }
 }
 
 void *CelestiaRenderer::threadCallback(void *self)
@@ -373,8 +403,8 @@ void *CelestiaRenderer::threadCallback(void *self)
         if (needsDrawn)
         {
             renderer->tickAndDraw();
-            if (!eglSwapBuffers(renderer->display, renderer->surface))
-                LOG_ERROR("eglSwapBuffers() returned error %d", eglGetError());
+            if (!SwappyGL_swap(renderer->display, renderer->surface))
+                LOG_ERROR("SwappyGL_swap() returned error %d", eglGetError());
         }
     }
     renderer->destroy();
@@ -411,6 +441,10 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1start(JNIEnv *env, j
                                                                   jlong ptr,
                                                                   jobject activity,
                                                                   jboolean enable_multisample) {
+    SwappyGL_init(env, activity);
+    // By default, Swappy will adjust the swap interval based on actual frame rendering time.
+    SwappyGL_setAutoSwapInterval(false);
+
     LOG_INFO("Creating renderer thread");
 
     auto renderer = (CelestiaRenderer *)ptr;
@@ -427,6 +461,8 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1stop(JNIEnv *env, jo
     LOG_INFO("Stopping renderer thread");
     renderer->stop();
     LOG_INFO("Renderer thread stopped");
+
+    SwappyGL_destroy();
 }
 
 extern "C"
@@ -485,6 +521,17 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1makeContextCurrent(J
                                                                                jlong ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
     renderer->makeContextCurrent();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setFrameRateOption(JNIEnv *env,
+                                                                               jobject thiz,
+                                                                               jlong ptr,
+                                                                               jint frame_rate_option) {
+    auto renderer = (CelestiaRenderer *)ptr;
+
+    renderer->setFrameRateOption(frame_rate_option);
 }
 
 extern "C"

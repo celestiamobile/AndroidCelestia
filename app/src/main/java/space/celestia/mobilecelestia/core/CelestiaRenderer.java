@@ -21,6 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CelestiaRenderer {
+    public static int FRAME_MAX = 0;
+    public static int FRAME_60FPS = 1;
+    public static int FRAME_30FPS = 2;
+    public static int FRAME_20FPS = 3;
+
     public interface Callback {
         void call();
     }
@@ -52,6 +57,9 @@ public class CelestiaRenderer {
 
     public void makeContextCurrent() {
         c_makeContextCurrent(pointer);
+    }
+    public void setFrameRateOption(int frameRateOption) {
+        c_setFrameRateOption(pointer, frameRateOption);
     }
 
     public void enqueueTask(@NonNull Callback task) {
@@ -135,4 +143,5 @@ public class CelestiaRenderer {
     private native void c_setCorePointer(long pointer, long corePtr);
     private native void c_setSurfaceSize(long pointer, int width, int height);
     private native void c_makeContextCurrent(long pointer);
+    private native void c_setFrameRateOption(long pointer, int frameRateOption);
 }

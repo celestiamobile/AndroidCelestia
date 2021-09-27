@@ -119,7 +119,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     AsyncListFragment.Listener<Any>,
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
-    ResourceItemFragment.Listener {
+    ResourceItemFragment.Listener,
+    SettingsRefreshRateFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -498,6 +499,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // Read custom paths here
         customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
         customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
+        customFrameRateOption = preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: CelestiaRenderer.FRAME_60FPS
 
         val localeDirectory = File("${celestiaDataDirPath}/locale")
         if (localeDirectory.exists()) {
@@ -796,6 +798,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             addonPath,
             enableMultisample,
             enableHiDPI,
+            customFrameRateOption,
             language
         )
         supportFragmentManager
@@ -1138,6 +1141,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean) {
         applyBooleanValue(value, field, true, volatile)
+    }
+
+    override fun onRefreshRateChanged(frameRateOption: Int) {
+        preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption] = frameRateOption.toString()
+        customFrameRateOption = frameRateOption
+        reloadSettings()
+        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
     private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
@@ -1793,6 +1803,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
+        var customFrameRateOption: Int = CelestiaRenderer.FRAME_60FPS
         private var language: String = "en"
         private var addonPath: String? = null
         private var extraScriptPath: String? = null
