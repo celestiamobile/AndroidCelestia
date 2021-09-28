@@ -22,14 +22,6 @@ val CelestiaAppCore.currentBookmark: BookmarkNode?
         return BookmarkNode(name, currentURL, null)
     }
 
-private val Float.radiusString: String
-    get() {
-        if (this < 1) {
-            return CelestiaString("%d m", "").format((this * 1000).toInt())
-        }
-        return CelestiaString("%d km", "").format(this.toInt())
-    }
-
 fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): String {
     return when (val obj = selection.`object`) {
         is CelestiaBody -> {
@@ -50,10 +42,28 @@ fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): Strin
 private fun CelestiaAppCore.getOverviewForBody(body: CelestiaBody): String {
     var str = ""
 
-    str += if (body.isEllipsoid) {
-        CelestiaString("Equatorial radius: %s", "").format(body.radius.radiusString)
+    val radius = body.radius
+    val radiusString: String
+    val oneMiInKm = 1.609344f
+    val oneFtInKm = 0.0003048f
+    if (measurementSystem == CelestiaAppCore.MEASUREMENT_SYSTEM_IMPERIAL) {
+        if (radius >= oneMiInKm) {
+           radiusString = CelestiaString("%d mi", "").format((radius / oneMiInKm).toInt())
+        } else {
+            radiusString = CelestiaString("%d ft", "").format((radius / oneFtInKm).toInt())
+        }
     } else {
-        CelestiaString("Size: %s", "").format(body.radius.radiusString)
+        if (radius >= 1) {
+            radiusString = CelestiaString("%d km", "").format(radius.toInt())
+        } else {
+            radiusString = CelestiaString("%d m", "").format((radius * 1000).toInt())
+        }
+    }
+
+    str += if (body.isEllipsoid) {
+        CelestiaString("Equatorial radius: %s", "").format(radiusString)
+    } else {
+        CelestiaString("Size: %s", "").format(radiusString)
     }
 
     val time = simulation.time

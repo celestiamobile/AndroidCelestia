@@ -755,6 +755,19 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getHudDetail(JNIEnv *
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setMeasurementSystem(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
+    auto core = (CelestiaCore *)pointer;
+    core->setMeasurementSystem((CelestiaCore::MeasurementSystem)value);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getMeasurementSystem(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
+    return (jint)core->getMeasurementSystem();
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1setTimeZone(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = (CelestiaCore *)pointer;
     core->setTimeZoneBias(0 == value ? 1 : 0);

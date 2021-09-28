@@ -79,5 +79,6 @@
     "ShowEcliptic": 0,
     "ShowEclipticGrid": 0,
     "ShowHorizonGrid": 0,
-    "ShowGalacticGrid": 0
+    "ShowGalacticGrid": 0,
+    "MeasurementSystem": 0
 }

@@ -102,8 +102,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     FavoriteFragment.Listener,
     FavoriteItemFragment.Listener,
     SettingsItemFragment.Listener,
-    SettingsMultiSelectionFragment.Listener,
-    SettingsSingleSelectionFragment.Listener,
     SettingsCurrentTimeFragment.Listener,
     AboutFragment.Listener,
     AppStatusReporter.Listener,
@@ -1118,14 +1116,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onMultiSelectionSettingItemChange(field: String, on: Boolean) {
-        applyBooleanValue(on, field, true)
-    }
-
-    override fun onSingleSelectionSettingItemChange(field: String, value: Int) {
-        applyIntValue(value, field, true)
-    }
-
     override fun onCommonSettingSliderItemChange(field: String, value: Double) {
         applyDoubleValue(value, field, true)
     }
@@ -1193,6 +1183,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         preferenceManager[key] = if (value) "true" else "false"
     }
 
+    override fun onCommonSettingSelectionChanged(field: String, selected: Int) {
+        applyIntValue(selected, field, true)
+    }
+
     override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean? {
         return when (preferenceManager[key]) {
             "true" -> true
@@ -1203,6 +1197,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun commonSettingSliderValue(field: String): Double {
         return core.getDoubleValueForField(field)
+    }
+
+    override fun commonSettingSelectionValue(field: String): Int {
+        return core.getIntValueForField(field)
     }
 
     override fun commonSettingSwitchState(field: String): Boolean {

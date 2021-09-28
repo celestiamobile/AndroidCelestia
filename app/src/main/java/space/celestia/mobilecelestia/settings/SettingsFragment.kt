@@ -24,12 +24,6 @@ class SettingsFragment : EndNavgationFragment() {
 
     fun pushMainSettingItem(item: SettingsItem) {
         when (item) {
-            is SettingsMultiSelectionItem -> {
-                pushFragment(SettingsMultiSelectionFragment.newInstance(item))
-            }
-            is SettingsSingleSelectionItem -> {
-                pushFragment(SettingsSingleSelectionFragment.newInstance(item))
-            }
             is SettingsCommonItem -> {
                 pushFragment(SettingsCommonFragment.newInstance(item))
             }

@@ -85,12 +85,14 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         fun onCommonSettingPreferenceSwitchStateChanged(key: PreferenceManager.PredefinedKey, value: Boolean)
         fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean)
         fun onCommonSettingUnknownAction(id: String)
+        fun onCommonSettingSelectionChanged(field: String, selected: Int)
     }
 
     interface DataSource {
         fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean?
         fun commonSettingSwitchState(field: String): Boolean
         fun commonSettingSliderValue(field: String): Double
+        fun commonSettingSelectionValue(field: String): Int
     }
 
     companion object {
