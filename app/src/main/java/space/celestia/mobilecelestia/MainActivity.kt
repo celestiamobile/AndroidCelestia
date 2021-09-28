@@ -1184,7 +1184,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onCommonSettingSelectionChanged(field: String, selected: Int) {
-        applyIntValue(selected, field)
+        applyIntValue(selected, field, true)
     }
 
     override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean? {

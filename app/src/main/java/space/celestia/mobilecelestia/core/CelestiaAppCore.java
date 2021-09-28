@@ -28,6 +28,9 @@ public class CelestiaAppCore {
     public static final int SHIFT_KEY               = 0x08;
     public static final int CONTROL_KEY             = 0x10;
 
+    public static final int MEASUREMENT_SYSTEM_METRIC   = 0;
+    public static final int MEASUREMENT_SYSTEM_IMPERIAL = 1;
+
     public static final int RENDER_FONT_STYLE_NORMAL    = 0;
     public static final int RENDER_FONT_STYLE_LARGE     = 1;
 
@@ -677,43 +680,47 @@ public class CelestiaAppCore {
 
     public void setResolution(int resolution) { c_setResolution(pointer, resolution); }
     public int getResolution() { return c_getResolution(pointer); }
-    private static native double c_setResolution(long pointer, int resolution);
+    private static native void c_setResolution(long pointer, int resolution);
     private static native int c_getResolution(long pointer);
     public void setStarStyle(int starStyle) { c_setStarStyle(pointer, starStyle);}
     public int getStarStyle() { return c_getStarStyle(pointer); }
-    private static native double c_setStarStyle(long pointer, int starStyle);
+    private static native void c_setStarStyle(long pointer, int starStyle);
     private static native int c_getStarStyle(long pointer);
     public void setHudDetail(int hudDetail) { c_setHudDetail(pointer, hudDetail); }
     public int getHudDetail() { return c_getHudDetail(pointer); }
-    private static native double c_setHudDetail(long pointer, int hudDetail);
+    private static native void c_setHudDetail(long pointer, int hudDetail);
     private static native int c_getHudDetail(long pointer);
+    public void setMeasurementSystem(int measurementSystem) { c_setMeasurementSystem(pointer, measurementSystem); }
+    public int getMeasurementSystem() { return c_getMeasurementSystem(pointer); }
+    private static native void c_setMeasurementSystem(long pointer, int measurementSystem);
+    private static native int c_getMeasurementSystem(long pointer);
     public void setTimeZone(int timeZone) { c_setTimeZone(pointer, timeZone); }
     public int getTimeZone() { return c_getTimeZone(pointer); }
-    private static native double c_setTimeZone(long pointer, int TimeZone);
+    private static native void c_setTimeZone(long pointer, int TimeZone);
     private static native int c_getTimeZone(long pointer);
     public void setDateFormat(int dateFormat) { c_setDateFormat(pointer, dateFormat); }
     public int getDateFormat() { return c_getDateFormat(pointer); }
-    private static native double c_setDateFormat(long pointer, int DateFormat);
+    private static native void c_setDateFormat(long pointer, int DateFormat);
     private static native int c_getDateFormat(long pointer);
 
     public void setAmbientLightLevel(double ambientLightLevel) { c_setAmbientLightLevel(pointer, ambientLightLevel); }
     public double getAmbientLightLevel() { return c_getAmbientLightLevel(pointer); }
-    private static native double c_setAmbientLightLevel(long pointer, double ambientLightLevel);
+    private static native void c_setAmbientLightLevel(long pointer, double ambientLightLevel);
     private static native double c_getAmbientLightLevel(long pointer);
 
     public void setFaintestVisible(double faintestVisible) { c_setFaintestVisible(pointer, faintestVisible); }
     public double getFaintestVisible() { return c_getFaintestVisible(pointer); }
-    private static native double c_setFaintestVisible(long pointer, double faintestVisible);
+    private static native void c_setFaintestVisible(long pointer, double faintestVisible);
     private static native double c_getFaintestVisible(long pointer);
 
     public void setGalaxyBrightness(double galaxyBrightness) { c_setGalaxyBrightness(pointer, galaxyBrightness); }
     public double getGalaxyBrightness() { return c_getGalaxyBrightness(pointer); }
-    private static native double c_setGalaxyBrightness(long pointer, double galaxyBrightness);
+    private static native void c_setGalaxyBrightness(long pointer, double galaxyBrightness);
     private static native double c_getGalaxyBrightness(long pointer);
 
     public void setMinimumFeatureSize(double minimumFeatureSize) { c_setMinimumFeatureSize(pointer, minimumFeatureSize); }
     public double getMinimumFeatureSize() { return c_getMinimumFeatureSize(pointer); }
-    private static native double c_setMinimumFeatureSize(long pointer, double minimumFeatureSize);
+    private static native void c_setMinimumFeatureSize(long pointer, double minimumFeatureSize);
     private static native double c_getMinimumFeatureSize(long pointer);
 
     public boolean getShowBodyAxes() { return c_getReferenceMarkEnabled(pointer, "body axes"); }

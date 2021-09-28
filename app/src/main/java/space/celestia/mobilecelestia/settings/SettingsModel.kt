@@ -12,7 +12,6 @@
 package space.celestia.mobilecelestia.settings
 
 import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -94,6 +93,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     Resolution("Texture Resolution"),
     StarStyle("Star Style"),
     HudDetail("Info Display"),
+    MeasurementSystem("Measure Units"),
     // Double values
     FaintestVisible("Faintest Stars"),
     AmbientLightLevel("Ambient Light"),
@@ -180,7 +180,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 DateFormat,
                 Resolution,
                 StarStyle,
-                HudDetail
+                HudDetail,
+                MeasurementSystem
             )
 
         val allDoubleCases: List<SettingsKey>
@@ -390,16 +391,16 @@ private val staticTimeItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.TimeZone.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.TimeZone, "Local Time", 0),
-            SettingsKeyedSelectionItem(SettingsKey.TimeZone, "UTC", 1)
+            SettingsKeyedSelectionItem(SettingsKey.TimeZone, CelestiaString("Local Time", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.TimeZone, CelestiaString("UTC", ""), 1)
         )
     ),
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.DateFormat.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.DateFormat, "Default", 0),
-            SettingsKeyedSelectionItem(SettingsKey.DateFormat, "YYYY MMM DD HH:MM:SS TZ", 1),
-            SettingsKeyedSelectionItem(SettingsKey.DateFormat, "UTC Offset", 2)
+            SettingsKeyedSelectionItem(SettingsKey.DateFormat, CelestiaString("Default", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.DateFormat, CelestiaString("YYYY MMM DD HH:MM:SS TZ", ""), 1),
+            SettingsKeyedSelectionItem(SettingsKey.DateFormat, CelestiaString("UTC Offset", ""), 2)
         )
     ),
     SettingsCurrentTimeItem()
@@ -419,25 +420,25 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.Resolution.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, "Low", 0),
-            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, "Medium", 1),
-            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, "High", 2)
+            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, CelestiaString("Low", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, CelestiaString("Medium", ""), 1),
+            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, CelestiaString("High", ""), 2)
         )
     ),
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.StarStyle.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, "Fuzzy Points", 0),
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, "Points", 1),
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, "Scaled Discs", 2)
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Fuzzy Points", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Points", ""), 1),
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Scaled Discs", ""), 2)
         )
     ),
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.HudDetail.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, "None", 0),
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, "Terse", 1),
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, "Verbose", 2)
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("None", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("Terse", ""), 1),
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("Verbose", ""), 2)
         )
     ),
 
@@ -456,6 +457,13 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
         ),  footer =  CelestiaString("Configuration will take effect after a restart.", ""))
     )),
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.MeasurementSystem.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.MeasurementSystem, CelestiaString("Metric", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.MeasurementSystem, CelestiaString("Imperial", ""), 1)
+        )
+    ),
     SettingsRefreshRateItem(),
     SettingsDataLocationItem()
 )
