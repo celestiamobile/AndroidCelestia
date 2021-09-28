@@ -200,24 +200,6 @@ interface SettingsItem : RecyclerViewItem {
     val name: String
 }
 
-class SettingsMultiSelectionItem(
-    private val rawDisplayName: String,
-    val masterKey: String?,
-    val selections: List<Selection>
-) : SettingsItem, Serializable {
-    override val name: String
-        get() = CelestiaString(rawDisplayName, "")
-
-    constructor(rawDisplayName: String, selections: List<Selection>) : this(rawDisplayName, null, selections)
-
-    constructor(internalKey: SettingsKey, selections: List<Selection>) : this(internalKey.displayName, internalKey.valueString, selections)
-
-    class Selection(internalKey: SettingsKey) : RecyclerViewItem, Serializable {
-        val name: String = internalKey.displayName
-        val key: String = internalKey.valueString
-    }
-}
-
 class SettingsSliderItem(
     private val internalKey: SettingsKey,
     val minValue: Double = 0.0,
@@ -272,30 +254,44 @@ class SettingsSwitchItem(
         get() = representation == Representation.Checkmark
 }
 
+class SettingsKeyedSelectionItem(
+    val key: String,
+    private val displayName: String,
+    val index: Int
+) : SettingsItem, Serializable {
+    override val name: String
+        get() = displayName
+
+    constructor(key: SettingsKey, displayName: String, index: Int) : this(key.valueString, displayName, index)
+
+    override val clickable: Boolean
+        get() = true
+}
+
 private val staticDisplayItems: List<SettingsItem> = listOf(
-    SettingsMultiSelectionItem("Objects", listOf(
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowStars),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowPlanets),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowDwarfPlanets),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowMoons),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowMinorMoons),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowAsteroids),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowComets),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowSpacecrafts),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowGalaxies),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowNebulae),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowGlobulars),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowOpenClusters)
+    SettingsCommonItem.create(CelestiaString("Objects", ""), listOf(
+        SettingsSwitchItem(SettingsKey.ShowStars),
+        SettingsSwitchItem(SettingsKey.ShowPlanets),
+        SettingsSwitchItem(SettingsKey.ShowDwarfPlanets),
+        SettingsSwitchItem(SettingsKey.ShowMoons),
+        SettingsSwitchItem(SettingsKey.ShowMinorMoons),
+        SettingsSwitchItem(SettingsKey.ShowAsteroids),
+        SettingsSwitchItem(SettingsKey.ShowComets),
+        SettingsSwitchItem(SettingsKey.ShowSpacecrafts),
+        SettingsSwitchItem(SettingsKey.ShowGalaxies),
+        SettingsSwitchItem(SettingsKey.ShowNebulae),
+        SettingsSwitchItem(SettingsKey.ShowGlobulars),
+        SettingsSwitchItem(SettingsKey.ShowOpenClusters)
     )),
-    SettingsMultiSelectionItem("Features", listOf(
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowAtmospheres),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowCloudMaps),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowCloudShadows),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowNightMaps),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowPlanetRings),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowRingShadows),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowCometTails),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowEclipseShadows)
+    SettingsCommonItem.create(CelestiaString("Features", ""), listOf(
+        SettingsSwitchItem(SettingsKey.ShowAtmospheres),
+        SettingsSwitchItem(SettingsKey.ShowCloudMaps),
+        SettingsSwitchItem(SettingsKey.ShowCloudShadows),
+        SettingsSwitchItem(SettingsKey.ShowNightMaps),
+        SettingsSwitchItem(SettingsKey.ShowPlanetRings),
+        SettingsSwitchItem(SettingsKey.ShowRingShadows),
+        SettingsSwitchItem(SettingsKey.ShowCometTails),
+        SettingsSwitchItem(SettingsKey.ShowEclipseShadows)
     )),
     SettingsCommonItem(CelestiaString("Orbits", ""), listOf(
         SettingsCommonItem.Section(listOf(
@@ -331,19 +327,19 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
         SettingsSwitchItem(SettingsKey.ShowLatinConstellationLabels, SettingsSwitchItem.Representation.Checkmark),
         SettingsSwitchItem(SettingsKey.ShowBoundaries, SettingsSwitchItem.Representation.Checkmark),
     )),
-    SettingsMultiSelectionItem("Object Labels", listOf(
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowStarLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowPlanetLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowDwarfPlanetLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowMoonLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowMinorMoonLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowAsteroidLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowCometLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowSpacecraftLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowGalaxyLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowNebulaLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowGlobularLabels),
-        SettingsMultiSelectionItem.Selection(SettingsKey.ShowOpenClusterLabels)
+    SettingsCommonItem.create(CelestiaString("Object Labels", ""), listOf(
+        SettingsSwitchItem(SettingsKey.ShowStarLabels),
+        SettingsSwitchItem(SettingsKey.ShowPlanetLabels),
+        SettingsSwitchItem(SettingsKey.ShowDwarfPlanetLabels),
+        SettingsSwitchItem(SettingsKey.ShowMoonLabels),
+        SettingsSwitchItem(SettingsKey.ShowMinorMoonLabels),
+        SettingsSwitchItem(SettingsKey.ShowAsteroidLabels),
+        SettingsSwitchItem(SettingsKey.ShowCometLabels),
+        SettingsSwitchItem(SettingsKey.ShowSpacecraftLabels),
+        SettingsSwitchItem(SettingsKey.ShowGalaxyLabels),
+        SettingsSwitchItem(SettingsKey.ShowNebulaLabels),
+        SettingsSwitchItem(SettingsKey.ShowGlobularLabels),
+        SettingsSwitchItem(SettingsKey.ShowOpenClusterLabels)
     )),
     SettingsCommonItem(CelestiaString("Locations", ""), listOf(
         SettingsCommonItem.Section(listOf(
@@ -385,35 +381,27 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
     )
 )
 
-class SettingsSingleSelectionItem(
-    private val internalKey: SettingsKey,
-    val selections: List<Selection>) : SettingsItem, Serializable {
-    class Selection(private val rawDisplayName: String, val value: Int) : RecyclerViewItem, Serializable {
-        val name: String
-            get() = CelestiaString(rawDisplayName, "")
-    }
-
-    val key = internalKey.valueString
-
-    override val name: String
-        get() = internalKey.displayName
-}
-
 class SettingsCurrentTimeItem : SettingsItem {
     override val name: String
         get() = CelestiaString("Current Time", "")
 }
 
 private val staticTimeItems: List<SettingsItem> = listOf(
-    SettingsSingleSelectionItem(SettingsKey.TimeZone, listOf(
-        SettingsSingleSelectionItem.Selection("Local Time", 0),
-        SettingsSingleSelectionItem.Selection("UTC", 1)
-    )),
-    SettingsSingleSelectionItem(SettingsKey.DateFormat, listOf(
-        SettingsSingleSelectionItem.Selection("Default", 0),
-        SettingsSingleSelectionItem.Selection("YYYY MMM DD HH:MM:SS TZ", 1),
-        SettingsSingleSelectionItem.Selection("UTC Offset", 2)
-    )),
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.TimeZone.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.TimeZone, "Local Time", 0),
+            SettingsKeyedSelectionItem(SettingsKey.TimeZone, "UTC", 1)
+        )
+    ),
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.DateFormat.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.DateFormat, "Default", 0),
+            SettingsKeyedSelectionItem(SettingsKey.DateFormat, "YYYY MMM DD HH:MM:SS TZ", 1),
+            SettingsKeyedSelectionItem(SettingsKey.DateFormat, "UTC Offset", 2)
+        )
+    ),
     SettingsCurrentTimeItem()
 )
 
@@ -428,21 +416,30 @@ class SettingsRefreshRateItem : SettingsItem, Serializable {
 }
 
 private val staticAdvancedItems: List<SettingsItem> = listOf(
-    SettingsSingleSelectionItem(SettingsKey.Resolution, listOf(
-        SettingsSingleSelectionItem.Selection("Low", 0),
-        SettingsSingleSelectionItem.Selection("Medium", 1),
-        SettingsSingleSelectionItem.Selection("High", 2)
-    )),
-    SettingsSingleSelectionItem(SettingsKey.StarStyle, listOf(
-        SettingsSingleSelectionItem.Selection("Fuzzy Points", 0),
-        SettingsSingleSelectionItem.Selection("Points", 1),
-        SettingsSingleSelectionItem.Selection("Scaled Discs", 2)
-    )),
-    SettingsSingleSelectionItem(SettingsKey.HudDetail, listOf(
-        SettingsSingleSelectionItem.Selection("None", 0),
-        SettingsSingleSelectionItem.Selection("Terse", 1),
-        SettingsSingleSelectionItem.Selection("Verbose", 2)
-    )),
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.Resolution.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, "Low", 0),
+            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, "Medium", 1),
+            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, "High", 2)
+        )
+    ),
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.StarStyle.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, "Fuzzy Points", 0),
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, "Points", 1),
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, "Scaled Discs", 2)
+        )
+    ),
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.HudDetail.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, "None", 0),
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, "Terse", 1),
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, "Verbose", 2)
+        )
+    ),
 
     SettingsLanguageItem(),
     SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(

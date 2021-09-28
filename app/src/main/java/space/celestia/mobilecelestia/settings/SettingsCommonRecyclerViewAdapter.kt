@@ -53,6 +53,9 @@ class SettingsCommonRecyclerViewAdapter(
         if (item is SettingsSwitchItem)
             return if (item.representation == SettingsSwitchItem.Representation.Switch) ITEM_SWITCH else ITEM_CHECKMARK
 
+        if (item is SettingsKeyedSelectionItem)
+            return ITEM_CHECKMARK
+
         return super.itemViewType(item)
     }
 
@@ -64,6 +67,8 @@ class SettingsCommonRecyclerViewAdapter(
         else if (item is SettingsSwitchItem && item.representation == SettingsSwitchItem.Representation.Checkmark) {
             val on = dataSource?.commonSettingSwitchState(item.key) ?: false
             listener?.onCommonSettingSwitchStateChanged(item.key, !on, item.volatile)
+        } else if (item is SettingsKeyedSelectionItem) {
+            listener?.onCommonSettingSelectionChanged(item.key, item.index)
         }
     }
 
@@ -89,6 +94,11 @@ class SettingsCommonRecyclerViewAdapter(
                     val on = dataSource?.commonSettingSwitchState(item.key) ?: false
                     holder.title.text = item.name
                     holder.accessory.visibility = if (on) View.VISIBLE else View.GONE
+                }
+                is SettingsKeyedSelectionItem -> {
+                    val selected = dataSource?.commonSettingSelectionValue(item.key) == item.index
+                    holder.title.text = item.name
+                    holder.accessory.visibility = if (selected) View.VISIBLE else View.GONE
                 }
             }
             return
