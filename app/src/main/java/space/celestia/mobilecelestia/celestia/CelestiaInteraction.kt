@@ -94,14 +94,26 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         if (event == null || v == null) { return true }
         if (!isReady) { return true }
 
+        if (event.source and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK
+            && event.action == MotionEvent.ACTION_MOVE) {
+            // Process the movements starting from the
+            // earliest historical position in the batch
+            (0 until event.historySize).forEach { i ->
+                // Process the event at historical position i
+                processJoystickInput(event, i)
+            }
 
-        if (event.action == MotionEvent.ACTION_SCROLL) {
+            // Process the current movement sample in the batch (position -1)
+            processJoystickInput(event, -1)
+            return true
+        } else if (event.source == InputDevice.SOURCE_MOUSE && event.action == MotionEvent.ACTION_SCROLL) {
             val y = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
             CelestiaView.callOnRenderThread {
                 core.mouseWheel(-y * scaleFactor, event.keyModifier())
             }
+            return true
         }
-        return true
+        return false
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -326,6 +338,22 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         if (v == null || event == null) return false
         if (!isReady) return false
 
+        if (event.source and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) {
+            val key = event.keyCode
+            if (event.action == KeyEvent.ACTION_UP) {
+                CelestiaView.callOnRenderThread {
+                    core.joystickButtonUp(key)
+                }
+                return true
+            } else if (event.action == KeyEvent.ACTION_DOWN) {
+                CelestiaView.callOnRenderThread {
+                    core.joystickButtonDown(key)
+                }
+                return true
+            }
+            return false
+        }
+
         if (event.action == KeyEvent.ACTION_UP)
             return onKeyUp(keyCode, event)
         else if (event.action == KeyEvent.ACTION_DOWN)
@@ -370,6 +398,65 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
             core.mouseButtonUp(lastMouseButton, lp, 0)
         }
         lastPoint = null
+    }
+
+    private fun getCenteredAxis(
+        event: MotionEvent,
+        device: InputDevice,
+        axis: Int,
+        historyPos: Int
+    ): Float {
+        val range: InputDevice.MotionRange? = device.getMotionRange(axis, event.source)
+
+        // A joystick at rest does not always report an absolute position of
+        // (0,0). Use the getFlat() method to determine the range of values
+        // bounding the joystick axis center.
+        range?.apply {
+            val value: Float = if (historyPos < 0) {
+                event.getAxisValue(axis)
+            } else {
+                event.getHistoricalAxisValue(axis, historyPos)
+            }
+
+            // Ignore axis values that are within the 'flat' region of the
+            // joystick axis center.
+            if (Math.abs(value) > flat) {
+                return value
+            }
+        }
+        return 0f
+    }
+
+    private fun processJoystickInput(event: MotionEvent, historyPos: Int) {
+
+        val inputDevice = event.device
+
+        // Calculate the horizontal distance to move by
+        // using the input value from one of these physical controls:
+        // the left control stick, hat axis, or the right control stick.
+        var x: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
+        if (x == 0f) {
+            x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
+        }
+        if (x == 0f) {
+            x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
+        }
+
+        // Calculate the vertical distance to move by
+        // using the input value from one of these physical controls:
+        // the left control stick, hat switch, or the right control stick.
+        var y: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
+        if (y == 0f) {
+            y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y, historyPos)
+        }
+        if (y == 0f) {
+            y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
+        }
+
+        CelestiaView.callOnRenderThread {
+            core.joystickAxis(CelestiaAppCore.JOYSTICK_AXIS_X, x)
+            core.joystickAxis(CelestiaAppCore.JOYSTICK_AXIS_Y, -y)
+        }
     }
 
     companion object {

@@ -28,6 +28,10 @@ public class CelestiaAppCore {
     public static final int SHIFT_KEY               = 0x08;
     public static final int CONTROL_KEY             = 0x10;
 
+    public static final int JOYSTICK_AXIS_X         = 0;
+    public static final int JOYSTICK_AXIS_Y         = 1;
+    public static final int JOYSTICK_AXIS_Z         = 2;
+
     public static final int MEASUREMENT_SYSTEM_METRIC   = 0;
     public static final int MEASUREMENT_SYSTEM_IMPERIAL = 1;
 
@@ -153,6 +157,18 @@ public class CelestiaAppCore {
         c_charEnter(pointer, input);
     }
 
+    public void joystickButtonDown(int button) {
+        c_joystickButtonDown(pointer, button);
+    }
+
+    public void joystickButtonUp(int button) {
+        c_joystickButtonUp(pointer, button);
+    }
+
+    public void joystickAxis(int axis, float amount) {
+        c_joystickAxis(pointer, axis, amount);
+    }
+
     public void runScript(@NonNull String scriptPath) { c_runScript(pointer, scriptPath); }
     public @NonNull String getCurrentURL() { return c_getCurrentURL(pointer); }
     public void goToURL(@NonNull String url) { c_goToURL(pointer, url); }
@@ -234,6 +250,9 @@ public class CelestiaAppCore {
     private static native void c_keyUp(long ptr, int input);
     private static native void c_keyDown(long ptr, int input);
     private static native void c_charEnter(long ptr, int input);
+    private static native void c_joystickButtonDown(long ptr, int button);
+    private static native void c_joystickButtonUp(long ptr, int button);
+    private static native void c_joystickAxis(long ptr, int axis, float amount);
 
     private static native void c_runScript(long ptr, String path);
     private static native String c_getCurrentURL(long ptr);

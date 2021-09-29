@@ -27,6 +27,7 @@ enum class CelestiaAction(val value: Int) : Serializable {
     SyncOrbit(121),
     Lock(58),
     Chase(34),
+    Track(116),
     Follow(102),
     RunDemo(100),
     CancelScript(27),
@@ -52,7 +53,7 @@ enum class CelestiaAction(val value: Int) : Serializable {
     companion object {
         val allActions: List<CelestiaAction>
             get() = listOf(
-                GoTo, Center,Follow, Chase, SyncOrbit, Lock, GoToSurface
+                GoTo, Center,Follow, Chase, Track, SyncOrbit, Lock, GoToSurface
             )
     }
 }

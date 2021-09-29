@@ -398,6 +398,23 @@ static int convert_key_code_to_celestia_key(int input, int key)
     return celestiaKey;
 }
 
+static int convert_joystick_button(jint key)
+{
+    switch (key)
+    {
+        case AKEYCODE_BUTTON_L2:
+            return CelestiaCore::JoyButton7;
+        case AKEYCODE_BUTTON_R2:
+            return CelestiaCore::JoyButton8;
+        case AKEYCODE_BUTTON_A:
+            return CelestiaCore::JoyButton1;
+        case AKEYCODE_BUTTON_B:
+            return CelestiaCore::JoyButton2;
+        default:
+            return -1;
+    }
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1mouseButtonUp(JNIEnv *env, jclass clazz,
@@ -488,6 +505,39 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1charEnter(JNIEnv *env
                                                                      jint input) {
     auto core = (CelestiaCore *)ptr;
     core->charEntered((char)input, 0);
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1joystickButtonDown(JNIEnv *env, jclass clazz,
+                                                                              jlong ptr,
+                                                                              jint button) {
+    auto core = (CelestiaCore *)ptr;
+    int converted = convert_joystick_button(button);
+    if (converted < 0) return;
+    core->joystickButton(converted, true);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1joystickButtonUp(JNIEnv *env, jclass clazz,
+                                                                            jlong ptr,
+                                                                            jint button) {
+    auto core = (CelestiaCore *)ptr;
+    int converted = convert_joystick_button(button);
+    if (converted < 0) return;
+    core->joystickButton(converted, false);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1joystickAxis(JNIEnv *env, jclass clazz,
+                                                                        jlong ptr,
+                                                                        jint axis,
+                                                                        jfloat amount) {
+    auto core = (CelestiaCore *)ptr;
+    core->joystickAxis(axis, amount);
 }
 
 extern "C"
