@@ -408,7 +408,7 @@ static int convert_joystick_button(jint key)
             return CelestiaCore::JoyButton8;
         case AKEYCODE_BUTTON_A:
             return CelestiaCore::JoyButton1;
-        case AKEYCODE_BUTTON_B:
+        case AKEYCODE_BUTTON_X:
             return CelestiaCore::JoyButton2;
         default:
             return -1;
