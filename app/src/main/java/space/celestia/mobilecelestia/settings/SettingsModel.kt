@@ -420,9 +420,9 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.Resolution.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, CelestiaString("Low", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, CelestiaString("Medium", ""), 1),
-            SettingsKeyedSelectionItem(SettingsKey.Resolution.displayName, CelestiaString("High", ""), 2)
+            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("Low", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("Medium", ""), 1),
+            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("High", ""), 2)
         )
     ),
     SettingsCommonItem.create(
