@@ -1768,7 +1768,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "26"
+        private const val CURRENT_DATA_VERSION = "27"
+        // 27: 1.4.4 Data update
         // 26: 1.4.3 Localization update
         // 25: 1.4.3 Localization update, data update
         // 24: 1.4.2 Localization update
