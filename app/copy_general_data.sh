@@ -14,17 +14,17 @@ CELESTIA_CONTENT_REPO_ROOT=$CELESTIA_REPO_ROOT/content
 for directory in 'images' 'locale' 'scripts' 'shaders';do
     f=$CELESTIA_REPO_ROOT/$directory
     if [ $f -nt $CELESTIA_ROOT/$directory ];then
-        echo "rsync -rv --quiet --exclude=CMakeLists.txt $f $CELESTIA_ROOT"
-        rsync -rv --quiet --exclude=CMakeLists.txt $f $CELESTIA_ROOT
+        echo "rsync -rv --quiet --exclude='*.txt' $f $CELESTIA_ROOT"
+        rsync -rv --quiet --exclude='*.txt' $f $CELESTIA_ROOT
         DIDCOPY=1
     fi
 done
 
-for directory in 'data' 'extras' 'extras-standard' 'models' 'textures';do
+for directory in 'data' 'extras' 'extras-standard' 'models' 'textures' 'warp';do
     f=$CELESTIA_CONTENT_REPO_ROOT/$directory
     if [ $f -nt $CELESTIA_ROOT/$directory ];then
-        echo "rsync -rv --quiet --exclude=CMakeLists.txt $f $CELESTIA_ROOT"
-        rsync -rv --quiet --exclude=CMakeLists.txt $f $CELESTIA_ROOT
+        echo "rsync -rv --quiet --exclude='*.txt' $f $CELESTIA_ROOT"
+        rsync -rv --quiet --exclude='*.txt' $f $CELESTIA_ROOT
         DIDCOPY=1
     fi
 done
