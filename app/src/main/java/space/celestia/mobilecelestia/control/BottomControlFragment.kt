@@ -21,43 +21,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.model.CelestiaAction
-
-fun CelestiaAction.imageID(): Int? {
-    return when (this) {
-        CelestiaAction.Faster -> {
-            R.drawable.time_faster
-        }
-        CelestiaAction.Slower -> {
-            R.drawable.time_slower
-        }
-        CelestiaAction.PlayPause -> {
-            R.drawable.time_playpause
-        }
-        CelestiaAction.CancelScript -> {
-            R.drawable.time_stop
-        }
-        CelestiaAction.Reverse -> {
-            R.drawable.time_reverse
-        }
-        else -> {
-            null
-        }
-    }
-}
-
-class CelestiaActionItem(val action: CelestiaAction, val image: Int)
+import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
 
 class BottomControlFragment : Fragment() {
 
     private var listener: Listener? = null
-    private var items: List<CelestiaAction> = listOf()
+    private var items: List<BottomControlAction> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
             @Suppress("UNCHECKED_CAST")
-            items = it.getSerializable(ARG_ACTIONS) as? List<CelestiaAction> ?: listOf()
+            items = it.getSerializable(ARG_ACTIONS) as? List<BottomControlAction> ?: listOf()
         }
     }
 
@@ -73,14 +49,7 @@ class BottomControlFragment : Fragment() {
             val manager = LinearLayoutManager(context)
             manager.orientation = LinearLayoutManager.HORIZONTAL
             layoutManager = manager
-            adapter = BottomControlRecyclerViewAdapter(
-                items.map {
-                    CelestiaActionItem(
-                        it,
-                        it.imageID() ?: 0
-                    )
-                }, listener
-            )
+            adapter = BottomControlRecyclerViewAdapter(items, listener)
         }
         return view
     }
@@ -100,7 +69,9 @@ class BottomControlFragment : Fragment() {
     }
 
     interface Listener {
-        fun onActionSelected(item: CelestiaAction)
+        fun onInstantActionSelected(item: CelestiaAction)
+        fun onContinuousActionDown(item: CelestiaContinuosAction)
+        fun onContinuousActionUp(item: CelestiaContinuosAction)
         fun onBottomControlHide()
     }
 
@@ -108,10 +79,10 @@ class BottomControlFragment : Fragment() {
         const val ARG_ACTIONS = "action"
 
         @JvmStatic
-        fun newInstance(items: List<CelestiaAction>) =
+        fun newInstance(items: List<BottomControlAction>) =
             BottomControlFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_ACTIONS, ArrayList<CelestiaAction>(items))
+                    putSerializable(ARG_ACTIONS, ArrayList<BottomControlAction>(items))
                 }
             }
     }

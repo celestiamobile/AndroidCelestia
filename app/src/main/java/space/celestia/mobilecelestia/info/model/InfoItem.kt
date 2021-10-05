@@ -31,7 +31,9 @@ enum class CelestiaAction(val value: Int) : Serializable {
     Follow(102),
     RunDemo(100),
     CancelScript(27),
-    Home(104);
+    Home(104),
+    Stop(115),
+    ReverseSpeed(113);
 
     val title: String
         get() {
@@ -56,6 +58,18 @@ enum class CelestiaAction(val value: Int) : Serializable {
                 GoTo, Center,Follow, Chase, Track, SyncOrbit, Lock, GoToSurface
             )
     }
+}
+
+enum class CelestiaContinuosAction(val value: Int) {
+    TravelFaster(97),
+    TravelSlower(122),
+    F1(11), // KeyEvent.KEYCODE_F1
+    F2(12),
+    F3(13),
+    F4(14),
+    F5(15),
+    F6(16),
+    F7(17);
 }
 
 interface InfoItem

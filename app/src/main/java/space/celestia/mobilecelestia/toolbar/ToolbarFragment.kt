@@ -17,7 +17,6 @@ import android.util.LayoutDirection
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
@@ -30,7 +29,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 enum class ToolbarAction : Serializable {
-    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Paperplane;
+    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Paperplane, Speedometer;
 
     val title: String
         get() {
@@ -45,6 +44,7 @@ enum class ToolbarAction : Serializable {
                 Event -> "Eclipse Finder"
                 Addons -> "Add-ons"
                 Paperplane -> "Go to Object"
+                Speedometer -> "Speed Control"
                 else -> this.toString()
             }
             return CelestiaString(orig, "")
@@ -60,7 +60,7 @@ enum class ToolbarAction : Serializable {
             get() = listOf(
                 listOf(Setting),
                 listOf(Share, Search, Home, Paperplane),
-                listOf(Camera, Time, Script),
+                listOf(Camera, Time, Script, Speedometer),
                 listOf(Browse, Favorite, Event),
                 listOf(Addons),
                 listOf(Help),

@@ -49,10 +49,7 @@ import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.Poppable
-import space.celestia.mobilecelestia.control.BottomControlFragment
-import space.celestia.mobilecelestia.control.CameraControlAction
-import space.celestia.mobilecelestia.control.CameraControlContainerFragment
-import space.celestia.mobilecelestia.control.CameraControlFragment
+import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.core.*
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
@@ -866,6 +863,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ToolbarAction.Paperplane -> {
                 showGoTo()
             }
+            ToolbarAction.Speedometer -> {
+                showSpeedControl()
+            }
         }
     }
 
@@ -953,8 +953,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         onSearchItemSelected(text)
     }
 
-    override fun onActionSelected(item: CelestiaAction) {
+    override fun onInstantActionSelected(item: CelestiaAction) {
         CelestiaView.callOnRenderThread { core.charEnter(item.value) }
+    }
+
+    override fun onContinuousActionUp(item: CelestiaContinuosAction) {
+        CelestiaView.callOnRenderThread { core.keyUp(item.value) }
+    }
+
+    override fun onContinuousActionDown(item: CelestiaContinuosAction) {
+        CelestiaView.callOnRenderThread { core.keyDown(item.value) }
     }
 
     override fun objectExistsWithName(name: String): Boolean {
@@ -1537,7 +1545,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 CelestiaAction.Reverse
             )
         }
-        showToolbarFragment(BottomControlFragment.newInstance(actions))
+        showToolbarFragment(BottomControlFragment.newInstance(actions.map { InstantAction(it) }))
     }
 
     private fun showScriptControl() {
@@ -1546,7 +1554,37 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 listOf(
                     CelestiaAction.PlayPause,
                     CelestiaAction.CancelScript
-                )))
+                ).map { InstantAction(it) }))
+    }
+
+    private fun showSpeedControl() {
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        var actions: ArrayList<BottomControlAction> = if (isRTL) arrayListOf(
+            ContinuousAction(CelestiaContinuosAction.TravelFaster),
+            ContinuousAction(CelestiaContinuosAction.TravelSlower),
+        ) else arrayListOf<BottomControlAction>(
+            ContinuousAction(CelestiaContinuosAction.TravelSlower),
+            ContinuousAction(CelestiaContinuosAction.TravelFaster),
+        )
+        actions.addAll(
+            listOf(
+                InstantAction(CelestiaAction.Stop),
+                InstantAction(CelestiaAction.ReverseSpeed),
+                GroupAction(
+                    listOf(
+                        GroupActionItem(CelestiaString("1 km/s", ""), CelestiaContinuosAction.F2),
+                        GroupActionItem(CelestiaString("1000 km/s", ""), CelestiaContinuosAction.F3),
+                        GroupActionItem(CelestiaString("c (lightspeed)", ""), CelestiaContinuosAction.F4),
+                        GroupActionItem(CelestiaString("10c", ""), CelestiaContinuosAction.F5),
+                        GroupActionItem(CelestiaString("1 AU/s", ""), CelestiaContinuosAction.F6),
+                        GroupActionItem(CelestiaString("1 ly/s", ""), CelestiaContinuosAction.F7),
+                    )
+                )
+            )
+        )
+        showToolbarFragment(
+            BottomControlFragment.newInstance(actions)
+        )
     }
 
     private fun showCameraControl() {
