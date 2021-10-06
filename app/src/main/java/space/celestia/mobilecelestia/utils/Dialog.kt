@@ -13,8 +13,10 @@ package space.celestia.mobilecelestia.utils
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.os.Build
 import android.text.InputType
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.EditText
 import space.celestia.mobilecelestia.R
 import java.text.SimpleDateFormat
@@ -30,6 +32,9 @@ fun Activity.showTextInput(title: String, placeholder: String? = null, handler: 
 
     val editText = customView.findViewById<EditText>(R.id.input)
     editText.inputType = InputType.TYPE_CLASS_TEXT
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        editText.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+    }
     if (placeholder != null)
         editText.setText(placeholder)
     builder.setView(customView)
@@ -56,6 +61,9 @@ fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Un
     val editText = customView.findViewById<EditText>(R.id.input)
     editText.hint = formatter.format(Date())
     editText.inputType = InputType.TYPE_CLASS_TEXT
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        editText.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+    }
     builder.setView(customView)
 
     builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->

@@ -16,6 +16,7 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.util.LayoutDirection
 import android.view.*
@@ -73,6 +74,9 @@ class SearchFragment : NavigationFragment.SubFragment() {
         val view = inflater.inflate(R.layout.fragment_search_item_list, container, false)
 
         searchView = view.findViewById(R.id.search_view)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            searchView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+        }
         backButton = view.findViewById(R.id.back_button)
 
         // Set the adapter
