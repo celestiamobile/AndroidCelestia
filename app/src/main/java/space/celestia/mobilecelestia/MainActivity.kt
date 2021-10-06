@@ -15,6 +15,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
@@ -1369,7 +1370,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun openURL(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        if (intent.resolveActivity(packageManager) != null)
+        val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
+        if (ai != null && ai.exported)
             startActivity(intent)
         else
             showUnsupportedAction()
@@ -1656,7 +1658,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                             .setChooserTitle(name)
                             .setText(result.publicURL)
                             .intent
-                        if (intent.resolveActivity(packageManager) != null)
+                        val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
+                        if (ai != null && ai.exported)
                             startActivity(intent)
                         else
                             showUnsupportedAction()
@@ -1696,7 +1699,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .setType(mimeType)
             .setStream(uri)
             .intent
-        if (intent.resolveActivity(packageManager) != null)
+        val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
+        if (ai != null && ai.exported)
             startActivity(intent)
         else
             showUnsupportedAction()
