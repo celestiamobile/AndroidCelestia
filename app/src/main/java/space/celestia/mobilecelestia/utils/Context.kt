@@ -13,15 +13,16 @@ package space.celestia.mobilecelestia.utils
 
 import android.content.Context
 import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.os.Build
 
-val Context.packageInfo: PackageInfo?
+private val Context.packageInfo: PackageInfo?
     get() {
         val pm = packageManager
         val pn = packageName
         if (pm == null || pn == null)
             return null
-        return pm.getPackageInfo(pn, 0)
+        return pm.getPackageInfo(pn, PackageManager.GET_CONFIGURATIONS)
     }
 
 val Context.versionName: String
