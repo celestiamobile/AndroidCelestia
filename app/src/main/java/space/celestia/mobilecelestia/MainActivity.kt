@@ -650,9 +650,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @Throws(IOException::class)
     private fun copyAssetsAndRemoveOldAssets() {
         try {
-            // Remove old ones in filesDir, ignore any exception thrown
+            // Remove old ones, ignore any exception thrown
             File(legacyCelestiaParentPath, CELESTIA_DATA_FOLDER_NAME).deleteRecursively()
             File(legacyCelestiaParentPath, CELESTIA_FONT_FOLDER_NAME).deleteRecursively()
+            File(celestiaParentPath, CELESTIA_DATA_FOLDER_NAME).deleteRecursively()
+            File(celestiaParentPath, CELESTIA_FONT_FOLDER_NAME).deleteRecursively()
         } catch (ignored: Exception) {}
         AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_DATA_FOLDER_NAME, celestiaParentPath)
         AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_FONT_FOLDER_NAME, celestiaParentPath)
@@ -1810,7 +1812,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "27"
+        private const val CURRENT_DATA_VERSION = "28"
+        // 28: 1.4.5 Always remove old files
         // 27: 1.4.4 Data update
         // 26: 1.4.3 Localization update
         // 25: 1.4.3 Localization update, data update

@@ -73,7 +73,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "androidx.appcompat:appcompat:$core_appcompat_version"
     implementation "androidx.core:core-ktx:$core_ktx_version"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.0"
+    implementation "androidx.constraintlayout:constraintlayout:2.1.1"
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
@@ -84,7 +84,7 @@ dependencies {
     implementation "com.google.code.gson:gson:2.8.8"
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
-    implementation "com.squareup.okhttp3:okhttp:4.9.1"
+    implementation "com.squareup.okhttp3:okhttp:4.9.2"
 
     implementation "net.lingala.zip4j:zip4j:2.9.0"
 
