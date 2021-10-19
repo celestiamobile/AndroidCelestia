@@ -184,6 +184,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
             val builder = AlertDialog.Builder(this)
+            builder.setCancelable(false)
             builder.setTitle(R.string.privacy_policy_alert_title)
             builder.setMessage(R.string.privacy_policy_alert_detail)
             builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
