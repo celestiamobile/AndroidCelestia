@@ -14,7 +14,7 @@ package space.celestia.mobilecelestia.core;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class CelestiaSelection {
+public class Selection {
     private final static int SELECTION_TYPE_NIL             = 0;
     private final static int SELECTION_TYPE_STAR            = 1;
     private final static int SELECTION_TYPE_BODY            = 2;
@@ -24,20 +24,20 @@ public class CelestiaSelection {
 
     protected long pointer;
 
-    public CelestiaSelection(long ptr) {
+    public Selection(long ptr) {
         pointer = ptr;
     }
 
     @Nullable
-    public static CelestiaSelection create(@NonNull CelestiaAstroObject object) {
-        if (object instanceof CelestiaStar) {
-            return new CelestiaSelection(c_createSelection(SELECTION_TYPE_STAR, object.pointer));
-        } else if (object instanceof CelestiaBody) {
-            return new CelestiaSelection(c_createSelection(SELECTION_TYPE_BODY, object.pointer));
-        } else if (object instanceof CelestiaDSO) {
-            return new CelestiaSelection(c_createSelection(SELECTION_TYPE_DEEP_SKY, object.pointer));
-        } else if (object instanceof CelestiaLocation) {
-            return new CelestiaSelection(c_createSelection(SELECTION_TYPE_LOCATION, object.pointer));
+    public static Selection create(@NonNull AstroObject object) {
+        if (object instanceof Star) {
+            return new Selection(c_createSelection(SELECTION_TYPE_STAR, object.pointer));
+        } else if (object instanceof Body) {
+            return new Selection(c_createSelection(SELECTION_TYPE_BODY, object.pointer));
+        } else if (object instanceof DSO) {
+            return new Selection(c_createSelection(SELECTION_TYPE_DEEP_SKY, object.pointer));
+        } else if (object instanceof Location) {
+            return new Selection(c_createSelection(SELECTION_TYPE_LOCATION, object.pointer));
         }
         return null;
     }
@@ -47,62 +47,62 @@ public class CelestiaSelection {
     }
 
     @Nullable
-    public CelestiaAstroObject getObject() {
+    public AstroObject getObject() {
         int type = c_getSelectionType(pointer);
         switch (type) {
             case SELECTION_TYPE_STAR:
-                return new CelestiaStar(c_getSelectionPtr(pointer));
+                return new Star(c_getSelectionPtr(pointer));
             case SELECTION_TYPE_LOCATION:
-                return new CelestiaLocation(c_getSelectionPtr(pointer));
+                return new Location(c_getSelectionPtr(pointer));
             case SELECTION_TYPE_DEEP_SKY:
-                return new CelestiaDSO(c_getSelectionPtr(pointer));
+                return new DSO(c_getSelectionPtr(pointer));
             case SELECTION_TYPE_BODY:
-                return new CelestiaBody(c_getSelectionPtr(pointer));
+                return new Body(c_getSelectionPtr(pointer));
         }
         return null;
     }
 
     @Nullable
-    public CelestiaStar getStar() {
-        CelestiaAstroObject obj = getObject();
-        if (obj instanceof CelestiaStar)
-            return (CelestiaStar) obj;
+    public Star getStar() {
+        AstroObject obj = getObject();
+        if (obj instanceof Star)
+            return (Star) obj;
         return null;
     }
 
     @Nullable
-    public CelestiaLocation getLocation() {
-        CelestiaAstroObject obj = getObject();
-        if (obj instanceof CelestiaLocation)
-            return (CelestiaLocation) obj;
+    public Location getLocation() {
+        AstroObject obj = getObject();
+        if (obj instanceof Location)
+            return (Location) obj;
         return null;
     }
 
     @Nullable
-    public CelestiaDSO getDSO() {
-        CelestiaAstroObject obj = getObject();
-        if (obj instanceof CelestiaDSO)
-            return (CelestiaDSO) obj;
+    public DSO getDSO() {
+        AstroObject obj = getObject();
+        if (obj instanceof DSO)
+            return (DSO) obj;
         return null;
     }
 
     @Nullable
-    public CelestiaBody getBody() {
-        CelestiaAstroObject obj = getObject();
-        if (obj instanceof CelestiaBody)
-            return (CelestiaBody) obj;
+    public Body getBody() {
+        AstroObject obj = getObject();
+        if (obj instanceof Body)
+            return (Body) obj;
         return null;
     }
 
     @Nullable
     public String getWebInfoURL() {
-        CelestiaAstroObject object = getObject();
-        if (object instanceof CelestiaBody)
-            return ((CelestiaBody) object).getWebInfoURL();
-        if (object instanceof CelestiaStar)
-            return ((CelestiaStar) object).getWebInfoURL();
-        if (object instanceof CelestiaDSO)
-            return ((CelestiaDSO) object).getWebInfoURL();
+        AstroObject object = getObject();
+        if (object instanceof Body)
+            return ((Body) object).getWebInfoURL();
+        if (object instanceof Star)
+            return ((Star) object).getWebInfoURL();
+        if (object instanceof DSO)
+            return ((DSO) object).getWebInfoURL();
         return null;
     }
 

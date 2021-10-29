@@ -19,18 +19,18 @@ import android.view.ViewGroup
 import android.widget.TextView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.CelestiaDestination
+import space.celestia.mobilecelestia.core.Destination
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class DestinationDetailFragment : EndSubFragment() {
-    private var item: CelestiaDestination? = null
+    private var item: Destination? = null
     private var listener: Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            item = it.getSerializable(ARG_ITEM) as? CelestiaDestination
+            item = it.getSerializable(ARG_ITEM) as? Destination
         }
     }
 
@@ -74,13 +74,13 @@ class DestinationDetailFragment : EndSubFragment() {
     }
 
     interface Listener {
-        fun onGoToDestination(destination: CelestiaDestination)
+        fun onGoToDestination(destination: Destination)
     }
 
     companion object {
         private const val ARG_ITEM = "item"
         @JvmStatic
-        fun newInstance(destination: CelestiaDestination) =
+        fun newInstance(destination: Destination) =
             DestinationDetailFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, destination)

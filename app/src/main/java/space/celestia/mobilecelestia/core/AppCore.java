@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 
-public class CelestiaAppCore {
+public class AppCore {
     public static final int MOUSE_BUTTON_LEFT       = 0x01;
     public static final int MOUSE_BUTTON_MIDDLE     = 0x02;
     public static final int MOUSE_BUTTON_RIGHT      = 0x04;
@@ -46,19 +46,19 @@ public class CelestiaAppCore {
     }
 
     public interface ContextMenuHandler {
-        void requestContextMenu(float x, float y, @NonNull CelestiaSelection selection);
+        void requestContextMenu(float x, float y, @NonNull Selection selection);
     }
 
     private final long pointer;
     private boolean initialized;
-    private CelestiaSimulation simulation;
+    private Simulation simulation;
     private ContextMenuHandler contextMenuHandler;
 
     // Singleton
-    private static CelestiaAppCore shared;
-    public static CelestiaAppCore shared() {
+    private static AppCore shared;
+    public static AppCore shared() {
         if (shared == null)
-            shared = new CelestiaAppCore();
+            shared = new AppCore();
         return shared;
     }
 
@@ -66,7 +66,7 @@ public class CelestiaAppCore {
         return initialized;
     }
 
-    public CelestiaAppCore() {
+    public AppCore() {
         this.pointer = c_init();
         this.initialized = false;
         this.simulation = null;
@@ -109,7 +109,7 @@ public class CelestiaAppCore {
 
     private void onRequestContextMenu(float x, float y, long pointer) {
         if (contextMenuHandler != null)
-            contextMenuHandler.requestContextMenu(x, y, new CelestiaSelection(pointer));
+            contextMenuHandler.requestContextMenu(x, y, new Selection(pointer));
     }
 
     public void setSafeAreaInsets(int left, int top, int right, int bottom) {
@@ -198,7 +198,7 @@ public class CelestiaAppCore {
     }
     public static void chdir(String path) { c_chdir(path);}
 
-    public void setRenderer(CelestiaRenderer renderer) {
+    public void setRenderer(Renderer renderer) {
         renderer.setCorePointer(pointer);
     }
     public boolean saveScreenshot(@NonNull String filePath, int imageType) {
@@ -212,9 +212,9 @@ public class CelestiaAppCore {
     public static @NonNull String getLocalizedString(@NonNull String string, @NonNull String domain) { return c_getLocalizedString(string, domain); }
     public static @NonNull String getLocalizedFilename(@NonNull String filename) { return c_getLocalizedFilename(filename); }
 
-    public CelestiaSimulation getSimulation() {
+    public Simulation getSimulation() {
         if (simulation == null)
-            simulation = new CelestiaSimulation(c_getSimulation(pointer));
+            simulation = new Simulation(c_getSimulation(pointer));
         return simulation;
     }
 
@@ -222,7 +222,7 @@ public class CelestiaAppCore {
         return c_getRenderInfo(pointer);
     }
 
-    public @NonNull List<CelestiaDestination> getDestinations() {
+    public @NonNull List<Destination> getDestinations() {
         return c_getDestinations(pointer);
     }
 
@@ -268,7 +268,7 @@ public class CelestiaAppCore {
     private static native boolean c_initGL();
     private static native void c_chdir(String path);
 
-    private static native List<CelestiaDestination> c_getDestinations(long ptr);
+    private static native List<Destination> c_getDestinations(long ptr);
 
     // Locale
     private static native void c_setLocaleDirectoryPath(String path, String locale);

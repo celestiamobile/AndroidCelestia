@@ -1,5 +1,5 @@
 /*
- * CelestiaStar.java
+ * CelestiaDSO.java
  *
  * Copyright (C) 2001-2020, Celestia Development Team
  *
@@ -14,8 +14,8 @@ package space.celestia.mobilecelestia.core;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class CelestiaStar extends CelestiaAstroObject {
-    CelestiaStar(long ptr) {
+public class DSO extends AstroObject {
+    protected DSO(long ptr) {
         super(ptr);
     }
 
@@ -28,11 +28,15 @@ public class CelestiaStar extends CelestiaAstroObject {
     }
 
     @NonNull
-    public CelestiaUniversalCoord getPositionAtTime(double julianDay) {
-        return new CelestiaUniversalCoord(c_getPositionAtTime(pointer, julianDay));
+    public String getType() {
+        return c_getType(pointer);
     }
+
+    @NonNull
+    public Vector getPosition() { return c_getPosition(pointer); }
 
     // C functions
     private static native String c_getWebInfoURL(long pointer);
-    private static native long c_getPositionAtTime(long pointer, double julianDay);
+    private static native String c_getType(long pointer);
+    private static native Vector c_getPosition(long pointer);
 }

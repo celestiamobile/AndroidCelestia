@@ -13,7 +13,7 @@ package space.celestia.mobilecelestia.core;
 
 import androidx.annotation.NonNull;
 
-public class CelestiaGoToLocation {
+public class GoToLocation {
     public enum DistanceUnit {
         km, radii, au
     }
@@ -22,14 +22,14 @@ public class CelestiaGoToLocation {
     protected static final int FieldMaskLatitude = 1 << 1;
     protected static final int FieldMaskDistance = 1 << 2;
 
-    protected final CelestiaSelection selection;
+    protected final Selection selection;
     protected final float longitude;
     protected final float latitude;
     protected final double distance;
     protected final double duration;
     protected final int fieldMask;
 
-    public CelestiaGoToLocation(@NonNull CelestiaSelection selection, float longitude, float latitude, double distance, DistanceUnit unit) {
+    public GoToLocation(@NonNull Selection selection, float longitude, float latitude, double distance, DistanceUnit unit) {
         this.selection = selection;
         this.longitude = longitude;
         this.latitude = latitude;
@@ -38,7 +38,7 @@ public class CelestiaGoToLocation {
         switch (unit)
         {
             case au:
-                this.distance = CelestiaUtils.AUToKilometers(distance);
+                this.distance = Utils.AUToKilometers(distance);
                 break;
             case km:
                 this.distance = distance;
@@ -52,7 +52,7 @@ public class CelestiaGoToLocation {
         fieldMask = FieldMaskLongitude | FieldMaskLatitude | FieldMaskDistance;
     }
 
-    public CelestiaGoToLocation(@NonNull CelestiaSelection selection, float longitude, float latitude) {
+    public GoToLocation(@NonNull Selection selection, float longitude, float latitude) {
         this.selection = selection;
         this.longitude = longitude;
         this.latitude = latitude;
@@ -61,7 +61,7 @@ public class CelestiaGoToLocation {
         fieldMask = FieldMaskLongitude | FieldMaskLatitude;
     }
 
-    public CelestiaGoToLocation(@NonNull CelestiaSelection selection, double distance, DistanceUnit unit) {
+    public GoToLocation(@NonNull Selection selection, double distance, DistanceUnit unit) {
         this.selection = selection;
         this.duration = 5;
 
@@ -71,7 +71,7 @@ public class CelestiaGoToLocation {
         switch (unit)
         {
             case au:
-                this.distance = CelestiaUtils.AUToKilometers(distance);
+                this.distance = Utils.AUToKilometers(distance);
                 break;
             case km:
                 this.distance = distance;
@@ -85,7 +85,7 @@ public class CelestiaGoToLocation {
         fieldMask = FieldMaskDistance;
     }
 
-    public CelestiaGoToLocation(@NonNull CelestiaSelection selection) {
+    public GoToLocation(@NonNull Selection selection) {
         this.selection = selection;
         this.duration = 5;
 

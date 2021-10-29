@@ -13,15 +13,15 @@ package space.celestia.mobilecelestia.core;
 
 import androidx.annotation.NonNull;
 
-public class CelestiaStarCatalog {
+public class StarCatalog {
     protected long pointer;
 
-    CelestiaStarCatalog(long ptr) {
+    StarCatalog(long ptr) {
         pointer = ptr;
     }
 
     @NonNull
-    public String getStarName(CelestiaStar star) {
+    public String getStarName(Star star) {
         return c_getStarName(pointer, star.pointer);
     }
 
@@ -29,8 +29,8 @@ public class CelestiaStarCatalog {
         return c_getCount(pointer);
     }
 
-    public CelestiaStar getStar(int index) {
-        return new CelestiaStar(c_getStar(pointer, index));
+    public Star getStar(int index) {
+        return new Star(c_getStar(pointer, index));
     }
 
     // C functions

@@ -14,21 +14,21 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getDSOName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_DSOCatalog_c_1getDSOName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
     auto d = (DSODatabase *)ptr;
     return env->NewStringUTF(d->getDSOName((DeepSkyObject *)pointer, true).c_str());
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getCount(JNIEnv *env, jclass clazz, jlong ptr) {
+Java_space_celestia_mobilecelestia_core_DSOCatalog_c_1getCount(JNIEnv *env, jclass clazz, jlong ptr) {
     auto d = (DSODatabase *)ptr;
     return d->size();
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaDSOCatalog_c_1getDSO(JNIEnv *env, jclass clazz, jlong ptr, jint index) {
+Java_space_celestia_mobilecelestia_core_DSOCatalog_c_1getDSO(JNIEnv *env, jclass clazz, jlong ptr, jint index) {
     auto d = (DSODatabase *)ptr;
     return (jlong)d->getDSO(index);
 }

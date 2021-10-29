@@ -416,7 +416,7 @@ void *CelestiaRenderer::threadCallback(void *self)
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1initialize(JNIEnv *env, jobject thiz, jlong ptr) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1initialize(JNIEnv *env, jobject thiz, jlong ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
     renderer->javaObject = env->NewGlobalRef(thiz);
     jclass clazz = env->GetObjectClass(thiz);
@@ -428,7 +428,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1initialize(JNIEnv *e
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1deinitialize(JNIEnv *env, jobject thiz, jlong ptr) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1deinitialize(JNIEnv *env, jobject thiz, jlong ptr) {
 
     auto renderer = (CelestiaRenderer *)ptr;
     env->DeleteGlobalRef(renderer->javaObject);
@@ -437,10 +437,10 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1deinitialize(JNIEnv 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1start(JNIEnv *env, jobject thiz,
-                                                                  jlong ptr,
-                                                                  jobject activity,
-                                                                  jboolean enable_multisample) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1start(JNIEnv *env, jobject thiz,
+                                                          jlong ptr,
+                                                          jobject activity,
+                                                          jboolean enable_multisample) {
     SwappyGL_init(env, activity);
     // By default, Swappy will adjust the swap interval based on actual frame rendering time.
     SwappyGL_setAutoSwapInterval(false);
@@ -455,7 +455,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1start(JNIEnv *env, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1stop(JNIEnv *env, jobject thiz, jlong ptr) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1stop(JNIEnv *env, jobject thiz, jlong ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     LOG_INFO("Stopping renderer thread");
@@ -467,7 +467,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1stop(JNIEnv *env, jo
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1pause(JNIEnv *env, jobject thiz, jlong ptr) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1pause(JNIEnv *env, jobject thiz, jlong ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->pause();
@@ -475,7 +475,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1pause(JNIEnv *env, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1resume(JNIEnv *env, jobject thiz, jlong ptr) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1resume(JNIEnv *env, jobject thiz, jlong ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->resume();
@@ -483,9 +483,9 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1resume(JNIEnv *env, 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setSurface(JNIEnv *env, jobject thiz,
-                                                                       jlong ptr,
-                                                                       jobject surface) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1setSurface(JNIEnv *env, jobject thiz,
+                                                               jlong ptr,
+                                                               jobject surface) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setSurface(env, surface);
@@ -493,10 +493,10 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setSurface(JNIEnv *e
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setCorePointer(JNIEnv *env,
-                                                                           jobject thiz,
-                                                                           jlong ptr,
-                                                                           jlong core_ptr) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1setCorePointer(JNIEnv *env,
+                                                                   jobject thiz,
+                                                                   jlong ptr,
+                                                                   jlong core_ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setCorePointer((CelestiaCore *)core_ptr);
@@ -504,11 +504,11 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setCorePointer(JNIEn
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setSurfaceSize(JNIEnv *env,
-                                                                           jobject thiz,
-                                                                           jlong ptr,
-                                                                           jint width,
-                                                                           jint height) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1setSurfaceSize(JNIEnv *env,
+                                                                   jobject thiz,
+                                                                   jlong ptr,
+                                                                   jint width,
+                                                                   jint height) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setSize(width, height);
@@ -516,19 +516,19 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setSurfaceSize(JNIEn
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1makeContextCurrent(JNIEnv *env,
-                                                                               jobject thiz,
-                                                                               jlong ptr) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1makeContextCurrent(JNIEnv *env,
+                                                                       jobject thiz,
+                                                                       jlong ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
     renderer->makeContextCurrent();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setFrameRateOption(JNIEnv *env,
-                                                                               jobject thiz,
-                                                                               jlong ptr,
-                                                                               jint frame_rate_option) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1setFrameRateOption(JNIEnv *env,
+                                                                       jobject thiz,
+                                                                       jlong ptr,
+                                                                       jint frame_rate_option) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setFrameRateOption(frame_rate_option);
@@ -536,7 +536,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1setFrameRateOption(J
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRenderer_c_1createNativeRenderObject(JNIEnv *env,
-                                                                                     jclass clazz) {
+Java_space_celestia_mobilecelestia_core_Renderer_c_1createNativeRenderObject(JNIEnv *env,
+                                                                             jclass clazz) {
     return (jlong)new CelestiaRenderer;
 }

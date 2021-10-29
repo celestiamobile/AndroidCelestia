@@ -20,7 +20,7 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CelestiaRenderer {
+public class Renderer {
     public static int FRAME_MAX = 0;
     public static int FRAME_60FPS = 1;
     public static int FRAME_30FPS = 2;
@@ -35,10 +35,10 @@ public class CelestiaRenderer {
     private final long pointer;
     private boolean started = false;
 
-    private static CelestiaRenderer sharedRenderer = null;
+    private static Renderer sharedRenderer = null;
     private EngineStartedListener engineStartedListener = null;
 
-    private CelestiaRenderer(long pointer) {
+    private Renderer(long pointer) {
         this.pointer = pointer;
         c_initialize(pointer);
     }
@@ -49,9 +49,9 @@ public class CelestiaRenderer {
         super.finalize();
     }
 
-    public static CelestiaRenderer shared() {
+    public static Renderer shared() {
         if (sharedRenderer == null)
-            sharedRenderer = new CelestiaRenderer(c_createNativeRenderObject());
+            sharedRenderer = new Renderer(c_createNativeRenderObject());
         return sharedRenderer;
     }
 

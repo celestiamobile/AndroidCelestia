@@ -14,18 +14,18 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaObserver_c_1getDisplayedSurface(JNIEnv *env,
-                                                                                jclass clazz,
-                                                                                jlong ptr) {
+Java_space_celestia_mobilecelestia_core_Observer_c_1getDisplayedSurface(JNIEnv *env,
+                                                                        jclass clazz,
+                                                                        jlong ptr) {
     return env->NewStringUTF(((Observer *)ptr)->getDisplayedSurface().c_str());
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaObserver_c_1setDisplayedSurface(JNIEnv *env,
-                                                                                jclass clazz,
-                                                                                jlong ptr,
-                                                                                jstring displayed_surface) {
+Java_space_celestia_mobilecelestia_core_Observer_c_1setDisplayedSurface(JNIEnv *env,
+                                                                        jclass clazz,
+                                                                        jlong ptr,
+                                                                        jstring displayed_surface) {
     const char *str = env->GetStringUTFChars(displayed_surface, nullptr);
     ((Observer *)ptr)->setDisplayedSurface(str);
     env->ReleaseStringUTFChars(displayed_surface, str);

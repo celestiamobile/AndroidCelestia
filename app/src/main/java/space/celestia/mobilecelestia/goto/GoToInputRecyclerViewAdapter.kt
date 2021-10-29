@@ -20,11 +20,8 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.core.CelestiaGoToLocation
+import space.celestia.mobilecelestia.core.GoToLocation
 import space.celestia.mobilecelestia.utils.CelestiaString
-import java.text.DateFormat
-import java.util.*
 
 enum class GoToFloatValueType {
     Longitude, Latitude
@@ -37,20 +34,20 @@ enum class GoToDoubleValueType {
 class GoToDoubleValueItem(val title: String, val value: Double, val type: GoToDoubleValueType): RecyclerViewItem
 class GoToFloatValueItem(val title: String, val value: Float, val type: GoToFloatValueType): RecyclerViewItem
 class GoToObjectItem(val objectName: String): RecyclerViewItem
-class GoToUnitItem(val unit: CelestiaGoToLocation.DistanceUnit): RecyclerViewItem
+class GoToUnitItem(val unit: GoToLocation.DistanceUnit): RecyclerViewItem
 class GoToProceedItem: RecyclerViewItem
 
 class GoToInputRecyclerViewAdapter(
     private val chooseFloatValueCallback: (GoToFloatValueType, Float) -> Unit,
     private val chooseDoubleValueCallback: (GoToDoubleValueType, Double) -> Unit,
-    private val chooseUnitCallback: (CelestiaGoToLocation.DistanceUnit) -> Unit,
+    private val chooseUnitCallback: (GoToLocation.DistanceUnit) -> Unit,
     private val chooseObjectCallback: (String) -> Unit,
     private val proceedCallback: () -> Unit,
     var objectName: String = "Earth",
     var longitude: Float,
     var latitude: Float,
     var distance: Double,
-    var unit: CelestiaGoToLocation.DistanceUnit
+    var unit: GoToLocation.DistanceUnit
 ) : SeparatorHeaderRecyclerViewAdapter(createSections(objectName, longitude, latitude, distance, unit)) {
     override fun onItemSelected(item: RecyclerViewItem) {
         when (item) {
@@ -140,7 +137,7 @@ class GoToInputRecyclerViewAdapter(
         const val UNIT_ITEM            = 3
         const val PROCEED_BUTTON       = 4
 
-        fun createSections(objectName: String, longitude: Float, latitude: Float, distance: Double, unit: CelestiaGoToLocation.DistanceUnit): List<CommonSectionV2> {
+        fun createSections(objectName: String, longitude: Float, latitude: Float, distance: Double, unit: GoToLocation.DistanceUnit): List<CommonSectionV2> {
             return listOf(
                 CommonSectionV2((listOf(GoToObjectItem(objectName)))),
                 CommonSectionV2(listOf(

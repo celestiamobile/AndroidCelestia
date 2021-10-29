@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class CelestiaBrowserItem {
+public class BrowserItem {
     private final static String NAME_KEY = "name";
     private final static String ALTERNATIVE_NAME_KEY = "alternative_name";
     private final static String TYPE_KEY = "type";
@@ -42,30 +42,30 @@ public class CelestiaBrowserItem {
     private static RuleBasedCollator collator = null;
 
     public interface ChildrenProvider {
-        Map<String, CelestiaBrowserItem> childrenForItem(CelestiaBrowserItem item);
+        Map<String, BrowserItem> childrenForItem(BrowserItem item);
     }
 
     private String _name;
     private String _alternativeName;
-    private CelestiaAstroObject _object;
+    private AstroObject _object;
     private ArrayList<String> childrenKeys;
-    private ArrayList<CelestiaBrowserItem> childrenValues;
+    private ArrayList<BrowserItem> childrenValues;
     private ChildrenProvider provider;
 
-    public CelestiaBrowserItem(@NonNull String name, @Nullable String alternativeName, @NonNull CelestiaAstroObject object, @Nullable ChildrenProvider provider) {
+    public BrowserItem(@NonNull String name, @Nullable String alternativeName, @NonNull AstroObject object, @Nullable ChildrenProvider provider) {
         _name = name;
         _alternativeName = alternativeName;
         _object = object;
         this.provider = provider;
     }
 
-    public CelestiaBrowserItem(@NonNull String name, @Nullable String alternativeName, @NonNull Map<String, CelestiaBrowserItem> children) {
+    public BrowserItem(@NonNull String name, @Nullable String alternativeName, @NonNull Map<String, BrowserItem> children) {
         _name = name;
         _alternativeName = alternativeName;
         setChildren(children);
     }
 
-    private static CelestiaBrowserItem fromJson(@NonNull JSONObject js, @Nullable ChildrenProvider provider) throws JSONException, RuntimeException {
+    private static BrowserItem fromJson(@NonNull JSONObject js, @Nullable ChildrenProvider provider) throws JSONException, RuntimeException {
         String name = js.getString(NAME_KEY);
         String alternativeName = null;
         if (js.has(ALTERNATIVE_NAME_KEY)) {
@@ -74,17 +74,17 @@ public class CelestiaBrowserItem {
         if (js.has(POINTER_KEY) && js.has(TYPE_KEY)) {
             int type = js.getInt(TYPE_KEY);
             long ptr = js.getLong(POINTER_KEY);
-            CelestiaAstroObject object;
+            AstroObject object;
             if (type == TYPE_BODY) {
-                object = new CelestiaBody(ptr);
+                object = new Body(ptr);
             } else if (type == TYPE_LOCATION) {
-                object = new CelestiaLocation(ptr);
+                object = new Location(ptr);
             } else {
                 throw new RuntimeException(String.format("Unknown type found: %d.", type));
             }
-            return new CelestiaBrowserItem(name, alternativeName, object, provider);
+            return new BrowserItem(name, alternativeName, object, provider);
         }
-        HashMap<String, CelestiaBrowserItem> items = new HashMap<>();
+        HashMap<String, BrowserItem> items = new HashMap<>();
         if (js.has(CHILDREN_KEY)) {
             JSONObject children = js.getJSONObject(CHILDREN_KEY);
             Iterator<String> keys = children.keys();
@@ -93,11 +93,11 @@ public class CelestiaBrowserItem {
                 items.put(key, fromJson(children.getJSONObject(key), provider));
             }
         }
-        return new CelestiaBrowserItem(name, alternativeName, items);
+        return new BrowserItem(name, alternativeName, items);
     }
 
-    static Map<String, CelestiaBrowserItem> fromJsonString(@NonNull String string, @Nullable ChildrenProvider provider) {
-        HashMap<String, CelestiaBrowserItem> items = new HashMap<>();
+    static Map<String, BrowserItem> fromJsonString(@NonNull String string, @Nullable ChildrenProvider provider) {
+        HashMap<String, BrowserItem> items = new HashMap<>();
         try {
             JSONObject js = new JSONObject(string);
             Iterator<String> keys = js.keys();
@@ -110,7 +110,7 @@ public class CelestiaBrowserItem {
     }
 
     public @Nullable
-    CelestiaAstroObject getObject() {
+    AstroObject getObject() {
         return _object;
     }
 
@@ -124,7 +124,7 @@ public class CelestiaBrowserItem {
     }
 
     public @NonNull
-    List<CelestiaBrowserItem> getChildren() {
+    List<BrowserItem> getChildren() {
         if (childrenValues == null && provider != null)
             setChildren(provider.childrenForItem(this));
 
@@ -141,7 +141,8 @@ public class CelestiaBrowserItem {
         return childrenKeys.get(index);
     }
 
-    public @Nullable CelestiaBrowserItem childNamed(String name) {
+    public @Nullable
+    BrowserItem childNamed(String name) {
         if (childrenValues == null && provider != null)
             setChildren(provider.childrenForItem(this));
 
@@ -150,7 +151,7 @@ public class CelestiaBrowserItem {
         return childrenValues.get(index);
     }
 
-    private void setChildren(Map<String, CelestiaBrowserItem> children) {
+    private void setChildren(Map<String, BrowserItem> children) {
         if (children == null) {
             childrenKeys = new ArrayList<>();
             childrenValues = new ArrayList<>();

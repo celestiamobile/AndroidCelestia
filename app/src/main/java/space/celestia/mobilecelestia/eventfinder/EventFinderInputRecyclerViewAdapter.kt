@@ -20,7 +20,7 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.AppCore
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.text.DateFormat
 import java.util.*
@@ -33,7 +33,7 @@ class EventFinderInputRecyclerViewAdapter(
     private val chooseTimeCallback: (Boolean) -> Unit,
     private val chooseObjectCallback: (String) -> Unit,
     private val proceedCallback: () -> Unit,
-    var objectName: String = CelestiaAppCore.getLocalizedString("Earth", "celestia"),
+    var objectName: String = AppCore.getLocalizedString("Earth", "celestia"),
     var startDate: Date = Date(Date().time - DEFAULT_SEARCHING_INTERVAL),
     var endDate: Date = Date()
 ) : SeparatorHeaderRecyclerViewAdapter(createSections(objectName, startDate, endDate)) {

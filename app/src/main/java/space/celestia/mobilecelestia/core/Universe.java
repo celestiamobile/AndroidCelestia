@@ -16,7 +16,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Map;
 
-public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
+public class Universe implements BrowserItem.ChildrenProvider {
     public static final int MARKER_DIAMOND          = 0;
     public static final int MARKER_TRIANGLE         = 1;
     public static final int MARKER_SQUARE           = 2;
@@ -33,39 +33,39 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
     public static final int MARKER_COUNT            = 13;
 
     protected long pointer;
-    private CelestiaStarCatalog starCatalog;
-    private CelestiaDSOCatalog dsoCatalog;
+    private StarCatalog starCatalog;
+    private DSOCatalog dsoCatalog;
 
-    CelestiaUniverse(long ptr) {
+    Universe(long ptr) {
         pointer = ptr;
     }
 
     @NonNull
-    public CelestiaStarCatalog getStarCatalog() {
+    public StarCatalog getStarCatalog() {
         if (starCatalog == null)
-            starCatalog = new CelestiaStarCatalog(c_getStarCatalog(pointer));
+            starCatalog = new StarCatalog(c_getStarCatalog(pointer));
         return starCatalog;
     }
 
     @NonNull
-    public CelestiaDSOCatalog getDSOCatalog() {
+    public DSOCatalog getDSOCatalog() {
         if (dsoCatalog == null)
-            dsoCatalog = new CelestiaDSOCatalog(c_getDSOCatalog(pointer));
+            dsoCatalog = new DSOCatalog(c_getDSOCatalog(pointer));
         return dsoCatalog;
     }
 
     @NonNull
-    public String getNameForSelection(CelestiaSelection selection) {
-        CelestiaStar star = selection.getStar();
+    public String getNameForSelection(Selection selection) {
+        Star star = selection.getStar();
         if (star != null)
             return getStarCatalog().getStarName(star);
-        CelestiaDSO dso = selection.getDSO();
+        DSO dso = selection.getDSO();
         if (dso != null)
             return getDSOCatalog().getDSOName(dso);
-        CelestiaBody body = selection.getBody();
+        Body body = selection.getBody();
         if (body != null)
             return body.getName();
-        CelestiaLocation location = selection.getLocation();
+        Location location = selection.getLocation();
         if (location != null)
             return location.getName();
         return "";
@@ -73,27 +73,28 @@ public class CelestiaUniverse implements CelestiaBrowserItem.ChildrenProvider {
 
     @Override
     @Nullable
-    public Map<String, CelestiaBrowserItem> childrenForItem(@NonNull CelestiaBrowserItem item) {
-        CelestiaAstroObject obj = item.getObject();
+    public Map<String, BrowserItem> childrenForItem(@NonNull BrowserItem item) {
+        AstroObject obj = item.getObject();
 
         if (obj == null) { return null; }
-        if (obj instanceof CelestiaStar)
-            return CelestiaBrowserItem.fromJsonString(c_getChildrenForStar(pointer, obj.pointer), this);
-        if (obj instanceof CelestiaBody)
-            return CelestiaBrowserItem.fromJsonString(c_getChildrenForBody(pointer, obj.pointer), this);
+        if (obj instanceof Star)
+            return BrowserItem.fromJsonString(c_getChildrenForStar(pointer, obj.pointer), this);
+        if (obj instanceof Body)
+            return BrowserItem.fromJsonString(c_getChildrenForBody(pointer, obj.pointer), this);
 
         return null;
     }
 
-    public @NonNull CelestiaSelection findObject(@NonNull String name) {
-        return new CelestiaSelection(c_findObject(pointer, name));
+    public @NonNull
+    Selection findObject(@NonNull String name) {
+        return new Selection(c_findObject(pointer, name));
     }
 
-    public void mark(@NonNull CelestiaSelection selection, int marker) {
+    public void mark(@NonNull Selection selection, int marker) {
         c_mark(pointer, selection.pointer, marker);
     }
 
-    public void unmark(@NonNull CelestiaSelection selection) {
+    public void unmark(@NonNull Selection selection) {
         c_unmark(pointer, selection.pointer);
     }
 

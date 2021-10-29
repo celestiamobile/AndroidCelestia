@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.AppCore
 import space.celestia.mobilecelestia.utils.*
 import java.util.*
 
@@ -53,7 +53,7 @@ class EventFinderInputFragment : EndSubFragment() {
             }
         }, { current ->
             val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
-            val objects = listOf(CelestiaAppCore.getLocalizedString("Earth", "celestia"), CelestiaAppCore.getLocalizedString("Jupiter", "celestia"))
+            val objects = listOf(AppCore.getLocalizedString("Earth", "celestia"), AppCore.getLocalizedString("Jupiter", "celestia"))
             val other = CelestiaString("Other", "")
             val currentIndex = 0.coerceAtLeast(objects.indexOf(current))
             ac.showSingleSelection(CelestiaString("Please choose an object.", ""), objects + other, currentIndex) { index ->

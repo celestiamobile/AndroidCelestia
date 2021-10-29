@@ -15,9 +15,9 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 
-import space.celestia.mobilecelestia.core.CelestiaAppCore;
+import space.celestia.mobilecelestia.core.AppCore;
 
-public class AppStatusReporter implements CelestiaAppCore.ProgressWatcher {
+public class AppStatusReporter implements AppCore.ProgressWatcher {
     private static AppStatusReporter singleton = null;
     private ArrayList<Listener> listeners = new ArrayList<>();
     private String status = "";
@@ -84,7 +84,7 @@ public class AppStatusReporter implements CelestiaAppCore.ProgressWatcher {
 
     @Override
     public void onCelestiaProgress(@NonNull String progress) {
-        updateStatus(String.format(CelestiaAppCore.getLocalizedString("Loading: %s"), progress));
+        updateStatus(String.format(AppCore.getLocalizedString("Loading: %s"), progress));
     }
 
     public void updateState(@NonNull State state) {

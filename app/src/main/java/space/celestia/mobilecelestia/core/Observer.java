@@ -13,10 +13,10 @@ package space.celestia.mobilecelestia.core;
 
 import androidx.annotation.NonNull;
 
-public class CelestiaObserver {
+public class Observer {
     private final long pointer;
 
-    protected CelestiaObserver(long ptr) {
+    protected Observer(long ptr) {
         pointer = ptr;
     }
 

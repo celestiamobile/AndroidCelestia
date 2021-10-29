@@ -11,10 +11,10 @@
 
 package space.celestia.mobilecelestia.core;
 
-public class CelestiaOrbit {
+public class Orbit {
     protected long pointer;
 
-    CelestiaOrbit(long ptr) {
+    Orbit(long ptr) {
         pointer = ptr;
     }
 
@@ -24,8 +24,8 @@ public class CelestiaOrbit {
     public double getValidBeginTime() { return c_getValidBeginTime(pointer); }
     public double getValidEndTime() { return c_getValidEndTime(pointer); }
 
-    public CelestiaVector getVelocityAtTime(double julianDay) { return c_getVelocityAtTime(pointer, julianDay); }
-    public CelestiaVector getPositionAtTime(double julianDay) { return c_getPositionAtTime(pointer, julianDay); }
+    public Vector getVelocityAtTime(double julianDay) { return c_getVelocityAtTime(pointer, julianDay); }
+    public Vector getPositionAtTime(double julianDay) { return c_getPositionAtTime(pointer, julianDay); }
 
     private static native boolean c_isPeriodic(long pointer);
     private static native double c_getPeriod(long pointer);
@@ -33,6 +33,6 @@ public class CelestiaOrbit {
     private static native double c_getValidBeginTime(long pointer);
     private static native double c_getValidEndTime(long pointer);
 
-    private static native CelestiaVector c_getVelocityAtTime(long pointer, double julianDay);
-    private static native CelestiaVector c_getPositionAtTime(long pointer, double julianDay);
+    private static native Vector c_getVelocityAtTime(long pointer, double julianDay);
+    private static native Vector c_getPositionAtTime(long pointer, double julianDay);
 }

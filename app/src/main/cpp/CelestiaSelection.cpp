@@ -19,34 +19,34 @@
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1destroy(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Selection_c_1destroy(JNIEnv *env, jclass clazz, jlong pointer) {
     auto sel = (Selection *)pointer;
     delete sel;
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1clone(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Selection_c_1clone(JNIEnv *env, jclass clazz, jlong pointer) {
     return (jlong)new Selection(*(Selection *)pointer);
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1isEmpty(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Selection_c_1isEmpty(JNIEnv *env, jclass clazz, jlong pointer) {
     auto sel = (Selection *)pointer;
     return (jboolean)(sel->empty() ? JNI_TRUE : JNI_FALSE);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getSelectionType(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Selection_c_1getSelectionType(JNIEnv *env, jclass clazz, jlong pointer) {
     auto sel = (Selection *)pointer;
     return sel->getType();
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getSelectionPtr(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Selection_c_1getSelectionPtr(JNIEnv *env, jclass clazz, jlong pointer) {
     auto sel = (Selection *)pointer;
     switch (sel->getType())
     {
@@ -66,24 +66,24 @@ Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getSelectionPtr(JNI
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getName(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Selection_c_1getName(JNIEnv *env, jclass clazz, jlong pointer) {
     auto sel = (Selection *)pointer;
     return env->NewStringUTF(sel->getName(true).c_str());
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1getRadius(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Selection_c_1getRadius(JNIEnv *env, jclass clazz, jlong pointer) {
     auto sel = (Selection *)pointer;
     return sel->radius();
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSelection_c_1createSelection(JNIEnv *env,
-                                                                             jclass clazz,
-                                                                             jint type,
-                                                                             jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Selection_c_1createSelection(JNIEnv *env,
+                                                                     jclass clazz,
+                                                                     jint type,
+                                                                     jlong pointer) {
     switch (type)
     {
         case Selection::Type_Body:

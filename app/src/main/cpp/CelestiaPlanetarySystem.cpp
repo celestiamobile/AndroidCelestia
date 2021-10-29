@@ -14,16 +14,16 @@
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaPlanetarySystem_c_1getPrimaryObject(JNIEnv *env,
-                                                                                    jobject thiz,
-                                                                                    jlong ptr) {
+Java_space_celestia_mobilecelestia_core_PlanetarySystem_c_1getPrimaryObject(JNIEnv *env,
+                                                                            jobject thiz,
+                                                                            jlong ptr) {
     return (jlong)((PlanetarySystem *)ptr)->getPrimaryBody();
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaPlanetarySystem_c_1getStar(JNIEnv *env,
-                                                                           jobject thiz,
-                                                                           jlong ptr) {
+Java_space_celestia_mobilecelestia_core_PlanetarySystem_c_1getStar(JNIEnv *env,
+                                                                   jobject thiz,
+                                                                   jlong ptr) {
     return (jlong)((PlanetarySystem *)ptr)->getStar();
 }

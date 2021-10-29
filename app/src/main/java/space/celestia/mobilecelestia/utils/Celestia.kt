@@ -14,7 +14,7 @@ package space.celestia.mobilecelestia.utils
 import space.celestia.mobilecelestia.core.*
 import space.celestia.mobilecelestia.favorite.BookmarkNode
 
-val CelestiaAppCore.currentBookmark: BookmarkNode?
+val AppCore.currentBookmark: BookmarkNode?
     get() {
         val sel = simulation.selection
         if (sel.isEmpty) return null
@@ -22,15 +22,15 @@ val CelestiaAppCore.currentBookmark: BookmarkNode?
         return BookmarkNode(name, currentURL, null)
     }
 
-fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): String {
+fun AppCore.getOverviewForSelection(selection: Selection): String {
     return when (val obj = selection.`object`) {
-        is CelestiaBody -> {
+        is Body -> {
             getOverviewForBody(obj)
         }
-        is CelestiaStar -> {
+        is Star -> {
             getOverviewForStar(obj)
         }
-        is CelestiaDSO -> {
+        is DSO -> {
             getOverviewForDSO(obj)
         }
         else -> {
@@ -39,14 +39,14 @@ fun CelestiaAppCore.getOverviewForSelection(selection: CelestiaSelection): Strin
     }
 }
 
-private fun CelestiaAppCore.getOverviewForBody(body: CelestiaBody): String {
+private fun AppCore.getOverviewForBody(body: Body): String {
     var str = ""
 
     val radius = body.radius
     val radiusString: String
     val oneMiInKm = 1.609344f
     val oneFtInKm = 0.0003048f
-    if (measurementSystem == CelestiaAppCore.MEASUREMENT_SYSTEM_IMPERIAL) {
+    if (measurementSystem == AppCore.MEASUREMENT_SYSTEM_IMPERIAL) {
         if (radius >= oneMiInKm) {
            radiusString = CelestiaString("%d mi", "").format((radius / oneMiInKm).toInt())
         } else {
@@ -71,7 +71,7 @@ private fun CelestiaAppCore.getOverviewForBody(body: CelestiaBody): String {
     val rotation = body.getRotationModelAtTime(time)
 
     val orbitalPeriod: Double = if (orbit.isPeriodic) orbit.period else 0.0
-    if (rotation.isPeriodic && body.type != CelestiaBody.BODY_TYPE_SPACECRAFT) {
+    if (rotation.isPeriodic && body.type != Body.BODY_TYPE_SPACECRAFT) {
         var rotPeriod = rotation.period
         var dayLength = 0.0
 
@@ -113,47 +113,49 @@ private fun CelestiaAppCore.getOverviewForBody(body: CelestiaBody): String {
     return str
 }
 
-private fun CelestiaAppCore.getOverviewForStar(star: CelestiaStar): String {
+private fun AppCore.getOverviewForStar(star: Star): String {
     var str = ""
 
     val time = simulation.time
-    val celPos = star.getPositionAtTime(time).offsetFrom(CelestiaUniversalCoord.getZero())
-    val eqPos = CelestiaUtils.eclipticToEquatorial(CelestiaUtils.celToJ2000Ecliptic(celPos))
-    val sph = CelestiaUtils.rectToSpherical(eqPos)
+    val celPos = star.getPositionAtTime(time).offsetFrom(UniversalCoord.getZero())
+    val eqPos = Utils.eclipticToEquatorial(
+        Utils.celToJ2000Ecliptic(celPos))
+    val sph = Utils.rectToSpherical(eqPos)
 
-    val hms = CelestiaDMS(sph.x)
+    val hms = DMS(sph.x)
     str += CelestiaString("RA: %dh %dm %.2fs", "").format(hms.hours, hms.minutes, hms.seconds)
 
     str += "\n"
-    val dms = CelestiaDMS(sph.y)
+    val dms = DMS(sph.y)
     str += CelestiaString("DEC: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
 
     return str
 }
 
-private fun getOverviewForDSO(dso: CelestiaDSO): String {
+private fun getOverviewForDSO(dso: DSO): String {
     var str = ""
 
     val celPos = dso.position
-    val eqPos = CelestiaUtils.eclipticToEquatorial(CelestiaUtils.celToJ2000Ecliptic(celPos))
-    var sph = CelestiaUtils.rectToSpherical(eqPos)
+    val eqPos = Utils.eclipticToEquatorial(
+        Utils.celToJ2000Ecliptic(celPos))
+    var sph = Utils.rectToSpherical(eqPos)
 
-    val hms = CelestiaDMS(sph.x)
+    val hms = DMS(sph.x)
     str += CelestiaString("RA: %dh %dm %.2fs", "").format(hms.hours, hms.minutes, hms.seconds)
 
     str += "\n"
-    var dms = CelestiaDMS(sph.y)
+    var dms = DMS(sph.y)
     str += CelestiaString("DEC: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
 
-    val galPos = CelestiaUtils.equatorialToGalactic(eqPos)
-    sph = CelestiaUtils.rectToSpherical(galPos)
+    val galPos = Utils.equatorialToGalactic(eqPos)
+    sph = Utils.rectToSpherical(galPos)
 
     str += "\n"
-    dms = CelestiaDMS(sph.x)
+    dms = DMS(sph.x)
     str += CelestiaString("L: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
 
     str += "\n"
-    dms = CelestiaDMS(sph.y)
+    dms = DMS(sph.y)
     str += CelestiaString("B: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
 
     return str

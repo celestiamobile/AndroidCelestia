@@ -19,18 +19,18 @@ import android.graphics.RectF
 import android.os.Build
 import android.util.Log
 import android.view.*
-import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.AppCore
 
 class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
-    protected val core by lazy { CelestiaAppCore.shared() }
+    protected val core by lazy { AppCore.shared() }
 
     enum class InteractionMode {
         Object, Camera;
 
         val button: Int
             get() = when (this) {
-                Camera -> CelestiaAppCore.MOUSE_BUTTON_LEFT
-                Object -> CelestiaAppCore.MOUSE_BUTTON_RIGHT
+                Camera -> AppCore.MOUSE_BUTTON_LEFT
+                Object -> AppCore.MOUSE_BUTTON_RIGHT
             }
 
         val next: InteractionMode
@@ -69,7 +69,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
     private var isScaling = false
 
     private var isRightMouseButtonClicked = false
-    private var lastMouseButton = CelestiaAppCore.MOUSE_BUTTON_LEFT
+    private var lastMouseButton = AppCore.MOUSE_BUTTON_LEFT
 
     fun setInteractionMode(interactionMode: InteractionMode) {
         CelestiaView.callOnRenderThread {
@@ -84,7 +84,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
     private fun callZoom(deltaY: Float) {
         if (internalInteractionMode == InteractionMode.Camera) {
-            core.mouseMove(CelestiaAppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), CelestiaAppCore.SHIFT_KEY)
+            core.mouseMove(AppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), AppCore.SHIFT_KEY)
         } else {
             core.mouseWheel(deltaY, 0)
         }
@@ -252,9 +252,9 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
         Log.d(TAG, "on single tap up")
 
-        var button = CelestiaAppCore.MOUSE_BUTTON_LEFT
+        var button = AppCore.MOUSE_BUTTON_LEFT
         if (event.isAltPressed() || isRightMouseButtonClicked) {
-            button = CelestiaAppCore.MOUSE_BUTTON_RIGHT
+            button = AppCore.MOUSE_BUTTON_RIGHT
         }
 
         val point = PointF(event.x, event.y).scaleBy(scaleFactor)
@@ -322,7 +322,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
         // Bring up the context menu
         val point = PointF(e.x, e.y).scaleBy(scaleFactor)
-        val button = CelestiaAppCore.MOUSE_BUTTON_RIGHT
+        val button = AppCore.MOUSE_BUTTON_RIGHT
         CelestiaView.callOnRenderThread {
             core.mouseButtonDown(button, point, 0)
             core.mouseButtonUp(button, point, 0)
@@ -454,8 +454,8 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         }
 
         CelestiaView.callOnRenderThread {
-            core.joystickAxis(CelestiaAppCore.JOYSTICK_AXIS_X, x)
-            core.joystickAxis(CelestiaAppCore.JOYSTICK_AXIS_Y, -y)
+            core.joystickAxis(AppCore.JOYSTICK_AXIS_X, x)
+            core.joystickAxis(AppCore.JOYSTICK_AXIS_Y, -y)
         }
     }
 
@@ -467,18 +467,18 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 private fun KeyEvent.keyModifier(): Int {
     var modifier = 0
     if ((metaState and KeyEvent.META_CTRL_ON) != 0)
-        modifier = modifier or CelestiaAppCore.CONTROL_KEY
+        modifier = modifier or AppCore.CONTROL_KEY
     if ((metaState and KeyEvent.META_SHIFT_ON) != 0)
-        modifier = modifier or CelestiaAppCore.SHIFT_KEY
+        modifier = modifier or AppCore.SHIFT_KEY
     return modifier
 }
 
 private fun MotionEvent.keyModifier(): Int {
     var modifier = 0
     if ((metaState and KeyEvent.META_CTRL_ON) != 0)
-        modifier = modifier or CelestiaAppCore.CONTROL_KEY
+        modifier = modifier or AppCore.CONTROL_KEY
     if ((metaState and KeyEvent.META_SHIFT_ON) != 0)
-        modifier = modifier or CelestiaAppCore.SHIFT_KEY
+        modifier = modifier or AppCore.SHIFT_KEY
     return modifier
 }
 

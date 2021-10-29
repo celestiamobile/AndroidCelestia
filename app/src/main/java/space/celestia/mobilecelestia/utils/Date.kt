@@ -11,7 +11,7 @@
 
 package space.celestia.mobilecelestia.utils
 
-import space.celestia.mobilecelestia.core.CelestiaUtils
+import space.celestia.mobilecelestia.core.Utils
 import java.util.*
 
 val Date.julianDay: Double
@@ -28,11 +28,11 @@ val Date.julianDay: Double
         val second = gc.get(GregorianCalendar.SECOND)
         val millisecond = gc.get(GregorianCalendar.MILLISECOND)
 
-        return CelestiaUtils.getJulianDay(era, year, month, day, hour, minute, second, millisecond)
+        return Utils.getJulianDay(era, year, month, day, hour, minute, second, millisecond)
     }
 
 fun createDateFromJulianDay(julianDay: Double): Date {
-    val compos = CelestiaUtils.getJulianDayComponents(julianDay)
+    val compos = Utils.getJulianDayComponents(julianDay)
     val gc = GregorianCalendar()
     gc.timeZone = TimeZone.getTimeZone("GMT")
     gc.set(GregorianCalendar.ERA, compos[0])

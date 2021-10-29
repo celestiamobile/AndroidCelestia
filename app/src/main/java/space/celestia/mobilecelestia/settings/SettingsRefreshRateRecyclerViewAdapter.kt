@@ -22,7 +22,7 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.CelestiaRenderer
+import space.celestia.mobilecelestia.core.Renderer
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class RefreshRateItem(val frameRateOption: Int, val frameRate: Int, val checked: Boolean) : RecyclerViewItem
@@ -37,7 +37,7 @@ class SettingsRefreshRateRecyclerViewAdapter(
             listener?.onRefreshRateChanged(item.frameRateOption)
         }
         if (item is ResetRefreshRateItem) {
-            listener?.onRefreshRateChanged(CelestiaRenderer.FRAME_MAX)
+            listener?.onRefreshRateChanged(Renderer.FRAME_MAX)
         }
     }
 
@@ -75,7 +75,7 @@ class SettingsRefreshRateRecyclerViewAdapter(
     fun update(availableRefreshRates: List<Pair<Int, Int>>?, maxRefreshRate: Int?, selectedRateOption: Int) {
         val items: ArrayList<RecyclerViewItem> = ArrayList(availableRefreshRates?.map { RefreshRateItem(it.first, it.second, selectedRateOption == it.first) } ?: listOf())
         if (maxRefreshRate != null)
-            items.add(0, ResetRefreshRateItem(maxRefreshRate, selectedRateOption == CelestiaRenderer.FRAME_MAX))
+            items.add(0, ResetRefreshRateItem(maxRefreshRate, selectedRateOption == Renderer.FRAME_MAX))
         updateSectionsWithHeader(listOf(CommonSectionV2(items)))
     }
 

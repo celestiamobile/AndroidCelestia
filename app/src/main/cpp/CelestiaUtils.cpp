@@ -15,9 +15,9 @@
 
 extern "C"
 JNIEXPORT jintArray JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUtils_getJulianDayComponents(JNIEnv *env,
-                                                                             jclass clazz,
-                                                                             jdouble julian_day) {
+Java_space_celestia_mobilecelestia_core_Utils_getJulianDayComponents(JNIEnv *env,
+                                                                     jclass clazz,
+                                                                     jdouble julian_day) {
     astro::Date astroDate(julian_day);
     jint date[8] = { 0 };
 
@@ -44,10 +44,10 @@ Java_space_celestia_mobilecelestia_core_CelestiaUtils_getJulianDayComponents(JNI
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUtils_getJulianDay(JNIEnv *env, jclass clazz,
-                                                                   jint era, jint year, jint month,
-                                                                   jint day, jint hour, jint minute,
-                                                                   jint second, jint millisecond) {
+Java_space_celestia_mobilecelestia_core_Utils_getJulianDay(JNIEnv *env, jclass clazz,
+                                                           jint era, jint year, jint month,
+                                                           jint day, jint hour, jint minute,
+                                                           jint second, jint millisecond) {
     if (era < 1) year = 1 - year;
     astro::Date astroDate(year, month, day);
     astroDate.hour    = hour;
@@ -62,34 +62,34 @@ Java_space_celestia_mobilecelestia_core_CelestiaUtils_getJulianDay(JNIEnv *env, 
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUtils_celToJ2000Ecliptic(JNIEnv *env, jclass clazz,
-                                                                         jobject cel) {
+Java_space_celestia_mobilecelestia_core_Utils_celToJ2000Ecliptic(JNIEnv *env, jclass clazz,
+                                                                 jobject cel) {
     Eigen::Vector3d p = vector3dFromObject(env, cel);
     return createVectorForVector3d(env, Eigen::Vector3d(p.x(), -p.z(), p.y()));
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUtils_eclipticToEquatorial(JNIEnv *env,
-                                                                           jclass clazz,
-                                                                           jobject ecliptic) {
+Java_space_celestia_mobilecelestia_core_Utils_eclipticToEquatorial(JNIEnv *env,
+                                                                   jclass clazz,
+                                                                   jobject ecliptic) {
     Eigen::Vector3d p = vector3dFromObject(env, ecliptic);
     return createVectorForVector3d(env, astro::eclipticToEquatorial(p));
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUtils_equatorialToGalactic(JNIEnv *env,
-                                                                           jclass clazz,
-                                                                           jobject equatorial) {
+Java_space_celestia_mobilecelestia_core_Utils_equatorialToGalactic(JNIEnv *env,
+                                                                   jclass clazz,
+                                                                   jobject equatorial) {
     Eigen::Vector3d p = vector3dFromObject(env, equatorial);
     return createVectorForVector3d(env, astro::equatorialToGalactic(p));
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUtils_rectToSpherical(JNIEnv *env, jclass clazz,
-                                                                      jobject rect) {
+Java_space_celestia_mobilecelestia_core_Utils_rectToSpherical(JNIEnv *env, jclass clazz,
+                                                              jobject rect) {
     Eigen::Vector3d v = vector3dFromObject(env, rect);
     double r = v.norm();
     double theta = atan2(v.y(), v.x());
@@ -102,6 +102,6 @@ Java_space_celestia_mobilecelestia_core_CelestiaUtils_rectToSpherical(JNIEnv *en
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUtils_AUToKilometers(JNIEnv *env, jclass clazz, jdouble au) {
+Java_space_celestia_mobilecelestia_core_Utils_AUToKilometers(JNIEnv *env, jclass clazz, jdouble au) {
     return astro::AUtoKilometers(au);
 }

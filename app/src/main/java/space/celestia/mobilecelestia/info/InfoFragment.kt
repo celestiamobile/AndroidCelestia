@@ -12,25 +12,21 @@
 package space.celestia.mobilecelestia.info
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.LayoutDirection
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.CelestiaAppCore
-import space.celestia.mobilecelestia.core.CelestiaSelection
+import space.celestia.mobilecelestia.core.AppCore
+import space.celestia.mobilecelestia.core.Selection
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.utils.getOverviewForSelection
 import space.celestia.ui.linkpreview.LPLinkMetadata
@@ -40,7 +36,7 @@ import java.net.URL
 
 class InfoFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
-    private lateinit var selection: CelestiaSelection
+    private lateinit var selection: Selection
     private var embeddedInNavigation = false
     private var linkMetadata: LPLinkMetadata? = null
 
@@ -50,11 +46,15 @@ class InfoFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState != null) {
-            selection = CelestiaSelection(savedInstanceState.getLong(ARG_SELECTION))
+            selection = Selection(
+                savedInstanceState.getLong(ARG_SELECTION)
+            )
             embeddedInNavigation = savedInstanceState.getBoolean(ARG_EMBEDDED_IN_NAVIGATION)
         } else  {
             arguments?.let {
-                selection = CelestiaSelection(it.getLong(ARG_SELECTION))
+                selection = Selection(
+                    it.getLong(ARG_SELECTION)
+                )
                 embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION)
             }
         }
@@ -101,12 +101,12 @@ class InfoFragment : NavigationFragment.SubFragment() {
     }
 
     interface Listener {
-        fun onInfoActionSelected(action: InfoActionItem, selection: CelestiaSelection)
+        fun onInfoActionSelected(action: InfoActionItem, selection: Selection)
         fun onInfoLinkMetaDataClicked(url: URL)
     }
 
     private fun reload() {
-        val core = CelestiaAppCore.shared()
+        val core = AppCore.shared()
         val overview = core.getOverviewForSelection(selection)
         val name = core.simulation.universe.getNameForSelection(selection)
         val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
@@ -201,7 +201,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
         const val ARG_EMBEDDED_IN_NAVIGATION = "embedded-in-navigation"
 
         @JvmStatic
-        fun newInstance(selection: CelestiaSelection, embeddedInNavigation: Boolean = false) =
+        fun newInstance(selection: Selection, embeddedInNavigation: Boolean = false) =
             InfoFragment().apply {
                 arguments = Bundle().apply {
                     this.putLong(ARG_SELECTION, selection.createCopy())

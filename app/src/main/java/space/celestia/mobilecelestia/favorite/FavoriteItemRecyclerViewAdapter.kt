@@ -23,8 +23,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
-import space.celestia.mobilecelestia.core.CelestiaDestination
-import space.celestia.mobilecelestia.core.CelestiaScript
+import space.celestia.mobilecelestia.core.Destination
+import space.celestia.mobilecelestia.core.Script
 import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
@@ -98,7 +98,7 @@ class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
         get() = false
 }
 
-class FavoriteScriptItem(val script: CelestiaScript) : FavoriteBaseItem {
+class FavoriteScriptItem(val script: Script) : FavoriteBaseItem {
     override val children: List<FavoriteBaseItem>
         get() = listOf()
     override val title: String
@@ -107,7 +107,7 @@ class FavoriteScriptItem(val script: CelestiaScript) : FavoriteBaseItem {
         get() = true
 }
 
-class FavoriteDestinationItem(val destination: CelestiaDestination): FavoriteBaseItem {
+class FavoriteDestinationItem(val destination: Destination): FavoriteBaseItem {
     override val children: List<FavoriteBaseItem>
         get() = listOf()
     override val title: String
@@ -154,7 +154,7 @@ class FavoriteBookmarkRootItem(bookmark: BookmarkNode) : FavoriteBookmarkItem(bo
         get() = listOf()
 }
 
-fun updateCurrentScripts(scripts: List<CelestiaScript>) {
+fun updateCurrentScripts(scripts: List<Script>) {
     currentScripts = scripts
 }
 
@@ -166,13 +166,13 @@ fun updateCurrentBookmarks(nodes: List<BookmarkNode>) {
     currentBookmarkRoot.children = ArrayList(nodes)
 }
 
-fun updateCurrentDestinations(destinations: List<CelestiaDestination>) {
+fun updateCurrentDestinations(destinations: List<Destination>) {
     currentDestinations = destinations
 }
 
-private var currentScripts: List<CelestiaScript> = listOf()
+private var currentScripts: List<Script> = listOf()
 private var currentBookmarkRoot: BookmarkNode = BookmarkNode(CelestiaString("Bookmarks", "") , "", arrayListOf())
-private var currentDestinations: List<CelestiaDestination> = listOf()
+private var currentDestinations: List<Destination> = listOf()
 
 class FavoriteItemRecyclerViewAdapter private constructor(
     private val item: FavoriteBaseItem,

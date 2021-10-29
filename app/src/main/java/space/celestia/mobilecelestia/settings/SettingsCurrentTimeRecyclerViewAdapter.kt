@@ -18,7 +18,7 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.AppCore
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.createDateFromJulianDay
 import java.text.DateFormat
@@ -87,7 +87,7 @@ class SettingsCurrentTimeRecyclerViewAdapter(
             return
         }
         if (item is DatePickerItem && holder is CommonTextViewHolder) {
-            val core = CelestiaAppCore.shared()
+            val core = AppCore.shared()
             holder.title.text = item.title
             holder.detail.visibility = View.VISIBLE
             holder.detail.text = formatter.format(createDateFromJulianDay(core.simulation.time))

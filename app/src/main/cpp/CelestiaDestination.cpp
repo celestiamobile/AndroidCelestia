@@ -15,9 +15,9 @@
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getDestinations(JNIEnv *env,
-                                                                           jobject clazz,
-                                                                           jlong pointer) {
+Java_space_celestia_mobilecelestia_core_AppCore_c_1getDestinations(JNIEnv *env,
+                                                                   jobject clazz,
+                                                                   jlong pointer) {
     auto core = (CelestiaCore *)pointer;
     const DestinationList *destionations = core->getDestinations();
     int count = destionations ? destionations->size() : 0;
@@ -39,11 +39,11 @@ Java_space_celestia_mobilecelestia_core_CelestiaAppCore_c_1getDestinations(JNIEn
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToDestination(JNIEnv *env,
-                                                                              jobject clazz,
-                                                                              jlong pointer,
-                                                                              jstring target,
-                                                                              jdouble distance) {
+Java_space_celestia_mobilecelestia_core_Simulation_c_1goToDestination(JNIEnv *env,
+                                                                      jobject clazz,
+                                                                      jlong pointer,
+                                                                      jstring target,
+                                                                      jdouble distance) {
     auto sim = (Simulation *)pointer;
     const char *str = env->GetStringUTFChars(target, nullptr);
     Selection sel = sim->findObjectFromPath(str);
@@ -71,12 +71,12 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToDestination(JN
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToLocation(JNIEnv *env,
-                                                                           jobject clazz,
-                                                                           jlong pointer,
-                                                                           jlong selectionPtr,
-                                                                           jdouble distance,
-                                                                           jdouble duration) {
+Java_space_celestia_mobilecelestia_core_Simulation_c_1goToLocation(JNIEnv *env,
+                                                                   jobject clazz,
+                                                                   jlong pointer,
+                                                                   jlong selectionPtr,
+                                                                   jdouble distance,
+                                                                   jdouble duration) {
     auto sim = (Simulation *)pointer;
     sim->setSelection(*(Selection *)selectionPtr);
     sim->geosynchronousFollow();
@@ -85,14 +85,14 @@ Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToLocation(JNIEn
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaSimulation_c_1goToLocationLongLat(JNIEnv *env,
-                                                                           jobject clazz,
-                                                                           jlong pointer,
-                                                                           jlong selectionPtr,
-                                                                           jfloat longitude,
-                                                                           jfloat latitude,
-                                                                           jdouble distance,
-                                                                           jdouble duration) {
+Java_space_celestia_mobilecelestia_core_Simulation_c_1goToLocationLongLat(JNIEnv *env,
+                                                                          jobject clazz,
+                                                                          jlong pointer,
+                                                                          jlong selectionPtr,
+                                                                          jfloat longitude,
+                                                                          jfloat latitude,
+                                                                          jdouble distance,
+                                                                          jdouble duration) {
     auto sim = (Simulation *)pointer;
     sim->setSelection(*(Selection *)selectionPtr);
     sim->geosynchronousFollow();

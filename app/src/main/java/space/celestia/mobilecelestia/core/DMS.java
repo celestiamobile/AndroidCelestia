@@ -11,18 +11,18 @@
 
 package space.celestia.mobilecelestia.core;
 
-public class CelestiaDMS {
+public class DMS {
     private int degrees;
     private int minutes;
     private double seconds;
 
-    public CelestiaDMS(int degrees, int minutes, double seconds) {
+    public DMS(int degrees, int minutes, double seconds) {
         this.degrees = degrees;
         this.minutes = minutes;
         this.seconds = seconds;
     }
 
-    public CelestiaDMS(double decimal) {
+    public DMS(double decimal) {
         this.degrees = c_getDegrees(decimal);
         this.minutes = c_getMinutes(decimal);
         this.seconds = c_getSeconds(decimal);

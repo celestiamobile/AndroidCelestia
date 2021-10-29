@@ -15,7 +15,7 @@ import android.os.Bundle
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.EndNavgationFragment
-import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.AppCore
 
 class SettingsFragment : EndNavgationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
@@ -32,7 +32,7 @@ class SettingsFragment : EndNavgationFragment() {
             }
             is SettingsRenderInfoItem -> {
                 CelestiaView.callOnRenderThread {
-                    val renderInfo = CelestiaAppCore.shared().renderInfo
+                    val renderInfo = AppCore.shared().renderInfo
                     activity?.runOnUiThread {
                         pushFragment(SimpleTextFragment.newInstance(item.name, renderInfo))
                     }

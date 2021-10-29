@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.CelestiaEclipseFinder
+import space.celestia.mobilecelestia.core.EclipseFinder
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class EventFinderResultFragment : EndSubFragment() {
@@ -63,13 +63,13 @@ class EventFinderResultFragment : EndSubFragment() {
     }
 
     interface Listener {
-        fun onEclipseChosen(eclipse: CelestiaEclipseFinder.Eclipse)
+        fun onEclipseChosen(eclipse: EclipseFinder.Eclipse)
     }
 
     companion object {
         private const val TAG = "EventFinderResult"
 
-        var eclipses: List<CelestiaEclipseFinder.Eclipse> = listOf()
+        var eclipses: List<EclipseFinder.Eclipse> = listOf()
 
         @JvmStatic
         fun newInstance() =

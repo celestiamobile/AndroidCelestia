@@ -13,13 +13,13 @@ package space.celestia.mobilecelestia.core;
 
 import java.io.Serializable;
 
-public class CelestiaDestination implements Serializable {
+public class Destination implements Serializable {
     public final String name;
     public final String target;
     public final double distance;
     public final String description;
 
-    private CelestiaDestination(String name, String target, double distance, String description) {
+    private Destination(String name, String target, double distance, String description) {
         this.name = name;
         this.target = target;
         this.distance = distance;

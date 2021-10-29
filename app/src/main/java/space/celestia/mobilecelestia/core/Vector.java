@@ -11,7 +11,7 @@
 
 package space.celestia.mobilecelestia.core;
 
-public class CelestiaVector {
+public class Vector {
     private double[] array;
 
     public double getX() { return array[0]; }
@@ -19,11 +19,11 @@ public class CelestiaVector {
     public double getZ() { return array[2]; }
     public double getW() { return array[3]; }
 
-    private CelestiaVector(double x, double y, double z, double w) {
+    private Vector(double x, double y, double z, double w) {
         array = new double[] {x, y, z, w};
     }
 
-    private CelestiaVector(double x, double y, double z) {
+    private Vector(double x, double y, double z) {
         array = new double[] {x, y, z};
     }
 }

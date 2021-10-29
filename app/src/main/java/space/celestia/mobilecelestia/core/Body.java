@@ -17,7 +17,7 @@ import androidx.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-public class CelestiaBody extends CelestiaAstroObject {
+public class Body extends AstroObject {
     public final static int BODY_TYPE_PLANET            = 0x00001;
     public final static int BODY_TYPE_MOON              = 0x00002;
     public final static int BODY_TYPE_ASTEROID          = 0x00004;
@@ -34,7 +34,7 @@ public class CelestiaBody extends CelestiaAstroObject {
     public final static int BODY_TYPE_DIFFUSE           = 0x02000;
     public final static int BODY_TYPE_UNKNOWN           = 0x10000;
 
-    protected CelestiaBody(long ptr) {
+    protected Body(long ptr) {
         super(ptr);
     }
 
@@ -59,21 +59,21 @@ public class CelestiaBody extends CelestiaAstroObject {
     }
 
     @NonNull
-    public CelestiaOrbit getOrbitAtTime(double julianDay) {
-        return new CelestiaOrbit(c_getOrbitAtTime(pointer, julianDay));
+    public Orbit getOrbitAtTime(double julianDay) {
+        return new Orbit(c_getOrbitAtTime(pointer, julianDay));
     }
 
     @NonNull
-    public CelestiaRotationModel getRotationModelAtTime(double julianDay) {
-        return new CelestiaRotationModel(c_getRotationModelAtTime(pointer, julianDay));
+    public RotationModel getRotationModelAtTime(double julianDay) {
+        return new RotationModel(c_getRotationModelAtTime(pointer, julianDay));
     }
 
     @Nullable
-    public CelestiaPlanetarySystem getSystem() {
+    public PlanetarySystem getSystem() {
         long ptr = c_getPlanetarySystem(pointer);
         if (ptr == 0)
             return null;
-        return new CelestiaPlanetarySystem(ptr);
+        return new PlanetarySystem(ptr);
     }
 
     public @NonNull List<String> getAlternateSurfaceNames() {

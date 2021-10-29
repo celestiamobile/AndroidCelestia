@@ -20,13 +20,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.CelestiaGoToLocation
+import space.celestia.mobilecelestia.core.GoToLocation
 import space.celestia.mobilecelestia.utils.*
 import java.io.Serializable
 import java.util.*
 
 class GoToInputFragment : EndSubFragment() {
-    class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: CelestiaGoToLocation.DistanceUnit) :
+    class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: GoToLocation.DistanceUnit) :
         Serializable
 
     private var listener: Listener? = null
@@ -155,9 +155,9 @@ class GoToInputFragment : EndSubFragment() {
         private const val ARG_DATA = "data"
 
         private val distanceUnits = listOf(
-            CelestiaGoToLocation.DistanceUnit.radii,
-            CelestiaGoToLocation.DistanceUnit.km,
-            CelestiaGoToLocation.DistanceUnit.au
+            GoToLocation.DistanceUnit.radii,
+            GoToLocation.DistanceUnit.km,
+            GoToLocation.DistanceUnit.au
         )
 
         private const val LONGITUDE_TAG = "longitude"

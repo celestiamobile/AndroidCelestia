@@ -14,21 +14,21 @@
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1isPeriodic(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_RotationModel_c_1isPeriodic(JNIEnv *env, jclass clazz, jlong pointer) {
     auto p = (const RotationModel *)pointer;
     return (jboolean)(p->isPeriodic() ? JNI_TRUE : JNI_FALSE);
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getPeriod(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_RotationModel_c_1getPeriod(JNIEnv *env, jclass clazz, jlong pointer) {
     auto p = (const RotationModel *)pointer;
     return p->getPeriod();
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getValidBeginTime(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_RotationModel_c_1getValidBeginTime(JNIEnv *env, jclass clazz, jlong pointer) {
     auto p = (const RotationModel *)pointer;
     double begin, end;
     p->getValidRange(begin, end);
@@ -37,7 +37,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getValidBeginTi
 
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getValidEndTime(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_RotationModel_c_1getValidEndTime(JNIEnv *env, jclass clazz, jlong pointer) {
     auto p = (const RotationModel *)pointer;
     double begin, end;
     p->getValidRange(begin, end);
@@ -55,7 +55,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getAngularVeloc
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getEquatorOrientationAtTime(
+Java_space_celestia_mobilecelestia_core_RotationModel_c_1getEquatorOrientationAtTime(
         JNIEnv *env, jclass clazz, jlong pointer, jdouble julian_day) {
     auto p = (const RotationModel *)pointer;
     const Eigen::Quaterniond v = p->equatorOrientationAtTime(julian_day);
@@ -64,7 +64,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getEquatorOrien
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getSpinAtTime(JNIEnv *env, jclass clazz, jlong pointer, jdouble julian_day) {
+Java_space_celestia_mobilecelestia_core_RotationModel_c_1getSpinAtTime(JNIEnv *env, jclass clazz, jlong pointer, jdouble julian_day) {
     auto p = (const RotationModel *)pointer;
     const Eigen::Quaterniond v = p->spin(julian_day);
     return createVectorForQuaterniond(env, v);

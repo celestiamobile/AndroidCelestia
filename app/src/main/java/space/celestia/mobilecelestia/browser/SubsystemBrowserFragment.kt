@@ -12,12 +12,10 @@
 package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndNavgationFragment
-import space.celestia.mobilecelestia.core.CelestiaBrowserItem
-import space.celestia.mobilecelestia.core.CelestiaSelection
+import space.celestia.mobilecelestia.core.BrowserItem
+import space.celestia.mobilecelestia.core.Selection
 import space.celestia.mobilecelestia.info.InfoFragment
-import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
 class SubsystemBrowserFragment : EndNavgationFragment(), BrowserRootFragment {
     private var currentPath = ""
@@ -49,13 +47,13 @@ class SubsystemBrowserFragment : EndNavgationFragment(), BrowserRootFragment {
         return BrowserCommonFragment.newInstance(currentPath, rootPath)
     }
 
-    override fun pushItem(browserItem: CelestiaBrowserItem) {
+    override fun pushItem(browserItem: BrowserItem) {
         currentPath = "$currentPath/${browserItem.name}"
         browserMap[rootPath]!![currentPath] = browserItem
         pushFragment(BrowserCommonFragment.newInstance(currentPath, rootPath))
     }
 
-    override fun showInfo(selection: CelestiaSelection) {
+    override fun showInfo(selection: Selection) {
         pushFragment(InfoFragment.newInstance(selection, true))
     }
 
@@ -65,7 +63,7 @@ class SubsystemBrowserFragment : EndNavgationFragment(), BrowserRootFragment {
         private const val SUBSYSTEM_DEFAULT_PREFIX = "subsystem"
 
         @JvmStatic
-        fun newInstance(browserItem: CelestiaBrowserItem) =
+        fun newInstance(browserItem: BrowserItem) =
             SubsystemBrowserFragment().apply {
                 val root = "$SUBSYSTEM_DEFAULT_PREFIX/${browserItem.name}"
                 browserMap[root] = hashMapOf(root to browserItem)
@@ -74,6 +72,6 @@ class SubsystemBrowserFragment : EndNavgationFragment(), BrowserRootFragment {
                 }
             }
 
-        val browserMap = HashMap<String, HashMap<String, CelestiaBrowserItem>>()
+        val browserMap = HashMap<String, HashMap<String, BrowserItem>>()
     }
 }

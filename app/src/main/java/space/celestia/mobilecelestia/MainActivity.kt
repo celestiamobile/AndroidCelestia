@@ -13,7 +13,6 @@ package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -52,6 +51,7 @@ import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.core.*
+import space.celestia.mobilecelestia.core.BrowserItem
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val celestiaParentPath by lazy { this.noBackupFilesDir.absolutePath }
     private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
 
-    private val core by lazy { CelestiaAppCore.shared() }
+    private val core by lazy { AppCore.shared() }
 
     private var interactionBlocked = false
 
@@ -496,7 +496,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // Read custom paths here
         customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
         customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
-        customFrameRateOption = preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: CelestiaRenderer.FRAME_60FPS
+        customFrameRateOption = preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS
 
         val localeDirectory = File("${celestiaDataDirPath}/locale")
         if (localeDirectory.exists()) {
@@ -874,7 +874,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Listeners...
-    override fun onInfoActionSelected(action: InfoActionItem, selection: CelestiaSelection) {
+    override fun onInfoActionSelected(action: InfoActionItem, selection: Selection) {
         when (action) {
             is InfoNormalActionItem -> {
                 core.simulation.selection = selection
@@ -890,7 +890,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             is SubsystemActionItem -> {
                 val entry = selection.`object` ?: return
-                val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, entry, core.simulation.universe)
+                val browserItem = BrowserItem(
+                    core.simulation.universe.getNameForSelection(selection),
+                    null,
+                    entry,
+                    core.simulation.universe
+                )
                 showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
                 return
             }
@@ -916,7 +921,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             is MarkItem -> {
                 val markers = CelestiaFragment.availableMarkers
                 showSingleSelection(CelestiaString("Mark", ""), markers, -1) { newIndex ->
-                    if (newIndex >= CelestiaUniverse.MARKER_COUNT) {
+                    if (newIndex >= Universe.MARKER_COUNT) {
                         core.simulation.universe.unmark(selection)
                     } else {
                         core.simulation.universe.mark(selection, newIndex)
@@ -989,14 +994,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         hideOverlay(true)
     }
 
-    override fun onBrowserItemSelected(item: BrowserItem) {
+    override fun onBrowserItemSelected(item: BrowserUIItem) {
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet) as? BrowserRootFragment ?: return
         if (!item.isLeaf) {
             frag.pushItem(item.item)
         } else {
             val obj = item.item.`object`
             if (obj != null) {
-                val selection = CelestiaSelection.create(obj)
+                val selection = Selection.create(obj)
                 if (selection != null) {
                     frag.showInfo(selection)
                 } else {
@@ -1101,7 +1106,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(SearchContainerFragment.newInstance())
     }
 
-    override fun onGoToDestination(destination: CelestiaDestination) {
+    override fun onGoToDestination(destination: Destination) {
         CelestiaView.callOnRenderThread { core.simulation.goTo(destination) }
     }
 
@@ -1281,7 +1286,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun currentLanguage(): String {
-        val lang = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
+        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         if (lang == "LANGUAGE")
             return "en"
         return lang
@@ -1296,12 +1301,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
-        val body = core.simulation.findObject(objectName).`object` as? CelestiaBody
+        val body = core.simulation.findObject(objectName).`object` as? Body
         if (body == null) {
             showAlert(CelestiaString("Object not found", ""))
             return
         }
-        val finder = CelestiaEclipseFinder(body)
+        val finder = EclipseFinder(body)
         val alert = showLoading(CelestiaString("Calculating…", "")) {
             finder.abort()
         } ?: return
@@ -1310,7 +1315,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 finder.search(
                     startDate.julianDay,
                     endDate.julianDay,
-                    CelestiaEclipseFinder.ECLIPSE_KIND_LUNAR or CelestiaEclipseFinder.ECLIPSE_KIND_SOLAR
+                    EclipseFinder.ECLIPSE_KIND_LUNAR or EclipseFinder.ECLIPSE_KIND_SOLAR
                 )
             }
             EventFinderResultFragment.eclipses = results
@@ -1322,7 +1327,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onEclipseChosen(eclipse: CelestiaEclipseFinder.Eclipse) {
+    override fun onEclipseChosen(eclipse: EclipseFinder.Eclipse) {
         CelestiaView.callOnRenderThread {
             core.simulation.goToEclipse(eclipse)
         }
@@ -1507,7 +1512,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun createInfo(selection: CelestiaSelection, callback: (InfoDescriptionItem) -> Unit) {
+    private fun createInfo(selection: Selection, callback: (InfoDescriptionItem) -> Unit) {
         CelestiaView.callOnRenderThread {
             // Fetch info at the Celestia thread to avoid race condition
             val overview = core.getOverviewForSelection(selection)
@@ -1520,7 +1525,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun showInfo(selection: CelestiaSelection) {
+    private fun showInfo(selection: Selection) {
         showBottomSheetFragment(InfoFragment.newInstance(selection))
     }
 
@@ -1602,9 +1607,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showFavorite() {
         readFavorites()
-        val scripts = CelestiaScript.getScriptsInDirectory("scripts", true)
+        val scripts = Script.getScriptsInDirectory("scripts", true)
         extraScriptPath?.let { path ->
-            scripts.addAll(CelestiaScript.getScriptsInDirectory(path, true))
+            scripts.addAll(Script.getScriptsInDirectory(path, true))
         }
         updateCurrentScripts(scripts)
         updateCurrentDestinations(core.destinations)
@@ -1684,7 +1689,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val file = File(directory, "${UUID.randomUUID().toString()}.png")
         CelestiaView.callOnRenderThread {
             core.draw()
-            if (core.saveScreenshot(file.absolutePath, CelestiaAppCore.IMAGE_TYPE_PNG)) {
+            if (core.saveScreenshot(file.absolutePath, AppCore.IMAGE_TYPE_PNG)) {
                 lifecycleScope.launch {
                     shareFile(file, "image/png")
                 }
@@ -1735,11 +1740,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showGoTo(data: GoToInputFragment.GoToData? = null) {
         val inputData = data ?: GoToInputFragment.GoToData(
-            CelestiaAppCore.getLocalizedString("Earth", "celestia"),
+            AppCore.getLocalizedString("Earth", "celestia"),
             0.0f,
             0.0f,
             8.0,
-            CelestiaGoToLocation.DistanceUnit.radii
+            GoToLocation.DistanceUnit.radii
         )
         showBottomSheetFragment(GoToContainerFragment.newInstance(inputData))
     }
@@ -1751,7 +1756,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        val location = CelestiaGoToLocation(selection, goToData.longitude, goToData.latitude, goToData.distance, goToData.distanceUnit)
+        val location = GoToLocation(
+            selection,
+            goToData.longitude,
+            goToData.latitude,
+            goToData.distance,
+            goToData.distanceUnit
+        )
         CelestiaView.callOnRenderThread {
             core.simulation.goToLocation(location)
         }
@@ -1850,7 +1861,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
-        var customFrameRateOption: Int = CelestiaRenderer.FRAME_60FPS
+        var customFrameRateOption: Int = Renderer.FRAME_60FPS
         private var language: String = "en"
         private var addonPath: String? = null
         private var extraScriptPath: String? = null
@@ -1866,7 +1877,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         init {
             System.loadLibrary("nativecrashhandler")
             System.loadLibrary("celestia")
-            CelestiaAppCore.setUpLocale()
+            AppCore.setUpLocale()
         }
     }
 }

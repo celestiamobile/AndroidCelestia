@@ -15,16 +15,16 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
-public class CelestiaSimulation {
+public class Simulation {
     private long pointer;
-    private CelestiaUniverse universe;
+    private Universe universe;
 
     public @NonNull
-    CelestiaSelection getSelection() {
-        return new CelestiaSelection(c_getSelection(pointer));
+    Selection getSelection() {
+        return new Selection(c_getSelection(pointer));
     }
 
-    public void setSelection(@NonNull CelestiaSelection selection) {
+    public void setSelection(@NonNull Selection selection) {
         c_setSelection(pointer, selection.pointer);
     }
 
@@ -32,61 +32,63 @@ public class CelestiaSimulation {
         return c_completionForText(pointer, text, limit);
     }
 
-    public @NonNull CelestiaSelection findObject(@NonNull String name) {
-        return new CelestiaSelection(c_findObject(pointer, name));
+    public @NonNull
+    Selection findObject(@NonNull String name) {
+        return new Selection(c_findObject(pointer, name));
     }
 
     public @NonNull
-    CelestiaUniverse getUniverse() {
+    Universe getUniverse() {
         if (universe == null)
-            universe = new CelestiaUniverse(c_getUniverse(pointer));
+            universe = new Universe(c_getUniverse(pointer));
         return universe;
     }
 
     public @NonNull
-    CelestiaStarBrowser getStarBrowser(int kind) {
-        return new CelestiaStarBrowser(c_getStarBrowser(pointer, kind));
+    StarBrowser getStarBrowser(int kind) {
+        return new StarBrowser(c_getStarBrowser(pointer, kind));
     }
 
     public void reverseObserverOrientation() {
         c_reverseObserverOrientation(pointer);
     }
 
-    protected CelestiaSimulation(long ptr) {
+    protected Simulation(long ptr) {
         pointer = ptr;
     }
 
     public double getTime() { return c_getTime(pointer); }
     public void setTime(double time) { c_setTime(pointer, time); }
 
-    public void goToEclipse(CelestiaEclipseFinder.Eclipse eclipse) {
-        CelestiaPlanetarySystem system = eclipse.receiver.getSystem();
+    public void goToEclipse(EclipseFinder.Eclipse eclipse) {
+        PlanetarySystem system = eclipse.receiver.getSystem();
         if (system == null)
              return;
-        CelestiaStar star = system.getStar();
+        Star star = system.getStar();
         if (star == null)
             return;
-        CelestiaSelection target = CelestiaSelection.create(eclipse.receiver);
-        CelestiaSelection ref = CelestiaSelection.create(star);
+        Selection target = Selection.create(eclipse.receiver);
+        Selection ref = Selection.create(star);
         if (target == null || ref == null)
             return;
         c_goToEclipse(pointer, eclipse.startTimeJulian, ref.pointer, target.pointer);
     }
 
-    public @NonNull CelestiaObserver getActiveObserver() {
-        return new CelestiaObserver(c_getActiveObserver(pointer));
+    public @NonNull
+    Observer getActiveObserver() {
+        return new Observer(c_getActiveObserver(pointer));
     }
 
-    public void goTo(@NonNull CelestiaDestination destination) {
+    public void goTo(@NonNull Destination destination) {
         c_goToDestination(pointer, destination.target, destination.distance);
     }
 
-    public void goToLocation(@NonNull CelestiaGoToLocation location) {
+    public void goToLocation(@NonNull GoToLocation location) {
         double distance = location.selection.getRadius() * 5.0;
-        if ((location.fieldMask & CelestiaGoToLocation.FieldMaskDistance) != 0) {
+        if ((location.fieldMask & GoToLocation.FieldMaskDistance) != 0) {
             distance = location.distance;
         }
-        if (((location.fieldMask & CelestiaGoToLocation.FieldMaskLongitude) != 0) && ((location.fieldMask & CelestiaGoToLocation.FieldMaskLatitude) != 0 )) {
+        if (((location.fieldMask & GoToLocation.FieldMaskLongitude) != 0) && ((location.fieldMask & GoToLocation.FieldMaskLatitude) != 0 )) {
             c_goToLocationLongLat(pointer, location.selection.pointer, location.longitude, location.latitude, distance, location.duration);
         } else {
             c_goToLocation(pointer, location.selection.pointer, distance, location.duration);

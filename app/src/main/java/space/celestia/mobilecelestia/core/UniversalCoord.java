@@ -13,30 +13,30 @@ package space.celestia.mobilecelestia.core;
 
 import androidx.annotation.NonNull;
 
-public class CelestiaUniversalCoord {
+public class UniversalCoord {
     private long pointer;
-    protected CelestiaUniversalCoord(long ptr) { pointer = ptr; }
+    protected UniversalCoord(long ptr) { pointer = ptr; }
 
-    private static CelestiaUniversalCoord zero = null;
+    private static UniversalCoord zero = null;
 
     @NonNull
-    public static CelestiaUniversalCoord getZero() {
+    public static UniversalCoord getZero() {
         if (zero == null)
-            zero = new CelestiaUniversalCoord(c_getZero());
+            zero = new UniversalCoord(c_getZero());
         return zero;
     }
 
-    public double distanceFrom(@NonNull CelestiaUniversalCoord otherCoord) {
+    public double distanceFrom(@NonNull UniversalCoord otherCoord) {
         return c_distanceFrom(pointer, otherCoord.pointer);
     }
 
     @NonNull
-    public CelestiaUniversalCoord differenceFrom(@NonNull CelestiaUniversalCoord otherCoord) {
-        return new CelestiaUniversalCoord(c_differenceFrom(pointer, otherCoord.pointer));
+    public UniversalCoord differenceFrom(@NonNull UniversalCoord otherCoord) {
+        return new UniversalCoord(c_differenceFrom(pointer, otherCoord.pointer));
     }
 
     @NonNull
-    public CelestiaVector offsetFrom(@NonNull CelestiaUniversalCoord otherCoord) {
+    public Vector offsetFrom(@NonNull UniversalCoord otherCoord) {
         return c_offsetFrom(pointer, otherCoord.pointer);
     }
 
@@ -51,7 +51,7 @@ public class CelestiaUniversalCoord {
 
     private static native double c_distanceFrom(long ptr1, long ptr2);
     private static native long c_differenceFrom(long ptr1, long ptr2);
-    private static native CelestiaVector c_offsetFrom(long ptr1, long ptr2);
+    private static native Vector c_offsetFrom(long ptr1, long ptr2);
 
     private static native void c_destroy(long pointer);
 }

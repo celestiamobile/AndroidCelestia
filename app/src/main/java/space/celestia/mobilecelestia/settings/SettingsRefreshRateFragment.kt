@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.core.CelestiaRenderer
+import space.celestia.mobilecelestia.core.Renderer
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class SettingsRefreshRateFragment : SettingsBaseFragment() {
@@ -78,9 +78,9 @@ class SettingsRefreshRateFragment : SettingsBaseFragment() {
         val supportedRefreshRates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display.supportedModes.map { it.refreshRate } else display.supportedRefreshRates.toList()
         val maxRefreshRate = supportedRefreshRates.maxOrNull()?.toInt() ?: return null
         return Pair(listOf(
-            Pair(CelestiaRenderer.FRAME_60FPS, 60),
-            Pair(CelestiaRenderer.FRAME_30FPS, 30),
-            Pair(CelestiaRenderer.FRAME_20FPS, 20),
+            Pair(Renderer.FRAME_60FPS, 60),
+            Pair(Renderer.FRAME_30FPS, 30),
+            Pair(Renderer.FRAME_20FPS, 20),
         ).filter { it.second <= maxRefreshRate }, maxRefreshRate)
     }
 

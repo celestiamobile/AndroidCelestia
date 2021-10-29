@@ -39,7 +39,7 @@ import space.celestia.mobilecelestia.utils.showToast
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
-class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, CelestiaAppCore.ContextMenuHandler {
+class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler {
     private var activity: Activity? = null
 
     // MARK: GL View
@@ -54,14 +54,14 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private var addonToLoad: String? = null
     private var enableMultisample = false
     private var enableFullResolution = false
-    private var frameRateOption = CelestiaRenderer.FRAME_60FPS
+    private var frameRateOption = Renderer.FRAME_60FPS
     private lateinit var languageOverride: String
 
     // MARK: Celestia
-    private val core by lazy { CelestiaAppCore.shared() }
-    private val renderer by lazy { CelestiaRenderer.shared() }
-    private var pendingTarget: CelestiaSelection? = null
-    private var browserItems: ArrayList<CelestiaBrowserItem> = arrayListOf()
+    private val core by lazy { AppCore.shared() }
+    private val renderer by lazy { Renderer.shared() }
+    private var pendingTarget: Selection? = null
+    private var browserItems: ArrayList<BrowserItem> = arrayListOf()
     private var density: Float = 1f
     private var previousDensity: Float = 0f
     private var savedInsets: EdgeInsets? = null
@@ -115,7 +115,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             }
         } else {
             previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
-            frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, CelestiaRenderer.FRAME_60FPS)
+            frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, Renderer.FRAME_60FPS)
         }
     }
 
@@ -275,11 +275,11 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING)
 
-        CelestiaAppCore.initGL()
-        CelestiaAppCore.chdir(data)
+        AppCore.initGL()
+        AppCore.chdir(data)
 
         // Set up locale
-        CelestiaAppCore.setLocaleDirectoryPath("$data/locale", languageOverride)
+        AppCore.setLocaleDirectoryPath("$data/locale", languageOverride)
 
         val extraDirs = if (addon != null) arrayOf(addon) else null
 
@@ -292,8 +292,8 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                 var fallbackDataPath = lis.provideFallbackDataDirectoryPath();
                 if (fallbackConfigPath != cfg || fallbackDataPath != data) {
                     lis.celestiaFragmentLoadingFromFallback()
-                    CelestiaAppCore.chdir(fallbackDataPath)
-                    CelestiaAppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride)
+                    AppCore.chdir(fallbackDataPath)
+                    AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride)
                     if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
                         AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
                         return false
@@ -345,15 +345,15 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         core.clearFonts()
 
         // Use installed font
-        val locale = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
+        val locale = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val preferredInstalledFont = MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
         if (preferredInstalledFont != null) {
             val font = preferredInstalledFont.first
             val boldFont = preferredInstalledFont.second
             core.setFont(font.filePath, font.collectionIndex, 9)
             core.setTitleFont(boldFont.filePath, boldFont.collectionIndex, 15)
-            core.setRendererFont(font.filePath, font.collectionIndex, 9, CelestiaAppCore.RENDER_FONT_STYLE_NORMAL)
-            core.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, CelestiaAppCore.RENDER_FONT_STYLE_LARGE)
+            core.setRendererFont(font.filePath, font.collectionIndex, 9, AppCore.RENDER_FONT_STYLE_NORMAL)
+            core.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, AppCore.RENDER_FONT_STYLE_LARGE)
         }
         previousDensity = density
     }
@@ -401,7 +401,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         browserItems.clear()
 
-        fun createSubMenu(menu: Menu, browserItem: CelestiaBrowserItem) {
+        fun createSubMenu(menu: Menu, browserItem: BrowserItem) {
             val obj = browserItem.`object`
             if (obj != null) {
                 menu.add(GROUP_BROWSER_ITEM_GO, browserItems.size, Menu.NONE, CelestiaString("Go", ""))
@@ -423,14 +423,19 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         val obj = selection.`object`
 
         if (obj != null) {
-            val browserItem = CelestiaBrowserItem(core.simulation.universe.getNameForSelection(selection), null, obj, core.simulation.universe)
+            val browserItem = BrowserItem(
+                core.simulation.universe.getNameForSelection(selection),
+                null,
+                obj,
+                core.simulation.universe
+            )
             for (child in browserItem.children) {
                 val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, child.name)
                 createSubMenu(subMenu, child)
             }
         }
 
-        if (obj is CelestiaBody) {
+        if (obj is Body) {
             val alternateSurfaces = obj.alternateSurfaceNames
             if (alternateSurfaces.size > 0) {
                 val subMenu = menu.addSubMenu(GROUP_ALT_SURFACE_TOP, 0, Menu.NONE, CelestiaString("Alternate Surfaces", ""))
@@ -483,7 +488,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             if (item.itemId >= 0 && item.itemId < browserItems.size) {
                 val ent = browserItems[item.itemId].`object`
                 if (ent != null) {
-                    val obj = CelestiaSelection.create(ent)
+                    val obj = Selection.create(ent)
                     if (obj != null) {
                         CelestiaView.callOnRenderThread {
                             core.simulation.selection = obj
@@ -620,7 +625,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         viewInteraction.zoomMode = null
     }
 
-    override fun requestContextMenu(x: Float, y: Float, selection: CelestiaSelection) {
+    override fun requestContextMenu(x: Float, y: Float, selection: Selection) {
         if (selection.isEmpty) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return // Avoid showing context menu before Android 8, since it is fullscreen
 
@@ -686,6 +691,6 @@ fun EdgeInsets.scaleBy(factor: Float): EdgeInsets {
     )
 }
 
-fun CelestiaAppCore.setSafeAreaInsets(insets: EdgeInsets) {
+fun AppCore.setSafeAreaInsets(insets: EdgeInsets) {
     setSafeAreaInsets(insets.left, insets.top, insets.right, insets.bottom)
 }

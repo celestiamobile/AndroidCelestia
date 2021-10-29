@@ -1,5 +1,5 @@
 /*
- * CelestiaAstroObject.java
+ * CelestiaLocation.java
  *
  * Copyright (C) 2001-2020, Celestia Development Team
  *
@@ -11,12 +11,18 @@
 
 package space.celestia.mobilecelestia.core;
 
-import java.io.Serializable;
+import androidx.annotation.NonNull;
 
-public class CelestiaAstroObject implements Serializable {
-    protected long pointer;
-
-    protected CelestiaAstroObject(long ptr) {
-        pointer = ptr;
+public class Location extends AstroObject {
+    Location(long ptr) {
+        super(ptr);
     }
+
+    @NonNull
+    public String getName() {
+        return c_getName(pointer);
+    }
+
+    // C functions
+    private static native String c_getName(long pointer);
 }

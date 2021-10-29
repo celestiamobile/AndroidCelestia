@@ -39,33 +39,33 @@ private:
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaEclipseFinder_c_1createWithBody(JNIEnv *env,
-                                                                                jclass clazz,
-                                                                                jlong ptr) {
+Java_space_celestia_mobilecelestia_core_EclipseFinder_c_1createWithBody(JNIEnv *env,
+                                                                        jclass clazz,
+                                                                        jlong ptr) {
     return (long)new EclipseSeacherWatcher((Body *)ptr);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaEclipseFinder_c_1finalized(JNIEnv *env,
-                                                                           jclass clazz,
-                                                                           jlong ptr) {
+Java_space_celestia_mobilecelestia_core_EclipseFinder_c_1finalized(JNIEnv *env,
+                                                                   jclass clazz,
+                                                                   jlong ptr) {
     delete (EclipseSeacherWatcher *)ptr;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaEclipseFinder_c_1abort(JNIEnv *env, jclass clazz,
-                                                                       jlong ptr) {
+Java_space_celestia_mobilecelestia_core_EclipseFinder_c_1abort(JNIEnv *env, jclass clazz,
+                                                               jlong ptr) {
     ((EclipseSeacherWatcher *)ptr)->abort();
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaEclipseFinder_c_1search(JNIEnv *env, jclass clazz,
-                                                                        jlong ptr, jint kind,
-                                                                        jdouble start_time_julian,
-                                                                        jdouble end_time_julian) {
+Java_space_celestia_mobilecelestia_core_EclipseFinder_c_1search(JNIEnv *env, jclass clazz,
+                                                                jlong ptr, jint kind,
+                                                                jdouble start_time_julian,
+                                                                jdouble end_time_julian) {
     EclipseFinder *finder = ((EclipseSeacherWatcher *)ptr)->getFinder();
     std::vector<Eclipse> results;
     finder->findEclipses(start_time_julian, end_time_julian, kind, results);

@@ -13,27 +13,27 @@ package space.celestia.mobilecelestia.core;
 
 import androidx.annotation.Nullable;
 
-public class CelestiaPlanetarySystem {
+public class PlanetarySystem {
     private final long pointer;
 
-    protected CelestiaPlanetarySystem(long ptr) {
+    protected PlanetarySystem(long ptr) {
         pointer = ptr;
     }
 
     public @Nullable
-    CelestiaBody getPrimaryObject() {
+    Body getPrimaryObject() {
         long ptr = c_getPrimaryObject(pointer);
         if (ptr == 0)
             return null;
-        return new CelestiaBody(ptr);
+        return new Body(ptr);
     }
 
     public @Nullable
-    CelestiaStar getStar() {
+    Star getStar() {
         long ptr = c_getStar(pointer);
         if (ptr == 0)
             return null;
-        return new CelestiaStar(ptr);
+        return new Star(ptr);
     }
 
     private native long c_getPrimaryObject(long ptr);

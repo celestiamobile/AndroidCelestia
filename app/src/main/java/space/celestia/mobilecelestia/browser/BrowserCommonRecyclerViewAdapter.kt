@@ -19,26 +19,26 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.CelestiaBrowserItem
+import space.celestia.mobilecelestia.core.BrowserItem
 
-fun CelestiaBrowserItem.createSection(): List<CommonSectionV2> {
+fun BrowserItem.createSection(): List<CommonSectionV2> {
     val list = ArrayList<CommonSectionV2>()
 
     if (`object` != null) {
-        val section = CommonSectionV2(listOf( BrowserItem(this, true) ))
+        val section = CommonSectionV2(listOf( BrowserUIItem(this, true) ))
         list.add(section)
     }
-    list.add(CommonSectionV2(children.map { BrowserItem(it, it.children.size == 0) }))
+    list.add(CommonSectionV2(children.map { BrowserUIItem(it, it.children.size == 0) }))
     return list
 }
 
 class BrowserCommonRecyclerViewAdapter(
-    item: CelestiaBrowserItem,
+    item: BrowserItem,
     private val listener: Listener?
 ) : SeparatorHeaderRecyclerViewAdapter(item.createSection()) {
 
     override fun onItemSelected(item: RecyclerViewItem) {
-        if (item is BrowserItem) {
+        if (item is BrowserUIItem) {
             listener?.onBrowserItemSelected(item)
         }
     }
@@ -58,7 +58,7 @@ class BrowserCommonRecyclerViewAdapter(
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
-        if (holder is CommonTextViewHolder && item is BrowserItem) {
+        if (holder is CommonTextViewHolder && item is BrowserUIItem) {
             holder.title.text = item.item.name
             if (item.isLeaf) {
                 holder.accessory.visibility = View.GONE

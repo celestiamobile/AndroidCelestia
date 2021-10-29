@@ -11,27 +11,27 @@
 
 package space.celestia.mobilecelestia.core;
 
-public class CelestiaRotationModel {
+public class RotationModel {
     protected long pointer;
 
-    CelestiaRotationModel(long ptr) { pointer = ptr; }
+    RotationModel(long ptr) { pointer = ptr; }
 
     public Boolean isPeriodic() { return c_isPeriodic(pointer); }
     public double getPeriod() { return c_getPeriod(pointer); }
     public double getValidBeginTime() { return c_getValidBeginTime(pointer); }
     public double getValidEndTime() { return c_getValidEndTime(pointer); }
 
-    public CelestiaVector getAngularVelocityAtTime(double julianDay) { return c_getAngularVelocityAtTime(pointer, julianDay); }
-    public CelestiaVector getEquatorOrientationAtTime(double julianDay) { return c_getEquatorOrientationAtTime(pointer, julianDay); }
-    public CelestiaVector getSpinAtTime(double julianDay) { return c_getSpinAtTime(pointer, julianDay); }
+    public Vector getAngularVelocityAtTime(double julianDay) { return c_getAngularVelocityAtTime(pointer, julianDay); }
+    public Vector getEquatorOrientationAtTime(double julianDay) { return c_getEquatorOrientationAtTime(pointer, julianDay); }
+    public Vector getSpinAtTime(double julianDay) { return c_getSpinAtTime(pointer, julianDay); }
 
     private static native boolean c_isPeriodic(long pointer);
     private static native double c_getPeriod(long pointer);
     private static native double c_getValidBeginTime(long pointer);
     private static native double c_getValidEndTime(long pointer);
 
-    private static native CelestiaVector c_getAngularVelocityAtTime(long pointer, double julianDay);
-    private static native CelestiaVector c_getEquatorOrientationAtTime(long pointer, double julianDay);
-    private static native CelestiaVector c_getSpinAtTime(long pointer, double julianDay);
+    private static native Vector c_getAngularVelocityAtTime(long pointer, double julianDay);
+    private static native Vector c_getEquatorOrientationAtTime(long pointer, double julianDay);
+    private static native Vector c_getSpinAtTime(long pointer, double julianDay);
 
 }

@@ -15,7 +15,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PointF
 import android.view.SurfaceView
-import space.celestia.mobilecelestia.core.CelestiaRenderer
+import space.celestia.mobilecelestia.core.Renderer
 
 @SuppressLint("ViewConstructor")
 class CelestiaView(context: Context, private val scaleFactor: Float) : SurfaceView(context) {
@@ -41,7 +41,7 @@ class CelestiaView(context: Context, private val scaleFactor: Float) : SurfaceVi
 
     companion object {
         private var sharedView: CelestiaView? = null
-        private val renderer by lazy { CelestiaRenderer.shared() }
+        private val renderer by lazy { Renderer.shared() }
 
         // Call on render thread to avoid concurrency issue.
         fun callOnRenderThread(block: () -> Unit) {

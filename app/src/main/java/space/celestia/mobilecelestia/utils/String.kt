@@ -11,9 +11,9 @@
 
 package space.celestia.mobilecelestia.utils
 
-import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.AppCore
 
 @Suppress("FunctionName")
 fun CelestiaString(key: String, @Suppress("UNUSED_PARAMETER") comment: String): String {
-    return CelestiaAppCore.getLocalizedString(key)
+    return AppCore.getLocalizedString(key)
 }

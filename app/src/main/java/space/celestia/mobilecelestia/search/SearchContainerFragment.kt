@@ -12,22 +12,16 @@
 package space.celestia.mobilecelestia.search
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
-import space.celestia.mobilecelestia.core.CelestiaSelection
+import space.celestia.mobilecelestia.core.Selection
 import space.celestia.mobilecelestia.info.InfoFragment
-import space.celestia.mobilecelestia.info.model.InfoDescriptionItem
 
 class SearchContainerFragment : EndNavgationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return SearchFragment.newInstance()
     }
 
-    fun pushSearchResult(selection: CelestiaSelection) {
+    fun pushSearchResult(selection: Selection) {
         pushFragment(InfoFragment.newInstance(selection))
     }
 

@@ -19,27 +19,27 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CelestiaEclipseFinder {
+public class EclipseFinder {
     public static final int ECLIPSE_KIND_SOLAR = 0x01;
     public static final int ECLIPSE_KIND_LUNAR = 0x02;
 
     private final long pointer;
 
     public static class Eclipse {
-        public final CelestiaBody occulter;
-        public final CelestiaBody receiver;
+        public final Body occulter;
+        public final Body receiver;
         public final double startTimeJulian;
         public final double endTimeJulian;
 
         private Eclipse(long occulter, long receiver, double startTime, double endTime) {
             startTimeJulian = startTime;
             endTimeJulian = endTime;
-            this.occulter = new CelestiaBody(occulter);
-            this.receiver = new CelestiaBody(receiver);
+            this.occulter = new Body(occulter);
+            this.receiver = new Body(receiver);
         }
     }
 
-    public CelestiaEclipseFinder(CelestiaBody body) {
+    public EclipseFinder(Body body) {
         pointer = c_createWithBody(body.pointer);
     }
 

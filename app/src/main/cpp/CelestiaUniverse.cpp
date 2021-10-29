@@ -21,21 +21,21 @@
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getStarCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Universe_c_1getStarCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
     auto u = (Universe *)pointer;
     return (jlong)u->getStarCatalog();
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getDSOCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Universe_c_1getDSOCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
     auto u = (Universe *)pointer;
     return (jlong)u->getDSOCatalog();
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1findObject(JNIEnv *env, jclass clazz, jlong pointer, jstring name) {
+Java_space_celestia_mobilecelestia_core_Universe_c_1findObject(JNIEnv *env, jclass clazz, jlong pointer, jstring name) {
     auto u = (Universe *)pointer;
     const char *str = env->GetStringUTFChars(name, nullptr);
     Selection *sel = new Selection(u->find(str));
@@ -76,7 +76,7 @@ static void create_browser_item_and_add(json &parent, std::string name, int key,
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Universe_c_1getChildrenForStar(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
     auto u = (Universe *)ptr;
     SolarSystem *ss = u->getSolarSystem((Star *)pointer);
 
@@ -170,7 +170,7 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForStar(J
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
+Java_space_celestia_mobilecelestia_core_Universe_c_1getChildrenForBody(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
     auto u = (Universe *)ptr;
 
     Body *b = (Body *)pointer;
@@ -263,25 +263,25 @@ Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1getChildrenForBody(J
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1mark(JNIEnv *env, jclass clazz,
-                                                                 jlong ptr, jlong selection,
-                                                                 jint marker) {
+Java_space_celestia_mobilecelestia_core_Universe_c_1mark(JNIEnv *env, jclass clazz,
+                                                         jlong ptr, jlong selection,
+                                                         jint marker) {
     auto u = (Universe *)ptr;
     u->markObject(*(Selection *)selection, celestia::MarkerRepresentation(celestia::MarkerRepresentation::Symbol(marker), 10.0f, Color(0.0f, 1.0f, 0.0f, 0.9f)), 1);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1unmark(JNIEnv *env, jclass clazz,
-                                                                   jlong ptr, jlong selection) {
+Java_space_celestia_mobilecelestia_core_Universe_c_1unmark(JNIEnv *env, jclass clazz,
+                                                           jlong ptr, jlong selection) {
     auto u = (Universe *)ptr;
     u->unmarkObject(*(Selection *)selection, 1);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaUniverse_c_1unmarkAll(JNIEnv *env, jclass clazz,
-                                                                      jlong ptr) {
+Java_space_celestia_mobilecelestia_core_Universe_c_1unmarkAll(JNIEnv *env, jclass clazz,
+                                                              jlong ptr) {
     auto u = (Universe *)ptr;
     u->unmarkAll();
 }

@@ -27,7 +27,7 @@ import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.ProgressView
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.AppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
@@ -121,7 +121,7 @@ class ResourceItemFragment : EndSubFragment(), ResourceManager.Listener {
         val item = this.item ?: return
 
         // Fetch the latest data from server since user might have come from `Installed`
-        val lang = CelestiaAppCore.getLocalizedString("LANGUAGE", "celestia")
+        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
         lifecycleScope.launch(Dispatchers.IO) {
             try {

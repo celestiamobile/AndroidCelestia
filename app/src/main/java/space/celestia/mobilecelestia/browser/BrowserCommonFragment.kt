@@ -20,12 +20,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.CelestiaBrowserItem
+import space.celestia.mobilecelestia.core.BrowserItem
 
 class BrowserCommonFragment : EndSubFragment() {
 
     private var listener: Listener? = null
-    private var browserItem: CelestiaBrowserItem? = null
+    private var browserItem: BrowserItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +75,7 @@ class BrowserCommonFragment : EndSubFragment() {
     }
 
     interface Listener {
-        fun onBrowserItemSelected(item: BrowserItem)
+        fun onBrowserItemSelected(item: BrowserUIItem)
     }
 
     companion object {

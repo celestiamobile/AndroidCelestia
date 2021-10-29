@@ -18,7 +18,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.LayoutDirection
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -37,8 +36,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.CelestiaAppCore
+import space.celestia.mobilecelestia.core.AppCore
 
 @ExperimentalCoroutinesApi
 fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
@@ -120,7 +118,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
             .debounce(300)
             .mapLatest {
                 val key = it.first
-                val core = CelestiaAppCore.shared()
+                val core = AppCore.shared()
                 val result = if (key.isEmpty()) listOf<String>() else core.simulation.completionForText(key, SEARCH_RESULT_LIMIT)
                 Triple(key, result, it.second)
             }

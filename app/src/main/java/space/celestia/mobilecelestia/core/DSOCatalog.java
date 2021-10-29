@@ -13,15 +13,15 @@ package space.celestia.mobilecelestia.core;
 
 import androidx.annotation.NonNull;
 
-public class CelestiaDSOCatalog {
+public class DSOCatalog {
     protected long pointer;
 
-    CelestiaDSOCatalog(long ptr) {
+    DSOCatalog(long ptr) {
         pointer = ptr;
     }
 
     @NonNull
-    public String getDSOName(CelestiaDSO dso) {
+    public String getDSOName(DSO dso) {
         return c_getDSOName(pointer, dso.pointer);
     }
 
@@ -29,8 +29,8 @@ public class CelestiaDSOCatalog {
         return c_getCount(pointer);
     }
 
-    public CelestiaDSO getDSO(int index) {
-        return new CelestiaDSO(c_getDSO(pointer, index));
+    public DSO getDSO(int index) {
+        return new DSO(c_getDSO(pointer, index));
     }
 
     // C functions
