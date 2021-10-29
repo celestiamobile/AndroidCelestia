@@ -46,7 +46,7 @@ Java_space_celestia_mobilecelestia_core_RotationModel_c_1getValidEndTime(JNIEnv 
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_space_celestia_mobilecelestia_core_CelestiaRotationModel_c_1getAngularVelocityAtTime__D(
+Java_space_celestia_mobilecelestia_core_RotationModel_c_1getAngularVelocityAtTime__D(
         JNIEnv *env, jclass clazz, jlong pointer, jdouble julian_day) {
     auto p = (const RotationModel *)pointer;
     const Eigen::Vector3d v = p->angularVelocityAtTime(julian_day);
