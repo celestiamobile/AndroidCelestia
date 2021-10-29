@@ -22,7 +22,7 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.Renderer
+import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class RefreshRateItem(val frameRateOption: Int, val frameRate: Int, val checked: Boolean) : RecyclerViewItem

@@ -12,8 +12,8 @@
 package space.celestia.mobilecelestia.browser
 
 import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.core.*
-import space.celestia.mobilecelestia.core.BrowserItem
+import space.celestia.celestia.*
+import space.celestia.celestia.BrowserItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 private var solRoot: BrowserItem? = null

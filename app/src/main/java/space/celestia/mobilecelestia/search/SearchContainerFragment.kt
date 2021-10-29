@@ -13,7 +13,7 @@ package space.celestia.mobilecelestia.search
 
 import android.os.Bundle
 import space.celestia.mobilecelestia.common.*
-import space.celestia.mobilecelestia.core.Selection
+import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.info.InfoFragment
 
 class SearchContainerFragment : EndNavgationFragment() {

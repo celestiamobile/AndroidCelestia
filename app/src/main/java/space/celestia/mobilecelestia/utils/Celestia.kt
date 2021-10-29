@@ -11,7 +11,7 @@
 
 package space.celestia.mobilecelestia.utils
 
-import space.celestia.mobilecelestia.core.*
+import space.celestia.celestia.*
 import space.celestia.mobilecelestia.favorite.BookmarkNode
 
 val AppCore.currentBookmark: BookmarkNode?

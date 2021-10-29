@@ -12,3 +12,4 @@
 rootProject.name='Celestia'
 include ':app'
 include ':LinkPreview'
+include ':Celestia'

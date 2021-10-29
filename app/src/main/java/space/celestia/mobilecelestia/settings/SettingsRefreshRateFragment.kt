@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.core.Renderer
+import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class SettingsRefreshRateFragment : SettingsBaseFragment() {

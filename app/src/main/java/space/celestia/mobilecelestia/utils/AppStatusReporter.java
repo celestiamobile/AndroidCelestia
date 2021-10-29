@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 
-import space.celestia.mobilecelestia.core.AppCore;
+import space.celestia.celestia.AppCore;
 
 public class AppStatusReporter implements AppCore.ProgressWatcher {
     private static AppStatusReporter singleton = null;

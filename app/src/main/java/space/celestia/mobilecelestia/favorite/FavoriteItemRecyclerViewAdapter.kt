@@ -23,8 +23,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
-import space.celestia.mobilecelestia.core.Destination
-import space.celestia.mobilecelestia.core.Script
+import space.celestia.celestia.Destination
+import space.celestia.celestia.Script
 import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable

@@ -19,9 +19,9 @@ import com.google.android.material.navigation.NavigationBarView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.core.AppCore
-import space.celestia.mobilecelestia.core.BrowserItem
-import space.celestia.mobilecelestia.core.Selection
+import space.celestia.celestia.AppCore
+import space.celestia.celestia.BrowserItem
+import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.info.InfoFragment
 
 interface BrowserRootFragment {

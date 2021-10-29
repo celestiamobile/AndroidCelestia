@@ -36,7 +36,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.core.AppCore
+import space.celestia.celestia.AppCore
 
 @ExperimentalCoroutinesApi
 fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {

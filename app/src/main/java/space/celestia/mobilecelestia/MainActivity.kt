@@ -50,8 +50,8 @@ import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.control.*
-import space.celestia.mobilecelestia.core.*
-import space.celestia.mobilecelestia.core.BrowserItem
+import space.celestia.celestia.*
+import space.celestia.celestia.BrowserItem
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment

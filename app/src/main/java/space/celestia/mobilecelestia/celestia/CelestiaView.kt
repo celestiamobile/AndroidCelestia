@@ -15,7 +15,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PointF
 import android.view.SurfaceView
-import space.celestia.mobilecelestia.core.Renderer
+import space.celestia.celestia.Renderer
 
 @SuppressLint("ViewConstructor")
 class CelestiaView(context: Context, private val scaleFactor: Float) : SurfaceView(context) {

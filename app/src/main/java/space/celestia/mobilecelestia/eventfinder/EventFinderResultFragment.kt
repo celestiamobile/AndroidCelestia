@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.EclipseFinder
+import space.celestia.celestia.EclipseFinder
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class EventFinderResultFragment : EndSubFragment() {

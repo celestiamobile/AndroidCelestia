@@ -25,8 +25,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.core.AppCore
-import space.celestia.mobilecelestia.core.Selection
+import space.celestia.celestia.AppCore
+import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.utils.getOverviewForSelection
 import space.celestia.ui.linkpreview.LPLinkMetadata

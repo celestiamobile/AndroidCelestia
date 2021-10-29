@@ -13,8 +13,8 @@ package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
 import space.celestia.mobilecelestia.common.EndNavgationFragment
-import space.celestia.mobilecelestia.core.BrowserItem
-import space.celestia.mobilecelestia.core.Selection
+import space.celestia.celestia.BrowserItem
+import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.info.InfoFragment
 
 class SubsystemBrowserFragment : EndNavgationFragment(), BrowserRootFragment {

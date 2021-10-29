@@ -19,7 +19,7 @@ import android.graphics.RectF
 import android.os.Build
 import android.util.Log
 import android.view.*
-import space.celestia.mobilecelestia.core.AppCore
+import space.celestia.celestia.AppCore
 
 class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
     protected val core by lazy { AppCore.shared() }

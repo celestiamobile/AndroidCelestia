@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.AppCore
+import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.utils.*
 import java.util.*
 

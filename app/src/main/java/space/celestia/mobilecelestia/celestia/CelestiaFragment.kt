@@ -31,7 +31,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.InsetAwareFragment
-import space.celestia.mobilecelestia.core.*
+import space.celestia.celestia.*
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString

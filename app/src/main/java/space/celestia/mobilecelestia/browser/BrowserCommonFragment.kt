@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.BrowserItem
+import space.celestia.celestia.BrowserItem
 
 class BrowserCommonFragment : EndSubFragment() {
 

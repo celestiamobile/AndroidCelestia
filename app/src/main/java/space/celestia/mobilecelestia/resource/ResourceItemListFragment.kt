@@ -18,7 +18,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import space.celestia.mobilecelestia.core.AppCore
+import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceCategory

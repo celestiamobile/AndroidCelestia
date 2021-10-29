@@ -31,6 +31,17 @@ buildscript {
 }
 
 allprojects {
+    project.ext {
+        constants = [
+                minSdkVersion     : 21,
+                targetSdkVersion  : 30,
+                compileSdkVersion : 30,
+                ndkVersion        : "23.0.7599858",
+                buildToolsVersion : "30.0.3",
+                cmakeVersion      : "3.18.1"
+        ]
+    }
+
     repositories {
         google()
         mavenCentral()

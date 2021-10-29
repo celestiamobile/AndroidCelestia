@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.GoToLocation
+import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.utils.*
 import java.io.Serializable
 import java.util.*

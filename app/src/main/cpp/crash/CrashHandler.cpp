@@ -33,8 +33,8 @@ JNIEXPORT void JNICALL
 Java_space_celestia_mobilecelestia_utils_CrashHandler_setupNativeCrashesListener(JNIEnv *env,
 jclass clazz,
         jstring path) {
-    const char *dumpPath = (char *) env->GetStringUTFChars(path, NULL);
+    const char *dumpPath = (char *) env->GetStringUTFChars(path, nullptr);
     google_breakpad::MinidumpDescriptor descriptor(dumpPath);
-    new google_breakpad::ExceptionHandler(descriptor, NULL, dumpCallback, NULL, true, -1);
+    new google_breakpad::ExceptionHandler(descriptor, nullptr, dumpCallback, nullptr, true, -1);
     env->ReleaseStringUTFChars(path, dumpPath);
 }

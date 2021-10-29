@@ -11,7 +11,7 @@
 
 package space.celestia.mobilecelestia.utils
 
-import space.celestia.mobilecelestia.core.Utils
+import space.celestia.celestia.Utils
 import java.util.*
 
 val Date.julianDay: Double

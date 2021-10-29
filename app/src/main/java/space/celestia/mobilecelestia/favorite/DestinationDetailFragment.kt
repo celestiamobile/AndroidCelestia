@@ -19,7 +19,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
-import space.celestia.mobilecelestia.core.Destination
+import space.celestia.celestia.Destination
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class DestinationDetailFragment : EndSubFragment() {

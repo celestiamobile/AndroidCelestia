@@ -19,7 +19,7 @@ import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
-import space.celestia.mobilecelestia.core.EclipseFinder
+import space.celestia.celestia.EclipseFinder
 import space.celestia.mobilecelestia.utils.createDateFromJulianDay
 import java.text.DateFormat
 import java.util.*
