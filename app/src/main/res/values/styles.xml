@@ -154,7 +154,7 @@
         <item name="backgroundTint">@color/colorEditTextHairLine</item>
     </style>
 
-    <style name="Toolbar">
+    <style name="Toolbar" parent="Widget.MaterialComponents.Toolbar">
         <item name="android:background">@color/colorBarBackground</item>
         <item name="titleTextColor">@color/colorLabel</item>
         <item name="theme">@style/ToolbarTheme</item>
@@ -164,7 +164,7 @@
         <item name="colorControlNormal">@color/colorLabel</item>
     </style>
 
-    <style name="BottomNav">
+    <style name="BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="android:background">@color/colorBarBackground</item>
         <item name="itemTextColor">@color/bottom_nav_color</item>
         <item name="itemIconTint">@color/bottom_nav_color</item>
