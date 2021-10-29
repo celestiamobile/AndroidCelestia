@@ -44,7 +44,7 @@ class BrowserCommonRecyclerViewAdapter(
     }
 
     override fun itemViewType(item: RecyclerViewItem): Int {
-        if (item is BrowserItem) {
+        if (item is BrowserUIItem) {
             return BROWSER_ITEM
         }
         return super.itemViewType(item)
