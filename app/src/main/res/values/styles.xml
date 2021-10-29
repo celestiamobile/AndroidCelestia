@@ -10,14 +10,15 @@
   -->
 
 <resources>
-
-    <style name="DefaultTheme" parent="@style/Theme.MaterialComponents.NoActionBar">
+    <style name="DefaultThemeBase" parent="@style/Theme.MaterialComponents.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:navigationBarColor">@android:color/black</item>
     </style>
+
+    <style name="DefaultTheme" parent="DefaultThemeBase"/>
 
     <style name="Container">
         <item name="android:background">@android:color/transparent</item>

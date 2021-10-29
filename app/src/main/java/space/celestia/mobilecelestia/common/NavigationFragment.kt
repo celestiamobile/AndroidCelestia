@@ -214,7 +214,6 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     }
 
     val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
-    private val separator by lazy { requireView().findViewById<View>(R.id.separator) }
 
     private var lastTitle: String = ""
     private var lastLeftItem: BarButtonItem? = null
@@ -278,7 +277,6 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     private fun configureToolbar(name: String, rightNavigationBarItems: List<NavigationBarItem>, leftNavigationBarItem: BarButtonItem?, canGoBack: Boolean, showNavigationBar: Boolean) {
         toolbar.title = name
         toolbar.visibility = if (showNavigationBar) View.VISIBLE else  View.GONE
-        separator.visibility = if (showNavigationBar) View.VISIBLE else  View.GONE
 
         toolbar.menu.clear()
         for (barItem in rightNavigationBarItems) {
