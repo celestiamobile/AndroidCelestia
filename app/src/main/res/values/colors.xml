@@ -32,7 +32,7 @@
     <color name="colorThemeLabel">#6699CC</color>
     <color name="colorThemeSecondaryLabel">#114477</color>
 
-    <color name="colorEditTextHairLine">#808080</color>
+    <color name="colorEditTextHairLine">#99EBEBF5</color>
     <color name="colorDimmingBackground">#99000000</color>
 
     <color name="colorPrimary">@color/colorThemeLabel</color>

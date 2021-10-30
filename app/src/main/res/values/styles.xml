@@ -150,8 +150,12 @@
 
     <style name="ResourceItemContentLabel" parent="BodyLabel"/>
 
-    <style name="EditText" parent="PrimaryLabel">
-        <item name="backgroundTint">@color/colorEditTextHairLine</item>
+    <style name="EditText" parent="Widget.AppCompat.EditText">
+        <item name="android:backgroundTint">@color/colorEditTextHairLine</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:imeOptions">actionDone|flagNoExtractUi|flagNoFullscreen</item>
+        <item name="android:textColor">@color/colorLabel</item>
+        <item name="android:textColorHint">@color/colorSecondaryLabel</item>
     </style>
 
     <style name="Toolbar" parent="Widget.MaterialComponents.Toolbar">
