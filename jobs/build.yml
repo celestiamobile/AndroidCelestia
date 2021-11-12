@@ -125,19 +125,6 @@ jobs:
       publishLocation: 'Container'
     displayName: 'Publish Build Artifacts'
 
-  - task: AppCenterDistribute@3
-    inputs:
-      serverEndpoint: 'AndroidCelestiaAppCenter'
-      appSlug: 'CelestiaProject/Celestia-1'
-      appFile: '$(build.artifactstagingdirectory)/**/*.$(outputFormat)'
-      releaseNotesOption: 'input'
-      releaseNotesInput: 'Internal testing only.'
-      destinationType: 'groups'
-      symbolsOption: 'Android'
-      nativeLibrariesPath: '$(build.artifactStagingDirectory)/**/*.so'
-    displayName: 'Publish APK to App Center'
-    condition: eq( variables['outputFormat'], 'apk' )
-
   - script: |
       mkdir -p symbols
       cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj/* symbols
@@ -145,5 +132,4 @@ jobs:
       cd symbols
       zip -vr symbols.zip * -x "*.DS_Store"
       appcenter crashes upload-symbols --breakpad symbols.zip --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
-    displayName: 'Upload Symbols (AAB)'
-    condition: eq( variables['outputFormat'], 'aab' )
+    displayName: 'Upload Symbols'
