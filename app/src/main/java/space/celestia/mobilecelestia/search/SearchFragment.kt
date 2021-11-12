@@ -40,7 +40,7 @@ import space.celestia.celestia.AppCore
 
 @ExperimentalCoroutinesApi
 fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
-    return callbackFlow<Pair<String, Boolean>> {
+    return callbackFlow {
         val listener = object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 trySend(Pair(newText ?: "", false))
@@ -84,14 +84,12 @@ class SearchFragment : NavigationFragment.SubFragment() {
         return view
     }
 
-    @FlowPreview
-    @ExperimentalCoroutinesApi
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         ViewCompat.setBackground(
-            searchView.findViewById<View>(R.id.search_plate),
+            searchView.findViewById(R.id.search_plate),
             ColorDrawable(Color.TRANSPARENT)
         )
         searchView.findViewById<EditText>(R.id.search_src_text).hint = ""
