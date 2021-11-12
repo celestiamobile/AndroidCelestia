@@ -111,13 +111,6 @@ jobs:
       flattenFolders: true
     displayName: 'Copy APK/AAB'
 
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: '$(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj'
-      contents: '**/*.so'
-      targetFolder: '$(build.artifactStagingDirectory)'
-    displayName: 'Copy Symbols'
-
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
