@@ -267,25 +267,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             findViewById<View>(R.id.bottom_sheet_card).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
         }
 
+        val weakSelf = WeakReference(this)
         fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val self = weakSelf.get() ?: return@registerForActivityResult
             val uri = it.data?.data ?: return@registerForActivityResult
-            val path = RealPathUtils.getRealPath(this, uri)
+            val path = RealPathUtils.getRealPath(self, uri)
             if (path == null) {
-                showWrongPathProvided()
+                self.showWrongPathProvided()
             } else {
-                setConfigFilePath(path)
-                reloadSettings()
+                self.setConfigFilePath(path)
+                self.reloadSettings()
             }
         }
 
         directoryChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val self = weakSelf.get() ?: return@registerForActivityResult
             val uri = it.data?.data ?: return@registerForActivityResult
-            val path = RealPathUtils.getRealPath(this, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
+            val path = RealPathUtils.getRealPath(self, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
             if (path == null) {
-                showWrongPathProvided()
+                self.showWrongPathProvided()
             } else {
-                setDataDirectoryPath(path)
-                reloadSettings()
+                self.setDataDirectoryPath(path)
+                self.reloadSettings()
             }
         }
 
