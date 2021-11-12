@@ -18,6 +18,7 @@ import android.view.*
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import space.celestia.mobilecelestia.R
 
 abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMenuItemClickListener {
@@ -220,6 +221,10 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     private var lastRightItems: List<NavigationBarItem> = listOf()
     private var lastGoBack = false
     private var lastShowNavigationBar: Boolean = true
+    private var commitIds = arrayListOf<Int>()
+
+    open val fragmentResource: Int
+        get() = R.layout.fragment_general_container_with_toolbar
 
     val top: SubFragment?
         get() = childFragmentManager.findFragmentById(R.id.fragment_container) as? SubFragment
@@ -228,7 +233,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_general_container_with_toolbar, container, false)
+        return inflater.inflate(fragmentResource, container, false)
     }
 
     abstract fun createInitialFragment(savedInstanceState: Bundle?): SubFragment
@@ -239,6 +244,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         outState.putParcelableArrayList(ARG_RIGHT_ITEMS, ArrayList(lastRightItems))
         outState.putBoolean(ARG_BACK, lastGoBack)
         outState.putBoolean(ARG_SHOW_BAR, lastShowNavigationBar)
+        outState.putIntegerArrayList(ARG_COMMIT_IDS, commitIds)
         super.onSaveInstanceState(outState)
     }
 
@@ -254,6 +260,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             lastLeftItem = savedInstanceState.getParcelable(ARG_LEFT_ITEM)
             lastGoBack = savedInstanceState.getBoolean(ARG_BACK)
             lastShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
+            commitIds = savedInstanceState.getIntegerArrayList(ARG_COMMIT_IDS) ?: arrayListOf()
             configureToolbar(
                 lastTitle,
                 lastRightItems,
@@ -265,12 +272,14 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     }
 
     fun replaceFragment(fragment: SubFragment) {
-        replace(fragment, R.id.fragment_container)
+        val commitId = replace(fragment, R.id.fragment_container)
+        commitIds = arrayListOf(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false, fragment.showNavigationBar)
     }
 
     fun pushFragment(fragment: SubFragment) {
-        push(fragment, R.id.fragment_container)
+        val commitId = push(fragment, R.id.fragment_container)
+        commitIds.add(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true, fragment.showNavigationBar)
     }
 
@@ -350,7 +359,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
 
     override fun canPop(): Boolean {
         if (!isAdded()) return false
-        return childFragmentManager.backStackEntryCount > 0
+        return commitIds.size > 1
     }
 
     override fun popLast() {
@@ -360,17 +369,24 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     }
 
     private fun popFragment() {
-        pop()
-        val index = childFragmentManager.backStackEntryCount - 1
+        popFragmentToIndex(commitIds.size - 2)
+        fragmentDidPop()
+    }
+
+    fun popFragmentToIndex(index: Int) {
+        childFragmentManager.popBackStackImmediate(commitIds[index + 1], FragmentManager.POP_BACK_STACK_INCLUSIVE)
         if (index == 0) {
             // no more return
             toolbar.navigationIcon = null
             lastGoBack = false
         }
-        val frag = childFragmentManager.fragments[index]
+        val frag = childFragmentManager.fragments[0]
+        commitIds = ArrayList(commitIds.subList(0, index + 1))
         if (frag is SubFragment)
             configureToolbar(frag.title, frag.rightNavigationBarItems, frag.leftNavigationBarItem, lastGoBack, frag.showNavigationBar)
     }
+
+    open fun fragmentDidPop() {}
 
     private companion object {
         const val ARG_LEFT_ITEM = "left"
@@ -378,5 +394,6 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         const val ARG_TITLE = "title"
         const val ARG_BACK = "back"
         const val ARG_SHOW_BAR = "show-bar"
+        const val ARG_COMMIT_IDS = "commit-ids"
     }
 }

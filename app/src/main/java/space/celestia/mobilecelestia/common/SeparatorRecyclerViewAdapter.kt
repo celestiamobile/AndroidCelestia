@@ -43,6 +43,9 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
 
     private val onClickListener: View.OnClickListener
 
+    open val isItemClickable: Boolean
+        get() = true
+
     init {
         updateSections(sections)
         onClickListener = View.OnClickListener { v ->
@@ -98,10 +101,14 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
         val item = values[position]
         if (item is RecyclerViewItem) {
             bindVH(holder, item)
-            if (item.clickable) {
+            if (item.clickable && isItemClickable) {
                 with(holder.itemView) {
                     tag = item
                     setOnClickListener(onClickListener)
+                }
+            } else {
+                with(holder.itemView) {
+                    setOnClickListener(null)
                 }
             }
         }

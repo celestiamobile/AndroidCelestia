@@ -16,7 +16,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import space.celestia.mobilecelestia.R
 
-fun Fragment.push(fragment: Fragment, containerID: Int) = run {
+
+fun Fragment.push(fragment: Fragment, containerID: Int): Int {
     val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
 
     val ani1 = if (ltr) R.anim.enter_from_right else R.anim.enter_from_left
@@ -24,26 +25,25 @@ fun Fragment.push(fragment: Fragment, containerID: Int) = run {
     val ani3 = if (ltr) R.anim.enter_from_left else R.anim.enter_from_right
     val ani4 = if (ltr) R.anim.exit_to_right else R.anim.exit_to_left
 
-    childFragmentManager.beginTransaction()
-        .addToBackStack(childFragmentManager.backStackEntryCount.toString())
-        .show(fragment)
+    return childFragmentManager.beginTransaction()
         .setCustomAnimations(ani1, ani2, ani3, ani4)
-        .add(containerID, fragment)
+        .addToBackStack(childFragmentManager.backStackEntryCount.toString())
+        .replace(containerID, fragment)
         .commitAllowingStateLoss()
 }
 
-fun Fragment.pop() = run {
+fun Fragment.pop() {
     childFragmentManager.popBackStack((childFragmentManager.backStackEntryCount - 1).toString(), FragmentManager.POP_BACK_STACK_INCLUSIVE)
 }
 
-fun Fragment.replace(fragment: Fragment, containerID: Int) {
+fun Fragment.replace(fragment: Fragment, containerID: Int): Int {
     val current = childFragmentManager.findFragmentById(containerID)
     var trans = childFragmentManager.beginTransaction()
     if (current != null) {
         trans = trans.hide(current).remove(current)
     }
     trans.add(containerID, fragment)
-    trans.commitAllowingStateLoss()
+    return trans.commitAllowingStateLoss()
 }
 
 interface Poppable {

@@ -1,5 +1,5 @@
 /*
- * EndNavgationFragment.kt
+ * EndNavigationFragment.kt
  *
  * Copyright (C) 2001-2021, Celestia Development Team
  *
@@ -11,12 +11,7 @@
 
 package space.celestia.mobilecelestia.common
 
-import android.os.Bundle
-import android.util.LayoutDirection
-import android.view.View
-import androidx.appcompat.widget.Toolbar
-
-abstract class EndNavgationFragment: NavigationFragment() {
+abstract class EndNavigationFragment: NavigationFragment() {
 }
 
 abstract class EndSubFragment: NavigationFragment.SubFragment() {

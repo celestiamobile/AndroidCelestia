@@ -12,9 +12,9 @@
 package space.celestia.mobilecelestia.eventfinder
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.common.EndNavgationFragment
+import space.celestia.mobilecelestia.common.EndNavigationFragment
 
-class EventFinderContainerFragment : EndNavgationFragment() {
+class EventFinderContainerFragment : EndNavigationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return EventFinderInputFragment.newInstance()
     }

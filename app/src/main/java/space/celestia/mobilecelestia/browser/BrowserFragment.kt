@@ -33,8 +33,6 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
     private var currentPath = ""
     private var selectedItemIndex = 0
 
-    private var savedFragments: ArrayList<Pair<Fragment, String>?> = arrayListOf(null, null, null)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

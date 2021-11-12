@@ -12,12 +12,12 @@
 package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.common.EndNavgationFragment
+import space.celestia.mobilecelestia.common.EndNavigationFragment
 import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.info.InfoFragment
 
-class SubsystemBrowserFragment : EndNavgationFragment(), BrowserRootFragment {
+class SubsystemBrowserFragment : EndNavigationFragment(), BrowserRootFragment {
     private var currentPath = ""
     private var rootPath = ""
 

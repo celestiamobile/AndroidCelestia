@@ -114,9 +114,11 @@ fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): Al
     val builder = AlertDialog.Builder(this)
     builder.setTitle(title)
     if (cancelHandler != null) {
-        builder.setCancelable(true)
+        builder.setCancelable(false)
         builder.setNegativeButton(CelestiaString("Cancel", "")) { dialog, _ ->
             dialog.cancel()
+        }
+        builder.setOnCancelListener {
             cancelHandler()
         }
     } else {

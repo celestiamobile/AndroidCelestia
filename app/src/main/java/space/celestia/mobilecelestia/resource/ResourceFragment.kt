@@ -14,11 +14,11 @@ package space.celestia.mobilecelestia.resource
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
-import space.celestia.mobilecelestia.common.EndNavgationFragment
+import space.celestia.mobilecelestia.common.EndNavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 
-class ResourceFragment : EndNavgationFragment(), Toolbar.OnMenuItemClickListener {
+class ResourceFragment : EndNavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {

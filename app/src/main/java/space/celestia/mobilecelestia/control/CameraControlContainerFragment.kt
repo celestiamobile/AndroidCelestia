@@ -12,9 +12,9 @@
 package space.celestia.mobilecelestia.control
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.common.EndNavgationFragment
+import space.celestia.mobilecelestia.common.EndNavigationFragment
 
-class CameraControlContainerFragment : EndNavgationFragment() {
+class CameraControlContainerFragment : EndNavigationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return CameraControlFragment.newInstance()
     }
