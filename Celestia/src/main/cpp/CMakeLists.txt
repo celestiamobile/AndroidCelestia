@@ -56,6 +56,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/strnatcmp.cpp
         ${CELESTIA_SRC_DIR}/celutil/timer.cpp
         ${CELESTIA_SRC_DIR}/celutil/timer.h
+        ${CELESTIA_SRC_DIR}/celutil/tokenizer.cpp
+        ${CELESTIA_SRC_DIR}/celutil/tokenizer.h
         ${CELESTIA_SRC_DIR}/celutil/utf8.cpp
         ${CELESTIA_SRC_DIR}/celutil/utf8.h
         ${CELESTIA_SRC_DIR}/celutil/util.cpp
@@ -66,6 +68,8 @@ list(APPEND CELESTIA_SOURCES
 list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/bigfix.cpp
         ${CELESTIA_SRC_DIR}/celutil/bigfix.h
+        ${CELESTIA_SRC_DIR}/celutil/binaryread.h
+        ${CELESTIA_SRC_DIR}/celutil/binarywrite.h
         ${CELESTIA_SRC_DIR}/celutil/blockarray.h
         ${CELESTIA_SRC_DIR}/celutil/bytes.h
         ${CELESTIA_SRC_DIR}/celutil/color.cpp
@@ -204,8 +208,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/boundaries.h
         ${CELESTIA_SRC_DIR}/celengine/boundariesrenderer.cpp
         ${CELESTIA_SRC_DIR}/celengine/boundariesrenderer.h
-        ${CELESTIA_SRC_DIR}/celengine/catalogxref.cpp
-        ${CELESTIA_SRC_DIR}/celengine/catalogxref.h
         ${CELESTIA_SRC_DIR}/celengine/category.cpp
         ${CELESTIA_SRC_DIR}/celengine/category.h
         ${CELESTIA_SRC_DIR}/celengine/console.cpp
@@ -334,8 +336,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/timeline.h
         ${CELESTIA_SRC_DIR}/celengine/timelinephase.cpp
         ${CELESTIA_SRC_DIR}/celengine/timelinephase.h
-        ${CELESTIA_SRC_DIR}/celengine/tokenizer.cpp
-        ${CELESTIA_SRC_DIR}/celengine/tokenizer.h
         ${CELESTIA_SRC_DIR}/celengine/trajmanager.cpp
         ${CELESTIA_SRC_DIR}/celengine/trajmanager.h
         ${CELESTIA_SRC_DIR}/celengine/univcoord.cpp
@@ -381,8 +381,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celmath/geomutil.h
         ${CELESTIA_SRC_DIR}/celmath/intersect.h
         ${CELESTIA_SRC_DIR}/celmath/mathlib.h
-        ${CELESTIA_SRC_DIR}/celmath/perlin.cpp
-        ${CELESTIA_SRC_DIR}/celmath/perlin.h
+        ${CELESTIA_SRC_DIR}/celmath/randutils.cpp
+        ${CELESTIA_SRC_DIR}/celmath/randutils.h
         ${CELESTIA_SRC_DIR}/celmath/ray.h
         ${CELESTIA_SRC_DIR}/celmath/solve.h
         ${CELESTIA_SRC_DIR}/celmath/sphere.h
