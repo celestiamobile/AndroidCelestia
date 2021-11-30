@@ -92,13 +92,14 @@ class GoToInputFragment : EndSubFragment() {
         }, chooseUnitCallback = { current ->
             val ac = activity ?: return@GoToInputRecyclerViewAdapter
             val index = distanceUnits.indexOf(current)
-            ac.showSingleSelection("", distanceUnits.map { value -> CelestiaString(value.name, "") }, index, { newIndex ->
+            ac.showSingleSelection("", distanceUnits.map { value -> CelestiaString(value.name, "") }, index) { newIndex ->
+                if (newIndex == null) return@showSingleSelection
                 val unit = distanceUnits[newIndex]
                 adapter?.unit = unit
                 goToData.distanceUnit = unit
                 adapter?.reload()
                 adapter?.notifyDataSetChanged()
-            })
+            }
 
         }, proceedCallback = {
             adapter?.let {

@@ -322,7 +322,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBackPressed() {
-        var frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet_card)
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet_card)
         if (frag is Poppable && frag.canPop()) {
             frag.popLast()
         } else {
@@ -335,6 +335,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (hasFocus) hideSystemUI()
     }
 
+    override fun onContextMenuClosed(menu: Menu) {
+        super.onContextMenuClosed(menu)
+
+        val fragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment ?: return
+        fragment.onContextMenuClosed(menu)
+    }
 
     private fun updateConfiguration(configuration: Configuration, displayCutout: DisplayCutoutCompat? = null) {
         val density = resources.displayMetrics.density
@@ -877,19 +883,27 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Listeners...
-    override fun onInfoActionSelected(action: InfoActionItem, selection: Selection) {
+    override fun onInfoActionSelected(action: InfoActionItem, item: Selection) {
+        val selection = item.clone() // since there are some async tasks, create a clone for safe usage
         when (action) {
             is InfoNormalActionItem -> {
-                core.simulation.selection = selection
-                CelestiaView.callOnRenderThread { core.charEnter(action.item.value) }
+                CelestiaView.callOnRenderThread {
+                    core.simulation.selection = selection
+                    core.charEnter(action.item.value)
+                    selection.close()
+                }
             }
             is InfoSelectActionItem -> {
-                core.simulation.selection = selection
+                CelestiaView.callOnRenderThread {
+                    core.simulation.selection = selection
+                    selection.close()
+                }
             }
             is InfoWebActionItem -> {
-                val url = selection.webInfoURL!!
-                // show web info in browser
-                openURL(url)
+                val url = selection.webInfoURL
+                selection.close()
+                if (url != null)
+                    openURL(url)
             }
             is SubsystemActionItem -> {
                 val entry = selection.`object` ?: return
@@ -899,8 +913,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     entry,
                     core.simulation.universe
                 )
+                selection.close()
                 showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
-                return
             }
             is AlternateSurfacesItem -> {
                 val alternateSurfaces = selection.body?.alternateSurfaceNames ?: return
@@ -915,22 +929,30 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 surfaces.add(CelestiaString("Default", ""))
                 surfaces.addAll(alternateSurfaces)
                 showSingleSelection(CelestiaString("Alternate Surfaces", ""), surfaces, currentIndex) { index ->
+                    if (index == null) return@showSingleSelection
                     if (index == 0)
                         core.simulation.activeObserver.displayedSurface = ""
                     else
                         core.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
                 }
+                selection.close()
             }
             is MarkItem -> {
                 val markers = CelestiaFragment.availableMarkers
                 showSingleSelection(CelestiaString("Mark", ""), markers, -1) { newIndex ->
-                    if (newIndex >= Universe.MARKER_COUNT) {
-                        core.simulation.universe.unmark(selection)
-                    } else {
-                        core.simulation.universe.mark(selection, newIndex)
-                        core.showMarkers = true
+                    if (newIndex != null) {
+                        if (newIndex >= Universe.MARKER_COUNT) {
+                            core.simulation.universe.unmark(selection)
+                        } else {
+                            core.simulation.universe.mark(selection, newIndex)
+                            core.showMarkers = true
+                        }
                     }
+                    selection.close()
                 }
+            }
+            else -> {
+                selection.close()
             }
         }
     }
@@ -949,15 +971,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        val sel = core.simulation.findObject(text)
-        if (sel.isEmpty) {
-            showAlert(CelestiaString("Object not found", ""))
-            return
-        }
+        core.simulation.findObject(text).use {
+            if (it.isEmpty) {
+                showAlert(CelestiaString("Object not found", ""))
+                return
+            }
 
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is SearchContainerFragment) {
-            frag.pushSearchResult(sel)
+            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+            if (frag is SearchContainerFragment) {
+                frag.pushSearchResult(it)
+            }
         }
     }
 
@@ -1004,11 +1027,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } else {
             val obj = item.item.`object`
             if (obj != null) {
-                val selection = Selection.create(obj)
-                if (selection != null) {
-                    frag.showInfo(selection)
-                } else {
-                    showAlert(CelestiaString("Object not found", ""))
+                Selection(obj).use {
+                    frag.showInfo(it)
                 }
             } else {
                 showAlert(CelestiaString("Object not found", ""))
@@ -1322,6 +1342,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 )
             }
             EventFinderResultFragment.eclipses = results
+            finder.close()
             if (alert.isShowing) alert.dismiss()
             val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
             if (frag is EventFinderContainerFragment) {
@@ -1359,10 +1380,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun celestiaFragmentDidRequestObjectInfo() {
-        val selection = core.simulation.selection
-        if (selection.isEmpty) { return }
-
-        showInfo(selection)
+        CelestiaView.callOnRenderThread {
+            val selection = core.simulation.selection
+            if (!selection.isEmpty) {
+                lifecycleScope.launch {
+                    showInfo(selection)
+                    selection.close()
+                }
+            } else {
+                selection.close()
+            }
+        }
     }
 
     override fun provideFallbackConfigFilePath(): String {
@@ -1515,19 +1543,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun createInfo(selection: Selection, callback: (InfoDescriptionItem) -> Unit) {
-        CelestiaView.callOnRenderThread {
-            // Fetch info at the Celestia thread to avoid race condition
-            val overview = core.getOverviewForSelection(selection)
-            val name = core.simulation.universe.getNameForSelection(selection)
-            val hasWebInfo = selection.webInfoURL != null
-            val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
-            lifecycleScope.launch {
-                callback(InfoDescriptionItem(name, overview, hasWebInfo, hasAltSurface))
-            }
-        }
-    }
-
     private fun showInfo(selection: Selection) {
         showBottomSheetFragment(InfoFragment.newInstance(selection))
     }
@@ -1647,8 +1662,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun shareURL() {
         CelestiaView.callOnRenderThread {
             val orig = core.currentURL
-            val sel = core.simulation.selection
-            val name = core.simulation.universe.getNameForSelection(sel)
+            val name = core.simulation.selection.use { core.simulation.universe.getNameForSelection(it) }
             lifecycleScope.launch {
                 shareURL(orig, name)
             }

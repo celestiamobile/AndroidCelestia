@@ -81,7 +81,7 @@ fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Un
     builder.show()
 }
 
-fun Activity.showSingleSelection(title: String, selections: List<String>, checkedIndex: Int, handler: (Int) -> Unit) {
+fun Activity.showSingleSelection(title: String, selections: List<String>, checkedIndex: Int, handler: (Int?) -> Unit) {
     if (isFinishing || isDestroyed)
         return
 
@@ -90,6 +90,9 @@ fun Activity.showSingleSelection(title: String, selections: List<String>, checke
     builder.setSingleChoiceItems(selections.toTypedArray(), checkedIndex) { dialog, index ->
         handler(index)
         dialog.dismiss()
+    }
+    builder.setOnCancelListener {
+        handler(null)
     }
 
     builder.show()

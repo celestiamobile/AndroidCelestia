@@ -16,10 +16,11 @@ import space.celestia.mobilecelestia.favorite.BookmarkNode
 
 val AppCore.currentBookmark: BookmarkNode?
     get() {
-        val sel = simulation.selection
-        if (sel.isEmpty) return null
-        val name = simulation.universe.getNameForSelection(sel)
-        return BookmarkNode(name, currentURL, null)
+        simulation.selection.use {
+            if (it.isEmpty) return null
+            val name = simulation.universe.getNameForSelection(it)
+            return BookmarkNode(name, currentURL, null)
+        }
     }
 
 fun AppCore.getOverviewForSelection(selection: Selection): String {
@@ -117,9 +118,8 @@ private fun AppCore.getOverviewForStar(star: Star): String {
     var str = ""
 
     val time = simulation.time
-    val celPos = star.getPositionAtTime(time).offsetFrom(UniversalCoord.getZero())
-    val eqPos = Utils.eclipticToEquatorial(
-        Utils.celToJ2000Ecliptic(celPos))
+    val celPos = star.getPositionAtTime(time).use{ it.offsetFrom(UniversalCoord.getZero()) }
+    val eqPos = Utils.eclipticToEquatorial(Utils.celToJ2000Ecliptic(celPos))
     val sph = Utils.rectToSpherical(eqPos)
 
     val hms = DMS(sph.x)
@@ -136,8 +136,7 @@ private fun getOverviewForDSO(dso: DSO): String {
     var str = ""
 
     val celPos = dso.position
-    val eqPos = Utils.eclipticToEquatorial(
-        Utils.celToJ2000Ecliptic(celPos))
+    val eqPos = Utils.eclipticToEquatorial(Utils.celToJ2000Ecliptic(celPos))
     var sph = Utils.rectToSpherical(eqPos)
 
     val hms = DMS(sph.x)

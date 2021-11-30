@@ -428,7 +428,7 @@ Java_space_celestia_celestia_Renderer_c_1initialize(JNIEnv *env, jobject thiz, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_Renderer_c_1deinitialize(JNIEnv *env, jobject thiz, jlong ptr) {
+Java_space_celestia_celestia_Renderer_c_1destroy(JNIEnv *env, jobject thiz, jlong ptr) {
 
     auto renderer = (CelestiaRenderer *)ptr;
     env->DeleteGlobalRef(renderer->javaObject);

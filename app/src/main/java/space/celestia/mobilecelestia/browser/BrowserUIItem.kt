@@ -55,9 +55,15 @@ private fun Simulation.createStarBrowserRoot(): BrowserItem {
         }
         return map
     }
-    val nearest = getStarBrowser(StarBrowser.KIND_NEAREST).stars.createBrowserMap()
-    val brightest = getStarBrowser(StarBrowser.KIND_BRIGHTEST).stars.createBrowserMap()
-    val hasPlanets = getStarBrowser(StarBrowser.KIND_WITH_PLANETS).stars.createBrowserMap()
+    val nearest = getStarBrowser(StarBrowser.KIND_NEAREST).use {
+        it.stars
+    }.createBrowserMap()
+    val brightest = getStarBrowser(StarBrowser.KIND_BRIGHTEST).use {
+        it.stars
+    }.createBrowserMap()
+    val hasPlanets = getStarBrowser(StarBrowser.KIND_WITH_PLANETS).use {
+        it.stars
+    }.createBrowserMap()
     val nearestItem = BrowserItem(
         CelestiaString(
             "Nearest Stars",

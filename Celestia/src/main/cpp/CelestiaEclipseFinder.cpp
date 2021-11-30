@@ -47,9 +47,9 @@ Java_space_celestia_celestia_EclipseFinder_c_1createWithBody(JNIEnv *env,
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_EclipseFinder_c_1finalized(JNIEnv *env,
-                                                                   jclass clazz,
-                                                                   jlong ptr) {
+Java_space_celestia_celestia_EclipseFinder_c_1destroy(JNIEnv *env,
+                                                      jclass clazz,
+                                                      jlong ptr) {
     delete (EclipseSeacherWatcher *)ptr;
 }
 

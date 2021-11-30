@@ -161,6 +161,13 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         super.onDestroyView()
     }
 
+    override fun onDestroy() {
+        pendingTarget?.close()
+        pendingTarget = null
+
+        super.onDestroy()
+    }
+
     override fun onPause() {
         super.onPause()
 
@@ -397,7 +404,6 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         menuInfo: ContextMenu.ContextMenuInfo?
     ) {
         val selection = pendingTarget ?: return
-        if (selection.isEmpty) return
 
         browserItems.clear()
 
@@ -488,21 +494,22 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             if (item.itemId >= 0 && item.itemId < browserItems.size) {
                 val ent = browserItems[item.itemId].`object`
                 if (ent != null) {
-                    val obj = Selection.create(ent)
-                    if (obj != null) {
-                        CelestiaView.callOnRenderThread {
-                            core.simulation.selection = obj
+                    CelestiaView.callOnRenderThread {
+                        Selection(ent).use {
+                            core.simulation.selection = it
                             core.charEnter(CelestiaAction.GoTo.value)
                         }
                     }
                 }
             }
         }
-        if (item.subMenu == null) { // leaf clicked, do clean up
-            pendingTarget = null
-            browserItems.clear()
-        }
         return true
+    }
+
+    fun onContextMenuClosed(menu: Menu) {
+        pendingTarget?.close()
+        pendingTarget = null
+        browserItems.clear()
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
@@ -626,9 +633,13 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     }
 
     override fun requestContextMenu(x: Float, y: Float, selection: Selection) {
-        if (selection.isEmpty) return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return // Avoid showing context menu before Android 8, since it is fullscreen
+        // Avoid showing context menu before Android 8, since it is fullscreen
+        if (selection.isEmpty || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            selection.close()
+            return
+        }
 
+        pendingTarget?.close()
         pendingTarget = selection
 
         // Show context menu on main thread

@@ -19,11 +19,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EclipseFinder {
+public class EclipseFinder implements AutoCloseable {
     public static final int ECLIPSE_KIND_SOLAR = 0x01;
     public static final int ECLIPSE_KIND_LUNAR = 0x02;
 
     private final long pointer;
+    private boolean closed = false;
 
     public static class Eclipse {
         public final Body occulter;
@@ -58,10 +59,11 @@ public class EclipseFinder {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        c_finalized(pointer);
-
-        super.finalize();
+    public void close() throws Exception {
+        if (!closed) {
+            c_destroy(pointer);
+            closed = true;
+        }
     }
 
     public void abort() {
@@ -69,7 +71,7 @@ public class EclipseFinder {
     }
 
     private static native long c_createWithBody(long ptr);
-    private static native void c_finalized(long ptr);
+    private static native void c_destroy(long ptr);
     private static native void c_abort(long ptr);
     private static native String c_search(long ptr, int kind, double startTimeJulian, double endTimeJulian);
 }

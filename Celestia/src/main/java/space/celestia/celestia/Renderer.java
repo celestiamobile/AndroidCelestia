@@ -20,7 +20,7 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Renderer {
+public class Renderer implements AutoCloseable {
     public static int FRAME_MAX = 0;
     public static int FRAME_60FPS = 1;
     public static int FRAME_30FPS = 2;
@@ -34,6 +34,7 @@ public class Renderer {
     private final Object taskLock = new Object();
     private final long pointer;
     private boolean started = false;
+    private boolean closed = false;
 
     private static Renderer sharedRenderer = null;
     private EngineStartedListener engineStartedListener = null;
@@ -44,9 +45,11 @@ public class Renderer {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        c_deinitialize(pointer);
-        super.finalize();
+    public void close() throws Exception {
+        if (!closed) {
+            c_destroy(pointer);
+            closed = true;
+        }
     }
 
     public static Renderer shared() {
@@ -134,7 +137,7 @@ public class Renderer {
 
     private static native long c_createNativeRenderObject();
     private native void c_initialize(long pointer);
-    private native void c_deinitialize(long pointer);
+    private native void c_destroy(long pointer);
     private native void c_start(long pointer, Activity activity, boolean enableMultisample);
     private native void c_stop(long pointer);
     private native void c_pause(long pointer);

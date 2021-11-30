@@ -51,8 +51,9 @@ Java_space_celestia_celestia_Selection_c_1getSelectionPtr(JNIEnv *env, jclass cl
     switch (sel->getType())
     {
         case Selection::Type_Nil:
-        case Selection::Type_Generic:
             return 0;
+        case Selection::Type_Generic:
+            return (jlong)sel->object();
         case Selection::Type_Body:
             return (jlong)sel->body();
         case Selection::Type_Star:
@@ -62,13 +63,6 @@ Java_space_celestia_celestia_Selection_c_1getSelectionPtr(JNIEnv *env, jclass cl
         case Selection::Type_Location:
             return (jlong)sel->location();
     }
-}
-
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_space_celestia_celestia_Selection_c_1getName(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sel = (Selection *)pointer;
-    return env->NewStringUTF(sel->getName(true).c_str());
 }
 
 extern "C"

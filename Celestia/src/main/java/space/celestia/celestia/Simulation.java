@@ -16,7 +16,7 @@ import androidx.annotation.NonNull;
 import java.util.List;
 
 public class Simulation {
-    private long pointer;
+    final private long pointer;
     private Universe universe;
 
     public @NonNull
@@ -67,10 +67,8 @@ public class Simulation {
         Star star = system.getStar();
         if (star == null)
             return;
-        Selection target = Selection.create(eclipse.receiver);
-        Selection ref = Selection.create(star);
-        if (target == null || ref == null)
-            return;
+        Selection target = new Selection(eclipse.receiver);
+        Selection ref = new Selection(star);
         c_goToEclipse(pointer, eclipse.startTimeJulian, ref.pointer, target.pointer);
     }
 

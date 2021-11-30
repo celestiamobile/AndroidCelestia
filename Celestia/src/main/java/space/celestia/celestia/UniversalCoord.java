@@ -13,11 +13,12 @@ package space.celestia.celestia;
 
 import androidx.annotation.NonNull;
 
-public class UniversalCoord {
+public class UniversalCoord implements AutoCloseable {
     private long pointer;
     protected UniversalCoord(long ptr) { pointer = ptr; }
 
     private static UniversalCoord zero = null;
+    private boolean closed = false;
 
     @NonNull
     public static UniversalCoord getZero() {
@@ -41,9 +42,11 @@ public class UniversalCoord {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        c_destroy(pointer);
-        super.finalize();
+    public void close() throws Exception {
+        if (!closed) {
+            c_destroy(pointer);
+            closed = true;
+        }
     }
 
     // C functions

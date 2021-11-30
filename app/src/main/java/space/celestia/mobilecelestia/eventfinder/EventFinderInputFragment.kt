@@ -57,6 +57,7 @@ class EventFinderInputFragment : EndSubFragment() {
             val other = CelestiaString("Other", "")
             val currentIndex = 0.coerceAtLeast(objects.indexOf(current))
             ac.showSingleSelection(CelestiaString("Please choose an object.", ""), objects + other, currentIndex) { index ->
+                if (index == null) return@showSingleSelection
                 if (index >= objects.size) {
                     // User choose other, show text input for the object name
                     ac.showTextInput(CelestiaString("Please enter an object name.", ""), current) { objectName ->

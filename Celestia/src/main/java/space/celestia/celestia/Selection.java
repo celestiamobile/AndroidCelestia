@@ -14,7 +14,7 @@ package space.celestia.celestia;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class Selection {
+public class Selection implements AutoCloseable {
     private final static int SELECTION_TYPE_NIL             = 0;
     private final static int SELECTION_TYPE_STAR            = 1;
     private final static int SELECTION_TYPE_BODY            = 2;
@@ -23,23 +23,39 @@ public class Selection {
     private final static int SELECTION_TYPE_GENERIC         = 5;
 
     protected long pointer;
+    private boolean closed = false;
 
-    public Selection(long ptr) {
+    protected Selection(long ptr) {
         pointer = ptr;
     }
 
-    @Nullable
-    public static Selection create(@NonNull AstroObject object) {
-        if (object instanceof Star) {
-            return new Selection(c_createSelection(SELECTION_TYPE_STAR, object.pointer));
+    public Selection(long objectPtr, int type) {
+        this(c_createSelection(type, objectPtr));
+    }
+
+    @NonNull
+    public Selection clone() {
+        return new Selection(c_clone(pointer));
+    }
+
+    private static int typeForObject(AstroObject object) {
+        if (object == null) {
+            return SELECTION_TYPE_NIL;
+        } else if (object instanceof Star) {
+            return SELECTION_TYPE_STAR;
         } else if (object instanceof Body) {
-            return new Selection(c_createSelection(SELECTION_TYPE_BODY, object.pointer));
-        } else if (object instanceof DSO) {
-            return new Selection(c_createSelection(SELECTION_TYPE_DEEP_SKY, object.pointer));
+            return SELECTION_TYPE_BODY;
         } else if (object instanceof Location) {
-            return new Selection(c_createSelection(SELECTION_TYPE_LOCATION, object.pointer));
+            return SELECTION_TYPE_LOCATION;
+        } else if (object instanceof DSO) {
+            return SELECTION_TYPE_DEEP_SKY;
+        } else {
+            return SELECTION_TYPE_GENERIC;
         }
-        return null;
+    }
+
+    public Selection (@NonNull AstroObject object) {
+        this(object.pointer, typeForObject(object));
     }
 
     public boolean isEmpty() {
@@ -51,15 +67,25 @@ public class Selection {
         int type = c_getSelectionType(pointer);
         switch (type) {
             case SELECTION_TYPE_STAR:
-                return new Star(c_getSelectionPtr(pointer));
+                return new Star(getSelectionPointer());
             case SELECTION_TYPE_LOCATION:
-                return new Location(c_getSelectionPtr(pointer));
+                return new Location(getSelectionPointer());
             case SELECTION_TYPE_DEEP_SKY:
-                return new DSO(c_getSelectionPtr(pointer));
+                return new DSO(getSelectionPointer());
             case SELECTION_TYPE_BODY:
-                return new Body(c_getSelectionPtr(pointer));
+                return new Body(getSelectionPointer());
+            case SELECTION_TYPE_GENERIC:
+                return new AstroObject(getSelectionPointer());
         }
         return null;
+    }
+
+    public long getSelectionPointer() {
+        return c_getSelectionPtr(pointer);
+    }
+
+    public int getType() {
+        return c_getSelectionType(pointer);
     }
 
     @Nullable
@@ -110,21 +136,18 @@ public class Selection {
         return c_getRadius(pointer);
     }
 
-    public long createCopy() {
-        return c_clone(pointer);
-    }
-
     @Override
-    protected void finalize() throws Throwable {
-        c_destroy(pointer);
-        super.finalize();
+    public void close() throws Exception {
+        if (!closed) {
+            c_destroy(pointer);
+            closed = true;
+        }
     }
 
     // C functions
     private static native boolean c_isEmpty(long pointer);
     private static native int c_getSelectionType(long pointer);
     private static native long c_getSelectionPtr(long pointer);
-    private static native String c_getName(long pointer);
     private static native double c_getRadius(long pointer);
     private static native void c_destroy(long pointer);
     private static native long c_clone(long pointer);

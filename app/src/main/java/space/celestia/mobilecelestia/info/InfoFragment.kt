@@ -45,25 +45,10 @@ class InfoFragment : NavigationFragment.SubFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (savedInstanceState != null) {
-            selection = Selection(
-                savedInstanceState.getLong(ARG_SELECTION)
-            )
-            embeddedInNavigation = savedInstanceState.getBoolean(ARG_EMBEDDED_IN_NAVIGATION)
-        } else  {
-            arguments?.let {
-                selection = Selection(
-                    it.getLong(ARG_SELECTION)
-                )
-                embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION)
-            }
+        arguments?.let {
+            selection = Selection(it.getLong(ARG_OBJECT_POINTER), it.getInt(ARG_OBJECT_TYPE))
+            embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION)
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(ARG_EMBEDDED_IN_NAVIGATION, embeddedInNavigation)
-        outState.putLong(ARG_SELECTION, selection.createCopy())
-        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateView(
@@ -95,13 +80,18 @@ class InfoFragment : NavigationFragment.SubFragment() {
         }
     }
 
+    override fun onDestroy() {
+        selection.close()
+        super.onDestroy()
+    }
+
     override fun onDetach() {
         super.onDetach()
         listener = null
     }
 
     interface Listener {
-        fun onInfoActionSelected(action: InfoActionItem, selection: Selection)
+        fun onInfoActionSelected(action: InfoActionItem, item: Selection)
         fun onInfoLinkMetaDataClicked(url: URL)
     }
 
@@ -197,14 +187,16 @@ class InfoFragment : NavigationFragment.SubFragment() {
     }
 
     companion object {
-        const val ARG_SELECTION = "selection"
+        const val ARG_OBJECT_POINTER = "object"
+        const val ARG_OBJECT_TYPE = "type"
         const val ARG_EMBEDDED_IN_NAVIGATION = "embedded-in-navigation"
 
         @JvmStatic
         fun newInstance(selection: Selection, embeddedInNavigation: Boolean = false) =
             InfoFragment().apply {
                 arguments = Bundle().apply {
-                    this.putLong(ARG_SELECTION, selection.createCopy())
+                    this.putLong(ARG_OBJECT_POINTER, selection.selectionPointer)
+                    this.putInt(ARG_OBJECT_TYPE, selection.type)
                     this.putBoolean(ARG_EMBEDDED_IN_NAVIGATION, embeddedInNavigation)
                 }
             }

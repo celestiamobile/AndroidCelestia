@@ -15,12 +15,13 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
-public class StarBrowser {
+public class StarBrowser implements AutoCloseable {
     public final static int KIND_NEAREST       = 0;
     public final static int KIND_BRIGHTEST     = 2;
     public final static int KIND_WITH_PLANETS  = 3;
 
-    private long pointer;
+    final private long pointer;
+    private boolean closed = false;
 
     StarBrowser(long pointer) {
         this.pointer = pointer;
@@ -32,9 +33,11 @@ public class StarBrowser {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        c_destroy(pointer);
-        super.finalize();
+    public void close() throws Exception {
+        if (!closed) {
+            c_destroy(pointer);
+            closed = true;
+        }
     }
 
     private static native void c_destroy(long ptr);
