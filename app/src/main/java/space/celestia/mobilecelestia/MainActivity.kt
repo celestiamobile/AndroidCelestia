@@ -335,13 +335,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (hasFocus) hideSystemUI()
     }
 
-    override fun onContextMenuClosed(menu: Menu) {
-        super.onContextMenuClosed(menu)
-
-        val fragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment ?: return
-        fragment.onContextMenuClosed(menu)
-    }
-
     private fun updateConfiguration(configuration: Configuration, displayCutout: DisplayCutoutCompat? = null) {
         val density = resources.displayMetrics.density
         var safeInsetEnd = 0

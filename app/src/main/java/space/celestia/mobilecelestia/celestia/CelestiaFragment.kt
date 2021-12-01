@@ -506,12 +506,6 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         return true
     }
 
-    fun onContextMenuClosed(menu: Menu) {
-        pendingTarget?.close()
-        pendingTarget = null
-        browserItems.clear()
-    }
-
     override fun surfaceCreated(holder: SurfaceHolder) {
         renderer.setSurface(holder.surface)
         renderer.setFrameRateOption(frameRateOption)
