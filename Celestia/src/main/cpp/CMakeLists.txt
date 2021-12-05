@@ -34,6 +34,8 @@ list(APPEND CELESTIA_SOURCES
 list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/bigfix.cpp
         ${CELESTIA_SRC_DIR}/celutil/bigfix.h
+        ${CELESTIA_SRC_DIR}/celutil/binaryread.h
+        ${CELESTIA_SRC_DIR}/celutil/binarywrite.h
         ${CELESTIA_SRC_DIR}/celutil/blockarray.h
         ${CELESTIA_SRC_DIR}/celutil/bytes.h
         ${CELESTIA_SRC_DIR}/celutil/color.cpp
@@ -62,34 +64,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/tzutil.h
         ${CELESTIA_SRC_DIR}/celutil/utf8.cpp
         ${CELESTIA_SRC_DIR}/celutil/utf8.h
-        ${CELESTIA_SRC_DIR}/celutil/watcher.h
-        )
-
-list(APPEND CELESTIA_SOURCES
-        ${CELESTIA_SRC_DIR}/celutil/bigfix.cpp
-        ${CELESTIA_SRC_DIR}/celutil/bigfix.h
-        ${CELESTIA_SRC_DIR}/celutil/binaryread.h
-        ${CELESTIA_SRC_DIR}/celutil/binarywrite.h
-        ${CELESTIA_SRC_DIR}/celutil/blockarray.h
-        ${CELESTIA_SRC_DIR}/celutil/bytes.h
-        ${CELESTIA_SRC_DIR}/celutil/color.cpp
-        ${CELESTIA_SRC_DIR}/celutil/color.h
-        ${CELESTIA_SRC_DIR}/celutil/debug.cpp
-        ${CELESTIA_SRC_DIR}/celutil/debug.h
-        ${CELESTIA_SRC_DIR}/celutil/filetype.cpp
-        ${CELESTIA_SRC_DIR}/celutil/filetype.h
-        ${CELESTIA_SRC_DIR}/celutil/formatnum.cpp
-        ${CELESTIA_SRC_DIR}/celutil/formatnum.h
-        ${CELESTIA_SRC_DIR}/celutil/memorypool.cpp
-        ${CELESTIA_SRC_DIR}/celutil/memorypool.h
-        ${CELESTIA_SRC_DIR}/celutil/reshandle.h
-        ${CELESTIA_SRC_DIR}/celutil/resmanager.h
-        ${CELESTIA_SRC_DIR}/celutil/timer.cpp
-        ${CELESTIA_SRC_DIR}/celutil/timer.h
-        ${CELESTIA_SRC_DIR}/celutil/utf8.cpp
-        ${CELESTIA_SRC_DIR}/celutil/utf8.h
-        ${CELESTIA_SRC_DIR}/celutil/util.cpp
-        ${CELESTIA_SRC_DIR}/celutil/util.h
         ${CELESTIA_SRC_DIR}/celutil/watcher.h
         )
 
