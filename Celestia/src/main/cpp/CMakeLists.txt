@@ -58,10 +58,10 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/timer.h
         ${CELESTIA_SRC_DIR}/celutil/tokenizer.cpp
         ${CELESTIA_SRC_DIR}/celutil/tokenizer.h
+        ${CELESTIA_SRC_DIR}/celutil/tzutil.cpp
+        ${CELESTIA_SRC_DIR}/celutil/tzutil.h
         ${CELESTIA_SRC_DIR}/celutil/utf8.cpp
         ${CELESTIA_SRC_DIR}/celutil/utf8.h
-        ${CELESTIA_SRC_DIR}/celutil/util.cpp
-        ${CELESTIA_SRC_DIR}/celutil/util.h
         ${CELESTIA_SRC_DIR}/celutil/watcher.h
         )
 
@@ -366,7 +366,6 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
-        ${CELESTIA_SRC_DIR}/cel3ds/3dschunk.h
         ${CELESTIA_SRC_DIR}/cel3ds/3dsmodel.cpp
         ${CELESTIA_SRC_DIR}/cel3ds/3dsmodel.h
         ${CELESTIA_SRC_DIR}/cel3ds/3dsread.cpp
