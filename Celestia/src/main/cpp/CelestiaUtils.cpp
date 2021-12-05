@@ -18,7 +18,7 @@ JNIEXPORT jintArray JNICALL
 Java_space_celestia_celestia_Utils_getJulianDayComponents(JNIEnv *env,
                                                                      jclass clazz,
                                                                      jdouble julian_day) {
-    astro::Date astroDate(julian_day);
+    astro::Date astroDate = astro::TDBtoUTC(julian_day);
     jint date[8] = { 0 };
 
     int year = astroDate.year;
