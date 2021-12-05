@@ -20,7 +20,7 @@ import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.celestia.EclipseFinder
-import space.celestia.mobilecelestia.utils.createDateFromJulianDay
+import space.celestia.celestia.Utils
 import java.text.DateFormat
 import java.util.*
 
@@ -57,7 +57,7 @@ class EventFinderResultRecyclerViewAdapter(
         if (item is EventFinderEclipseItem && holder is CommonTextViewHolder) {
             holder.title.text = "${item.eclipse.occulter.name} -> ${item.eclipse.receiver.name}"
             holder.detail.visibility = View.VISIBLE
-            holder.detail.text = formatter.format(createDateFromJulianDay(item.eclipse.startTimeJulian))
+            holder.detail.text = formatter.format(Utils.createDateFromJulianDay(item.eclipse.startTimeJulian))
             return
         }
         super.bindVH(holder, item)

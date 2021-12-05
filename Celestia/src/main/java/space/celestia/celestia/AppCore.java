@@ -18,8 +18,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.lang.reflect.Method;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AppCore {
     public static final int MOUSE_BUTTON_LEFT       = 0x01;
@@ -211,6 +213,25 @@ public class AppCore {
     public static @NonNull String getLocalizedString(@NonNull String string) { return getLocalizedString(string, "celestia_ui"); }
     public static @NonNull String getLocalizedString(@NonNull String string, @NonNull String domain) { return c_getLocalizedString(string, domain); }
     public static @NonNull String getLocalizedFilename(@NonNull String filename) { return c_getLocalizedFilename(filename); }
+
+    private static String formatDate(double julianDay) {
+        if (dateFormatter == null) {
+            String celestiaLang = getLocalizedString("LANGUAGE", "celestia");
+            if (celestiaLang.isEmpty() || celestiaLang.equals("LANGUAGE"))
+                celestiaLang = "en";
+            Locale locale = Locale.getDefault();
+            String[] splitted = celestiaLang.split("_");
+            if (splitted.length == 1) {
+                locale = new Locale(splitted[0]); // Only language
+            } else if (splitted.length == 2) {
+                locale = new Locale(splitted[0], splitted[1]); // Language and country
+            }
+            dateFormatter = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, locale);
+        }
+        return dateFormatter.format(Utils.createDateFromJulianDay(julianDay));
+    }
+
+    private static DateFormat dateFormatter = null;
 
     public Simulation getSimulation() {
         if (simulation == null)

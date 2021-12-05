@@ -47,6 +47,10 @@ extern jmethodID cvwMethodID;
 extern jclass cdClz;
 extern jmethodID cdInitMethodID;
 
+// app core
+extern jclass appCoreClz;
+extern jmethodID formatDateMethodID;
+
 extern pthread_key_t javaEnvKey;
 }
 

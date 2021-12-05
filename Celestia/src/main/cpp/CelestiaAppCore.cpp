@@ -54,6 +54,10 @@ jmethodID cvwMethodID = nullptr;
 jclass cdClz = nullptr;
 jmethodID cdInitMethodID = nullptr;
 
+// app core
+jclass appCoreClz = nullptr;
+jmethodID formatDateMethodID = nullptr;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -99,6 +103,10 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     hmClz = (jclass)env->NewGlobalRef(hm);
     hmiMethodID = env->GetMethodID(hmClz, "<init>", "()V");
     hmpMethodID = env->GetMethodID(hmClz, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+    jclass acc = env->FindClass("space/celestia/celestia/AppCore");
+    appCoreClz = (jclass)env->NewGlobalRef(acc);
+    formatDateMethodID = env->GetStaticMethodID(appCoreClz, "formatDate", "(D)Ljava/lang/String;");
 
     return JNI_VERSION_1_6;
 }
@@ -833,7 +841,24 @@ Java_space_celestia_celestia_AppCore_c_1getTimeZone(JNIEnv *env, jclass clazz, j
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setDateFormat(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = (CelestiaCore *)pointer;
-    core->setDateFormat((astro::Date::Format)value);
+    auto format = (astro::Date::Format)value;
+    core->setDateFormat(format);
+    if (format == astro::Date::Locale)
+    {
+        core->setCustomDateFormatter([](double jd)
+        {
+            auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+            auto str = (jstring)env->CallStaticObjectMethod(appCoreClz, formatDateMethodID, (jdouble)jd);
+            const char *cStr = env->GetStringUTFChars(str, nullptr);
+            std::string cppStr = cStr;
+            env->ReleaseStringUTFChars(str, cStr);
+            return cppStr;
+        });
+    }
+    else
+    {
+        core->setCustomDateFormatter(nullptr);
+    }
 }
 
 extern "C"

@@ -19,8 +19,8 @@ import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Utils
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.createDateFromJulianDay
 import java.text.DateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -90,7 +90,7 @@ class SettingsCurrentTimeRecyclerViewAdapter(
             val core = AppCore.shared()
             holder.title.text = item.title
             holder.detail.visibility = View.VISIBLE
-            holder.detail.text = formatter.format(createDateFromJulianDay(core.simulation.time))
+            holder.detail.text = formatter.format(Utils.createDateFromJulianDay(core.simulation.time))
             return
         }
         super.bindVH(holder, item)
