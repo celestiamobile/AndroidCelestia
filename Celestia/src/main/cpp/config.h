@@ -13,3 +13,4 @@
 #define CELX
 #define HAVE_STRING_VIEW
 #define HAVE_FILESYSTEM
+#define HAVE_CHARCONV
