@@ -33,7 +33,7 @@ class EventFinderInputRecyclerViewAdapter(
     private val chooseTimeCallback: (Boolean) -> Unit,
     private val chooseObjectCallback: (String) -> Unit,
     private val proceedCallback: () -> Unit,
-    var objectName: String = AppCore.getLocalizedString("Earth", "celestia"),
+    var objectName: String = AppCore.getLocalizedString("Earth", "celestia-data"),
     var startDate: Date = Date(Date().time - DEFAULT_SEARCHING_INTERVAL),
     var endDate: Date = Date()
 ) : SeparatorHeaderRecyclerViewAdapter(createSections(objectName, startDate, endDate)) {

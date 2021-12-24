@@ -595,8 +595,8 @@ Java_space_celestia_celestia_AppCore_c_1setLocaleDirectoryPath(JNIEnv *env,
     str = env->GetStringUTFChars(path, nullptr);
     bindtextdomain("celestia", str);
     bind_textdomain_codeset("celestia", "UTF-8");
-    bindtextdomain("celestia_constellations", str);
-    bind_textdomain_codeset("celestia_constellations", "UTF-8");
+    bindtextdomain("celestia-data", str);
+    bind_textdomain_codeset("celestia-data", "UTF-8");
     bindtextdomain("celestia_ui", str);
     bind_textdomain_codeset("celestia_ui", "UTF-8");
     textdomain("celestia");

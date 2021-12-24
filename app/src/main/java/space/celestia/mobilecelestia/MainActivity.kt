@@ -1750,7 +1750,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showGoTo(data: GoToInputFragment.GoToData? = null) {
         val inputData = data ?: GoToInputFragment.GoToData(
-            AppCore.getLocalizedString("Earth", "celestia"),
+            AppCore.getLocalizedString("Earth", "celestia-data"),
             0.0f,
             0.0f,
             8.0,

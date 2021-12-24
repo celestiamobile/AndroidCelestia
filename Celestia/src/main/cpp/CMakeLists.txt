@@ -40,14 +40,14 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/bytes.h
         ${CELESTIA_SRC_DIR}/celutil/color.cpp
         ${CELESTIA_SRC_DIR}/celutil/color.h
-        ${CELESTIA_SRC_DIR}/celutil/debug.cpp
-        ${CELESTIA_SRC_DIR}/celutil/debug.h
         ${CELESTIA_SRC_DIR}/celutil/filetype.cpp
         ${CELESTIA_SRC_DIR}/celutil/filetype.h
         ${CELESTIA_SRC_DIR}/celutil/formatnum.cpp
         ${CELESTIA_SRC_DIR}/celutil/formatnum.h
         ${CELESTIA_SRC_DIR}/celutil/fsutils.cpp
         ${CELESTIA_SRC_DIR}/celutil/fsutils.h
+        ${CELESTIA_SRC_DIR}/celutil/logger.cpp
+        ${CELESTIA_SRC_DIR}/celutil/logger.h
         ${CELESTIA_SRC_DIR}/celutil/memorypool.cpp
         ${CELESTIA_SRC_DIR}/celutil/memorypool.h
         ${CELESTIA_SRC_DIR}/celutil/reshandle.h

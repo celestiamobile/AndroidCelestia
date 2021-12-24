@@ -53,7 +53,7 @@ class EventFinderInputFragment : EndSubFragment() {
             }
         }, { current ->
             val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
-            val objects = listOf(AppCore.getLocalizedString("Earth", "celestia"), AppCore.getLocalizedString("Jupiter", "celestia"))
+            val objects = listOf(AppCore.getLocalizedString("Earth", "celestia-data"), AppCore.getLocalizedString("Jupiter", "celestia-data"))
             val other = CelestiaString("Other", "")
             val currentIndex = 0.coerceAtLeast(objects.indexOf(current))
             ac.showSingleSelection(CelestiaString("Please choose an object.", ""), objects + other, currentIndex) { index ->

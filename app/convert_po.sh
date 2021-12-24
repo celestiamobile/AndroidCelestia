@@ -32,7 +32,7 @@ convert_po()
 }
 
 convert_po "po" "celestia"
-convert_po "po2" "celestia_constellations"
+convert_po "content/po" "celestia-data"
 convert_po "po3" "celestia_ui"
 
 rm -rf $PROJECT_TEMP_DIR
