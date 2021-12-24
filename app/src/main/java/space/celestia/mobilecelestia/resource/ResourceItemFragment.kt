@@ -123,13 +123,11 @@ class ResourceItemFragment : EndSubFragment(), ResourceManager.Listener {
         // Fetch the latest data from server since user might have come from `Installed`
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             try {
                 val result = service.item(lang, item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                withContext(Dispatchers.Main) {
-                    this@ResourceItemFragment.item = result
-                    updateContents()
-                }
+                this@ResourceItemFragment.item = result
+                updateContents()
             } catch (ignored: Throwable) {}
         }
     }

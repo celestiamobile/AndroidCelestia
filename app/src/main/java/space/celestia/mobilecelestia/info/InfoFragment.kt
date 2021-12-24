@@ -110,7 +110,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
                 hasWebInfo = true
                 val fetcher = LPMetadataProvider()
                 if (linkMetadata == null) {
-                    hideWebInfo = true
                     fetcher.startFetchMetadataForURL(lifecycleScope, url) { metaData, _ ->
                         if (metaData == null) { return@startFetchMetadataForURL }
                         withContext(Dispatchers.Main) {
@@ -118,6 +117,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
                             reload()
                         }
                     }
+                } else {
+                    hideWebInfo = true
                 }
             } catch (ignored: MalformedURLException) {}
         }

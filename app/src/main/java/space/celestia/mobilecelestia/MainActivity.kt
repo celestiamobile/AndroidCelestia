@@ -580,12 +580,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val path = uri.path ?: return
         val id = uri.getQueryParameter("id") ?: return
         val service = ShareAPI.shared.create(ShareAPIService::class.java)
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             try {
                 val result = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java)
-                withContext(Dispatchers.Main) {
-                    requestOpenURL(result.resolvedURL)
-                }
+                requestOpenURL(result.resolvedURL)
             } catch (ignored: Throwable) {}
         }
     }

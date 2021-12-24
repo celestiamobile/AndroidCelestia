@@ -44,16 +44,12 @@ class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
     override fun refresh(success: (List<ResourceCategory>) -> Unit, failure: (String) -> Unit) {
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             try {
                 val result = service.categories(lang).commonHandler<List<ResourceCategory>>(object: TypeToken<ArrayList<ResourceCategory>>() {}.type, ResourceAPI.gson)
-                withContext(Dispatchers.Main) {
-                    success(result)
-                }
+                success(result)
             } catch (ignored: Throwable) {
-                withContext(Dispatchers.Main) {
-                    failure(CelestiaString("Failed to load add-ons.", ""))
-                }
+                failure(CelestiaString("Failed to load add-ons.", ""))
             }
         }
     }

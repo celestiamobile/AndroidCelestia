@@ -28,15 +28,19 @@ class LPMetadataProvider {
     private var currentTask: Job? = null
 
     fun startFetchMetadataForURL(scope: CoroutineScope, url: URL, completionHandler: suspend CoroutineScope.(LPLinkMetadata?, Throwable?) -> Unit) {
-        currentTask = scope.launch(Dispatchers.IO) {
-            var metaData: LPLinkMetadata? = null
-            var error: Throwable? = null
+        currentTask = scope.launch {
             try {
-                metaData = getMetaData(url, coroutineContext)
+                val metaData = getMetaDataAsync(url)
+                completionHandler(metaData, null)
             } catch (e: Throwable) {
-                error = e
+                completionHandler(null, e)
             }
-            completionHandler(metaData, error)
+        }
+    }
+
+    private suspend fun getMetaDataAsync(url: URL): LPLinkMetadata {
+        return withContext(Dispatchers.IO) {
+            getMetaData(url, coroutineContext)
         }
     }
 
@@ -53,7 +57,7 @@ class LPMetadataProvider {
             connection.connectTimeout = timeout
             connection.instanceFollowRedirects = false
             connection.requestMethod = "GET"
-            connection.setRequestProperty("User-Agent", DEFAULT_UA);
+            connection.setRequestProperty("User-Agent", DEFAULT_UA)
             connection.connect()
             finalInputSteam = connection.inputStream
             if (connection.responseCode == HttpURLConnection.HTTP_MOVED_PERM || connection.responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
@@ -116,8 +120,8 @@ class LPMetadataProvider {
     }
 
     private companion object {
-        val DEFAULT_TIMEOUT = 30000
-        val MAX_REDIRECT_COUNT = 40
-        val DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36"
+        const val DEFAULT_TIMEOUT = 30000
+        const val MAX_REDIRECT_COUNT = 40
+        const val DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36"
     }
 }
