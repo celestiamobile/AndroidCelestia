@@ -825,6 +825,20 @@ Java_space_celestia_celestia_AppCore_c_1getMeasurementSystem(JNIEnv *env, jclass
     return (jint)core->getMeasurementSystem();
 }
 
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setTemperatureScale(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
+    auto core = (CelestiaCore *)pointer;
+    core->setTemperatureScale((CelestiaCore::TemperatureScale)value);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_AppCore_c_1getTemperatureScale(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
+    return (jint)core->getTemperatureScale();
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setTimeZone(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = (CelestiaCore *)pointer;

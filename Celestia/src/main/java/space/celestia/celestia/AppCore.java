@@ -734,6 +734,10 @@ public class AppCore {
     public int getMeasurementSystem() { return c_getMeasurementSystem(pointer); }
     private static native void c_setMeasurementSystem(long pointer, int measurementSystem);
     private static native int c_getMeasurementSystem(long pointer);
+    public void setTemperatureScale(int temperatureScale) { c_setTemperatureScale(pointer, temperatureScale); }
+    public int getTemperatureScale() { return c_getTemperatureScale(pointer); }
+    private static native void c_setTemperatureScale(long pointer, int temperatureScale);
+    private static native int c_getTemperatureScale(long pointer);
     public void setTimeZone(int timeZone) { c_setTimeZone(pointer, timeZone); }
     public int getTimeZone() { return c_getTimeZone(pointer); }
     private static native void c_setTimeZone(long pointer, int TimeZone);

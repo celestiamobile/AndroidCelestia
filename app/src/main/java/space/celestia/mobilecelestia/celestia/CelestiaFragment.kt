@@ -637,7 +637,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         pendingTarget = selection
 
         // Show context menu on main thread
-        activity?.runOnUiThread {
+        lifecycleScope.launch {
             glView.showContextMenu(x / scaleFactor, y / scaleFactor)
         }
     }

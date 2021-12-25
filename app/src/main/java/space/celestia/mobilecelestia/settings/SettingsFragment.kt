@@ -12,6 +12,8 @@
 package space.celestia.mobilecelestia.settings
 
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.EndNavigationFragment
@@ -33,7 +35,7 @@ class SettingsFragment : EndNavigationFragment() {
             is SettingsRenderInfoItem -> {
                 CelestiaView.callOnRenderThread {
                     val renderInfo = AppCore.shared().renderInfo
-                    activity?.runOnUiThread {
+                    lifecycleScope.launch {
                         pushFragment(SimpleTextFragment.newInstance(item.name, renderInfo))
                     }
                 }

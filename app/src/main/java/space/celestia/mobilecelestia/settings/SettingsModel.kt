@@ -94,6 +94,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     StarStyle("Star Style"),
     HudDetail("Info Display"),
     MeasurementSystem("Measure Units"),
+    TemperatureScale("Temperature Scale"),
     // Double values
     FaintestVisible("Faintest Stars"),
     AmbientLightLevel("Ambient Light"),
@@ -181,7 +182,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 Resolution,
                 StarStyle,
                 HudDetail,
-                MeasurementSystem
+                MeasurementSystem,
+                TemperatureScale
             )
 
         val allDoubleCases: List<SettingsKey>
@@ -457,11 +459,23 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
         ),  footer =  CelestiaString("Configuration will take effect after a restart.", ""))
     )),
-    SettingsCommonItem.create(
+    SettingsCommonItem(
         CelestiaString(SettingsKey.MeasurementSystem.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.MeasurementSystem, CelestiaString("Metric", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.MeasurementSystem, CelestiaString("Imperial", ""), 1)
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsKeyedSelectionItem(SettingsKey.MeasurementSystem, CelestiaString("Metric", ""), 0),
+                    SettingsKeyedSelectionItem(SettingsKey.MeasurementSystem, CelestiaString("Imperial", ""), 1)
+                )
+            ),
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsKeyedSelectionItem(SettingsKey.TemperatureScale, CelestiaString("Kelvin", ""), 0),
+                    SettingsKeyedSelectionItem(SettingsKey.TemperatureScale, CelestiaString("Celsius", ""), 1),
+                    SettingsKeyedSelectionItem(SettingsKey.TemperatureScale, CelestiaString("Fahrenheit", ""), 2)
+                ),
+                header = CelestiaString(SettingsKey.TemperatureScale.displayName, ""),
+            )
         )
     ),
     SettingsRefreshRateItem(),

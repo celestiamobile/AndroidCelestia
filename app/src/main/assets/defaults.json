@@ -80,5 +80,6 @@
     "ShowEclipticGrid": 0,
     "ShowHorizonGrid": 0,
     "ShowGalacticGrid": 0,
-    "MeasurementSystem": 0
+    "MeasurementSystem": 0,
+    "TemperatureScale": 0
 }
