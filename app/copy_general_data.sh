@@ -9,7 +9,7 @@ CELESTIA_REPO_ROOT=`pwd`/../../Celestia
 
 mkdir -p $CELESTIA_ROOT
 
-CELESTIA_CONTENT_REPO_ROOT=$CELESTIA_REPO_ROOT/content
+CELESTIA_CONTENT_REPO_ROOT=`pwd`/../../CelestiaContent
 
 for directory in 'images' 'locale' 'scripts' 'shaders';do
     f=$CELESTIA_REPO_ROOT/$directory

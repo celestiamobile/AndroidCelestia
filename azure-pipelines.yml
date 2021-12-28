@@ -4,6 +4,10 @@ resources:
     type: github
     endpoint: GithubAuth
     name: levinli303/Celestia
+  - repository: CelestiaContent
+    type: github
+    endpoint: GithubAuth
+    name: CelestiaProject/CelestiaContent
 
 trigger:
   branches:

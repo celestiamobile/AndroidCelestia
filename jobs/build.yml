@@ -9,6 +9,8 @@ jobs:
 
   steps:
   - checkout: Celestia
+  - checkout: CelestiaContent
+    fetchDepth: 1
   - checkout: self
     submodules: true
 
@@ -28,14 +30,12 @@ jobs:
   - script: |
       cd Celestia
       git checkout origin/$(Build.SourceBranchName)
-      git submodule update --init
     displayName: 'Checkout Branch'
     condition: ne( variables['Build.Reason'], 'PullRequest' )
 
   - script: |
       cd Celestia
       git checkout origin/$(System.PullRequest.TargetBranch)
-      git submodule update --init
     displayName: 'Checkout Branch (PR)'
     condition: eq( variables['Build.Reason'], 'PullRequest' )
 

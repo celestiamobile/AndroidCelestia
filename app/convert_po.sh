@@ -8,6 +8,7 @@ DIDBUILD=0
 
 CELESTIA_ROOT=`pwd`/src/main/assets/CelestiaResources
 CELESTIA_REPO_ROOT=`pwd`/../../Celestia
+CELESTIA_CONTENT_REPO_ROOT=`pwd`/../../CelestiaContent
 
 LOCALE_ROOT=$CELESTIA_ROOT/locale
 PROJECT_TEMP_DIR=`pwd`/temp
@@ -17,8 +18,8 @@ mkdir -p $LOCALE_ROOT
 
 convert_po()
 {
-    POT=$CELESTIA_REPO_ROOT/$1/$2.pot
-    for po in $CELESTIA_REPO_ROOT/$1/*.po; do
+    POT=$1/$2.pot
+    for po in $1/*.po; do
         f=${po##*/};f=${f%.*}
         LANG_ROOT=$LOCALE_ROOT/$f/LC_MESSAGES
         mkdir -p $LANG_ROOT
@@ -31,8 +32,8 @@ convert_po()
     done
 }
 
-convert_po "po" "celestia"
-convert_po "content/po" "celestia-data"
-convert_po "po3" "celestia_ui"
+convert_po "$CELESTIA_REPO_ROOT/po" "celestia"
+convert_po "$CELESTIA_CONTENT_REPO/po" "celestia-data"
+convert_po "$CELESTIA_REPO_ROOT/po3" "celestia_ui"
 
 rm -rf $PROJECT_TEMP_DIR
