@@ -112,10 +112,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celcompat/cc.cpp
         ${CELESTIA_SRC_DIR}/celcompat/cc.h
         ${CELESTIA_SRC_DIR}/celcompat/charconv.h
-        ${CELESTIA_SRC_DIR}/celcompat/fs.cpp
-        ${CELESTIA_SRC_DIR}/celcompat/fs.h
-        ${CELESTIA_SRC_DIR}/celcompat/string_view.h
-        ${CELESTIA_SRC_DIR}/celcompat/sv.h
         )
 
 list(APPEND CELESTIA_SOURCES
