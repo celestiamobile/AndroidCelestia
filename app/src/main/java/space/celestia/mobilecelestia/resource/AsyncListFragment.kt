@@ -115,7 +115,7 @@ abstract class AsyncListFragment<T: AsyncListItem>: EndSubFragment() {
 
         lifecycleScope.launch {
             try {
-                val items = refresh()
+                items = refresh()
                 listAdapter.updateItems(items)
                 listAdapter.notifyDataSetChanged()
                 stopRefreshing(true)
