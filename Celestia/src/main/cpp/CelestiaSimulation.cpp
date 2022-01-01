@@ -103,7 +103,7 @@ Java_space_celestia_celestia_Simulation_c_1goToEclipse(JNIEnv *env, jclass clazz
     sim->update(0);
     double distance = ((Selection *)target)->radius() * 4.0;
     sim->gotoLocation(UniversalCoord::Zero().offsetKm(Eigen::Vector3d::UnitX() * distance),
-                      YRotation(-0.5 * PI) * XRotation(-0.5 * PI),
+                      YRotation(-0.5 * celestia::numbers::pi) * XRotation(-0.5 * celestia::numbers::pi),
                       2.5);
 }
 

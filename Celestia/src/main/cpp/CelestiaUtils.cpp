@@ -94,7 +94,7 @@ Java_space_celestia_celestia_Utils_rectToSpherical(JNIEnv *env, jclass clazz,
     double r = v.norm();
     double theta = atan2(v.y(), v.x());
     if (theta < 0)
-        theta = theta + 2 * PI;
+        theta = theta + 2 * celestia::numbers::pi;
     double phi = asin(v.z() / r);
 
     return createVectorForVector3d(env, Eigen::Vector3d(theta, phi, r));

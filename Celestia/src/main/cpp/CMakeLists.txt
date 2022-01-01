@@ -48,8 +48,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/fsutils.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
-        ${CELESTIA_SRC_DIR}/celutil/memorypool.cpp
-        ${CELESTIA_SRC_DIR}/celutil/memorypool.h
         ${CELESTIA_SRC_DIR}/celutil/reshandle.h
         ${CELESTIA_SRC_DIR}/celutil/resmanager.h
         ${CELESTIA_SRC_DIR}/celutil/stringutils.h
@@ -109,9 +107,11 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
-        ${CELESTIA_SRC_DIR}/celcompat/cc.cpp
-        ${CELESTIA_SRC_DIR}/celcompat/cc.h
         ${CELESTIA_SRC_DIR}/celcompat/charconv.h
+        ${CELESTIA_SRC_DIR}/celcompat/charconv_impl.cpp
+        ${CELESTIA_SRC_DIR}/celcompat/charconv_impl.h
+        ${CELESTIA_SRC_DIR}/celcompat/numbers.h
+        ${CELESTIA_SRC_DIR}/celcompat/numbers_impl.h
         )
 
 list(APPEND CELESTIA_SOURCES
@@ -188,8 +188,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/curveplot.h
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.cpp
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
-        ${CELESTIA_SRC_DIR}/celengine/dispmap.cpp
-        ${CELESTIA_SRC_DIR}/celengine/dispmap.h
         ${CELESTIA_SRC_DIR}/celengine/dsodb.cpp
         ${CELESTIA_SRC_DIR}/celengine/dsodb.h
         ${CELESTIA_SRC_DIR}/celengine/dsoname.cpp
@@ -308,7 +306,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/timelinephase.h
         ${CELESTIA_SRC_DIR}/celengine/trajmanager.cpp
         ${CELESTIA_SRC_DIR}/celengine/trajmanager.h
-        ${CELESTIA_SRC_DIR}/celengine/univcoord.cpp
         ${CELESTIA_SRC_DIR}/celengine/univcoord.h
         ${CELESTIA_SRC_DIR}/celengine/universe.cpp
         ${CELESTIA_SRC_DIR}/celengine/universe.h

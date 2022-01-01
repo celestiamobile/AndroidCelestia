@@ -38,17 +38,6 @@ Java_space_celestia_celestia_UniversalCoord_c_1distanceFrom(JNIEnv *env,
 }
 
 extern "C"
-JNIEXPORT jlong JNICALL
-Java_space_celestia_celestia_UniversalCoord_c_1differenceFrom(JNIEnv *env,
-                                                                         jclass clazz,
-                                                                         jlong ptr1,
-                                                                         jlong ptr2) {
-    UniversalCoord *u1 = (UniversalCoord *)ptr1;
-    UniversalCoord *u2 = (UniversalCoord *)ptr2;
-    return (jlong)new UniversalCoord(u1->difference(*u2));
-}
-
-extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_UniversalCoord_c_1offsetFrom(JNIEnv *env,
                                                                      jclass clazz,

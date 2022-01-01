@@ -32,11 +32,6 @@ public class UniversalCoord implements AutoCloseable {
     }
 
     @NonNull
-    public UniversalCoord differenceFrom(@NonNull UniversalCoord otherCoord) {
-        return new UniversalCoord(c_differenceFrom(pointer, otherCoord.pointer));
-    }
-
-    @NonNull
     public Vector offsetFrom(@NonNull UniversalCoord otherCoord) {
         return c_offsetFrom(pointer, otherCoord.pointer);
     }
@@ -53,7 +48,6 @@ public class UniversalCoord implements AutoCloseable {
     private static native long c_getZero();
 
     private static native double c_distanceFrom(long ptr1, long ptr2);
-    private static native long c_differenceFrom(long ptr1, long ptr2);
     private static native Vector c_offsetFrom(long ptr1, long ptr2);
 
     private static native void c_destroy(long pointer);
