@@ -122,7 +122,6 @@ abstract class AsyncListFragment<T: AsyncListItem>: EndSubFragment() {
                 val message = defaultErrorMessage ?: error.message ?: return@launch
                 activity?.showAlert(message)
             }
-            val items = refresh()
         }
     }
 
