@@ -121,6 +121,13 @@
         <item name="android:textAlignment">viewStart</item>
     </style>
 
+    <style name="AutoSizeHeadlineLabel" parent="HeadlineLabel">
+        <item name="autoSizeMaxTextSize">20sp</item>
+        <item name="autoSizeMinTextSize">10sp</item>
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeStepGranularity">2sp</item>
+    </style>
+
     <style name="SecondaryLabel">
         <item name="android:textColor">@color/colorSecondaryLabel</item>
     </style>

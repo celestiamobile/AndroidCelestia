@@ -11,24 +11,30 @@
 
 package space.celestia.mobilecelestia.resource
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.common.CommonTextViewHolder
-import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import com.bumptech.glide.Glide
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.*
+import space.celestia.mobilecelestia.utils.GlideUrlCustomCacheKey
 import java.io.Serializable
 
 interface AsyncListItem: Serializable {
     val name: String
+    val imageURL: GlideUrlCustomCacheKey?
 }
 
 class AsyncListAdapterItem<T: AsyncListItem>(val item: T): RecyclerViewItem
 
 class AsyncListAdapter<T: AsyncListItem>(
     private val listener: AsyncListFragment.Listener<T>?
-) : SeparatorHeaderRecyclerViewAdapter() {
+) : SeparatorRecyclerViewAdapter(
+    showSeparators = false
+) {
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is AsyncListAdapterItem<*>)
             return ITEM
@@ -37,14 +43,20 @@ class AsyncListAdapter<T: AsyncListItem>(
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == ITEM)
-            return CommonTextViewHolder(parent)
+            return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.common_resource_item, parent, false))
         return super.createVH(parent, viewType)
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
-        if (item is AsyncListAdapterItem<*> && holder is CommonTextViewHolder) {
+        if (item is AsyncListAdapterItem<*> && holder is AsyncListAdapter<*>.ViewHolder) {
             holder.title.text = item.item.name
-            holder.accessory.visibility = View.VISIBLE
+            val imageURL = item.item.imageURL
+            if (imageURL != null) {
+                Glide.with(holder.image).load(imageURL).placeholder(R.drawable.resource_item_placeholder).into(holder.image)
+            } else {
+                Glide.with(holder.image).clear(holder.image)
+                holder.image.setImageResource(R.drawable.resource_item_placeholder)
+            }
             return
         }
         super.bindVH(holder, item)
@@ -57,8 +69,15 @@ class AsyncListAdapter<T: AsyncListItem>(
         }
     }
 
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val title: TextView
+            get() = itemView.findViewById(R.id.resource_title)
+        val image: ImageView
+            get() = itemView.findViewById(R.id.resource_image)
+    }
+
     fun updateItems(items: List<T>) {
-        updateSectionsWithHeader(listOf(CommonSectionV2(items.map { AsyncListAdapterItem(it) })))
+        updateSections(listOf(CommonSectionV2(items.map { AsyncListAdapterItem(it) })))
     }
 
     private companion object {

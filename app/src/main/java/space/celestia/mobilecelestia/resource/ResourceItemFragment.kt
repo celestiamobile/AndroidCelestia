@@ -31,6 +31,7 @@ import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.GlideUrlCustomCacheKey
 import space.celestia.mobilecelestia.utils.commonHandler
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
@@ -58,12 +59,6 @@ class ResourceItemFragment : EndSubFragment(), ResourceManager.Listener {
     interface Listener {
         fun objectExistsWithName(name: String): Boolean
         fun onGoToObject(name: String)
-    }
-
-    class GlideUrlCustomCacheKey(url: String, val key: String) : GlideUrl(url) {
-        override fun getCacheKey(): String {
-            return key
-        }
     }
 
     enum class ResourceItemState {

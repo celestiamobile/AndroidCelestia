@@ -41,4 +41,7 @@
 
     <color name="colorProgressForeground">@color/colorThemeBackground</color>
     <color name="colorProgressBackground">#80114477</color>
+
+    <color name="colorTextGradientBackgroundTop">#00000000</color>
+    <color name="colorTextGradientBackgroundBottom">#80000000</color>
 </resources>

@@ -12,6 +12,7 @@
 package space.celestia.mobilecelestia.resource
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -73,6 +74,7 @@ abstract class AsyncListFragment<T: AsyncListItem>: EndSubFragment() {
         imageView.setImageDrawable(drawable)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView?.adapter = listAdapter
+        recyclerView.addItemDecoration(SpaceItemDecoration())
         this.imageView = imageView
         this.circularProgressDrawable = drawable
         this.refreshTextView = refresh
@@ -138,6 +140,23 @@ abstract class AsyncListFragment<T: AsyncListItem>: EndSubFragment() {
         imageView?.visibility = View.INVISIBLE
         refreshTextView?.visibility = if (success) View.INVISIBLE else View.VISIBLE
         circularProgressDrawable?.stop()
+    }
+
+    inner class SpaceItemDecoration : RecyclerView.ItemDecoration() {
+        override fun getItemOffsets(
+            outRect: Rect,
+            view: View,
+            parent: RecyclerView,
+            state: RecyclerView.State
+        ) {
+            val density =  parent.resources.displayMetrics.density
+            val spacing = (16 * density).toInt()
+            val pos = parent.getChildLayoutPosition(view)
+            outRect.left = spacing
+            outRect.right = spacing
+            outRect.top = if (pos == 0) spacing else spacing / 2
+            outRect.bottom = if (pos + 1 == parent.adapter?.itemCount) spacing else spacing / 2
+        }
     }
 
     companion object {

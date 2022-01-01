@@ -12,6 +12,13 @@
 package space.celestia.mobilecelestia.resource.model
 
 import space.celestia.mobilecelestia.resource.AsyncListItem
+import space.celestia.mobilecelestia.utils.GlideUrlCustomCacheKey
 import java.io.Serializable
 
-class ResourceCategory(override val name: String, val description: String, val id: String): AsyncListItem, Serializable
+class ResourceCategory(override val name: String, val description: String, val id: String, val image: String?): AsyncListItem, Serializable {
+    override val imageURL: GlideUrlCustomCacheKey?
+        get() {
+            val image = this.image ?: return null
+            return GlideUrlCustomCacheKey(image, id)
+        }
+}
