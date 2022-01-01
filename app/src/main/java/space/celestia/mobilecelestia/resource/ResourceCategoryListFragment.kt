@@ -13,13 +13,9 @@ package space.celestia.mobilecelestia.resource
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.lifecycleScope
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestia.AppCore
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
@@ -41,17 +37,13 @@ class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
         }
     }
 
-    override fun refresh(success: (List<ResourceCategory>) -> Unit, failure: (String) -> Unit) {
+    override val defaultErrorMessage: String
+        get() = CelestiaString("Failed to load add-ons.", "")
+
+    override suspend fun refresh(): List<ResourceCategory> {
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        lifecycleScope.launch {
-            try {
-                val result = service.categories(lang).commonHandler<List<ResourceCategory>>(object: TypeToken<ArrayList<ResourceCategory>>() {}.type, ResourceAPI.gson)
-                success(result)
-            } catch (ignored: Throwable) {
-                failure(CelestiaString("Failed to load add-ons.", ""))
-            }
-        }
+        return service.categories(lang).commonHandler<List<ResourceCategory>>(object: TypeToken<ArrayList<ResourceCategory>>() {}.type, ResourceAPI.gson)
     }
 
     override fun menuItemClicked(groupId: Int, id: Int): Boolean {

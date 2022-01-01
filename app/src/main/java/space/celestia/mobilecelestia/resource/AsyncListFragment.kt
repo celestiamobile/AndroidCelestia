@@ -18,16 +18,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.createLoadingDrawable
 import space.celestia.mobilecelestia.utils.showAlert
 
-open class AsyncListFragment<T: AsyncListTextItem>: EndSubFragment() {
+abstract class AsyncListFragment<T: AsyncListItem>: EndSubFragment() {
     private var selectListener: Listener<T>? = null
 
     private var imageView: ImageView? = null
@@ -109,18 +111,23 @@ open class AsyncListFragment<T: AsyncListTextItem>: EndSubFragment() {
     private fun callRefresh() {
         startRefreshing()
 
-        refresh({ list ->
-            items = list
-            listAdapter.updateItems(list)
-            listAdapter.notifyDataSetChanged()
-            stopRefreshing(true)
-        }, {
-            stopRefreshing(false)
-            activity?.showAlert(it)
-        })
+        lifecycleScope.launch {
+            try {
+                val items = refresh()
+                listAdapter.updateItems(items)
+                listAdapter.notifyDataSetChanged()
+                stopRefreshing(true)
+            } catch (error: Throwable) {
+                stopRefreshing(false)
+                val message = defaultErrorMessage ?: error.message ?: return@launch
+                activity?.showAlert(message)
+            }
+            val items = refresh()
+        }
     }
 
-    open fun refresh(success: (List<T>) -> Unit, failure: (String) -> Unit) {}
+    abstract val defaultErrorMessage: String?
+    abstract suspend fun refresh(): List<T>
 
     fun startRefreshing() {
         imageView?.visibility = View.VISIBLE

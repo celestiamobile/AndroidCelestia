@@ -21,13 +21,11 @@ import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.ProgressView
-import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.celestia.AppCore
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.EndSubFragment
+import space.celestia.mobilecelestia.common.ProgressView
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem

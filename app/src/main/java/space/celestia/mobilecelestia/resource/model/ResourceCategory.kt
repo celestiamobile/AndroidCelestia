@@ -11,7 +11,7 @@
 
 package space.celestia.mobilecelestia.resource.model
 
-import space.celestia.mobilecelestia.resource.AsyncListTextItem
+import space.celestia.mobilecelestia.resource.AsyncListItem
 import java.io.Serializable
 
-class ResourceCategory(override val name: String, val description: String, val id: String): AsyncListTextItem, Serializable
+class ResourceCategory(override val name: String, val description: String, val id: String): AsyncListItem, Serializable

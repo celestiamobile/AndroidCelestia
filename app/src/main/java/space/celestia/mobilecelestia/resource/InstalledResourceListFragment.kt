@@ -13,10 +13,6 @@ package space.celestia.mobilecelestia.resource
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -29,14 +25,14 @@ class InstalledResourceListFragment : AsyncListFragment<ResourceItem>() {
             title = CelestiaString("Installed", "")
     }
 
-    override fun refresh(success: (List<ResourceItem>) -> Unit, failure: (String) -> Unit) {
-        lifecycleScope.launch {
-            try {
-                val installedResources = withContext(Dispatchers.IO) {
-                    ResourceManager.shared.installedResources()
-                }
-                success(installedResources)
-            } catch (ignored: Throwable) {}
+    override val defaultErrorMessage: String?
+        get() = null
+
+    override suspend fun refresh(): List<ResourceItem> {
+        try {
+            return ResourceManager.shared.installedResourcesAsync()
+        } catch (ignored: Throwable) {
+            return listOf()
         }
     }
 

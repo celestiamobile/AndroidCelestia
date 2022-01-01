@@ -77,7 +77,13 @@ class ResourceManager {
         return File(addonDirectory, identifier).exists()
     }
 
-    fun installedResources(): List<ResourceItem> {
+    suspend fun installedResourcesAsync(): List<ResourceItem> {
+        return withContext(Dispatchers.IO) {
+            installedResources()
+        }
+    }
+
+    private fun installedResources(): List<ResourceItem> {
         val parentDirPath = addonDirectory ?: return listOf()
         val parentDir = File(parentDirPath)
         if (!parentDir.exists() || !parentDir.isDirectory) return listOf()

@@ -13,11 +13,7 @@ package space.celestia.mobilecelestia.resource
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.lifecycleScope
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
@@ -55,18 +51,14 @@ class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
         outState.putSerializable(ARG_CATEGORY, category)
     }
 
-    override fun refresh(success: (List<ResourceItem>) -> Unit, failure: (String) -> Unit) {
-        val categoryID = category?.id ?: return
+    override val defaultErrorMessage: String
+        get() = CelestiaString("Failed to load add-ons.", "")
+
+    override suspend fun refresh(): List<ResourceItem> {
+        val categoryID = category?.id ?: return listOf()
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        lifecycleScope.launch {
-            try {
-                val result = service.items(lang, categoryID).commonHandler<List<ResourceItem>>(object: TypeToken<ArrayList<ResourceItem>>() {}.type, ResourceAPI.gson)
-                success(result)
-            } catch (ignored: Throwable) {
-                failure(CelestiaString("Failed to load add-ons.", ""))
-            }
-        }
+        return service.items(lang, categoryID).commonHandler<List<ResourceItem>>(object: TypeToken<ArrayList<ResourceItem>>() {}.type, ResourceAPI.gson)
     }
 
     companion object {

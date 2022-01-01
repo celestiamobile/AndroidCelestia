@@ -20,13 +20,13 @@ import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import java.io.Serializable
 
-interface AsyncListTextItem: Serializable {
+interface AsyncListItem: Serializable {
     val name: String
 }
 
-class AsyncListAdapterItem<T: AsyncListTextItem>(val item: T): RecyclerViewItem
+class AsyncListAdapterItem<T: AsyncListItem>(val item: T): RecyclerViewItem
 
-class AsyncListAdapter<T: AsyncListTextItem>(
+class AsyncListAdapter<T: AsyncListItem>(
     private val listener: AsyncListFragment.Listener<T>?
 ) : SeparatorHeaderRecyclerViewAdapter() {
     override fun itemViewType(item: RecyclerViewItem): Int {
