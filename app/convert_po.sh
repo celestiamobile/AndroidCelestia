@@ -33,7 +33,7 @@ convert_po()
 }
 
 convert_po "$CELESTIA_REPO_ROOT/po" "celestia"
-convert_po "$CELESTIA_CONTENT_REPO/po" "celestia-data"
+convert_po "$CELESTIA_CONTENT_REPO_ROOT/po" "celestia-data"
 convert_po "$CELESTIA_REPO_ROOT/po3" "celestia_ui"
 
 rm -rf $PROJECT_TEMP_DIR
