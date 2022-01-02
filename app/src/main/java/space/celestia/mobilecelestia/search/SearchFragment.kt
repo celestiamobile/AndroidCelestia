@@ -110,7 +110,6 @@ class SearchFragment : NavigationFragment.SubFragment() {
         searchView.setOnQueryTextFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 (v as? SearchView)?.isIconified = false
-                listener?.onSearchStart()
             }
         }
         searchView.textChanges()
@@ -162,7 +161,6 @@ class SearchFragment : NavigationFragment.SubFragment() {
     interface Listener {
         fun onSearchItemSelected(text: String)
         fun onSearchItemSubmit(text: String)
-        fun onSearchStart()
     }
 
     companion object {

@@ -970,11 +970,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         onSearchItemSelected(text)
     }
 
-    override fun onSearchStart() {
-        val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
-        bottomSheetContainer.reset()
-    }
-
     override fun onInstantActionSelected(item: CelestiaAction) {
         CelestiaView.callOnRenderThread { core.charEnter(item.value) }
     }
