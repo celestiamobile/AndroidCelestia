@@ -58,6 +58,12 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
         dragHelper = ViewDragHelper.create(this, callback)
     }
 
+    fun reset() {
+        capturedView = null
+        capturedViewY = null
+        requestLayout()
+    }
+
     override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
         if (ev != null)
             return dragHelper.shouldInterceptTouchEvent(ev)

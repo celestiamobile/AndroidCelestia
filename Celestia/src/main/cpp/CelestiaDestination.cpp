@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-#include "CelestiaJNI.h"
+#include "CelestiaSelection.h"
 #import <celestia/destination.h>
 #import <celestia/celestiacore.h>
 
@@ -40,10 +40,10 @@ Java_space_celestia_celestia_AppCore_c_1getDestinations(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1goToDestination(JNIEnv *env,
-                                                                      jobject clazz,
-                                                                      jlong pointer,
-                                                                      jstring target,
-                                                                      jdouble distance) {
+                                                           jclass clazz,
+                                                           jlong pointer,
+                                                           jstring target,
+                                                           jdouble distance) {
     auto sim = (Simulation *)pointer;
     const char *str = env->GetStringUTFChars(target, nullptr);
     Selection sel = sim->findObjectFromPath(str);
@@ -72,13 +72,13 @@ Java_space_celestia_celestia_Simulation_c_1goToDestination(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1goToLocation(JNIEnv *env,
-                                                                   jobject clazz,
-                                                                   jlong pointer,
-                                                                   jlong selectionPtr,
-                                                                   jdouble distance,
-                                                                   jdouble duration) {
+                                                        jclass clazz,
+                                                        jlong pointer,
+                                                        jobject selection,
+                                                        jdouble distance,
+                                                        jdouble duration) {
     auto sim = (Simulation *)pointer;
-    sim->setSelection(*(Selection *)selectionPtr);
+    sim->setSelection(javaSelectionAsSelection(env, selection));
     sim->geosynchronousFollow();
     sim->gotoSelection(duration, distance, Eigen::Vector3f(0, 1, 0), ObserverFrame::ObserverLocal);
 }
@@ -86,15 +86,15 @@ Java_space_celestia_celestia_Simulation_c_1goToLocation(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1goToLocationLongLat(JNIEnv *env,
-                                                                          jobject clazz,
-                                                                          jlong pointer,
-                                                                          jlong selectionPtr,
-                                                                          jfloat longitude,
-                                                                          jfloat latitude,
-                                                                          jdouble distance,
-                                                                          jdouble duration) {
+                                                               jclass clazz,
+                                                               jlong pointer,
+                                                               jobject selection,
+                                                               jfloat longitude,
+                                                               jfloat latitude,
+                                                               jdouble distance,
+                                                               jdouble duration) {
     auto sim = (Simulation *)pointer;
-    sim->setSelection(*(Selection *)selectionPtr);
+    sim->setSelection(javaSelectionAsSelection(env, selection));
     sim->geosynchronousFollow();
     sim->gotoSelectionLongLat(duration, distance, longitude * (float)M_PI / 180.0f, latitude * (float)M_PI / 180.0f, Eigen::Vector3f(0, 1, 0));
 }

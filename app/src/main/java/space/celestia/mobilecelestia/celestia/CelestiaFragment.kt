@@ -162,7 +162,6 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     }
 
     override fun onDestroy() {
-        pendingTarget?.close()
         pendingTarget = null
 
         super.onDestroy()
@@ -495,10 +494,9 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                 val ent = browserItems[item.itemId].`object`
                 if (ent != null) {
                     CelestiaView.callOnRenderThread {
-                        Selection(ent).use {
-                            core.simulation.selection = it
-                            core.charEnter(CelestiaAction.GoTo.value)
-                        }
+                        val selection = Selection(ent)
+                        core.simulation.selection = selection
+                        core.charEnter(CelestiaAction.GoTo.value)
                     }
                 }
             }
@@ -629,11 +627,9 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     override fun requestContextMenu(x: Float, y: Float, selection: Selection) {
         // Avoid showing context menu before Android 8, since it is fullscreen
         if (selection.isEmpty || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            selection.close()
             return
         }
 
-        pendingTarget?.close()
         pendingTarget = selection
 
         // Show context menu on main thread

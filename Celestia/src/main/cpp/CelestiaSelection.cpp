@@ -9,9 +9,8 @@
  * of the License, or (at your option) any later version.
  */
 
-#include "CelestiaJNI.h"
+#include "CelestiaSelection.h"
 #include <string>
-#include <celengine/selection.h>
 #include <celengine/body.h>
 #include <celengine/star.h>
 #include <celengine/deepskyobj.h>
@@ -66,13 +65,6 @@ Java_space_celestia_celestia_Selection_c_1getSelectionPtr(JNIEnv *env, jclass cl
 }
 
 extern "C"
-JNIEXPORT jdouble JNICALL
-Java_space_celestia_celestia_Selection_c_1getRadius(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sel = (Selection *)pointer;
-    return sel->radius();
-}
-
-extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Selection_c_1createSelection(JNIEnv *env,
                                                                      jclass clazz,
@@ -93,4 +85,37 @@ Java_space_celestia_celestia_Selection_c_1createSelection(JNIEnv *env,
         default:
             return 0;
     }
+}
+
+Selection javaSelectionAsSelection(JNIEnv *env, jobject javaSelection)
+{
+    jint type = env->CallIntMethod(javaSelection, selectionGetObjectTypeMethodID);
+    jlong pointer = env->CallLongMethod(javaSelection, selectionGetObjectPointerMethodID);
+    switch ((int)type)
+    {
+        case Selection::Type_Body:
+            return Selection((Body *)pointer);
+        case Selection::Type_Star:
+            return Selection((Star *)pointer);
+        case Selection::Type_DeepSky:
+            return Selection((DeepSkyObject *)pointer);
+        case Selection::Type_Location:
+            return Selection((Location *)pointer);
+        case Selection::Type_Generic:
+            return Selection((AstroObject *)pointer);
+        case Selection::Type_Nil:
+        default:
+            return Selection();
+    }
+}
+
+jobject selectionAsJavaSelection(JNIEnv *env, Selection const& sel)
+{
+    return env->NewObject(selectionClz, selectionInitMethodID, (jlong)sel.object(), (jint)sel.getType());
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Selection_c_1getRadius(JNIEnv *env, jobject thiz) {
+    return (jdouble)javaSelectionAsSelection(env, thiz).radius();
 }

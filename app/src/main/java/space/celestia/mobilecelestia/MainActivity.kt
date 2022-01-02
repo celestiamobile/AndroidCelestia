@@ -874,25 +874,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Listeners...
-    override fun onInfoActionSelected(action: InfoActionItem, item: Selection) {
-        val selection = item.clone() // since there are some async tasks, create a clone for safe usage
+    override fun onInfoActionSelected(action: InfoActionItem, selection: Selection) {
         when (action) {
             is InfoNormalActionItem -> {
                 CelestiaView.callOnRenderThread {
                     core.simulation.selection = selection
                     core.charEnter(action.item.value)
-                    selection.close()
                 }
             }
             is InfoSelectActionItem -> {
                 CelestiaView.callOnRenderThread {
                     core.simulation.selection = selection
-                    selection.close()
                 }
             }
             is InfoWebActionItem -> {
                 val url = selection.webInfoURL
-                selection.close()
                 if (url != null)
                     openURL(url)
             }
@@ -904,7 +900,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     entry,
                     core.simulation.universe
                 )
-                selection.close()
                 showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
             }
             is AlternateSurfacesItem -> {
@@ -926,7 +921,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     else
                         core.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
                 }
-                selection.close()
             }
             is MarkItem -> {
                 val markers = CelestiaFragment.availableMarkers
@@ -939,11 +933,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                             core.showMarkers = true
                         }
                     }
-                    selection.close()
                 }
             }
             else -> {
-                selection.close()
             }
         }
     }
@@ -962,21 +954,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        core.simulation.findObject(text).use {
-            if (it.isEmpty) {
-                showAlert(CelestiaString("Object not found", ""))
-                return
-            }
+        val selection = core.simulation.findObject(text)
+        if (selection.isEmpty) {
+            showAlert(CelestiaString("Object not found", ""))
+            return
+        }
 
-            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-            if (frag is SearchContainerFragment) {
-                frag.pushSearchResult(it)
-            }
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+        if (frag is SearchContainerFragment) {
+            frag.pushSearchResult(selection)
         }
     }
 
     override fun onSearchItemSubmit(text: String) {
         onSearchItemSelected(text)
+    }
+
+    override fun onSearchStart() {
+        val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
+        bottomSheetContainer.reset()
     }
 
     override fun onInstantActionSelected(item: CelestiaAction) {
@@ -1018,9 +1014,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } else {
             val obj = item.item.`object`
             if (obj != null) {
-                Selection(obj).use {
-                    frag.showInfo(it)
-                }
+                frag.showInfo(Selection(obj))
             } else {
                 showAlert(CelestiaString("Object not found", ""))
             }
@@ -1376,10 +1370,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             if (!selection.isEmpty) {
                 lifecycleScope.launch {
                     showInfo(selection)
-                    selection.close()
                 }
-            } else {
-                selection.close()
             }
         }
     }
@@ -1653,7 +1644,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun shareURL() {
         CelestiaView.callOnRenderThread {
             val orig = core.currentURL
-            val name = core.simulation.selection.use { core.simulation.universe.getNameForSelection(it) }
+            val name = core.simulation.universe.getNameForSelection(core.simulation.selection)
             lifecycleScope.launch {
                 shareURL(orig, name)
             }

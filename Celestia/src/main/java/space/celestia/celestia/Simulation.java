@@ -21,11 +21,11 @@ public class Simulation {
 
     public @NonNull
     Selection getSelection() {
-        return new Selection(c_getSelection(pointer));
+        return c_getSelection(pointer);
     }
 
     public void setSelection(@NonNull Selection selection) {
-        c_setSelection(pointer, selection.pointer);
+        c_setSelection(pointer, selection);
     }
 
     public @NonNull List<String> completionForText(@NonNull String text, int limit) {
@@ -34,7 +34,7 @@ public class Simulation {
 
     public @NonNull
     Selection findObject(@NonNull String name) {
-        return new Selection(c_findObject(pointer, name));
+        return c_findObject(pointer, name);
     }
 
     public @NonNull
@@ -69,7 +69,7 @@ public class Simulation {
             return;
         Selection target = new Selection(eclipse.receiver);
         Selection ref = new Selection(star);
-        c_goToEclipse(pointer, eclipse.startTimeJulian, ref.pointer, target.pointer);
+        c_goToEclipse(pointer, eclipse.startTimeJulian, ref, target);
     }
 
     public @NonNull
@@ -87,25 +87,25 @@ public class Simulation {
             distance = location.distance;
         }
         if (((location.fieldMask & GoToLocation.FieldMaskLongitude) != 0) && ((location.fieldMask & GoToLocation.FieldMaskLatitude) != 0 )) {
-            c_goToLocationLongLat(pointer, location.selection.pointer, location.longitude, location.latitude, distance, location.duration);
+            c_goToLocationLongLat(pointer, location.selection, location.longitude, location.latitude, distance, location.duration);
         } else {
-            c_goToLocation(pointer, location.selection.pointer, distance, location.duration);
+            c_goToLocation(pointer, location.selection, distance, location.duration);
         }
     }
 
     // C functions
-    private static native long c_getSelection(long pointer);
-    private static native void c_setSelection(long pointer, long ptr);
+    private static native Selection c_getSelection(long pointer);
+    private static native void c_setSelection(long pointer, Selection selection);
     private static native long c_getUniverse(long pointer);
     private static native List<String> c_completionForText(long pointer, String text, int limit);
-    private static native long c_findObject(long pointer, String name);
+    private static native Selection c_findObject(long pointer, String name);
     private static native long c_getStarBrowser(long pointer, int kind);
     private static native void c_reverseObserverOrientation(long pointer);
     private static native double c_getTime(long pointer);
     private static native void c_setTime(long pointer, double time);
-    private static native void c_goToEclipse(long pointer, double time, long ref, long target);
+    private static native void c_goToEclipse(long pointer, double time, Selection ref, Selection target);
     private static native long c_getActiveObserver(long pointer);
     private static native void c_goToDestination(long ptr, String target, double distance);
-    private static native void c_goToLocation(long pointer, long selectionPtr, double distance, double duration);
-    private static native void c_goToLocationLongLat(long pointer, long selectionPtr, float longitude, float latitude, double distance, double duration);
+    private static native void c_goToLocation(long pointer, Selection selection, double distance, double duration);
+    private static native void c_goToLocationLongLat(long pointer, Selection selection, float longitude, float latitude, double distance, double duration);
 }

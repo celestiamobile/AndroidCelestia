@@ -109,9 +109,9 @@ public class AppCore {
         contextMenuHandler = handler;
     }
 
-    private void onRequestContextMenu(float x, float y, long pointer) {
+    private void onRequestContextMenu(float x, float y, Selection selection) {
         if (contextMenuHandler != null)
-            contextMenuHandler.requestContextMenu(x, y, new Selection(pointer));
+            contextMenuHandler.requestContextMenu(x, y, selection);
     }
 
     public void setSafeAreaInsets(int left, int top, int right, int bottom) {

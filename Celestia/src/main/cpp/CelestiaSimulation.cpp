@@ -9,25 +9,26 @@
  * of the License, or (at your option) any later version.
  */
 
-#include "CelestiaJNI.h"
+#include "CelestiaSelection.h"
 #include <celengine/simulation.h>
 #include <celengine/selection.h>
 #include <celengine/starbrowser.h>
 #include <celmath/geomutil.h>
 
 extern "C"
-JNIEXPORT jlong JNICALL
+JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1getSelection(JNIEnv *env, jclass clazz, jlong pointer) {
     auto sim = (Simulation *)pointer;
     Selection sel = sim->getSelection();
-    return (jlong)new Selection(sel);
+    return selectionAsJavaSelection(env, sel);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_Simulation_c_1setSelection(JNIEnv *env, jclass clazz, jlong pointer, jlong ptr) {
+Java_space_celestia_celestia_Simulation_c_1setSelection(JNIEnv *env, jclass clazz, jlong pointer,
+                                                        jobject selection) {
     auto sim = (Simulation *)pointer;
-    sim->setSelection(Selection(*(Selection *)ptr));
+    sim->setSelection(javaSelectionAsSelection(env, selection));
 }
 
 extern "C"
@@ -56,13 +57,13 @@ Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass
 }
 
 extern "C"
-JNIEXPORT jlong JNICALL
+JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1findObject(JNIEnv *env, jclass clazz, jlong pointer, jstring name) {
     auto sim = (Simulation *)pointer;
     const char *str = env->GetStringUTFChars(name, nullptr);
-    Selection *sel = new Selection(sim->findObject(str, true));
+    auto sel = sim->findObject(str, true);
     env->ReleaseStringUTFChars(name, str);
-    return (jlong)sel;
+    return selectionAsJavaSelection(env, sel);
 }
 
 extern "C"
@@ -95,13 +96,15 @@ Java_space_celestia_celestia_Simulation_c_1setTime(JNIEnv *env, jclass clazz, jl
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_Simulation_c_1goToEclipse(JNIEnv *env, jclass clazz, jlong pointer, jdouble time, jlong ref, jlong target) {
+Java_space_celestia_celestia_Simulation_c_1goToEclipse(JNIEnv *env, jclass clazz, jlong pointer, jdouble time, jobject ref, jobject target) {
     using namespace celmath;
+    auto refSel = javaSelectionAsSelection(env, ref);
+    auto targetSel = javaSelectionAsSelection(env, target);
     auto sim = (Simulation *)pointer;
     sim->setTime(time);
-    sim->setFrame(ObserverFrame::PhaseLock, *(Selection *)target, *(Selection *)ref);
+    sim->setFrame(ObserverFrame::PhaseLock, targetSel, refSel);
     sim->update(0);
-    double distance = ((Selection *)target)->radius() * 4.0;
+    double distance = targetSel.radius() * 4.0;
     sim->gotoLocation(UniversalCoord::Zero().offsetKm(Eigen::Vector3d::UnitX() * distance),
                       YRotation(-0.5 * celestia::numbers::pi) * XRotation(-0.5 * celestia::numbers::pi),
                       2.5);

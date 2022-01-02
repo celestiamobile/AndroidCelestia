@@ -11,10 +11,9 @@
 
 package space.celestia.celestia;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class Selection implements AutoCloseable {
+public class Selection {
     private final static int SELECTION_TYPE_NIL             = 0;
     private final static int SELECTION_TYPE_STAR            = 1;
     private final static int SELECTION_TYPE_BODY            = 2;
@@ -22,20 +21,42 @@ public class Selection implements AutoCloseable {
     private final static int SELECTION_TYPE_LOCATION        = 4;
     private final static int SELECTION_TYPE_GENERIC         = 5;
 
-    protected long pointer;
-    private boolean closed = false;
+    final public @Nullable AstroObject object;
+    final public int type;
 
-    protected Selection(long ptr) {
-        pointer = ptr;
+    public Selection(long objectPointer, int type) {
+        switch (type)
+        {
+            case SELECTION_TYPE_STAR:
+                object = new Star(objectPointer);
+                break;
+            case SELECTION_TYPE_BODY:
+                object = new Body(objectPointer);
+                break;
+            case SELECTION_TYPE_DEEP_SKY:
+                object = new DSO(objectPointer);
+                break;
+            case SELECTION_TYPE_LOCATION:
+                object = new Location(objectPointer);
+                break;
+            case SELECTION_TYPE_GENERIC:
+                object = new AstroObject(objectPointer);
+                break;
+            case SELECTION_TYPE_NIL:
+            default:
+                object = null;
+                break;
+        }
+        this.type = type;
     }
 
-    public Selection(long objectPtr, int type) {
-        this(c_createSelection(type, objectPtr));
+    protected Selection(@Nullable AstroObject object, int type) {
+        this.object = object;
+        this.type = type;
     }
 
-    @NonNull
-    public Selection clone() {
-        return new Selection(c_clone(pointer));
+    public Selection(@Nullable AstroObject object) {
+        this(object, typeForObject(object));
     }
 
     private static int typeForObject(AstroObject object) {
@@ -54,75 +75,40 @@ public class Selection implements AutoCloseable {
         }
     }
 
-    public Selection (@NonNull AstroObject object) {
-        this(object.pointer, typeForObject(object));
-    }
-
     public boolean isEmpty() {
-        return c_isEmpty(pointer);
-    }
-
-    @Nullable
-    public AstroObject getObject() {
-        int type = c_getSelectionType(pointer);
-        switch (type) {
-            case SELECTION_TYPE_STAR:
-                return new Star(getSelectionPointer());
-            case SELECTION_TYPE_LOCATION:
-                return new Location(getSelectionPointer());
-            case SELECTION_TYPE_DEEP_SKY:
-                return new DSO(getSelectionPointer());
-            case SELECTION_TYPE_BODY:
-                return new Body(getSelectionPointer());
-            case SELECTION_TYPE_GENERIC:
-                return new AstroObject(getSelectionPointer());
-        }
-        return null;
-    }
-
-    public long getSelectionPointer() {
-        return c_getSelectionPtr(pointer);
-    }
-
-    public int getType() {
-        return c_getSelectionType(pointer);
+        return type == SELECTION_TYPE_NIL;
     }
 
     @Nullable
     public Star getStar() {
-        AstroObject obj = getObject();
-        if (obj instanceof Star)
-            return (Star) obj;
+        if (object instanceof Star)
+            return (Star) object;
         return null;
     }
 
     @Nullable
     public Location getLocation() {
-        AstroObject obj = getObject();
-        if (obj instanceof Location)
-            return (Location) obj;
+        if (object instanceof Location)
+            return (Location) object;
         return null;
     }
 
     @Nullable
     public DSO getDSO() {
-        AstroObject obj = getObject();
-        if (obj instanceof DSO)
-            return (DSO) obj;
+        if (object instanceof DSO)
+            return (DSO) object;
         return null;
     }
 
     @Nullable
     public Body getBody() {
-        AstroObject obj = getObject();
-        if (obj instanceof Body)
-            return (Body) obj;
+        if (object instanceof Body)
+            return (Body) object;
         return null;
     }
 
     @Nullable
     public String getWebInfoURL() {
-        AstroObject object = getObject();
         if (object instanceof Body)
             return ((Body) object).getWebInfoURL();
         if (object instanceof Star)
@@ -133,24 +119,18 @@ public class Selection implements AutoCloseable {
     }
 
     public double getRadius() {
-        return c_getRadius(pointer);
+        return c_getRadius();
     }
 
-    @Override
-    public void close() throws Exception {
-        if (!closed) {
-            c_destroy(pointer);
-            closed = true;
-        }
+    // Expose helper functions to JNI
+    public long getObjectPointer() {
+        return object != null ? object.pointer : 0;
+    }
+
+    private int getObjectType() {
+        return type;
     }
 
     // C functions
-    private static native boolean c_isEmpty(long pointer);
-    private static native int c_getSelectionType(long pointer);
-    private static native long c_getSelectionPtr(long pointer);
-    private static native double c_getRadius(long pointer);
-    private static native void c_destroy(long pointer);
-    private static native long c_clone(long pointer);
-
-    private static native long c_createSelection(int type, long pointer);
+    private native double c_getRadius();
 }

@@ -80,11 +80,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
         }
     }
 
-    override fun onDestroy() {
-        selection.close()
-        super.onDestroy()
-    }
-
     override fun onDetach() {
         super.onDetach()
         listener = null
@@ -196,7 +191,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
         fun newInstance(selection: Selection, embeddedInNavigation: Boolean = false) =
             InfoFragment().apply {
                 arguments = Bundle().apply {
-                    this.putLong(ARG_OBJECT_POINTER, selection.selectionPointer)
+                    this.putLong(ARG_OBJECT_POINTER, selection.objectPointer)
                     this.putInt(ARG_OBJECT_TYPE, selection.type)
                     this.putBoolean(ARG_EMBEDDED_IN_NAVIGATION, embeddedInNavigation)
                 }

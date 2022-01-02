@@ -16,11 +16,10 @@ import space.celestia.mobilecelestia.favorite.BookmarkNode
 
 val AppCore.currentBookmark: BookmarkNode?
     get() {
-        simulation.selection.use {
-            if (it.isEmpty) return null
-            val name = simulation.universe.getNameForSelection(it)
-            return BookmarkNode(name, currentURL, null)
-        }
+        val selection = simulation.selection
+        if (selection.isEmpty) return null
+        val name = simulation.universe.getNameForSelection(selection)
+        return BookmarkNode(name, currentURL, null)
     }
 
 fun AppCore.getOverviewForSelection(selection: Selection): String {

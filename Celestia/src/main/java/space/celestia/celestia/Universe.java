@@ -87,15 +87,15 @@ public class Universe implements BrowserItem.ChildrenProvider {
 
     public @NonNull
     Selection findObject(@NonNull String name) {
-        return new Selection(c_findObject(pointer, name));
+        return c_findObject(pointer, name);
     }
 
     public void mark(@NonNull Selection selection, int marker) {
-        c_mark(pointer, selection.pointer, marker);
+        c_mark(pointer, selection, marker);
     }
 
     public void unmark(@NonNull Selection selection) {
-        c_unmark(pointer, selection.pointer);
+        c_unmark(pointer, selection);
     }
 
     public void unmarkAll() {
@@ -107,9 +107,9 @@ public class Universe implements BrowserItem.ChildrenProvider {
     private static native long c_getDSOCatalog(long ptr);
     private static native String c_getChildrenForStar(long ptr, long pointer);
     private static native String c_getChildrenForBody(long ptr, long pointer);
-    private static native long c_findObject(long ptr, String name);
+    private static native Selection c_findObject(long ptr, String name);
 
-    private static native void c_mark(long ptr, long selection, int marker);
-    private static native void c_unmark(long ptr, long selection);
+    private static native void c_mark(long ptr, Selection selection, int marker);
+    private static native void c_unmark(long ptr, Selection selection);
     private static native void c_unmarkAll(long ptr);
 }

@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-#include "CelestiaJNI.h"
+#include "CelestiaSelection.h"
 #include <celengine/universe.h>
 #include <celutil/gettext.h>
 
@@ -34,13 +34,13 @@ Java_space_celestia_celestia_Universe_c_1getDSOCatalog(JNIEnv *env, jclass clazz
 }
 
 extern "C"
-JNIEXPORT jlong JNICALL
+JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Universe_c_1findObject(JNIEnv *env, jclass clazz, jlong pointer, jstring name) {
     auto u = (Universe *)pointer;
     const char *str = env->GetStringUTFChars(name, nullptr);
-    Selection *sel = new Selection(u->find(str));
+    auto sel = u->find(str);
     env->ReleaseStringUTFChars(name, str);
-    return (jlong)sel;
+    return selectionAsJavaSelection(env, sel);
 }
 
 using namespace std;
@@ -264,18 +264,18 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Universe_c_1mark(JNIEnv *env, jclass clazz,
-                                                         jlong ptr, jlong selection,
+                                                         jlong ptr, jobject selection,
                                                          jint marker) {
     auto u = (Universe *)ptr;
-    u->markObject(*(Selection *)selection, celestia::MarkerRepresentation(celestia::MarkerRepresentation::Symbol(marker), 10.0f, Color(0.0f, 1.0f, 0.0f, 0.9f)), 1);
+    u->markObject(javaSelectionAsSelection(env, selection), celestia::MarkerRepresentation(celestia::MarkerRepresentation::Symbol(marker), 10.0f, Color(0.0f, 1.0f, 0.0f, 0.9f)), 1);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Universe_c_1unmark(JNIEnv *env, jclass clazz,
-                                                           jlong ptr, jlong selection) {
+                                                           jlong ptr, jobject selection) {
     auto u = (Universe *)ptr;
-    u->unmarkObject(*(Selection *)selection, 1);
+    u->unmarkObject(javaSelectionAsSelection(env, selection), 1);
 }
 
 extern "C"

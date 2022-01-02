@@ -51,6 +51,12 @@ extern jmethodID cdInitMethodID;
 extern jclass appCoreClz;
 extern jmethodID formatDateMethodID;
 
+// selection
+extern jclass selectionClz;
+extern jmethodID selectionGetObjectPointerMethodID;
+extern jmethodID selectionGetObjectTypeMethodID;
+extern jmethodID selectionInitMethodID;
+
 extern pthread_key_t javaEnvKey;
 }
 

@@ -108,8 +108,10 @@ class SearchFragment : NavigationFragment.SubFragment() {
     @ExperimentalCoroutinesApi
     private fun setupSearchSearchView() {
         searchView.setOnQueryTextFocusChangeListener { v, hasFocus ->
-            if (hasFocus)
+            if (hasFocus) {
                 (v as? SearchView)?.isIconified = false
+                listener?.onSearchStart()
+            }
         }
         searchView.textChanges()
             .distinctUntilChanged()
@@ -160,6 +162,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
     interface Listener {
         fun onSearchItemSelected(text: String)
         fun onSearchItemSubmit(text: String)
+        fun onSearchStart()
     }
 
     companion object {

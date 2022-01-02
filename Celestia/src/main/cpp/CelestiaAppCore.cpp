@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-#include "CelestiaJNI.h"
+#include "CelestiaSelection.h"
 #include <string>
 
 #include <unistd.h>
@@ -57,6 +57,12 @@ jmethodID cdInitMethodID = nullptr;
 // app core
 jclass appCoreClz = nullptr;
 jmethodID formatDateMethodID = nullptr;
+
+// selection
+jclass selectionClz = nullptr;
+jmethodID selectionGetObjectPointerMethodID = nullptr;
+jmethodID selectionGetObjectTypeMethodID = nullptr;
+jmethodID selectionInitMethodID = nullptr;
 
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
@@ -108,6 +114,11 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     appCoreClz = (jclass)env->NewGlobalRef(acc);
     formatDateMethodID = env->GetStaticMethodID(appCoreClz, "formatDate", "(D)Ljava/lang/String;");
 
+    selectionClz = (jclass)env->NewGlobalRef(env->FindClass("space/celestia/celestia/Selection"));
+    selectionGetObjectPointerMethodID = env->GetMethodID(selectionClz, "getObjectPointer", "()J");
+    selectionGetObjectTypeMethodID = env->GetMethodID(selectionClz, "getObjectType", "()I");
+    selectionInitMethodID = env->GetMethodID(selectionClz, "<init>", "(JI)V");
+
     return JNI_VERSION_1_6;
 }
 }
@@ -148,7 +159,7 @@ public:
     {
         auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
         if (!env) return;
-        env->CallVoidMethod(object, method, (jfloat)x, (jfloat)y, (jlong)new Selection(sel));
+        env->CallVoidMethod(object, method, (jfloat)x, (jfloat)y, selectionAsJavaSelection(env, sel));
     }
 
 private:
@@ -176,7 +187,8 @@ Java_space_celestia_celestia_AppCore_c_1setContextMenuHandler(JNIEnv *env, jobje
     auto core = (CelestiaCore *)ptr;
     static jmethodID contextMenuCallback = nullptr;
     if (!contextMenuCallback)
-        contextMenuCallback = env->GetMethodID(env->GetObjectClass(thiz), "onRequestContextMenu", "(FFJ)V");
+        contextMenuCallback = env->GetMethodID(env->GetObjectClass(thiz), "onRequestContextMenu",
+                                               "(FFLspace/celestia/celestia/Selection;)V");
     // TODO: where to delete the global reference?
     core->setContextMenuHandler(new AppCoreContextMenuHandler(env->NewGlobalRef(thiz), contextMenuCallback));
 }
