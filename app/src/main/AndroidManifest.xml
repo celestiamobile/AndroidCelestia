@@ -77,6 +77,16 @@
                     android:host="celestia.mobi"
                     android:pathPattern="/api/url" />
             </intent-filter>
+            <intent-filter android:autoVerify="true"
+                tools:targetApi="m">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="celestia.mobi"
+                    android:pathPattern="/resources/item" />
+            </intent-filter>
             <meta-data android:name="WindowManagerPreference:FreeformWindowSize"
                 android:value="[phone|tablet|maximize]" />
             <meta-data android:name="WindowManagerPreference:FreeformWindowOrientation"

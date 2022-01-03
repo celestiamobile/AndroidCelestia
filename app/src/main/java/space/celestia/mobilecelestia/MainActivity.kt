@@ -63,13 +63,8 @@ import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
-import space.celestia.mobilecelestia.resource.AsyncListFragment
-import space.celestia.mobilecelestia.resource.DestinationDetailFragment
-import space.celestia.mobilecelestia.resource.ResourceFragment
-import space.celestia.mobilecelestia.resource.ResourceItemFragment
-import space.celestia.mobilecelestia.resource.model.ResourceCategory
-import space.celestia.mobilecelestia.resource.model.ResourceItem
-import space.celestia.mobilecelestia.resource.model.ResourceManager
+import space.celestia.mobilecelestia.resource.*
+import space.celestia.mobilecelestia.resource.model.*
 import space.celestia.mobilecelestia.search.SearchContainerFragment
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.search.hideKeyboard
@@ -130,6 +125,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
+    private var addonToOpen: String? = null
 
     private val defaultConfigFilePath by lazy { "$defaultDataDirectoryPath/$CELESTIA_CFG_NAME" }
     private val defaultDataDirectoryPath by lazy { "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME" }
@@ -433,6 +429,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
             readyForInteraction = true
             runScriptOrOpenURLIfNeeded()
+            openAddonIfNeeded()
 
             // Show onboarding if needed
             showWelcomeIfNeeded()
@@ -578,13 +575,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun handleAppLink(uri: Uri) {
         val path = uri.path ?: return
-        val id = uri.getQueryParameter("id") ?: return
-        val service = ShareAPI.shared.create(ShareAPIService::class.java)
-        lifecycleScope.launch {
-            try {
-                val result = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java)
-                requestOpenURL(result.resolvedURL)
-            } catch (ignored: Throwable) {}
+        if (path == "/api/url") {
+            val id = uri.getQueryParameter("id") ?: return
+            val service = ShareAPI.shared.create(ShareAPIService::class.java)
+            lifecycleScope.launch {
+                try {
+                    val result = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java)
+                    requestOpenURL(result.resolvedURL)
+                } catch (ignored: Throwable) {}
+            }
+        } else if (path == "/resources/item") {
+            val id = uri.getQueryParameter("item") ?: return
+            requestOpenAddon(id)
         }
     }
 
@@ -630,6 +632,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             runScriptOrOpenURLIfNeeded()
     }
 
+    private fun requestOpenAddon(addon: String) {
+        addonToOpen = addon
+        if (readyForInteraction)
+            openAddonIfNeeded()
+    }
+
     private fun runScriptOrOpenURLIfNeeded() {
         val uri = scriptOrURLPath ?: return
 
@@ -645,6 +653,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     core.runScript(uri)
                 }
             }
+        }
+    }
+
+    private fun openAddonIfNeeded() {
+        val addon = addonToOpen ?: return
+
+        // Clear existing
+        addonToOpen = null
+
+        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
+        val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
+        lifecycleScope.launch {
+            try {
+                val result = service.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                showBottomSheetFragment(ResourceItemFragment.newInstance(result))
+            } catch (ignored: Throwable) {}
         }
     }
 
@@ -996,6 +1020,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             core.simulation.selection = sel
             core.charEnter(CelestiaAction.GoTo.value)
         }
+    }
+
+    override fun onShareAddon(name: String, id: String) {
+        val baseURL = "https://celestia.mobi/resources/item"
+        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
+        val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", lang).build()
+        val intent = ShareCompat.IntentBuilder(this@MainActivity)
+            .setType("text/plain")
+            .setChooserTitle(name)
+            .setText(uri.toString())
+            .intent
+        val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
+        if (ai != null && ai.exported)
+            startActivity(intent)
+        else
+            showUnsupportedAction()
     }
 
     override fun onBottomControlHide() {

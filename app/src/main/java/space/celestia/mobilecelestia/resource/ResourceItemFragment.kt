@@ -26,6 +26,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.common.ProgressView
+import space.celestia.mobilecelestia.common.StandardImageButton
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
@@ -59,6 +60,7 @@ class ResourceItemFragment : EndSubFragment(), ResourceManager.Listener {
     interface Listener {
         fun objectExistsWithName(name: String): Boolean
         fun onGoToObject(name: String)
+        fun onShareAddon(name: String, id: String)
     }
 
     enum class ResourceItemState {
@@ -102,6 +104,13 @@ class ResourceItemFragment : EndSubFragment(), ResourceManager.Listener {
         goToButtonTextView = view.findViewById(R.id.button)
         goToButtonTextView.text = CelestiaString("Go", "")
         goToButton.visibility = View.GONE
+
+        val shareButton = view.findViewById<StandardImageButton>(R.id.share_button)
+        shareButton.setOnClickListener {
+            val item = this.item ?: return@setOnClickListener
+            listener?.onShareAddon(item.name, item.id)
+        }
+
         updateContents()
         updateUI()
 
