@@ -567,6 +567,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             requestOpenURL(uri.toString())
         } else if (uri.scheme == "https") {
             handleAppLink(uri)
+        } else if (uri.scheme == "celaddon") {
+            if (uri.host == "item") {
+                val id = uri.getQueryParameter("item") ?: return
+                requestOpenAddon(id)
+            }
         } else {
             // Cannot handle this URI scheme
             showAlert("Unknown URI scheme ${uri.scheme}")
