@@ -46,6 +46,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/formatnum.h
         ${CELESTIA_SRC_DIR}/celutil/fsutils.cpp
         ${CELESTIA_SRC_DIR}/celutil/fsutils.h
+        ${CELESTIA_SRC_DIR}/celutil/greek.cpp
+        ${CELESTIA_SRC_DIR}/celutil/greek.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
         ${CELESTIA_SRC_DIR}/celutil/reshandle.h
