@@ -27,7 +27,6 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.animation.addListener
@@ -36,6 +35,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.microsoft.appcenter.AppCenter
@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         if (preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
-            val builder = AlertDialog.Builder(this)
+            val builder = MaterialAlertDialogBuilder(this)
             builder.setCancelable(false)
             builder.setTitle(R.string.privacy_policy_alert_title)
             builder.setMessage(R.string.privacy_policy_alert_detail)

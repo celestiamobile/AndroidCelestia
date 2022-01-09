@@ -12,12 +12,13 @@
 package space.celestia.mobilecelestia.utils
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.os.Build
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import space.celestia.mobilecelestia.R
 import java.text.SimpleDateFormat
 import java.util.*
@@ -26,7 +27,7 @@ fun Activity.showTextInput(title: String, placeholder: String? = null, handler: 
     if (isFinishing || isDestroyed)
         return
 
-    val builder = AlertDialog.Builder(this)
+    val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
     val customView = LayoutInflater.from(this).inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
 
@@ -54,7 +55,7 @@ fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Un
         return
 
     val formatter = SimpleDateFormat(format, Locale.US)
-    val builder = AlertDialog.Builder(this)
+    val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
     val customView = LayoutInflater.from(this).inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
 
@@ -85,7 +86,7 @@ fun Activity.showSingleSelection(title: String, selections: List<String>, checke
     if (isFinishing || isDestroyed)
         return
 
-    val builder = AlertDialog.Builder(this)
+    val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
     builder.setSingleChoiceItems(selections.toTypedArray(), checkedIndex) { dialog, index ->
         handler(index)
@@ -102,7 +103,7 @@ fun Activity.showOptions(title: String, options: Array<String>, handler: (Int) -
     if (isFinishing || isDestroyed)
         return
 
-    val builder = AlertDialog.Builder(this)
+    val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
     builder.setItems(options) { _, index ->
         handler(index)
@@ -114,7 +115,7 @@ fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): Al
     if (isFinishing || isDestroyed)
         return null
 
-    val builder = AlertDialog.Builder(this)
+    val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
     if (cancelHandler != null) {
         builder.setCancelable(false)
@@ -134,7 +135,7 @@ fun Activity.showAlert(title: String, handler: (() -> Unit)? = null) {
     if (isFinishing || isDestroyed)
         return
 
-    val builder = AlertDialog.Builder(this)
+    val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
     builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->
         if (handler != null)
