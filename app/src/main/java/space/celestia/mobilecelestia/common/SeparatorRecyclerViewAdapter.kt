@@ -154,7 +154,7 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
             }
             prevSectionHasSep = showSectionSeparator
         }
-        if (!showSeparators && !showFirstAndLastSeparator && data.size > 1) {
+        if (showSeparators && !showFirstAndLastSeparator && data.size > 1) {
             if (data[0] is SeparatorItem) {
                 data.removeAt(0)
             }
