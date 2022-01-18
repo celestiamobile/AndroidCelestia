@@ -26,7 +26,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:largeHeap="true"
-        android:theme="@style/AppTheme">
+        android:hasFragileUserData="true"
+        android:theme="@style/AppTheme"
+        tools:targetApi="q">
         <activity
             android:name="space.celestia.mobilecelestia.MainActivity"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
