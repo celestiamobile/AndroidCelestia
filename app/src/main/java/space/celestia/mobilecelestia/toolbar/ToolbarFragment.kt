@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.InsetAwareFragment
+import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
@@ -112,8 +113,8 @@ class ToolbarFragment : InsetAwareFragment() {
         applyPadding(view, currentSafeInsets)
     }
 
-    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
-        super.onInsetChanged(view, newInsets)
+    override fun onInsetChanged(view: View, newInsets: EdgeInsets, roundedCorners: RoundedCorners) {
+        super.onInsetChanged(view, newInsets, roundedCorners)
 
         applyPadding(view, newInsets)
     }

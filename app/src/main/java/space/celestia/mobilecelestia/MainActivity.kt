@@ -32,6 +32,7 @@ import androidx.constraintlayout.widget.Guideline
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
+import androidx.core.graphics.Insets
 import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -52,6 +53,7 @@ import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.control.*
 import space.celestia.celestia.*
 import space.celestia.celestia.BrowserItem
+import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
@@ -210,10 +212,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         reporter.register(this)
 
         // Handle notch
-        ViewCompat.setOnApplyWindowInsetsListener( findViewById<View>(android.R.id.content).rootView, { _, insets ->
-            updateConfiguration(resources.configuration, insets?.displayCutout)
+        ViewCompat.setOnApplyWindowInsetsListener( findViewById<View>(android.R.id.content).rootView) { _, insets ->
+            updateConfiguration(resources.configuration, insets)
             return@setOnApplyWindowInsetsListener insets
-        })
+        }
 
         findViewById<View>(R.id.menu_overlay).setOnTouchListener { _, e ->
             if (e.actionMasked == MotionEvent.ACTION_UP) {
@@ -230,6 +232,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             if (interactionBlocked) { return@setOnTouchListener true }
             // Pass through
             return@setOnTouchListener false
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.bottom_sheet_overlay)) { _, insets ->
+            // TODO: the suggested replacement for the deprecated methods does not work
+            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0, 0, 0, insets.systemWindowInsetBottom))
+            return@setOnApplyWindowInsetsListener builder.build()
         }
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
@@ -289,7 +297,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         val rootView = findViewById<View>(android.R.id.content).rootView
-        updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView)?.displayCutout)
+        updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView))
 
         handleIntent(intent)
     }
@@ -314,7 +322,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onConfigurationChanged(newConfig)
 
         val rootView = findViewById<View>(android.R.id.content).rootView
-        updateConfiguration(newConfig, ViewCompat.getRootWindowInsets(rootView)?.displayCutout)
+        updateConfiguration(newConfig, ViewCompat.getRootWindowInsets(rootView))
     }
 
     override fun onBackPressed() {
@@ -331,34 +339,31 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (hasFocus) hideSystemUI()
     }
 
-    private fun updateConfiguration(configuration: Configuration, displayCutout: DisplayCutoutCompat? = null) {
+    private fun updateConfiguration(configuration: Configuration, windowInsets: WindowInsetsCompat?) {
         val density = resources.displayMetrics.density
-        var safeInsetEnd = 0
-        var safeInsetStart = 0
-        var safeInsetBottom = 0
-        var safeInsetTop = 0
         val isRTL = configuration.layoutDirection == LayoutDirection.RTL
 
-        if (displayCutout != null) {
-            safeInsetStart = if (isRTL) displayCutout.safeInsetRight else displayCutout.safeInsetLeft
-            safeInsetEnd = if (isRTL) displayCutout.safeInsetLeft else displayCutout.safeInsetRight
-            safeInsetBottom = displayCutout.safeInsetBottom
-            safeInsetTop = displayCutout.safeInsetTop
-        }
-
+        val safeInsets = EdgeInsets(
+            EdgeInsets(windowInsets),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RoundedCorners(windowInsets) else RoundedCorners(0, 0, 0, 0),
+            resources.configuration
+        )
         val toolbarContainer = findViewById<View>(R.id.toolbar_overlay)
         val menuWidthGuideLine = findViewById<Guideline>(R.id.menu_width_guideline)
+
+        val safeInsetStart = if (isRTL) safeInsets.right else safeInsets.left
+        val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
 
         menuWidthGuideLine.setGuidelineEnd((220 * density).toInt() + safeInsetEnd)
 
         val toolbarParams = toolbarContainer.layoutParams as FrameLayout.LayoutParams
         toolbarParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
         toolbarParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
-        toolbarParams.topMargin = safeInsetTop
-        toolbarParams.bottomMargin = safeInsetBottom
+        toolbarParams.topMargin = safeInsets.top
+        toolbarParams.bottomMargin = safeInsets.bottom
 
         val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
-        bottomSheetContainer.edgeInsets = EdgeInsets(displayCutout)
+        bottomSheetContainer.edgeInsets = safeInsets
         bottomSheetContainer.postInvalidate()
     }
 
@@ -447,7 +452,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onAttachedToWindow()
 
         val rootView = findViewById<View>(android.R.id.content).rootView
-        updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView)?.displayCutout)
+        updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView))
     }
 
     private fun removeCelestiaFragment() {
@@ -903,28 +908,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Listeners...
-    override fun onInfoActionSelected(action: InfoActionItem, selection: Selection) {
+    override fun onInfoActionSelected(action: InfoActionItem, item: Selection) {
         when (action) {
             is InfoNormalActionItem -> {
                 CelestiaView.callOnRenderThread {
-                    core.simulation.selection = selection
+                    core.simulation.selection = item
                     core.charEnter(action.item.value)
                 }
             }
             is InfoSelectActionItem -> {
                 CelestiaView.callOnRenderThread {
-                    core.simulation.selection = selection
+                    core.simulation.selection = item
                 }
             }
             is InfoWebActionItem -> {
-                val url = selection.webInfoURL
+                val url = item.webInfoURL
                 if (url != null)
                     openURL(url)
             }
             is SubsystemActionItem -> {
-                val entry = selection.`object` ?: return
+                val entry = item.`object` ?: return
                 val browserItem = BrowserItem(
-                    core.simulation.universe.getNameForSelection(selection),
+                    core.simulation.universe.getNameForSelection(item),
                     null,
                     entry,
                     core.simulation.universe
@@ -932,7 +937,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
             }
             is AlternateSurfacesItem -> {
-                val alternateSurfaces = selection.body?.alternateSurfaceNames ?: return
+                val alternateSurfaces = item.body?.alternateSurfaceNames ?: return
                 val current = core.simulation.activeObserver.displayedSurface
                 var currentIndex = 0
                 if (current != "") {
@@ -956,9 +961,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSingleSelection(CelestiaString("Mark", ""), markers, -1) { newIndex ->
                     if (newIndex != null) {
                         if (newIndex >= Universe.MARKER_COUNT) {
-                            core.simulation.universe.unmark(selection)
+                            core.simulation.universe.unmark(item)
                         } else {
-                            core.simulation.universe.mark(selection, newIndex)
+                            core.simulation.universe.mark(item, newIndex)
                             core.showMarkers = true
                         }
                     }

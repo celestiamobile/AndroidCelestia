@@ -15,6 +15,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -32,12 +33,16 @@ import space.celestia.mobilecelestia.browser.createAllBrowserItems
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.celestia.*
+import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.showToast
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.round
 
 class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler {
     private var activity: Activity? = null
@@ -209,13 +214,13 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        handleInsetsChanged(view, currentSafeInsets)
+        handleInsetsChanged(view, currentSafeInsets, currentRoundedCorners)
     }
 
-    override fun onInsetChanged(view: View, newInsets: EdgeInsets) {
-        super.onInsetChanged(view, newInsets)
+    override fun onInsetChanged(view: View, newInsets: EdgeInsets, roundedCorners: RoundedCorners) {
+        super.onInsetChanged(view, newInsets, roundedCorners)
 
-        handleInsetsChanged(view, newInsets)
+        handleInsetsChanged(view, newInsets, roundedCorners)
     }
 
     fun updateFrameRateOption(newFrameRateOption: Int) {
@@ -225,13 +230,14 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         }
     }
 
-    private fun handleInsetsChanged(view: View, newInsets: EdgeInsets) {
+    private fun handleInsetsChanged(view: View, newInsets: EdgeInsets, roundedCorners: RoundedCorners) {
+        val safeInsets = EdgeInsets(newInsets, roundedCorners, resources.configuration)
         if (!loadSuccess) {
-            savedInsets = newInsets
+            savedInsets = safeInsets
             return
         }
 
-        val insets = newInsets.scaleBy(scaleFactor)
+        val insets = safeInsets.scaleBy(scaleFactor)
         CelestiaView.callOnRenderThread {
             core.setSafeAreaInsets(insets)
         }
@@ -394,7 +400,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         Log.d(TAG, "Ready to display")
 
-        handleInsetsChanged(thisView, currentSafeInsets)
+        handleInsetsChanged(thisView, currentSafeInsets, currentRoundedCorners)
     }
 
     override fun onCreateContextMenu(

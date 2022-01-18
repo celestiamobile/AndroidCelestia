@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.common
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.OnApplyWindowInsetsListener
@@ -20,22 +21,39 @@ import androidx.fragment.app.Fragment
 
 open class InsetAwareFragment: Fragment() {
     val currentSafeInsets: EdgeInsets
-    get() {
-        val rootView = view
-        if (rootView == null)
-            return EdgeInsets(0, 0, 0, 0)
-        val insets = ViewCompat.getRootWindowInsets(rootView)
-        return EdgeInsets(insets)
-    }
+        get() {
+            val rootView = view
+            if (rootView == null)
+                return EdgeInsets(0, 0, 0, 0)
+            val insets = ViewCompat.getRootWindowInsets(rootView)
+            return EdgeInsets(insets)
+        }
+
+    val currentRoundedCorners: RoundedCorners
+        get() {
+            val rootView = view
+            if (rootView == null)
+                return RoundedCorners(0, 0, 0, 0)
+            val insets = ViewCompat.getRootWindowInsets(rootView)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                return RoundedCorners(insets)
+            }
+            return RoundedCorners(0, 0, 0, 0)
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, { _, insets ->
-            onInsetChanged(view, EdgeInsets(insets))
+        ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
+            val roundedCorners = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                RoundedCorners(insets)
+            } else {
+                RoundedCorners(0, 0, 0, 0)
+            }
+            onInsetChanged(view, EdgeInsets(insets), roundedCorners)
             return@setOnApplyWindowInsetsListener insets ?: WindowInsetsCompat(insets)
-        })
+        }
     }
 
-    open fun onInsetChanged(view: View, newInsets: EdgeInsets) {}
+    open fun onInsetChanged(view: View, newInsets: EdgeInsets, roundedCorners: RoundedCorners) {}
 }
