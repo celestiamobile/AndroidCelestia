@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="space.celestia.mobilecelestia"
-    android:versionCode="240"
+    android:versionCode="241"
     android:versionName="1.5.0">
 
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
