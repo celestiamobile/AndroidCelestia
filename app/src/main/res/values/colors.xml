@@ -21,6 +21,7 @@
     <color name="colorSecondaryLabel">#99EBEBF5</color>
     <color name="colorTertiaryLabel">#4DEBEBF5</color>
 
+    <color name="colorCardBackground">#39393D</color>
     <color name="colorFill">#5B787880</color>
 
     <color name="colorSelection">#3A3A3C</color>

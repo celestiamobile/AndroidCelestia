@@ -19,5 +19,5 @@
     app:footnoteTextColor="@color/colorSecondaryLabel"
     app:cardCornerRadius="8dp"
     android:foreground="?attr/selectableItemBackground"
-    app:cardBackgroundColor="@color/colorFill">
+    app:cardBackgroundColor="@color/colorCardBackground">
 </space.celestia.ui.linkpreview.LPLinkView>
