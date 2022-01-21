@@ -16,12 +16,13 @@
     android:padding="@dimen/dialog_input_padding_normal">
 
     <com.google.android.material.textfield.TextInputLayout
+        style="@style/TextInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/input"
-            style="@style/EditText"
+            style="@style/TextInputEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingStart="4dp"

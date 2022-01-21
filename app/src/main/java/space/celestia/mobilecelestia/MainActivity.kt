@@ -304,7 +304,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(MENU_VISIBLE_TAG, findViewById<View>(R.id.menu_container).visibility == View.VISIBLE)
-        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_card).visibility == View.VISIBLE)
+        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
         outState.putSerializable(GO_TO_DATA_TAG, currentGoToData)
         super.onSaveInstanceState(outState)

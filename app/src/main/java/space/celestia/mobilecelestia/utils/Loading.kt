@@ -18,9 +18,10 @@ import space.celestia.mobilecelestia.R
 
 fun createLoadingDrawable(context: Context): CircularProgressDrawable {
     val drawable = CircularProgressDrawable(context)
-    drawable.centerRadius = 30f
-    drawable.strokeWidth = 5f
-    drawable.setColorSchemeColors(ResourcesCompat.getColor(context.resources, R.color.colorAccent, null))
+    val density = context.resources.displayMetrics.density
+    drawable.centerRadius = 15f * density
+    drawable.strokeWidth = 3f * density
+    drawable.setColorSchemeColors(ResourcesCompat.getColor(context.resources, R.color.colorLabel, null))
     drawable.start()
     return drawable
 }

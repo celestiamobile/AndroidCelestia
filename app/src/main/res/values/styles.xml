@@ -10,7 +10,7 @@
   -->
 
 <resources>
-    <style name="DefaultThemeBase" parent="@style/Theme.MaterialComponents.NoActionBar">
+    <style name="DefaultThemeBase" parent="@style/Theme.Material3.Dark.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowFullscreen">true</item>
@@ -82,42 +82,42 @@
     </style>
 
     <style name="ActionButtonLabel" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Button</item>
+        <item name="android:textAppearance">?attr/textAppearanceButton</item>
     </style>
 
     <style name="HelpText" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body1</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyLarge</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="LoadingText" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Medium</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyLarge</item>
     </style>
 
     <style name="CaptionText" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Subtitle1</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyMedium</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="PrimaryListItemLabel" parent="PrimaryLabel">
-        <item name="android:textAppearance">?attr/textAppearanceListItem</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyLarge</item>
         <item name="android:ellipsize">end</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="SecondaryListItemLabel" parent="SecondaryLabel">
-        <item name="android:textAppearance">?attr/textAppearanceListItemSecondary</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyMedium</item>
         <item name="android:ellipsize">end</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="LargeTitleLabel" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Headline4</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.HeadlineLarge</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="HeadlineLabel" parent="PrimaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Headline6</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.HeadlineSmall</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
@@ -133,23 +133,23 @@
     </style>
 
     <style name="BodyLabel" parent="SecondaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body1</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyLarge</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="SectionHeaderLabel" parent="SecondaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Caption</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.LabelMedium</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="FooterLabel" parent="SecondaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Caption</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.LabelSmall</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
     <style name="SectionFooterLabel" parent="SecondaryLabel">
-        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Caption</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.LabelMedium</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
@@ -157,16 +157,16 @@
 
     <style name="ResourceItemContentLabel" parent="BodyLabel"/>
 
-    <style name="EditText" parent="Widget.AppCompat.EditText">
-        <item name="android:backgroundTint">@color/colorEditTextHairLine</item>
-        <item name="android:background">@android:color/transparent</item>
+    <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+    </style>
+
+    <style name="TextInputEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
         <item name="android:imeOptions">actionDone|flagNoExtractUi|flagNoFullscreen</item>
         <item name="android:textColor">@color/colorLabel</item>
         <item name="android:textColorHint">@color/colorSecondaryLabel</item>
     </style>
 
-    <style name="Toolbar" parent="Widget.MaterialComponents.Toolbar">
-        <item name="android:background">@color/colorBarBackground</item>
+    <style name="Toolbar" parent="Widget.Material3.Toolbar">
         <item name="titleTextColor">@color/colorLabel</item>
         <item name="theme">@style/ToolbarTheme</item>
     </style>
@@ -175,10 +175,11 @@
         <item name="colorControlNormal">@color/colorLabel</item>
     </style>
 
-    <style name="BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="android:background">@color/colorBarBackground</item>
-        <item name="itemTextColor">@color/bottom_nav_color</item>
-        <item name="itemIconTint">@color/bottom_nav_color</item>
+    <style name="BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:minHeight">60dp</item>
+        <item name="itemPaddingTop">8dp</item>
+        <item name="itemPaddingBottom">10dp</item>
+        <item name="itemActiveIndicatorStyle">@null</item>
     </style>
 
     <style name="BarSeparator">
@@ -188,9 +189,18 @@
     </style>
 
     <style name="AppTheme" parent="@style/DefaultTheme">
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorOnBackground">@color/colorLabel</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryContainer">@color/colorThemeBackground</item>
+        <item name="colorOnPrimaryContainer">@color/colorLabel</item>
+        <item name="colorOutline">@color/colorSecondaryLabel</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSurface">@color/colorBarBackground</item>
+        <item name="colorOnSurface">@color/colorLabel</item>
+        <item name="colorOnSurfaceVariant">@color/colorSecondaryLabel</item>
+        <item name="colorSecondaryContainer">@color/colorSecondaryThemeBackground</item>
+        <item name="colorOnSecondaryContainer">@color/colorLabel</item>
     </style>
-
 </resources>

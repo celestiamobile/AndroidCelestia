@@ -28,6 +28,7 @@
     <color name="colorSeparator">#99545458</color>
 
     <color name="colorThemeBackground">#114477</color>
+    <color name="colorSecondaryThemeBackground">#09223C</color>
     <color name="colorSelectedThemeBackground">#80114477</color>
     <color name="colorThemeLabel">#6699CC</color>
     <color name="colorThemeSecondaryLabel">#114477</color>

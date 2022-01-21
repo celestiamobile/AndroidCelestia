@@ -105,11 +105,13 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
             if (item.clickable && isItemClickable) {
                 with(holder.itemView) {
                     tag = item
+                    isClickable = true
                     setOnClickListener(onClickListener)
                 }
             } else {
                 with(holder.itemView) {
                     setOnClickListener(null)
+                    isClickable = false
                 }
             }
         }
@@ -175,8 +177,15 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
 
 class CommonSectionV2(items: List<RecyclerViewItem>, val header: String? = "", val footer: String? = null) : CommonSection(items)
 
-private class HeaderRecyclerViewItem(val title: String?): RecyclerViewItem
-private class FooterRecyclerViewItem(val title: String?): RecyclerViewItem
+private class HeaderRecyclerViewItem(val title: String?): RecyclerViewItem {
+    override val clickable: Boolean
+        get() = false
+}
+
+private class FooterRecyclerViewItem(val title: String?): RecyclerViewItem {
+    override val clickable: Boolean
+        get() = false
+}
 
 fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     val innerSections = ArrayList<CommonSection>()
