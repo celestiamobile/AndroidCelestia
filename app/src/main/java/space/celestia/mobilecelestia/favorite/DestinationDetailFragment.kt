@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -41,13 +42,12 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
         val view = inflater.inflate(R.layout.fragment_destination_detail, container, false)
         val title = view.findViewById<TextView>(R.id.title)
         val content = view.findViewById<TextView>(R.id.description)
-        val buttonContainer = view.findViewById<View>(R.id.button_container)
-        val button = view.findViewById<TextView>(R.id.button)
+        val button = view.findViewById<Button>(R.id.action_button)
 
         title.text = item?.name ?: ""
         content.text = item?.description ?: ""
 
-        buttonContainer.setOnClickListener { this.onButtonClick() }
+        button.setOnClickListener { this.onButtonClick() }
 
         button.text = CelestiaString("Go", "")
 

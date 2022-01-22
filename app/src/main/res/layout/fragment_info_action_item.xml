@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ fragment_help_action_item.xml
+  ~ fragment_info_action_item.xml
   ~
-  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~ Copyright (C) 2001-2022, Celestia Development Team
   ~
   ~ This program is free software; you can redistribute it and/or
   ~ modify it under the terms of the GNU General Public License
@@ -16,8 +16,6 @@
 
     <Button
         android:id="@+id/action_button"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginVertical="4dp"
         style="@style/Button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

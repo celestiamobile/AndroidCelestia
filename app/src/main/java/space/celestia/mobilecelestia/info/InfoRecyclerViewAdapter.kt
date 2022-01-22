@@ -14,6 +14,7 @@ package space.celestia.mobilecelestia.info
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
@@ -43,7 +44,7 @@ class InfoRecyclerViewAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == ACTION_ITEM) {
             val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.common_action_button, parent, false)
+                .inflate(R.layout.fragment_info_action_item, parent, false)
             return ActionViewHolder(view)
         }
         if (viewType == DESCRIPTION_ITEM) {
@@ -60,8 +61,8 @@ class InfoRecyclerViewAdapter(
         val item = values[position]
         if (item is InfoActionItem && holder is ActionViewHolder) {
             holder.button.text = item.title
-            holder.itemView.tag = item
-            holder.itemView.setOnClickListener(onClickListener)
+            holder.button.tag = item
+            holder.button.setOnClickListener(onClickListener)
         } else if (item is InfoDescriptionItem && holder is DescriptionViewHolder) {
             holder.contentView.text = item.overview
             holder.titleView.text = item.name
@@ -87,7 +88,7 @@ class InfoRecyclerViewAdapter(
 
     inner class ActionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val button: TextView
-            get() = itemView.findViewById(R.id.button)
+            get() = itemView.findViewById(R.id.action_button)
     }
 
     inner class DescriptionViewHolder(view: View) : RecyclerView.ViewHolder(view) {

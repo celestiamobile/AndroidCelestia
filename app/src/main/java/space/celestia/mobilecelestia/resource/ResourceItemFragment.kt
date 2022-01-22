@@ -16,16 +16,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.model.GlideUrl
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.ProgressView
 import space.celestia.mobilecelestia.common.StandardImageButton
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
@@ -41,10 +41,9 @@ import java.util.*
 
 class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
     private var item: ResourceItem? = null
-    private lateinit var progressView: ProgressView
-    private lateinit var progressViewText: TextView
-    private lateinit var goToButton: View
-    private lateinit var goToButtonTextView: TextView
+    private lateinit var statusButton: Button
+    private lateinit var goToButton: Button
+    private lateinit var progressIndicator: LinearProgressIndicator
     private var currentState: ResourceItemState = ResourceItemState.None
 
     private var imageView: ImageView? = null
@@ -90,9 +89,8 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         val releaseDate = view.findViewById<TextView>(R.id.publish_time)
         footnote.text = CelestiaString("Note: restarting Celestia is needed to use any new installed add-on.", "")
 
-        progressView = view.findViewById(R.id.progress_button)
-        progressViewText = view.findViewById(R.id.progress_view_text)
-        progressView.setOnClickListener {
+        statusButton = view.findViewById(R.id.status_button)
+        statusButton.setOnClickListener {
             onProgressViewClick()
         }
         this.titleLabel = title
@@ -101,9 +99,9 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         this.authorsLabel = authors
         this.releaseDateLabel = releaseDate
         goToButton = view.findViewById(R.id.go_to_button)
-        goToButtonTextView = view.findViewById(R.id.button)
-        goToButtonTextView.text = CelestiaString("Go", "")
+        goToButton.text = CelestiaString("Go", "")
         goToButton.visibility = View.GONE
+        progressIndicator = view.findViewById(R.id.progress_indicator)
 
         val shareButton = view.findViewById<StandardImageButton>(R.id.share_button)
         shareButton.setOnClickListener {
@@ -216,7 +214,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         if (identifier != id) { return }
 
         currentState = ResourceItemState.Downloading
-        progressView.setProgress(progress * 100f)
+        progressIndicator.progress = (progress * 100).toInt()
         updateUI()
     }
 
@@ -264,15 +262,18 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         when (currentState) {
             ResourceItemState.None -> {
-                progressView.reset()
-                progressViewText.text = CelestiaString("DOWNLOAD", "")
+                progressIndicator.visibility = View.GONE
+                progressIndicator.progress = 0
+                statusButton.text = CelestiaString("Install", "")
             }
             ResourceItemState.Downloading -> {
-                progressViewText.text = CelestiaString("DOWNLOADING", "")
+                progressIndicator.visibility = View.VISIBLE
+                statusButton.text = CelestiaString("Cancel", "")
             }
             ResourceItemState.Installed -> {
-                progressView.setProgress(100f)
-                progressViewText.text = CelestiaString("INSTALLED", "")
+                progressIndicator.visibility = View.GONE
+                progressIndicator.progress = 100
+                statusButton.text = CelestiaString("Uninstall", "")
             }
         }
 

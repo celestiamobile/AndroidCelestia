@@ -161,6 +161,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
             val density =  parent.resources.displayMetrics.density
             val isRTL = parent.resources.configuration.layoutDirection == LayoutDirection.RTL
             val spacing = (16 * density).toInt()
+            val buttonSpacing = (spacing - 6 * density).toInt()
 
             val pos = parent.getChildLayoutPosition(view)
             if (pos < firstSingleColumnItem) {
@@ -170,7 +171,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
                 outRect.bottom = if (pos == firstSingleColumnItem - 1) spacing else 0
             } else {
                 outRect.top = 0
-                outRect.bottom = spacing
+                outRect.bottom = buttonSpacing
                 if ((pos - firstSingleColumnItem) % 2 == 1) {
                     outRect.left = if (isRTL) spacing else (spacing / 2)
                     outRect.right = if (isRTL) (spacing / 2) else spacing

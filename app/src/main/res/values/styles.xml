@@ -182,6 +182,9 @@
         <item name="itemActiveIndicatorStyle">@null</item>
     </style>
 
+    <style name="Button" parent="Widget.Material3.Button">
+    </style>
+
     <style name="BarSeparator">
         <item name="android:background">@color/colorSeparator</item>
         <item name="android:layout_width">match_parent</item>
@@ -192,7 +195,7 @@
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="colorOnBackground">@color/colorLabel</item>
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorOnPrimary">@color/colorLabel</item>
         <item name="colorPrimaryContainer">@color/colorThemeBackground</item>
         <item name="colorOnPrimaryContainer">@color/colorLabel</item>
         <item name="colorOutline">@color/colorSecondaryLabel</item>

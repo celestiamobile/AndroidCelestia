@@ -14,6 +14,7 @@ package space.celestia.mobilecelestia.help
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -62,7 +63,7 @@ class HelpRecyclerViewAdapter(
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (holder is ActionViewHolder && item is ActionItem) {
             holder.button.text = item.title
-            holder.buttonContainer.setOnClickListener {
+            holder.button.setOnClickListener {
                 listener?.onHelpActionSelected(item.action)
             }
         } else if (holder is DescriptionViewHolder && item is DescriptionItem) {
@@ -70,17 +71,15 @@ class HelpRecyclerViewAdapter(
             holder.imageView.setImageResource(item.imageResourceID)
         } else if (holder is ActionViewHolder && item is URLItem) {
             holder.button.text = item.title
-            holder.buttonContainer.setOnClickListener {
+            holder.button.setOnClickListener {
                 listener?.onHelpURLSelected(item.url)
             }
         }
     }
 
     inner class ActionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val button: TextView
-            get() = itemView.findViewById(R.id.button)
-        val buttonContainer: View
-            get() = itemView.findViewById(R.id.button_container)
+        val button: Button
+            get() = itemView.findViewById(R.id.action_button)
     }
 
     inner class DescriptionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
