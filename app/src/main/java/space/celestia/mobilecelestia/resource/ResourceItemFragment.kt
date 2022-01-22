@@ -24,7 +24,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.EndSubFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.ProgressView
 import space.celestia.mobilecelestia.common.StandardImageButton
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
@@ -39,7 +39,7 @@ import java.io.File
 import java.text.DateFormat
 import java.util.*
 
-class ResourceItemFragment : EndSubFragment(), ResourceManager.Listener {
+class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
     private var item: ResourceItem? = null
     private lateinit var progressView: ProgressView
     private lateinit var progressViewText: TextView

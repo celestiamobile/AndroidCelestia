@@ -21,10 +21,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.EndSubFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-class FavoriteItemFragment : EndSubFragment() {
+class FavoriteItemFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
     var favoriteItem: FavoriteBaseItem? = null

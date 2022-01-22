@@ -25,12 +25,12 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.EndSubFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.createLoadingDrawable
 import space.celestia.mobilecelestia.utils.showAlert
 
-abstract class AsyncListFragment<T: AsyncListItem>: EndSubFragment() {
+abstract class AsyncListFragment<T: AsyncListItem>: NavigationFragment.SubFragment() {
     private var selectListener: Listener<T>? = null
 
     private var imageView: ImageView? = null

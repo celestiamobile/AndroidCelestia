@@ -16,7 +16,7 @@ import space.celestia.mobilecelestia.common.*
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.info.InfoFragment
 
-class SearchContainerFragment : EndNavigationFragment() {
+class SearchContainerFragment : NavigationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return SearchFragment.newInstance()
     }

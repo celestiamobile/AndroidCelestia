@@ -17,9 +17,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.EndSubFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
 
-class SimpleTextFragment : EndSubFragment() {
+class SimpleTextFragment : NavigationFragment.SubFragment() {
 
     private var textTitle: String? = null
     private var textDetail: String? = null

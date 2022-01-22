@@ -16,10 +16,10 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaView
-import space.celestia.mobilecelestia.common.EndNavigationFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestia.AppCore
 
-class SettingsFragment : EndNavigationFragment() {
+class SettingsFragment : NavigationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return SettingsItemFragment.newInstance()
     }

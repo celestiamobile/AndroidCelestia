@@ -18,11 +18,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.EndSubFragment
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestia.Destination
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-class DestinationDetailFragment : EndSubFragment() {
+class DestinationDetailFragment : NavigationFragment.SubFragment() {
     private var item: Destination? = null
     private var listener: Listener? = null
 
