@@ -30,10 +30,11 @@
 
     <color name="colorDimmingBackground">#99000000</color>
 
-    <color name="colorPrimary">#007AC1</color>
-    <color name="colorPrimaryLight">#03A9F4</color>
-    <color name="colorPrimaryContainer">#B3E5FC</color>
-    <color name="colorOnPrimaryContainer">#002F6C</color>
+    <color name="colorPrimary">#AFC6FF</color>
+    <color name="colorOnPrimary">#002C72</color>
+    <color name="colorSecondary">#AFC6FF</color>
+    <color name="colorPrimaryContainer">#00409F</color>
+    <color name="colorOnPrimaryContainer">#D8E2FF</color>
 
     <color name="colorTextGradientBackgroundTop">#00000000</color>
     <color name="colorTextGradientBackgroundBottom">#80000000</color>

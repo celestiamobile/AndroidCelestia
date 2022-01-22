@@ -12,16 +12,15 @@
 package space.celestia.mobilecelestia.utils
 
 import android.content.Context
-import androidx.core.content.res.ResourcesCompat
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.getSecondaryColor
 
 fun createLoadingDrawable(context: Context): CircularProgressDrawable {
     val drawable = CircularProgressDrawable(context)
     val density = context.resources.displayMetrics.density
     drawable.centerRadius = 15f * density
     drawable.strokeWidth = 3f * density
-    drawable.setColorSchemeColors(ResourcesCompat.getColor(context.resources, R.color.colorLabel, null))
+    drawable.setColorSchemeColors(context.getSecondaryColor())
     drawable.start()
     return drawable
 }

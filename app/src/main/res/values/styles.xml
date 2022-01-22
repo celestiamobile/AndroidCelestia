@@ -179,10 +179,10 @@
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="colorOnBackground">@color/colorLabel</item>
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorOnPrimary">@color/colorLabel</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
         <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
         <item name="colorOnPrimaryContainer">@color/colorOnPrimaryContainer</item>
-        <item name="colorSecondary">@color/colorPrimaryLight</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorOutline">@color/colorSecondaryLabel</item>
         <item name="colorSurface">@color/colorBarBackground</item>
         <item name="colorSurfaceVariant">@color/colorSecondaryBackgroundElevated</item>
