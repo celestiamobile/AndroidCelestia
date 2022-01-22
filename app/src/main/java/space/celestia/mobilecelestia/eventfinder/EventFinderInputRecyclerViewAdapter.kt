@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.eventfinder
 
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
@@ -68,7 +69,9 @@ class EventFinderInputRecyclerViewAdapter(
             return CommonTextViewHolder(parent)
         if (viewType == PROCEED_BUTTON) {
             val holder = CommonTextViewHolder(parent)
-            holder.title.setTextColor(ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null))
+            val value = TypedValue()
+            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
+            holder.title.setTextColor(value.data)
             return holder
         }
         return super.createVH(parent, viewType)

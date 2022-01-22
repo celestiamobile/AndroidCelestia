@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.settings
 
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,7 +78,9 @@ class AboutRecyclerViewAdapter(
         }
         if (viewType == ACTION_ITEM) {
             val holder = CommonTextViewHolder(parent)
-            holder.title.setTextColor(ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null))
+            val value = TypedValue()
+            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
+            holder.title.setTextColor(value.data)
             return holder
         }
         if (viewType == TITLE_ITEM) {

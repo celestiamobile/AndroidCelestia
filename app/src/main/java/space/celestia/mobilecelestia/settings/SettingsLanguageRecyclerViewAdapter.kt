@@ -12,6 +12,7 @@
 package space.celestia.mobilecelestia.settings
 
 import android.content.res.ColorStateList
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
@@ -112,7 +113,9 @@ class SettingsLanguageRecyclerViewAdapter(
         if (viewType == LANG_ITEM) {
             val holder = CommonTextViewHolder(parent)
             holder.accessory.setImageResource(R.drawable.ic_check)
-            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null)))
+            val value = TypedValue()
+            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(value.data))
             return holder
         }
         return super.createVH(parent, viewType)

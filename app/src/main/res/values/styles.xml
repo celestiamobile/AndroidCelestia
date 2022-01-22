@@ -33,7 +33,7 @@
     </style>
 
     <style name="Background">
-        <item name="android:background">?android:attr/colorBackground</item>
+        <item name="android:background">@color/colorBackground</item>
     </style>
 
     <style name="BackgroundElevated">
@@ -180,10 +180,9 @@
         <item name="colorOnBackground">@color/colorLabel</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorOnPrimary">@color/colorLabel</item>
-        <item name="colorPrimaryContainer">@color/colorThemeBackground</item>
-        <item name="colorOnPrimaryContainer">@color/colorLabel</item>
+        <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/colorOnPrimaryContainer</item>
         <item name="colorOutline">@color/colorSecondaryLabel</item>
-        <item name="colorAccent">@color/colorAccent</item>
         <item name="colorSurface">@color/colorBarBackground</item>
         <item name="colorOnSurface">@color/colorLabel</item>
         <item name="colorOnSurfaceVariant">@color/colorSecondaryLabel</item>

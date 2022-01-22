@@ -30,7 +30,7 @@
             style="@style/PrimaryListItemLabel"/>
     </LinearLayout>
 
-    <SeekBar
+    <com.google.android.material.slider.Slider
         android:id="@+id/slider"
         android:layout_marginBottom="12dp"
         android:layout_width="match_parent"

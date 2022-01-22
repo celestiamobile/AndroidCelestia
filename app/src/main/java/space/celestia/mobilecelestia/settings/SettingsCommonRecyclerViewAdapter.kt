@@ -12,20 +12,23 @@
 package space.celestia.mobilecelestia.settings
 
 import android.content.res.ColorStateList
+import android.transition.Slide
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SeekBar
 import android.widget.TextView
-import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.slider.Slider
+import com.google.android.material.switchmaterial.SwitchMaterial
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import java.lang.ref.WeakReference
 
 class SettingsCommonRecyclerViewAdapter(
     private val item: SettingsCommonItem,
@@ -73,12 +76,12 @@ class SettingsCommonRecyclerViewAdapter(
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
+        val weakSelf = WeakReference(this)
         if (holder is SliderViewHolder && item is SettingsSliderItem) {
             val num = dataSource?.commonSettingSliderValue(item.key) ?: 0.0
-            val value = (num - item.minValue) / (item.maxValue - item.minValue)
-            holder.configure(item.name, value) { newValue ->
-                val transformed = newValue * (item.maxValue - item.minValue) + item.minValue
-                listener?.onCommonSettingSliderItemChange(item.key, transformed)
+            holder.configure(item.name, item.minValue, item.maxValue, num) { newValue ->
+                val self = weakSelf.get() ?: return@configure
+                self.listener?.onCommonSettingSliderItemChange(item.key, newValue)
             }
             return
         }
@@ -106,12 +109,14 @@ class SettingsCommonRecyclerViewAdapter(
         if (holder is SwitchViewHolder) {
             if (item is SettingsPreferenceSwitchItem) {
                 holder.configure(item.name, dataSource?.commonSettingPreferenceSwitchState(item.key) ?: item.defaultOn) { checked ->
-                    listener?.onCommonSettingPreferenceSwitchStateChanged(item.key, checked)
+                    val self = weakSelf.get() ?: return@configure
+                    self.listener?.onCommonSettingPreferenceSwitchStateChanged(item.key, checked)
                 }
             } else if (item is SettingsSwitchItem) {
                 val on = dataSource?.commonSettingSwitchState(item.key) ?: false
                 holder.configure(item.name, on) { newValue ->
-                    listener?.onCommonSettingSwitchStateChanged(item.key, newValue, item.volatile)
+                    val self = weakSelf.get() ?: return@configure
+                    self.listener?.onCommonSettingSwitchStateChanged(item.key, newValue, item.volatile)
                 }
             }
             return
@@ -134,7 +139,9 @@ class SettingsCommonRecyclerViewAdapter(
         if (viewType == ITEM_CHECKMARK) {
             val holder = CommonTextViewHolder(parent)
             holder.accessory.setImageResource(R.drawable.ic_check)
-            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null)))
+            val value = TypedValue()
+            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(value.data))
             return holder
         }
         return super.createVH(parent, viewType)
@@ -143,35 +150,36 @@ class SettingsCommonRecyclerViewAdapter(
     inner class SliderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val title: TextView
             get() = itemView.findViewById(R.id.title)
-        private val seekBar: SeekBar
+        private val seekBar: Slider
             get() = itemView.findViewById(R.id.slider)
 
-        fun configure(text: String, progress: Double, progressCallback: (Double) -> Unit) {
-            title.text = text
-            seekBar.max = 100
-            seekBar.progress = (progress * 100).toInt()
+        private var progressCallback: ((Double) -> Unit)? = null
 
-            seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(
-                    seekBar: SeekBar?,
-                    progress: Int,
-                    fromUser: Boolean
-                ) {}
+        init {
+            val weakSelf = WeakReference(this)
+            seekBar.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+                override fun onStartTrackingTouch(slider: Slider) {}
 
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                    if (seekBar == null) return
-                    progressCallback(seekBar.progress.toDouble() / 100)
+                override fun onStopTrackingTouch(slider: Slider) {
+                    val callback = weakSelf.get()?.progressCallback ?: return
+                    callback(slider.value.toDouble())
                 }
             })
+        }
+
+        fun configure(text: String, minValue: Double, maxValue: Double, value: Double, callback: (Double) -> Unit) {
+            title.text = text
+            seekBar.valueFrom = minValue.toFloat()
+            seekBar.valueTo = maxValue.toFloat()
+            seekBar.value = value.toFloat()
+            progressCallback = callback
         }
     }
 
     inner class SwitchViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView
             get() = itemView.findViewById(R.id.title)
-        val switch: SwitchCompat
+        val switch: SwitchMaterial
             get() = itemView.findViewById(R.id.accessory)
 
         fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {

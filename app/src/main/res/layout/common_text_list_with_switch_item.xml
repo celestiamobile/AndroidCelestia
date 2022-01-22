@@ -27,7 +27,7 @@
         android:layout_marginVertical="12dp"
         style="@style/PrimaryListItemLabel"/>
 
-    <androidx.appcompat.widget.SwitchCompat
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/accessory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

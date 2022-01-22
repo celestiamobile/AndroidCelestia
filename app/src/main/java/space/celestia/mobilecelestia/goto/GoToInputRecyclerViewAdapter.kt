@@ -22,6 +22,10 @@ import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.utils.CelestiaString
+import android.util.TypedValue
+
+
+
 
 enum class GoToFloatValueType {
     Longitude, Latitude
@@ -88,7 +92,9 @@ class GoToInputRecyclerViewAdapter(
             return CommonTextViewHolder(parent)
         if (viewType == PROCEED_BUTTON) {
             val holder = CommonTextViewHolder(parent)
-            holder.title.setTextColor(ResourcesCompat.getColor(parent.resources, R.color.colorThemeLabel, null))
+            val value = TypedValue()
+            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
+            holder.title.setTextColor(value.data)
             return holder
         }
         return super.createVH(parent, viewType)

@@ -28,17 +28,11 @@
 
     <color name="colorSeparator">#99545458</color>
 
-    <color name="colorThemeBackground">@color/colorPrimary</color>
-    <color name="colorThemeLabel">@color/colorAccent</color>
-
     <color name="colorDimmingBackground">#99000000</color>
 
     <color name="colorPrimary">#007AC1</color>
-    <color name="colorPrimaryDisabledOrSelected">#61007AC1</color>
-    <color name="colorAccent">#03A9F4</color>
-
-    <color name="colorProgressForeground">@color/colorPrimary</color>
-    <color name="colorProgressBackground">@color/colorPrimaryDisabledOrSelected</color>
+    <color name="colorPrimaryContainer">#B3E5FC</color>
+    <color name="colorOnPrimaryContainer">#002F6C</color>
 
     <color name="colorTextGradientBackgroundTop">#00000000</color>
     <color name="colorTextGradientBackgroundBottom">#80000000</color>
