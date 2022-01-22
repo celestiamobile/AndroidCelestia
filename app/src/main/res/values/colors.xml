@@ -28,18 +28,17 @@
 
     <color name="colorSeparator">#99545458</color>
 
-    <color name="colorThemeBackground">#114477</color>
-    <color name="colorSecondaryThemeBackground">#09223C</color>
-    <color name="colorSelectedThemeBackground">#80114477</color>
-    <color name="colorThemeLabel">#6699CC</color>
+    <color name="colorThemeBackground">@color/colorPrimary</color>
+    <color name="colorThemeLabel">@color/colorAccent</color>
 
     <color name="colorDimmingBackground">#99000000</color>
 
-    <color name="colorPrimary">#336699</color>
-    <color name="colorAccent">@color/colorThemeLabel</color>
+    <color name="colorPrimary">#007AC1</color>
+    <color name="colorPrimaryDisabledOrSelected">#61007AC1</color>
+    <color name="colorAccent">#03A9F4</color>
 
     <color name="colorProgressForeground">@color/colorPrimary</color>
-    <color name="colorProgressBackground">#80336699</color>
+    <color name="colorProgressBackground">@color/colorPrimaryDisabledOrSelected</color>
 
     <color name="colorTextGradientBackgroundTop">#00000000</color>
     <color name="colorTextGradientBackgroundBottom">#80000000</color>

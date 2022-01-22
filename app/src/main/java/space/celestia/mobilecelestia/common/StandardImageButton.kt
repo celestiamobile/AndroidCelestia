@@ -31,7 +31,7 @@ class StandardImageButton: androidx.appcompat.widget.AppCompatImageButton {
         if (event != null) {
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    alpha = 0.3f
+                    alpha = 0.38f
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     alpha = 1f

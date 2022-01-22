@@ -33,7 +33,7 @@
     </style>
 
     <style name="Background">
-        <item name="android:background">@color/colorBackground</item>
+        <item name="android:background">?android:attr/colorBackground</item>
     </style>
 
     <style name="BackgroundElevated">
@@ -52,10 +52,6 @@
         <item name="android:background">@drawable/control_view_background</item>
     </style>
 
-    <style name="ButtonBackground">
-        <item name="android:background">@drawable/ripple_button_background</item>
-    </style>
-
     <style name="DimmingBackground">
         <item name="android:background">@color/colorDimmingBackground</item>
     </style>
@@ -66,7 +62,7 @@
     </style>
 
     <style name="Image">
-        <item name="android:tint">@color/colorLabel</item>
+        <item name="android:tint">?attr/colorOnBackground</item>
     </style>
 
     <style name="SecondaryImage">
@@ -78,11 +74,7 @@
     </style>
 
     <style name="PrimaryLabel">
-        <item name="android:textColor">@color/colorLabel</item>
-    </style>
-
-    <style name="ActionButtonLabel" parent="PrimaryLabel">
-        <item name="android:textAppearance">?attr/textAppearanceButton</item>
+        <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
 
     <style name="HelpText" parent="PrimaryLabel">
@@ -162,17 +154,9 @@
 
     <style name="TextInputEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
         <item name="android:imeOptions">actionDone|flagNoExtractUi|flagNoFullscreen</item>
-        <item name="android:textColor">@color/colorLabel</item>
-        <item name="android:textColorHint">@color/colorSecondaryLabel</item>
     </style>
 
     <style name="Toolbar" parent="Widget.Material3.Toolbar">
-        <item name="titleTextColor">@color/colorLabel</item>
-        <item name="theme">@style/ToolbarTheme</item>
-    </style>
-
-    <style name="ToolbarTheme">
-        <item name="colorControlNormal">@color/colorLabel</item>
     </style>
 
     <style name="BottomNav" parent="Widget.Material3.BottomNavigationView">
@@ -203,7 +187,5 @@
         <item name="colorSurface">@color/colorBarBackground</item>
         <item name="colorOnSurface">@color/colorLabel</item>
         <item name="colorOnSurfaceVariant">@color/colorSecondaryLabel</item>
-        <item name="colorSecondaryContainer">@color/colorSecondaryThemeBackground</item>
-        <item name="colorOnSecondaryContainer">@color/colorLabel</item>
     </style>
 </resources>
