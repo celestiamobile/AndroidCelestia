@@ -12,13 +12,13 @@
 package space.celestia.mobilecelestia.common
 
 import android.content.Context
-import android.content.res.Configuration
 import android.util.AttributeSet
 import android.util.LayoutDirection
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.customview.widget.ViewDragHelper
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
@@ -52,7 +52,7 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
             }
 
             override fun clampViewPositionVertical(child: View, top: Int, dy: Int): Int {
-                return min(max(top, max(((1 - sheetMaxHeightRatio) * height).toInt(), edgeInsets.top)), (height - sheetHandleHeight * resources.displayMetrics.density - edgeInsets.bottom).toInt())
+                return min(max(top, max(height - ceil(sheetMaxHeightRatio * height).toInt(), edgeInsets.top)), (height - sheetHandleHeight * resources.displayMetrics.density - edgeInsets.bottom).toInt())
             }
         }
         dragHelper = ViewDragHelper.create(this, callback)
@@ -99,7 +99,7 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
                 continue
 
             val childWidth = if (shouldNotOccupyFullWidth) calculateChildWidth(containerWidth, density) else (containerWidth - edgeInsets.left - edgeInsets.right)
-            val childHeight = min(containerHeight - edgeInsets.top, (containerHeight * sheetMaxHeightRatio).toInt())
+            val childHeight = min(containerHeight - edgeInsets.top, ceil(containerHeight * sheetMaxHeightRatio).toInt())
             child.measure(MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.EXACTLY))
         }
         setMeasuredDimension(containerWidth, containerHeight)
@@ -119,15 +119,16 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
             if (child.visibility == GONE)
                 continue
 
-            var y = ((1 - sheetMaxHeightRatio) * containerHeight).toInt()
+            val sheetHeight = min(containerHeight - edgeInsets.top, ceil(containerHeight * sheetMaxHeightRatio).toInt())
+
+            var y = containerHeight - sheetHeight
             if (child == capturedView) {
-                var preservedY = capturedViewY
+                val preservedY = capturedViewY
                 if (preservedY != null) {
                     y = preservedY
                 }
             }
 
-            var sheetHeight = min(containerHeight - edgeInsets.top, (containerHeight * sheetMaxHeightRatio).toInt())
             if (!shouldNotOccupyFullWidth) {
                 child.layout(edgeInsets.left, y, containerWidth - edgeInsets.right, y + sheetHeight)
             } else {
