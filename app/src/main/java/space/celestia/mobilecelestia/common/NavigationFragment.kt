@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.google.android.material.appbar.AppBarLayout
 import space.celestia.mobilecelestia.R
 
 abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMenuItemClickListener {
@@ -215,6 +216,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     }
 
     val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
+    val appBar: AppBarLayout? by lazy { requireView().findViewById(R.id.appbar) }
 
     private var lastTitle: String = ""
     private var lastLeftItem: BarButtonItem? = null
@@ -268,6 +270,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
                 lastGoBack,
                 lastShowNavigationBar
             )
+            appBar?.setExpanded(true)
         }
     }
 
@@ -275,12 +278,14 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         val commitId = replace(fragment, R.id.fragment_container)
         commitIds = arrayListOf(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false, fragment.showNavigationBar)
+        appBar?.setExpanded(true)
     }
 
     fun pushFragment(fragment: SubFragment) {
         val commitId = push(fragment, R.id.fragment_container)
         commitIds.add(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true, fragment.showNavigationBar)
+        appBar?.setExpanded(true)
     }
 
     private fun configureToolbar(name: String, rightNavigationBarItems: List<NavigationBarItem>, leftNavigationBarItem: BarButtonItem?, canGoBack: Boolean, showNavigationBar: Boolean) {
@@ -382,8 +387,16 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         }
         val frag = childFragmentManager.fragments[0]
         commitIds = ArrayList(commitIds.subList(0, index + 1))
-        if (frag is SubFragment)
-            configureToolbar(frag.title, frag.rightNavigationBarItems, frag.leftNavigationBarItem, lastGoBack, frag.showNavigationBar)
+        if (frag is SubFragment) {
+            configureToolbar(
+                frag.title,
+                frag.rightNavigationBarItems,
+                frag.leftNavigationBarItem,
+                lastGoBack,
+                frag.showNavigationBar
+            )
+            appBar?.setExpanded(true)
+        }
     }
 
     open fun fragmentDidPop() {}

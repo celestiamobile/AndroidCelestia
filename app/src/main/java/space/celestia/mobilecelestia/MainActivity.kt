@@ -326,7 +326,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBackPressed() {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet_card)
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is Poppable && frag.canPop()) {
             frag.popLast()
         } else {
@@ -1502,7 +1502,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         view.visibility = View.VISIBLE
 
-        var destination: Float
+        val destination: Float
         if (horizontal) {
             val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
             destination = (if (ltr) view.width else -view.width).toFloat()
