@@ -272,7 +272,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             }
             ResourceItemState.Installed -> {
                 progressIndicator.visibility = View.GONE
-                progressIndicator.progress = 100
+                progressIndicator.progress = 0
                 statusButton.text = CelestiaString("Uninstall", "")
             }
         }
