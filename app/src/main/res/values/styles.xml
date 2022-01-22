@@ -182,8 +182,10 @@
         <item name="colorOnPrimary">@color/colorLabel</item>
         <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
         <item name="colorOnPrimaryContainer">@color/colorOnPrimaryContainer</item>
+        <item name="colorSecondary">@color/colorPrimaryLight</item>
         <item name="colorOutline">@color/colorSecondaryLabel</item>
         <item name="colorSurface">@color/colorBarBackground</item>
+        <item name="colorSurfaceVariant">@color/colorSecondaryBackgroundElevated</item>
         <item name="colorOnSurface">@color/colorLabel</item>
         <item name="colorOnSurfaceVariant">@color/colorSecondaryLabel</item>
     </style>

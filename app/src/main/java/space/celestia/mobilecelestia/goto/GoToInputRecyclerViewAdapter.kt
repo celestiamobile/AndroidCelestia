@@ -16,15 +16,10 @@ import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.common.CommonTextViewHolder
-import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.utils.CelestiaString
 import android.util.TypedValue
-
-
+import space.celestia.mobilecelestia.common.*
 
 
 enum class GoToFloatValueType {
@@ -92,9 +87,7 @@ class GoToInputRecyclerViewAdapter(
             return CommonTextViewHolder(parent)
         if (viewType == PROCEED_BUTTON) {
             val holder = CommonTextViewHolder(parent)
-            val value = TypedValue()
-            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
-            holder.title.setTextColor(value.data)
+            holder.title.setTextColor(parent.context.getSecondaryColor())
             return holder
         }
         return super.createVH(parent, viewType)

@@ -11,18 +11,13 @@
 
 package space.celestia.mobilecelestia.settings
 
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.common.CommonTextViewHolder
-import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 interface AboutItem : RecyclerViewItem
@@ -78,9 +73,7 @@ class AboutRecyclerViewAdapter(
         }
         if (viewType == ACTION_ITEM) {
             val holder = CommonTextViewHolder(parent)
-            val value = TypedValue()
-            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
-            holder.title.setTextColor(value.data)
+            holder.title.setTextColor(parent.context.getSecondaryColor())
             return holder
         }
         if (viewType == TITLE_ITEM) {

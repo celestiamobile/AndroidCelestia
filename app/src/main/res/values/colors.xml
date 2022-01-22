@@ -31,6 +31,7 @@
     <color name="colorDimmingBackground">#99000000</color>
 
     <color name="colorPrimary">#007AC1</color>
+    <color name="colorPrimaryLight">#03A9F4</color>
     <color name="colorPrimaryContainer">#B3E5FC</color>
     <color name="colorOnPrimaryContainer">#002F6C</color>
 

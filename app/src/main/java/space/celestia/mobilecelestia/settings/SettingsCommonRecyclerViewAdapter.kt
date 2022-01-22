@@ -12,22 +12,16 @@
 package space.celestia.mobilecelestia.settings
 
 import android.content.res.ColorStateList
-import android.transition.Slide
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.slider.Slider
 import com.google.android.material.switchmaterial.SwitchMaterial
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.common.CommonTextViewHolder
-import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import space.celestia.mobilecelestia.common.*
 import java.lang.ref.WeakReference
 
 class SettingsCommonRecyclerViewAdapter(
@@ -139,9 +133,7 @@ class SettingsCommonRecyclerViewAdapter(
         if (viewType == ITEM_CHECKMARK) {
             val holder = CommonTextViewHolder(parent)
             holder.accessory.setImageResource(R.drawable.ic_check)
-            val value = TypedValue()
-            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
-            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(value.data))
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(parent.context.getSecondaryColor()))
             return holder
         }
         return super.createVH(parent, viewType)

@@ -12,17 +12,12 @@
 package space.celestia.mobilecelestia.settings
 
 import android.content.res.ColorStateList
-import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.common.CommonTextViewHolder
-import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.util.*
 import kotlin.collections.ArrayList
@@ -113,9 +108,7 @@ class SettingsLanguageRecyclerViewAdapter(
         if (viewType == LANG_ITEM) {
             val holder = CommonTextViewHolder(parent)
             holder.accessory.setImageResource(R.drawable.ic_check)
-            val value = TypedValue()
-            parent.context.theme.resolveAttribute(android.R.attr.colorPrimary, value, true)
-            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(value.data))
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(parent.context.getSecondaryColor()))
             return holder
         }
         return super.createVH(parent, viewType)
