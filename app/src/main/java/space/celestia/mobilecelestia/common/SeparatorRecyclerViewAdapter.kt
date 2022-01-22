@@ -29,8 +29,8 @@ open class CommonSection(val items: List<RecyclerViewItem>,
                          val showSectionSeparator: Boolean = true,
                          val showRowSeparator: Boolean = true)
 
-open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
-                                        private val separatorLeft: Int = 16,
+open class SeparatorRecyclerViewAdapter(private val separatorHeight: Float = 0.5f,
+                                        private val separatorLeft: Float = 16f,
                                         private val separatorBackgroundColor: Int = R.color.colorSecondaryBackground,
                                         sections: List<CommonSection> = listOf(),
                                         private val fullSection: Boolean = true,
@@ -88,7 +88,7 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Int = 1,
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == SEPARATOR_0) {
-            val view = SeparatorView(parent.context, 1, 0, separatorBackgroundColor)
+            val view = SeparatorView(parent.context, 0.5f, 0f, separatorBackgroundColor)
             return SeparatorViewHolder(view)
         }
         if (viewType == SEPARATOR_1) {

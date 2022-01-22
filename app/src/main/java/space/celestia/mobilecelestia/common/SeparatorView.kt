@@ -17,9 +17,10 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import space.celestia.mobilecelestia.R
+import kotlin.math.max
 
 @SuppressLint("ViewConstructor")
-class SeparatorView(context: Context, height: Int, left: Int, backgroundColor: Int): FrameLayout(context) {
+class SeparatorView(context: Context, height: Float, left: Float, backgroundColor: Int): FrameLayout(context) {
     init {
         val density = resources.displayMetrics.density
 
@@ -31,13 +32,13 @@ class SeparatorView(context: Context, height: Int, left: Int, backgroundColor: I
         val view = View(context)
         view.setBackgroundResource(R.color.colorSeparator)
 
-        val sepHeight = (separatorHeight * density).toInt()
+        val sepHeight = max((separatorHeight * density).toInt(), 1)
         view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, sepHeight, Gravity.CENTER)
 
         addView(view)
     }
 
     private companion object {
-        const val separatorHeight: Float = 1F
+        const val separatorHeight: Float = 0.5F
     }
 }
