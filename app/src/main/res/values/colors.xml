@@ -33,8 +33,11 @@
     <color name="colorPrimary">#AFC6FF</color>
     <color name="colorOnPrimary">#002C72</color>
     <color name="colorSecondary">#AFC6FF</color>
+    <color name="colorOnSecondary">#2A3042</color>
     <color name="colorPrimaryContainer">#00409F</color>
     <color name="colorOnPrimaryContainer">#D8E2FF</color>
+    <color name="colorSecondaryContainer">#404659</color>
+    <color name="colorOnSecondaryContainer">#DCE1F9</color>
 
     <color name="colorTextGradientBackgroundTop">#00000000</color>
     <color name="colorTextGradientBackgroundBottom">#80000000</color>

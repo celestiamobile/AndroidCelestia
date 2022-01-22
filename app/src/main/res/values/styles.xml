@@ -166,7 +166,7 @@
         <item name="itemActiveIndicatorStyle">@null</item>
     </style>
 
-    <style name="Button" parent="Widget.Material3.Button">
+    <style name="Button" parent="Widget.Material3.Button.TonalButton">
     </style>
 
     <style name="BarSeparator">
@@ -183,6 +183,9 @@
         <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
         <item name="colorOnPrimaryContainer">@color/colorOnPrimaryContainer</item>
         <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorOnSecondary">@color/colorOnSecondary</item>
+        <item name="colorSecondaryContainer">@color/colorSecondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/colorOnSecondaryContainer</item>
         <item name="colorOutline">@color/colorSecondaryLabel</item>
         <item name="colorSurface">@color/colorBarBackground</item>
         <item name="colorSurfaceVariant">@color/colorSecondaryBackgroundElevated</item>
