@@ -297,16 +297,16 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         // Reading config, data
         if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
-            var lis = listener;
+            val lis = listener;
             if (lis != null) {
                 // Read from fallback
-                var fallbackConfigPath = lis.provideFallbackConfigFilePath();
-                var fallbackDataPath = lis.provideFallbackDataDirectoryPath();
+                val fallbackConfigPath = lis.provideFallbackConfigFilePath();
+                val fallbackDataPath = lis.provideFallbackDataDirectoryPath();
                 if (fallbackConfigPath != cfg || fallbackDataPath != data) {
                     lis.celestiaFragmentLoadingFromFallback()
                     AppCore.chdir(fallbackDataPath)
                     AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride)
-                    if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
+                    if (!core.startSimulation(fallbackConfigPath, extraDirs, AppStatusReporter.shared())) {
                         AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
                         return false
                     }
