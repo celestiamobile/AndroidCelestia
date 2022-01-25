@@ -19,7 +19,9 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.DocumentsContract
+import android.provider.Settings
 import android.util.LayoutDirection
 import android.util.Log
 import android.view.*
@@ -134,6 +136,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
     private lateinit var directoryChooserLauncher: ActivityResultLauncher<Intent>
+    private lateinit var permissionLauncher: ActivityResultLauncher<Intent>
 
     private val celestiaConfigFilePath: String
         get() {
@@ -295,6 +298,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 self.reloadSettings()
             }
         }
+
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
 
         val rootView = findViewById<View>(android.R.id.content).rootView
         updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView))
@@ -1312,6 +1317,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onDataLocationRequested(dataType: DataType) {
+        // On Android R+, the only way to have access is by being granted ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = Uri.parse("package:" + getPackageName())
+            if (intent.resolveActivity(packageManager) != null)
+                permissionLauncher.launch(intent)
+            else
+                showUnsupportedAction()
+            return
+        }
         when (dataType) {
             DataType.Config -> {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
