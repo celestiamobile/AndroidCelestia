@@ -56,7 +56,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     // Parameters
     private var pathToLoad: String? = null
     private var cfgToLoad: String? = null
-    private var addonToLoad: String? = null
+    private var addonDirsToLoad: List<String> = listOf()
     private var enableMultisample = false
     private var enableFullResolution = false
     private var frameRateOption = Renderer.FRAME_60FPS
@@ -106,7 +106,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         arguments?.let {
             pathToLoad = it.getString(ARG_DATA_DIR)
             cfgToLoad = it.getString(ARG_CFG_FILE)
-            addonToLoad = it.getString(ARG_ADDON_DIR)
+            addonDirsToLoad = it.getStringArrayList(ARG_ADDON_DIR) ?: listOf()
             enableMultisample = it.getBoolean(ARG_MULTI_SAMPLE)
             enableFullResolution = it.getBoolean(ARG_FULL_RESOLUTION)
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
@@ -278,7 +278,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private fun loadCelestia(): Boolean {
         val data = pathToLoad
         val cfg = cfgToLoad
-        val addon = addonToLoad
+        val addonDirs = addonDirsToLoad.toTypedArray()
 
         if (data == null || cfg == null) {
             AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
@@ -293,10 +293,8 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         // Set up locale
         AppCore.setLocaleDirectoryPath("$data/locale", languageOverride)
 
-        val extraDirs = if (addon != null) arrayOf(addon) else null
-
         // Reading config, data
-        if (!core.startSimulation(cfg, extraDirs, AppStatusReporter.shared())) {
+        if (!core.startSimulation(cfg, addonDirs, AppStatusReporter.shared())) {
             val lis = listener;
             if (lis != null) {
                 // Read from fallback
@@ -306,7 +304,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                     lis.celestiaFragmentLoadingFromFallback()
                     AppCore.chdir(fallbackDataPath)
                     AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride)
-                    if (!core.startSimulation(fallbackConfigPath, extraDirs, AppStatusReporter.shared())) {
+                    if (!core.startSimulation(fallbackConfigPath, addonDirs, AppStatusReporter.shared())) {
                         AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
                         return false
                     }
@@ -672,7 +670,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance(data: String, cfg: String, addon: String?, enableMultisample: Boolean, enableFullResolution: Boolean, frameRateOption: Int, languageOverride: String) =
+        fun newInstance(data: String, cfg: String, addons: List<String>, enableMultisample: Boolean, enableFullResolution: Boolean, frameRateOption: Int, languageOverride: String) =
             CelestiaFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)
@@ -681,9 +679,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                     putBoolean(ARG_FULL_RESOLUTION, enableFullResolution)
                     putString(ARG_LANG_OVERRIDE, languageOverride)
                     putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
-                    if (addon != null) {
-                        putString(ARG_ADDON_DIR, addon)
-                    }
+                    putStringArrayList(ARG_ADDON_DIR, ArrayList(addons))
                 }
             }
     }

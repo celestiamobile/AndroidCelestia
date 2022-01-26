@@ -430,7 +430,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
 
-            ResourceManager.shared.addonDirectory = addonPath
+            ResourceManager.shared.addonDirectory = addonPaths.firstOrNull()
 
             readyForInteraction = true
             runScriptOrOpenURLIfNeeded()
@@ -811,16 +811,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun createAddonFolder() {
-        try {
-            var folder = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
-            if (folder != null && (folder.exists() || folder.mkdir())) {
-                addonPath = folder.absolutePath
-            }
-            folder = getExternalFilesDir(CELESTIA_SCRIPT_FOLDER_NAME)
-            if (folder != null && (folder.exists() || folder.mkdir())) {
-                extraScriptPath = folder.absolutePath
-            }
-        } catch (ignored: Throwable) {}
+        val addonDirs = listOf(getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME), File(externalMediaDirs.firstOrNull(), CELESTIA_EXTRA_FOLDER_NAME)).mapNotNull { it }
+        addonPaths = createDirectoriesIfNeeded(addonDirs)
+        val scriptDirs = listOf(getExternalFilesDir(CELESTIA_SCRIPT_FOLDER_NAME), File(externalMediaDirs.firstOrNull(), CELESTIA_SCRIPT_FOLDER_NAME)).mapNotNull { it }
+        extraScriptPaths = createDirectoriesIfNeeded(scriptDirs)
+    }
+
+    private fun createDirectoriesIfNeeded(dirs: List<File>): List<String> {
+        val availablePaths = ArrayList<String>()
+        for (dir in dirs) {
+            try {
+                if (dir.exists() || dir.mkdir()) {
+                    availablePaths.add(dir.absolutePath)
+                }
+            } catch (ignored: Throwable) {}
+        }
+        return availablePaths
     }
 
     private fun loadConfigSuccess() {
@@ -828,7 +834,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val celestiaFragment = CelestiaFragment.newInstance(
             celestiaDataDirPath,
             celestiaConfigFilePath,
-            addonPath,
+            addonPaths,
             enableMultisample,
             enableHiDPI,
             customFrameRateOption,
@@ -1317,17 +1323,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                 intent.type = "*/*"
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                if (intent.resolveActivity(packageManager) != null) {
+                if (intent.resolveActivity(packageManager) != null)
                     fileChooserLauncher.launch(intent)
-                } else
+                else
                     showUnsupportedAction()
             }
             DataType.DataDirectory -> {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                if (intent.resolveActivity(packageManager) != null) {
+                if (intent.resolveActivity(packageManager) != null)
                     directoryChooserLauncher.launch(intent)
-                } else
+                else
                     showUnsupportedAction()
             }
         }
@@ -1398,7 +1404,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showWrongPathProvided() {
-        showAlert(CelestiaString("Unable to resolve path, please ensure that you have selected a path inside %s.", "").format(getExternalFilesDir(null)?.absolutePath ?: ""))
+        val expectedParent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) externalMediaDirs.firstOrNull() else getExternalFilesDir(null)
+        showAlert(CelestiaString("Unable to resolve path, please ensure that you have selected a path inside %s.", "").format(expectedParent?.absolutePath ?: ""))
     }
 
     private fun showUnsupportedAction() {
@@ -1653,8 +1660,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun showFavorite() {
         readFavorites()
         val scripts = Script.getScriptsInDirectory("scripts", true)
-        extraScriptPath?.let { path ->
-            scripts.addAll(Script.getScriptsInDirectory(path, true))
+        for (extraScriptPath in extraScriptPaths) {
+            scripts.addAll(Script.getScriptsInDirectory(extraScriptPath, true))
         }
         updateCurrentScripts(scripts)
         updateCurrentDestinations(core.destinations)
@@ -1908,8 +1915,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         var customConfigFilePath: String? = null
         var customFrameRateOption: Int = Renderer.FRAME_60FPS
         private var language: String = "en"
-        private var addonPath: String? = null
-        private var extraScriptPath: String? = null
+        private var addonPaths: List<String> = listOf()
+        private var extraScriptPaths: List<String> = listOf()
         private var languageOverride: String? = null
         private var enableMultisample = false
         private var enableHiDPI = false
