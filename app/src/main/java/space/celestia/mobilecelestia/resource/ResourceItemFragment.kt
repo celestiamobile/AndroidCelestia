@@ -17,44 +17,30 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.StandardImageButton
+import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.GlideUrlCustomCacheKey
 import space.celestia.mobilecelestia.utils.commonHandler
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
-import java.text.DateFormat
-import java.util.*
 
 class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
-    private var item: ResourceItem? = null
+    private lateinit var item: ResourceItem
     private lateinit var statusButton: Button
     private lateinit var goToButton: Button
     private lateinit var progressIndicator: LinearProgressIndicator
     private var currentState: ResourceItemState = ResourceItemState.None
 
-    private var imageView: ImageView? = null
-    private var titleLabel: TextView? = null
-    private var descriptionLabel: TextView? = null
-    private var authorsLabel: TextView? = null
-    private var releaseDateLabel: TextView? = null
-
     private var listener: Listener? = null
-
-    private val formatter = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
 
     interface Listener {
         fun objectExistsWithName(name: String): Boolean
@@ -70,10 +56,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onCreate(savedInstanceState)
 
         ResourceManager.shared.addListener(this)
-
-        arguments?.let {
-            item = it.getSerializable(ARG_ITEM) as? ResourceItem
-        }
+        item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
     }
 
     override fun onCreateView(
@@ -81,35 +64,16 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_resource_item, container, false)
-        val title = view.findViewById<TextView>(R.id.title)
-        val content = view.findViewById<TextView>(R.id.content)
-        val footnote = view.findViewById<TextView>(R.id.footnote)
-        val image = view.findViewById<ImageView>(R.id.image)
-        val authors = view.findViewById<TextView>(R.id.authors)
-        val releaseDate = view.findViewById<TextView>(R.id.publish_time)
-        footnote.text = CelestiaString("Note: restarting Celestia is needed to use any new installed add-on.", "")
 
         statusButton = view.findViewById(R.id.status_button)
         statusButton.setOnClickListener {
             onProgressViewClick()
         }
-        this.titleLabel = title
-        this.descriptionLabel = content
-        this.imageView = image
-        this.authorsLabel = authors
-        this.releaseDateLabel = releaseDate
         goToButton = view.findViewById(R.id.go_to_button)
         goToButton.text = CelestiaString("Go", "")
         goToButton.visibility = View.GONE
         progressIndicator = view.findViewById(R.id.progress_indicator)
 
-        val shareButton = view.findViewById<StandardImageButton>(R.id.share_button)
-        shareButton.setOnClickListener {
-            val item = this.item ?: return@setOnClickListener
-            listener?.onShareAddon(item.name, item.id)
-        }
-
-        updateContents()
         updateUI()
 
         return view
@@ -118,18 +82,37 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val item = this.item ?: return
+        if (savedInstanceState == null) {
+            val resourceItem = this.item
 
-        // Fetch the latest data from server since user might have come from `Installed`
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        lifecycleScope.launch {
-            try {
-                val result = service.item(lang, item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                this@ResourceItemFragment.item = result
-                updateContents()
-            } catch (ignored: Throwable) {}
+            title = resourceItem.name
+            rightNavigationBarItems = listOf(
+                NavigationFragment.BarButtonItem(SHARE_BUTTON_ID, CelestiaString("Share", ""), R.drawable.share_common_small_tint)
+            )
+
+            replace(ResourceItemInfoFragment.newInstance(resourceItem), R.id.resource_item_container)
+
+            // Fetch the latest data from server since user might have come from `Installed`
+            val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
+            val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
+            lifecycleScope.launch {
+                try {
+                    val result = service.item(lang, resourceItem.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                    item = result
+                    title = result.name
+                    val fragment = childFragmentManager.findFragmentById(R.id.resource_item_container) as? ResourceItemInfoFragment
+                    fragment?.updateItem(result)
+                } catch (ignored: Throwable) {}
+            }
         }
+    }
+
+    override fun menuItemClicked(groupId: Int, id: Int): Boolean {
+        if (id == SHARE_BUTTON_ID) {
+            listener?.onShareAddon(item.name, item.id)
+            return true
+        }
+        return super.menuItemClicked(groupId, id)
     }
 
     override fun onAttach(context: Context) {
@@ -153,7 +136,6 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     }
 
     private fun onProgressViewClick() {
-        val item = this.item ?: return
         val activity = this.activity ?: return
 
         val dm = ResourceManager.shared
@@ -192,67 +174,29 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     }
 
     override fun onResourceFetchError(identifier: String) {
-        if (identifier != item?.id) return
         currentState = ResourceItemState.None
         updateUI()
         activity?.showAlert(CelestiaString("Failed to download or install this add-on.", ""))
     }
 
     override fun onFileDownloaded(identifier: String) {
-        if (identifier != item?.id) return
         updateUI()
     }
 
     override fun onFileUnzipped(identifier: String) {
-        if (identifier != item?.id) return
         currentState = ResourceItemState.Installed
         updateUI()
     }
 
     override fun onProgressUpdate(identifier: String, progress: Float) {
-        val id = item?.id ?: return
-        if (identifier != id) { return }
+        if (identifier != item.id) { return }
 
         currentState = ResourceItemState.Downloading
         progressIndicator.progress = (progress * 100).toInt()
         updateUI()
     }
 
-    private fun updateContents() {
-        val item = this.item ?: return
-        titleLabel?.text = item.name
-        descriptionLabel?.text = item.description
-
-        val imageURL = item.image
-        val itemID = item.id
-        val imageView = this.imageView
-        if (imageURL != null && imageView != null) {
-            imageView.visibility = View.VISIBLE
-            Glide.with(this).load(GlideUrlCustomCacheKey(imageURL, itemID)).into(imageView)
-        } else {
-            imageView?.visibility = View.GONE
-        }
-
-        val authors = item.authors
-        if (authors != null && authors.isNotEmpty()) {
-            authorsLabel?.visibility = View.VISIBLE
-            authorsLabel?.text = CelestiaString("Authors: %s", "").format(authors.joinToString(", "))
-        } else {
-            authorsLabel?.visibility = View.GONE
-        }
-
-        val releaseDate = item.publishTime
-        if (releaseDate != null) {
-            releaseDateLabel?.visibility = View.VISIBLE
-            releaseDateLabel?.text = CelestiaString("Release date: %s", "").format(formatter.format(releaseDate))
-        } else {
-            releaseDateLabel?.visibility = View.GONE
-        }
-    }
-
     private fun updateUI() {
-        val item = this.item ?: return
-
         // Ensure we are up to date with these cases
         val dm = ResourceManager.shared
         if (dm.isInstalled(item.id))
@@ -290,6 +234,8 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     companion object {
         private const val ARG_ITEM = "item"
+        private const val SHARE_BUTTON_ID = 142
+
         @JvmStatic
         fun newInstance(item: ResourceItem) =
             ResourceItemFragment().apply {
