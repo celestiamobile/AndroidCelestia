@@ -92,6 +92,8 @@ dependencies {
     implementation "com.github.bumptech.glide:glide:$glide_version"
     annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
 
+    implementation 'androidx.webkit:webkit:1.4.0'
+
     implementation project(path: ':LinkPreview')
     implementation project(path: ':Celestia')
 

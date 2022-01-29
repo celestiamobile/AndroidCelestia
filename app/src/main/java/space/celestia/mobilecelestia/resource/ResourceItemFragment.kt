@@ -90,7 +90,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 NavigationFragment.BarButtonItem(SHARE_BUTTON_ID, CelestiaString("Share", ""), R.drawable.share_common_small_tint)
             )
 
-            replace(ResourceItemInfoFragment.newInstance(resourceItem), R.id.resource_item_container)
+            replace(ResourceItemWebInfoFragment.newInstance(resourceItem), R.id.resource_item_container)
 
             // Fetch the latest data from server since user might have come from `Installed`
             val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
@@ -100,8 +100,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                     val result = service.item(lang, resourceItem.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
                     item = result
                     title = result.name
-                    val fragment = childFragmentManager.findFragmentById(R.id.resource_item_container) as? ResourceItemInfoFragment
-                    fragment?.updateItem(result)
+                    updateUI()
                 } catch (ignored: Throwable) {}
             }
         }

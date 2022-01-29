@@ -113,7 +113,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
-    SettingsRefreshRateFragment.Listener {
+    SettingsRefreshRateFragment.Listener,
+    ResourceItemWebInfoFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -982,6 +983,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onInfoLinkMetaDataClicked(url: URL) {
         openURL(url.toString())
+    }
+
+    override fun onExternalWebLinkClicked(url: String) {
+        openURL(url)
     }
 
     override fun onSearchItemSelected(text: String) {
