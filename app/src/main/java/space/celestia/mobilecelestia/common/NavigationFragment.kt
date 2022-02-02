@@ -16,8 +16,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.view.*
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.appbar.AppBarLayout
 import space.celestia.mobilecelestia.R
@@ -31,8 +29,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             parcel.readString(),
             parcel.readValue(Int::class.java.classLoader) as? Int,
             parcel.readByte() != 0.toByte(),
-            parcel.readValue(Boolean::class.java.classLoader) as? Boolean) {
-        }
+            parcel.readValue(Boolean::class.java.classLoader) as? Boolean)
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             parcel.writeInt(id)
@@ -69,8 +66,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             parcel.readInt(),
             parcel.readString(),
             parcel.readValue(Int::class.java.classLoader) as? Int,
-            parcel.createTypedArrayList(BarButtonItem) ?: listOf()) {
-        }
+            parcel.createTypedArrayList(BarButtonItem) ?: listOf())
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             parcel.writeInt(id)
@@ -99,8 +95,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             parcel.readInt(),
             parcel.readString(),
             parcel.readValue(Int::class.java.classLoader) as? Int,
-            parcel.createTypedArrayList(BarButtonItem) ?: listOf()) {
-        }
+            parcel.createTypedArrayList(BarButtonItem) ?: listOf())
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             parcel.writeInt(id)
@@ -129,8 +124,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             parcel.readInt(),
             parcel.readString(),
             parcel.readValue(Int::class.java.classLoader) as? Int,
-            parcel.createTypedArrayList(BarButtonItem) ?: listOf()) {
-        }
+            parcel.createTypedArrayList(BarButtonItem) ?: listOf())
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             parcel.writeInt(id)
@@ -197,7 +191,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             if (savedInstanceState != null) {
                 innerTitle = savedInstanceState.getString(ARG_TITLE, "")
                 innerLeftNavigationBarItem = savedInstanceState.getParcelable(ARG_LEFT_ITEM)
-                innerRightNavigationBarItems = savedInstanceState.getParcelableArrayList<NavigationBarItem>(ARG_RIGHT_ITEMS) ?: listOf()
+                innerRightNavigationBarItems = savedInstanceState.getParcelableArrayList(ARG_RIGHT_ITEMS) ?: listOf()
                 innerShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
             }
         }
@@ -258,7 +252,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             replaceFragment(createInitialFragment(savedInstanceState))
         } else {
             lastTitle = savedInstanceState.getString(ARG_TITLE, "")
-            lastRightItems = savedInstanceState.getParcelableArrayList<NavigationBarItem>(ARG_RIGHT_ITEMS) ?: listOf()
+            lastRightItems = savedInstanceState.getParcelableArrayList(ARG_RIGHT_ITEMS) ?: listOf()
             lastLeftItem = savedInstanceState.getParcelable(ARG_LEFT_ITEM)
             lastGoBack = savedInstanceState.getBoolean(ARG_BACK)
             lastShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
@@ -275,14 +269,14 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     }
 
     fun replaceFragment(fragment: SubFragment) {
-        val commitId = replace(fragment, R.id.fragment_container)
+        val commitId = replace(fragment, R.id.fragment_container) ?: return
         commitIds = arrayListOf(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false, fragment.showNavigationBar)
         appBar?.setExpanded(true)
     }
 
     fun pushFragment(fragment: SubFragment) {
-        val commitId = push(fragment, R.id.fragment_container)
+        val commitId = push(fragment, R.id.fragment_container) ?: return
         commitIds.add(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true, fragment.showNavigationBar)
         appBar?.setExpanded(true)
@@ -297,7 +291,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             if (barItem is BarButtonItem) {
                 val item = toolbar.menu.add(Menu.NONE, barItem.id, Menu.NONE, barItem.title)
                 item.isEnabled = barItem.enabled
-                item.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+                item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
                 val icon = barItem.icon
                 val checked = barItem.checked
                 if (icon != null)
@@ -363,7 +357,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     }
 
     override fun canPop(): Boolean {
-        if (!isAdded()) return false
+        if (!isAdded) return false
         return commitIds.size > 1
     }
 

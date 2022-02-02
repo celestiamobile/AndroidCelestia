@@ -87,7 +87,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
             title = resourceItem.name
             rightNavigationBarItems = listOf(
-                NavigationFragment.BarButtonItem(SHARE_BUTTON_ID, CelestiaString("Share", ""), R.drawable.share_common_small_tint)
+                NavigationFragment.BarButtonItem(SHARE_BUTTON_ID, CelestiaString("Share", ""), R.drawable.baseline_share_24)
             )
 
             replace(ResourceItemWebInfoFragment.newInstance(resourceItem), R.id.resource_item_container)

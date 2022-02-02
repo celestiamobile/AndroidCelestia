@@ -11,5 +11,5 @@
   -->
 
 <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/share_common_small"
+    android:src="@drawable/baseline_share_black_24"
     android:tint="@color/colorLabel" />

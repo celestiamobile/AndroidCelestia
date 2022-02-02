@@ -17,7 +17,9 @@ import androidx.fragment.app.FragmentManager
 import space.celestia.mobilecelestia.R
 
 
-fun Fragment.push(fragment: Fragment, containerID: Int): Int {
+fun Fragment.push(fragment: Fragment, containerID: Int): Int? {
+    if (!isAdded) return null
+
     val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
 
     val ani1 = if (ltr) R.anim.enter_from_right else R.anim.enter_from_left
@@ -33,10 +35,14 @@ fun Fragment.push(fragment: Fragment, containerID: Int): Int {
 }
 
 fun Fragment.pop() {
+    if (!isAdded) return
+
     childFragmentManager.popBackStack((childFragmentManager.backStackEntryCount - 1).toString(), FragmentManager.POP_BACK_STACK_INCLUSIVE)
 }
 
-fun Fragment.replace(fragment: Fragment, containerID: Int): Int {
+fun Fragment.replace(fragment: Fragment, containerID: Int): Int? {
+    if (!isAdded) return null
+
     val current = childFragmentManager.findFragmentById(containerID)
     var trans = childFragmentManager.beginTransaction()
     if (current != null) {
