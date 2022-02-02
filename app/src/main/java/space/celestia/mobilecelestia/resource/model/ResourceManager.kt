@@ -29,10 +29,8 @@ fun <P, R> CoroutineScope.executeAsyncTask(
     onPostExecute: (R) -> Unit,
     onProgressUpdate: (P) -> Unit
 ) = launch {
-    val result = withContext(Dispatchers.IO) {
-        doInBackground {
-            withContext(Dispatchers.Main) { onProgressUpdate(it) }
-        }
+    val result = doInBackground {
+        withContext(Dispatchers.Main) { onProgressUpdate(it) }
     }
     withContext(Dispatchers.Main) { onPostExecute(result) }
 }
@@ -44,6 +42,8 @@ private fun unzip(zipFile: File, destination: File) {
 class ResourceManager {
     private var listeners = arrayListOf<Listener>()
     private var tasks = hashMapOf<String, Job>()
+
+    private val parentJob = Job()
 
     var addonDirectory: String? = null
 
@@ -100,7 +100,7 @@ class ResourceManager {
                 val reader = FileReader(jsonDescriptionFile)
                 reader.use {
                     val gson = GsonBuilder().create()
-                    val item = gson.fromJson<ResourceItem>(it, ResourceItem::class.java)
+                    val item = gson.fromJson(it, ResourceItem::class.java)
                     if (item.id == folder.name)
                         items.add(item)
                 }
@@ -117,10 +117,11 @@ class ResourceManager {
         tasks.remove(identifier)?.cancel()
     }
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     fun download(item: ResourceItem, destination: File) {
         val unzipDestination = File(addonDirectory, item.id)
         val reference = WeakReference(this)
-        val task = GlobalScope.executeAsyncTask(doInBackground = { publishProgress: suspend (progress: Progress) -> Unit ->
+        val task = CoroutineScope(parentJob + Dispatchers.IO).executeAsyncTask(doInBackground = { publishProgress: suspend (progress: Progress) -> Unit ->
             val client = OkHttpClient()
             val call = client.newCall(Request.Builder().url(item.item).get().build())
             try {
@@ -157,8 +158,8 @@ class ResourceManager {
                         val gson = GsonBuilder().create()
                         gson.toJson(item, it)
                     }
-                } catch (ignored: Exception) {}
-            } catch (e: Exception) {
+                } catch (ignored: Throwable) {}
+            } catch (e: Throwable) {
                 e.printStackTrace()
                 return@executeAsyncTask false
             }
@@ -177,22 +178,22 @@ class ResourceManager {
         tasks[item.id] = task
     }
 
-    fun callListenerProgressCallback(identifier: String, progress: Float) {
+    private fun callListenerProgressCallback(identifier: String, progress: Float) {
         for (listener in listeners)
             listener.onProgressUpdate(identifier, progress)
     }
 
-    fun callListenerErrorCallback(identifier: String) {
+    private fun callListenerErrorCallback(identifier: String) {
         for (listener in listeners)
             listener.onResourceFetchError(identifier)
     }
 
-    fun callListenerDownloadSuccessCallback(identifier: String) {
+    private fun callListenerDownloadSuccessCallback(identifier: String) {
         for (listener in listeners)
             listener.onFileDownloaded(identifier)
     }
 
-    fun callListenerUnzipSuccessCallback(identifier: String) {
+    private fun callListenerUnzipSuccessCallback(identifier: String) {
         for (listener in listeners)
             listener.onFileUnzipped(identifier)
     }
