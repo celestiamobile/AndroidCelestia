@@ -1,14 +1,3 @@
-/*
- * ResourceItemWebInfoFragment.kt
- *
- * Copyright (C) 2001-2022, Celestia Development Team
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- */
-
 package space.celestia.mobilecelestia.resource
 
 import android.annotation.SuppressLint
@@ -24,34 +13,35 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.fragment.app.Fragment
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.resource.model.ResourceItem
+import space.celestia.mobilecelestia.common.NavigationFragment
+import java.lang.ref.WeakReference
 
-class ResourceItemWebInfoFragment: Fragment() {
-    private lateinit var item: ResourceItem
+class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInterface.MessageHandler {
+    private lateinit var uri: Uri
     private lateinit var webView: WebView
 
     private var listener: Listener? = null
 
     interface Listener {
         fun onExternalWebLinkClicked(url: String)
+        fun onRunScript(type: String, content: String)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
+        uri = requireArguments().getParcelable<Uri>(ARG_URI)!!
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_resource_item_web_info, container, false)
+        val view = inflater.inflate(R.layout.fragment_common_web, container, false)
         webView = view.findViewById(R.id.webview)
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.isHorizontalScrollBarEnabled = false
@@ -60,6 +50,10 @@ class ResourceItemWebInfoFragment: Fragment() {
         @SuppressLint("SetJavaScriptEnabled")
         webSettings.javaScriptEnabled = true
 
+        val weakSelf = WeakReference(this)
+
+        val defaultUri = uri
+        webView.addJavascriptInterface(CelestiaJavascriptInterface(this), "AndroidCelestia")
         webView.webViewClient = object: WebViewClient() {
             @TargetApi(Build.VERSION_CODES.N)
             override fun shouldOverrideUrlLoading(
@@ -76,10 +70,11 @@ class ResourceItemWebInfoFragment: Fragment() {
 
             fun shouldOverrideUrl(url: String?): Boolean {
                 if (url == null) return true
-                if (Uri.parse(url).host == "celestia.mobi") {
+                val uri = Uri.parse(url)
+                if (uri.host == defaultUri.host && uri.path == defaultUri.path) {
                     return false
                 }
-                listener?.onExternalWebLinkClicked(url)
+                weakSelf.get()?.listener?.onExternalWebLinkClicked(url)
                 return true
             }
         }
@@ -88,26 +83,17 @@ class ResourceItemWebInfoFragment: Fragment() {
             WebSettingsCompat.setForceDark(webSettings, WebSettingsCompat.FORCE_DARK_ON)
         }
 
-        val baseURL = "https://celestia.mobi/resources/item"
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        val uri = Uri.parse(baseURL)
-            .buildUpon()
-            .appendQueryParameter("item", item.id)
-            .appendQueryParameter("lang", lang)
-            .appendQueryParameter("environment", "app")
-            .appendQueryParameter("theme", "dark")
-            .build()
-
         webView.loadUrl(uri.toString())
         return view
     }
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement ResourceItemWebInfoFragment.Listener")
+            throw RuntimeException("$context must implement CommonWebFragment.Listener")
         }
     }
 
@@ -116,14 +102,17 @@ class ResourceItemWebInfoFragment: Fragment() {
         listener = null
     }
 
+    override fun runScript(type: String, content: String) {
+        listener?.onRunScript(type, content)
+    }
+
     companion object {
-        private const val ARG_ITEM = "item"
-        @JvmStatic
-        fun newInstance(item: ResourceItem) =
-            ResourceItemWebInfoFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable(ARG_ITEM, item)
-                }
+        private val ARG_URI = "uri"
+
+        fun newInstance(uri: Uri) = CommonWebFragment().apply {
+            arguments = Bundle().apply {
+                putParcelable(ARG_URI, uri)
             }
+        }
     }
 }

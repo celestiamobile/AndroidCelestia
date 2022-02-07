@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
-    ResourceItemWebInfoFragment.Listener {
+    CommonWebFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -129,6 +129,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var readyForInteraction = false
     private var scriptOrURLPath: String? = null
     private var addonToOpen: String? = null
+    private var guideToOpen: String? = null
 
     private val defaultConfigFilePath by lazy { "$defaultDataDirectoryPath/$CELESTIA_CFG_NAME" }
     private val defaultDataDirectoryPath by lazy { "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME" }
@@ -436,6 +437,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             readyForInteraction = true
             runScriptOrOpenURLIfNeeded()
             openAddonIfNeeded()
+            openGuideIfNeeded()
 
             // Show onboarding if needed
             showWelcomeIfNeeded()
@@ -578,6 +580,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val id = uri.getQueryParameter("item") ?: return
                 requestOpenAddon(id)
             }
+        } else if (uri.scheme == "celguide") {
+            if (uri.host == "guide") {
+                val id = uri.getQueryParameter("guide") ?: return
+                requestOpenGuide(id)
+            }
         } else {
             // Cannot handle this URI scheme
             showAlert("Unknown URI scheme ${uri.scheme}")
@@ -598,6 +605,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } else if (path == "/resources/item") {
             val id = uri.getQueryParameter("item") ?: return
             requestOpenAddon(id)
+        } else if (path == "/resources/guide") {
+            val guide = uri.getQueryParameter("guide") ?: return
+            requestOpenGuide(guide)
         }
     }
 
@@ -649,6 +659,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             openAddonIfNeeded()
     }
 
+    private fun requestOpenGuide(guide: String) {
+        guideToOpen = guide
+        if (readyForInteraction)
+            openGuideIfNeeded()
+    }
+
     private fun runScriptOrOpenURLIfNeeded() {
         val uri = scriptOrURLPath ?: return
 
@@ -657,12 +673,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val isURL = uri.startsWith("cel://")
         showAlert(if (isURL) CelestiaString("Open URL?", "") else CelestiaString("Run Script?", "")) {
-            CelestiaView.callOnRenderThread {
-                if (isURL) {
-                    core.goToURL(uri)
-                } else {
-                    core.runScript(uri)
-                }
+            openCelestiaURL(uri)
+        }
+    }
+
+    private fun openCelestiaURL(uri: String) {
+        val isURL = uri.startsWith("cel://")
+        CelestiaView.callOnRenderThread {
+            if (isURL) {
+                core.goToURL(uri)
+            } else {
+                core.runScript(uri)
             }
         }
     }
@@ -681,6 +702,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showBottomSheetFragment(SingleResourceItemFragment.newInstance(result))
             } catch (ignored: Throwable) {}
         }
+    }
+
+    private fun openGuideIfNeeded() {
+        val guide = guideToOpen ?: return
+
+        // Clear existing
+        guideToOpen = null
+
+        val baseURL = "https://celestia.mobi/resources/guide"
+        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
+        val uri = Uri.parse(baseURL)
+            .buildUpon()
+            .appendQueryParameter("guide", guide)
+            .appendQueryParameter("lang", lang)
+            .appendQueryParameter("environment", "app")
+            .appendQueryParameter("theme", "dark")
+            .build()
+        showBottomSheetFragment(CommonWebFragment.newInstance(uri))
     }
 
     @Throws(IOException::class)
@@ -983,6 +1022,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onInfoLinkMetaDataClicked(url: URL) {
         openURL(url.toString())
+    }
+
+    override fun onRunScript(type: String, content: String) {
+        if (!supportedScriptTypes.contains(type)) return
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val file = File(cacheDir, "${UUID.randomUUID()}.${type}")
+            try {
+                file.writeText(content)
+                withContext(Dispatchers.Main) {
+                    openCelestiaURL(file.absolutePath)
+                }
+            } catch (ignored: Throwable) {}
+        }
     }
 
     override fun onExternalWebLinkClicked(url: String) {
@@ -1742,7 +1795,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (!directory.exists())
             directory.mkdir()
 
-        val file = File(directory, "${UUID.randomUUID().toString()}.png")
+        val file = File(directory, "${UUID.randomUUID()}.png")
         CelestiaView.callOnRenderThread {
             core.draw()
             if (core.saveScreenshot(file.absolutePath, AppCore.IMAGE_TYPE_PNG)) {
@@ -1930,6 +1983,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         var defaultInstalledFont: Pair<FontHelper.FontCompat, FontHelper.FontCompat>? = null
 
         private var availableLanguageCodes: List<String> = listOf()
+
+        private val supportedScriptTypes = listOf("cel", "celx")
 
         init {
             System.loadLibrary("nativecrashhandler")

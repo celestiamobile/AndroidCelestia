@@ -78,6 +78,14 @@
                     android:scheme="celaddon"
                     android:host="*" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="celguide"
+                    android:host="*" />
+            </intent-filter>
             <intent-filter android:autoVerify="true"
                 tools:targetApi="m">
                 <action android:name="android.intent.action.VIEW" />
@@ -97,6 +105,16 @@
                     android:scheme="https"
                     android:host="celestia.mobi"
                     android:pathPattern="/resources/item" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true"
+                tools:targetApi="m">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="celestia.mobi"
+                    android:pathPattern="/resources/guide" />
             </intent-filter>
             <meta-data android:name="WindowManagerPreference:FreeformWindowSize"
                 android:value="[phone|tablet|maximize]" />

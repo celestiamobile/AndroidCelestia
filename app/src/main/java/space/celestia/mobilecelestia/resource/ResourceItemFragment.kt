@@ -12,6 +12,7 @@
 package space.celestia.mobilecelestia.resource
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -90,10 +91,18 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 NavigationFragment.BarButtonItem(SHARE_BUTTON_ID, CelestiaString("Share", ""), R.drawable.baseline_share_24)
             )
 
-            replace(ResourceItemWebInfoFragment.newInstance(resourceItem), R.id.resource_item_container)
+            val baseURL = "https://celestia.mobi/resources/item"
+            val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
+            val uri = Uri.parse(baseURL)
+                .buildUpon()
+                .appendQueryParameter("item", item.id)
+                .appendQueryParameter("lang", lang)
+                .appendQueryParameter("environment", "app")
+                .appendQueryParameter("theme", "dark")
+                .build()
+            replace(CommonWebFragment.newInstance(uri), R.id.resource_item_container)
 
             // Fetch the latest data from server since user might have come from `Installed`
-            val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
             val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
             lifecycleScope.launch {
                 try {
