@@ -17,6 +17,7 @@ import java.util.List;
 
 public class StarBrowser implements AutoCloseable {
     public final static int KIND_NEAREST       = 0;
+    public final static int KIND_BRIGHTER      = 1;
     public final static int KIND_BRIGHTEST     = 2;
     public final static int KIND_WITH_PLANETS  = 3;
 

@@ -52,6 +52,16 @@ public class BrowserItem {
     private ArrayList<BrowserItem> childrenValues;
     private ChildrenProvider provider;
 
+    public static class KeyValuePair {
+        private final String key;
+        private final BrowserItem value;
+
+        public KeyValuePair(@NonNull String key, @NonNull BrowserItem value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
     public BrowserItem(@NonNull String name, @Nullable String alternativeName, @NonNull AstroObject object, @Nullable ChildrenProvider provider) {
         _name = name;
         _alternativeName = alternativeName;
@@ -63,6 +73,12 @@ public class BrowserItem {
         _name = name;
         _alternativeName = alternativeName;
         setChildren(children);
+    }
+
+    public BrowserItem(@NonNull String name, @Nullable String alternativeName, @NonNull List<KeyValuePair> children) {
+        _name = name;
+        _alternativeName = alternativeName;
+        setOrderedChildren(children);
     }
 
     private static BrowserItem fromJson(@NonNull JSONObject js, @Nullable ChildrenProvider provider) throws JSONException, RuntimeException {
@@ -149,6 +165,22 @@ public class BrowserItem {
         int index = childrenKeys.indexOf(name);
         if (index == -1) { return null; }
         return childrenValues.get(index);
+    }
+
+    private void setOrderedChildren(List<KeyValuePair> children) {
+        if (children == null) {
+            childrenKeys = new ArrayList<>();
+            childrenValues = new ArrayList<>();
+            return;
+        }
+
+        childrenValues = new ArrayList<>();
+        childrenKeys = new ArrayList<>();
+        for (int i = 0; i < children.size(); i++) {
+            KeyValuePair child = children.get(i);
+            childrenKeys.add(child.key);
+            childrenValues.add(child.value);
+        }
     }
 
     private void setChildren(Map<String, BrowserItem> children) {

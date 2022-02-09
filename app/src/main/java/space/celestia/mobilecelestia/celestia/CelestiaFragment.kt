@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.browser.createAllBrowserItems
+import space.celestia.mobilecelestia.browser.createStaticBrowserItems
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.common.RoundedCorners
@@ -319,9 +319,6 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }
-
-        // Prepare for browser items
-        core.simulation.createAllBrowserItems()
 
         updateContentScale()
 

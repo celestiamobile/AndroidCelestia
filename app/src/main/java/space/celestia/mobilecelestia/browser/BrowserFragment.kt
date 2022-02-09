@@ -13,16 +13,24 @@ package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
 import android.view.*
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.Poppable
-import space.celestia.mobilecelestia.common.replace
+import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Selection
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.celestia.CelestiaView
+import space.celestia.mobilecelestia.common.Poppable
+import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.info.InfoFragment
+import space.celestia.mobilecelestia.utils.createLoadingDrawable
+import java.io.Serializable
 
 interface BrowserRootFragment {
     fun pushItem(browserItem: BrowserItem)
@@ -32,6 +40,48 @@ interface BrowserRootFragment {
 class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBarView.OnItemSelectedListener {
     private var currentPath = ""
     private var selectedItemIndex = 0
+    private lateinit var imageView: ImageView
+    private lateinit var circularProgressDrawable: CircularProgressDrawable
+    private lateinit var browserContainer: LinearLayout
+    private lateinit var navigation: BottomNavigationView
+    private var tabs = listOf<Tab>()
+
+    class Tab(private val type: Type): Serializable {
+        enum class Type: Serializable {
+            SolarSystem, Star, DSO
+        }
+
+        val iconResource: Int
+        get() {
+            return when (type) {
+                Type.SolarSystem -> {
+                    R.drawable.browser_tab_sso
+                }
+                Type.Star -> {
+                    R.drawable.browser_tab_star
+                }
+                Type.DSO -> {
+                    R.drawable.browser_tab_dso
+                }
+            }
+        }
+
+        val browserItem: BrowserItem
+        get() {
+            val sim = AppCore.shared().simulation
+            return when (type) {
+                Type.SolarSystem -> {
+                    sim.universe.solBrowserRoot()!!
+                }
+                Type.Star -> {
+                    sim.starBrowserRoot()
+                }
+                Type.DSO -> {
+                    sim.universe.dsoBrowserRoot()
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,12 +89,15 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         if (savedInstanceState != null) {
             currentPath = savedInstanceState.getString(ARG_PATH_TAG, "")
             selectedItemIndex = savedInstanceState.getInt(ARG_ITEM_TAG, 0)
+            @Suppress("UNCHECKED_CAST")
+            tabs = savedInstanceState.getSerializable(ARG_TABS) as ArrayList<Tab>
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(ARG_PATH_TAG, currentPath)
         outState.putInt(ARG_ITEM_TAG, selectedItemIndex)
+        outState.putSerializable(ARG_TABS, ArrayList(tabs))
 
         super.onSaveInstanceState(outState)
     }
@@ -53,21 +106,27 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_browser, container, false)
+        val view = inflater.inflate(R.layout.fragment_browser, container, false)
+        imageView = view.findViewById(R.id.loading_image)
+        val drawable = createLoadingDrawable(inflater.context)
+        imageView.setImageDrawable(drawable)
+        browserContainer = view.findViewById(R.id.browser_container)
+        navigation = view.findViewById(R.id.navigation)
+        circularProgressDrawable = drawable
+        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val nav = view.findViewById<BottomNavigationView>(R.id.navigation)
-        for (i in 0 until browserItemMenu.count()) {
-            val item = browserItemMenu[i]
-            nav.menu.add(Menu.NONE, i, Menu.NONE, item.item.alternativeName ?: item.item.name).setIcon(item.icon)
-        }
-        nav.selectedItemId = selectedItemIndex
-        nav.setOnItemSelectedListener(this)
+        super.onViewCreated(view, savedInstanceState)
 
-        if (savedInstanceState == null)
-            showTab(selectedItemIndex)
+        if (tabs.isEmpty()) {
+            loadRootBrowserItems()
+        } else {
+            rootItemsLoaded()
+            if (savedInstanceState == null) {
+                showTab(selectedItemIndex)
+            }
+        }
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -78,9 +137,22 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         return true
     }
 
+    private fun rootItemsLoaded() {
+        browserContainer.visibility = View.VISIBLE
+        imageView.visibility = View.GONE
+        circularProgressDrawable.stop()
+        for (i in 0 until tabs.count()) {
+            val tab = tabs[i]
+            val item = tab.browserItem
+            navigation.menu.add(Menu.NONE, i, Menu.NONE, item.alternativeName ?: item.name).setIcon(tab.iconResource)
+        }
+        navigation.selectedItemId = selectedItemIndex
+        navigation.setOnItemSelectedListener(this)
+    }
+
     private fun showTab(index: Int) {
         selectedItemIndex = index
-        replaceItem(browserItemMenu[selectedItemIndex].item)
+        replaceItem(tabs[selectedItemIndex].browserItem)
     }
 
     private fun replaceItem(browserItem: BrowserItem) {
@@ -111,27 +183,39 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         navigationFragment.popLast()
     }
 
+    private fun loadRootBrowserItems() {
+        browserContainer.visibility = View.GONE
+        imageView.visibility = View.VISIBLE
+        circularProgressDrawable.start()
+        CelestiaView.callOnRenderThread {
+            val sim = AppCore.shared().simulation
+            sim.createStaticBrowserItems()
+            sim.createDynamicBrowserItems()
+            val browserTabs = arrayListOf(Tab(Tab.Type.Star), Tab(Tab.Type.DSO))
+            val solRoot = sim.universe.solBrowserRoot()
+            if (solRoot != null) {
+                browserTabs.add(0, Tab(Tab.Type.SolarSystem))
+            }
+            lifecycleScope.launch {
+                tabs = browserTabs
+                rootItemsLoaded()
+                showTab(selectedItemIndex)
+            }
+        }
+    }
+
     companion object {
         private const val ARG_PATH_TAG = "path"
         private const val ARG_ITEM_TAG = "item"
-
-        private val browserItemMenu by lazy {
-            val sim = AppCore.shared().simulation
-            var list = arrayListOf(
-                BrowserUIItemMenu(sim.starBrowserRoot(), R.drawable.browser_tab_star),
-                BrowserUIItemMenu(sim.universe.dsoBrowserRoot(), R.drawable.browser_tab_dso)
-            )
-            val solRoot = sim.universe.solBrowserRoot()
-            if (solRoot != null) {
-                list.add(0, BrowserUIItemMenu(solRoot, R.drawable.browser_tab_sso))
-            }
-            list
-        }
+        private const val ARG_TABS = "tabs"
 
         @JvmStatic
-        fun newInstance() =
-            BrowserFragment()
+        fun newInstance(): BrowserFragment {
+            return BrowserFragment()
+        }
 
+        // Global lookup map for browser item. This allows restoration
+        // as BrowserItem cannot be saved and restored
         val browserMap = HashMap<String, BrowserItem>()
     }
 }

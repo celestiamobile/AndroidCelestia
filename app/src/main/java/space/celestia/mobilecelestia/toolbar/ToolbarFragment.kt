@@ -38,7 +38,7 @@ enum class ToolbarAction : Serializable {
                 Time -> "Time Control"
                 Script -> "Script Control"
                 Camera -> "Camera Control"
-                Browse -> "Browser"
+                Browse -> "Star Browser"
                 Favorite -> "Favorites"
                 Setting -> "Settings"
                 Home -> "Home (Sol)"

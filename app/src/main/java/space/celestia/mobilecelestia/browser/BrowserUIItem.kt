@@ -19,11 +19,22 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 private var solRoot: BrowserItem? = null
 private var starRoot: BrowserItem? = null
 private var dsoRoot: BrowserItem? = null
+private var brightestStars: BrowserItem? = null
+private var starsWithPlanets: BrowserItem? = null
 
-fun Simulation.createAllBrowserItems() {
-    solRoot = universe.createSolBrowserRoot()
+fun Simulation.createStaticBrowserItems() {
+    if (solRoot == null)
+        solRoot = universe.createSolBrowserRoot()
+    if (dsoRoot == null)
+        dsoRoot = universe.createDSOBrowserRoot()
+    if (brightestStars == null)
+        brightestStars = createStarBrowserRootItem(StarBrowser.KIND_BRIGHTEST, CelestiaString("Brightest Stars (Absolute Magnitude)",""), true)
+    if (starsWithPlanets == null)
+        starsWithPlanets = createStarBrowserRootItem(StarBrowser.KIND_WITH_PLANETS, CelestiaString("Stars with Planets",""), false)
+}
+
+fun Simulation.createDynamicBrowserItems() {
     starRoot = createStarBrowserRoot()
-    dsoRoot = universe.createDSOBrowserRoot()
 }
 
 private fun Universe.createSolBrowserRoot(): BrowserItem? {
@@ -41,7 +52,7 @@ fun Universe.solBrowserRoot(): BrowserItem? {
     return solRoot
 }
 
-private fun Simulation.createStarBrowserRoot(): BrowserItem {
+private fun Simulation.createStarBrowserRootItem(kind: Int, title: String, ordered: Boolean): BrowserItem {
     fun List<Star>.createBrowserMap(): Map<String, BrowserItem> {
         val map = HashMap<String, BrowserItem>()
         for (item in this) {
@@ -55,41 +66,42 @@ private fun Simulation.createStarBrowserRoot(): BrowserItem {
         }
         return map
     }
-    val nearest = getStarBrowser(StarBrowser.KIND_NEAREST).use {
-        it.stars
-    }.createBrowserMap()
-    val brightest = getStarBrowser(StarBrowser.KIND_BRIGHTEST).use {
-        it.stars
-    }.createBrowserMap()
-    val hasPlanets = getStarBrowser(StarBrowser.KIND_WITH_PLANETS).use {
-        it.stars
-    }.createBrowserMap()
-    val nearestItem = BrowserItem(
-        CelestiaString(
-            "Nearest Stars",
-            ""
-        ), null, nearest
-    )
-    val brightestItem = BrowserItem(
-        CelestiaString(
-            "Brightest Stars",
-            ""
-        ), null, brightest
-    )
-    val hasPlanetItem = BrowserItem(
-        CelestiaString(
-            "Stars with Planets",
-            ""
-        ), null, hasPlanets
-    )
+    fun List<Star>.createOrderedBrowserMap(): List<BrowserItem.KeyValuePair> {
+        val list = arrayListOf<BrowserItem.KeyValuePair>()
+        for (item in this) {
+            val name = universe.starCatalog.getStarName(item)
+            list.add(BrowserItem.KeyValuePair(name, BrowserItem(name, null, item, universe)))
+        }
+        return list
+    }
 
-    return BrowserItem(
-        CelestiaString("Stars", ""), null, mapOf(
-            nearestItem.name to nearestItem,
-            brightestItem.name to brightestItem,
-            hasPlanetItem.name to hasPlanetItem
-        )
+    return if (ordered) {
+        val items = getStarBrowser(kind).use {
+            it.stars
+        }.createOrderedBrowserMap()
+        BrowserItem(title, null, items)
+    } else {
+        val items = getStarBrowser(kind).use {
+            it.stars
+        }.createBrowserMap()
+        BrowserItem(title, null, items)
+    }
+}
+
+private fun Simulation.createStarBrowserRoot(): BrowserItem {
+    val nearest = createStarBrowserRootItem(StarBrowser.KIND_NEAREST, CelestiaString("Nearest Stars", ""), true)
+    val brighter = createStarBrowserRootItem(StarBrowser.KIND_BRIGHTER, CelestiaString("Brightest Stars", ""), true)
+    val hashMap = hashMapOf(
+        nearest.name to nearest,
+        brighter.name to brighter
     )
+    val brightest = brightestStars
+    if (brightest != null)
+        hashMap[brightest.name] = brightest
+    val hasPlanets = starsWithPlanets
+    if (hasPlanets != null)
+        hashMap[hasPlanets.name] = hasPlanets
+    return BrowserItem(CelestiaString("Stars", ""), null, hashMap)
 }
 
 fun Simulation.starBrowserRoot(): BrowserItem {
@@ -154,5 +166,3 @@ fun Universe.dsoBrowserRoot(): BrowserItem {
 }
 
 class BrowserUIItem(val item: BrowserItem, val isLeaf: Boolean) : RecyclerViewItem
-
-class BrowserUIItemMenu(val item: BrowserItem, val icon: Int)
