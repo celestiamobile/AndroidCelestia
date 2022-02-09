@@ -85,6 +85,7 @@ import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     ToolbarFragment.Listener,
@@ -190,7 +191,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
                 openURL("https://celestia.mobi/privacy.html")
                 finishAndRemoveTask()
-                System.exit(0)
+                exitProcess(0)
             }
             builder.setPositiveButton(R.string.privacy_policy_alert_accept_button_title) { _, _ ->
                 preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] = "true"
@@ -198,7 +199,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             builder.setNegativeButton(R.string.privacy_policy_alert_decline_button_title) { dialog, _ ->
                 dialog.cancel()
                 finishAndRemoveTask()
-                System.exit(0)
+                exitProcess(0)
             }
             builder.show()
         }
@@ -417,7 +418,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    fun celestiaLoadingSucceeded() {
+    private fun celestiaLoadingSucceeded() {
         CelestiaView.callOnRenderThread {
             readSettings()
 
@@ -425,7 +426,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    fun celestiaLoadingFinished() {
+    private fun celestiaLoadingFinished() {
         lifecycleScope.launch {
             supportFragmentManager.findFragmentById(R.id.loading_fragment_container)?.let {
                 supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
@@ -435,16 +436,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ResourceManager.shared.addonDirectory = addonPaths.firstOrNull()
 
             readyForInteraction = true
-            runScriptOrOpenURLIfNeeded()
-            openAddonIfNeeded()
-            openGuideIfNeeded()
 
-            // Show onboarding if needed
-            showWelcomeIfNeeded()
+            openURLOrScriptOrGreeting()
         }
     }
 
-    fun celestiaLoadingFailed() {
+    private fun celestiaLoadingFailed() {
         AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed…", ""))
         lifecycleScope.launch {
             removeCelestiaFragment()
@@ -513,10 +510,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             availableLanguageCodes = languageCodes.sorted()
         }
 
-        var languageFromSettings = preferenceManager[PreferenceManager.PredefinedKey.Language]
+        val languageFromSettings = preferenceManager[PreferenceManager.PredefinedKey.Language]
         if (languageFromSettings == null) {
             val locale = Locale.getDefault()
-            var lang = locale.language
+            val lang = locale.language
             var country = locale.country
             if (lang == "zh") {
                 // Special handling for Chinese script
@@ -538,10 +535,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 language = localeString
             } else {
                 localeString = lang
-                if (availableLanguageCodes.contains(localeString)) {
-                    language = localeString
+                language = if (availableLanguageCodes.contains(localeString)) {
+                    localeString
                 } else {
-                    language = "en"
+                    "en"
                 }
             }
         } else {
@@ -551,13 +548,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
         enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
-    }
-
-    private fun showWelcomeIfNeeded() {
-        if (preferenceManager[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
-            preferenceManager[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
-            showHelp()
-        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -593,21 +583,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun handleAppLink(uri: Uri) {
         val path = uri.path ?: return
-        if (path == "/api/url") {
-            val id = uri.getQueryParameter("id") ?: return
-            val service = ShareAPI.shared.create(ShareAPIService::class.java)
-            lifecycleScope.launch {
-                try {
-                    val result = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java)
-                    requestOpenURL(result.resolvedURL)
-                } catch (ignored: Throwable) {}
+        when (path) {
+            "/api/url" -> {
+                val id = uri.getQueryParameter("id") ?: return
+                val service = ShareAPI.shared.create(ShareAPIService::class.java)
+                lifecycleScope.launch {
+                    try {
+                        val result = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java)
+                        requestOpenURL(result.resolvedURL)
+                    } catch (ignored: Throwable) {}
+                }
             }
-        } else if (path == "/resources/item") {
-            val id = uri.getQueryParameter("item") ?: return
-            requestOpenAddon(id)
-        } else if (path == "/resources/guide") {
-            val guide = uri.getQueryParameter("guide") ?: return
-            requestOpenGuide(guide)
+            "/resources/item" -> {
+                val id = uri.getQueryParameter("item") ?: return
+                requestOpenAddon(id)
+            }
+            "/resources/guide" -> {
+                val guide = uri.getQueryParameter("guide") ?: return
+                requestOpenGuide(guide)
+            }
         }
     }
 
@@ -644,37 +638,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun requestRunScript(path: String) {
         scriptOrURLPath = path
         if (readyForInteraction)
-            runScriptOrOpenURLIfNeeded()
+            openURLOrScriptOrGreeting()
     }
 
     private fun requestOpenURL(url: String) {
         scriptOrURLPath = url
         if (readyForInteraction)
-            runScriptOrOpenURLIfNeeded()
+            openURLOrScriptOrGreeting()
     }
 
     private fun requestOpenAddon(addon: String) {
         addonToOpen = addon
         if (readyForInteraction)
-            openAddonIfNeeded()
+            openURLOrScriptOrGreeting()
     }
 
     private fun requestOpenGuide(guide: String) {
         guideToOpen = guide
         if (readyForInteraction)
-            openGuideIfNeeded()
-    }
-
-    private fun runScriptOrOpenURLIfNeeded() {
-        val uri = scriptOrURLPath ?: return
-
-        // Clear existing
-        scriptOrURLPath = null
-
-        val isURL = uri.startsWith("cel://")
-        showAlert(if (isURL) CelestiaString("Open URL?", "") else CelestiaString("Run Script?", "")) {
-            openCelestiaURL(uri)
-        }
+            openURLOrScriptOrGreeting()
     }
 
     private fun openCelestiaURL(uri: String) {
@@ -688,38 +670,72 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun openAddonIfNeeded() {
-        val addon = addonToOpen ?: return
+    private fun openURLOrScriptOrGreeting() {
+        fun cleanup() {
+            // Just clean up everything, only the first message gets presented
+            scriptOrURLPath = null
+            guideToOpen = null
+            addonToOpen = null
+        }
 
-        // Clear existing
-        addonToOpen = null
+        if (preferenceManager[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
+            preferenceManager[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
+            showHelp()
+            cleanup()
+            return
+        }
+        val scriptOrURL = scriptOrURLPath
+        if (scriptOrURL != null) {
+            val isURL = scriptOrURL.startsWith("cel://")
+            showAlert(if (isURL) CelestiaString("Open URL?", "") else CelestiaString("Run Script?", "")) {
+                openCelestiaURL(scriptOrURL)
+            }
+            cleanup()
+            return
+        }
+        val guide = guideToOpen
+        if (guide != null) {
+            showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(guide)))
+            cleanup()
+            return
+        }
+        val addon = addonToOpen
+        if (addon != null) {
+            val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
+            val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
+            lifecycleScope.launch {
+                try {
+                    val result = service.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                    showBottomSheetFragment(SingleResourceItemFragment.newInstance(result))
+                } catch (ignored: Throwable) {}
+            }
+            cleanup()
+            return
+        }
 
+        // Check news
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
         lifecycleScope.launch {
             try {
-                val result = service.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                showBottomSheetFragment(SingleResourceItemFragment.newInstance(result))
+                val result = service.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
+                if (preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
+                preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] = result.id
+                showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(result.id)))
             } catch (ignored: Throwable) {}
         }
     }
 
-    private fun openGuideIfNeeded() {
-        val guide = guideToOpen ?: return
-
-        // Clear existing
-        guideToOpen = null
-
+    private fun buildGuideURI(id: String): Uri {
         val baseURL = "https://celestia.mobi/resources/guide"
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        val uri = Uri.parse(baseURL)
+        return Uri.parse(baseURL)
             .buildUpon()
-            .appendQueryParameter("guide", guide)
+            .appendQueryParameter("guide", id)
             .appendQueryParameter("lang", lang)
             .appendQueryParameter("environment", "app")
             .appendQueryParameter("theme", "dark")
             .build()
-        showBottomSheetFragment(CommonWebFragment.newInstance(uri))
     }
 
     @Throws(IOException::class)
@@ -949,6 +965,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             ToolbarAction.Speedometer -> {
                 showSpeedControl()
+            }
+            ToolbarAction.NewsArchive -> {
+                showBottomSheetFragment(GuideFragment.newInstance("news", CelestiaString("News", ""), CelestiaString("Failed to load news.", "")))
             }
         }
     }
@@ -1198,11 +1217,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onFavoriteItemSelected(item: FavoriteBaseItem) {
         if (item.isLeaf) {
             if (item is FavoriteScriptItem) {
-                scriptOrURLPath = item.script.filename
-                runScriptOrOpenURLIfNeeded()
+                openCelestiaURL(item.script.filename)
             } else if (item is FavoriteBookmarkItem) {
-                scriptOrURLPath = item.bookmark.url
-                runScriptOrOpenURLIfNeeded()
+                openCelestiaURL(item.bookmark.url)
             } else if (item is FavoriteDestinationItem) {
                 val destination = item.destination
                 val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
@@ -1561,18 +1578,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
         val view = findViewById<View>(viewID)
-
-        val parent = view.parent as? View
-        if (parent == null) return
-
         view.visibility = View.VISIBLE
 
-        val destination: Float
-        if (horizontal) {
+        val destination: Float = if (horizontal) {
             val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-            destination = (if (ltr) view.width else -view.width).toFloat()
+            (if (ltr) view.width else -view.width).toFloat()
         } else {
-            destination = view.height.toFloat()
+            view.height.toFloat()
         }
 
         val executionBlock = {
@@ -1601,15 +1613,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun hideView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
         val view = findViewById<View>(viewID)
 
-        val parent = view.parent as? View
-        if (parent == null) return
+        val parent = view.parent as? View ?: return
 
-        var destination: Float
-        if (horizontal) {
+        val destination: Float = if (horizontal) {
             val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-            destination = (if (ltr) (parent.width - view.left) else -(view.right)).toFloat()
+            (if (ltr) (parent.width - view.left) else -(view.right)).toFloat()
         } else {
-            destination = (parent.height - view.top).toFloat()
+            (parent.height - view.top).toFloat()
         }
 
         val executionBlock = {
@@ -1649,16 +1659,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showTimeControl() {
-        val actions: List<CelestiaAction>
-        if (resources.configuration.layoutDirection == LayoutDirection.RTL) {
-            actions = listOf(
+        val actions: List<CelestiaAction> = if (resources.configuration.layoutDirection == LayoutDirection.RTL) {
+            listOf(
                 CelestiaAction.Faster,
                 CelestiaAction.PlayPause,
                 CelestiaAction.Slower,
                 CelestiaAction.Reverse
             )
         } else {
-            actions = listOf(
+            listOf(
                 CelestiaAction.Slower,
                 CelestiaAction.PlayPause,
                 CelestiaAction.Faster,
@@ -1679,10 +1688,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showSpeedControl() {
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        var actions: ArrayList<BottomControlAction> = if (isRTL) arrayListOf(
+        val actions: ArrayList<BottomControlAction> = if (isRTL) arrayListOf(
             ContinuousAction(CelestiaContinuosAction.TravelFaster),
             ContinuousAction(CelestiaContinuosAction.TravelSlower),
-        ) else arrayListOf<BottomControlAction>(
+        ) else arrayListOf(
             ContinuousAction(CelestiaContinuosAction.TravelSlower),
             ContinuousAction(CelestiaContinuosAction.TravelFaster),
         )
@@ -1781,6 +1790,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                         else
                             showUnsupportedAction()
                     }
+                } catch (ignored: CancellationException) {
                 } catch (ignored: Throwable) {
                     withContext(Dispatchers.Main) {
                         showShareError()
@@ -1843,6 +1853,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 frag.pushItem(item)
             } else if (item is ResourceItem) {
                 frag.pushItem(item)
+            }
+        } else if (frag is GuideFragment) {
+            if (item is GuideItem) {
+                frag.pushFragment(CommonWebFragment.newInstance(buildGuideURI(item.id)))
             }
         }
     }

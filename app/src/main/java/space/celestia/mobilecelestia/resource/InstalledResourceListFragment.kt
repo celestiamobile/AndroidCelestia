@@ -36,6 +36,10 @@ class InstalledResourceListFragment : AsyncListFragment<ResourceItem>() {
         }
     }
 
+    override fun createViewHolder(listener: Listener<ResourceItem>?): BaseAsyncListAdapter<ResourceItem> {
+        return AsyncListAdapter(listener)
+    }
+
     companion object {
         @JvmStatic
         fun newInstance() = InstalledResourceListFragment()

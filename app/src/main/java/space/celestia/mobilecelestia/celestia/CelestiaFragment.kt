@@ -15,7 +15,6 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -27,12 +26,12 @@ import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import space.celestia.celestia.*
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.createAllBrowserItems
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.InsetAwareFragment
-import space.celestia.celestia.*
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
@@ -40,9 +39,6 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.showToast
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.round
 
 class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler {
     private var activity: Activity? = null
@@ -295,11 +291,11 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         // Reading config, data
         if (!core.startSimulation(cfg, addonDirs, AppStatusReporter.shared())) {
-            val lis = listener;
+            val lis = listener
             if (lis != null) {
                 // Read from fallback
-                val fallbackConfigPath = lis.provideFallbackConfigFilePath();
-                val fallbackDataPath = lis.provideFallbackDataDirectoryPath();
+                val fallbackConfigPath = lis.provideFallbackConfigFilePath()
+                val fallbackDataPath = lis.provideFallbackDataDirectoryPath()
                 if (fallbackConfigPath != cfg || fallbackDataPath != data) {
                     lis.celestiaFragmentLoadingFromFallback()
                     AppCore.chdir(fallbackDataPath)
@@ -498,8 +494,8 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                 val ent = browserItems[item.itemId].`object`
                 if (ent != null) {
                     CelestiaView.callOnRenderThread {
-                        val selection = Selection(ent)
-                        core.simulation.selection = selection
+                        val newSelection = Selection(ent)
+                        core.simulation.selection = newSelection
                         core.charEnter(CelestiaAction.GoTo.value)
                     }
                 }

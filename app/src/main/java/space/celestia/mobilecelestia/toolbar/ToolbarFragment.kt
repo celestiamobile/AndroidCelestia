@@ -30,7 +30,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 enum class ToolbarAction : Serializable {
-    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Paperplane, Speedometer;
+    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Paperplane, Speedometer, NewsArchive;
 
     val title: String
         get() {
@@ -46,6 +46,7 @@ enum class ToolbarAction : Serializable {
                 Addons -> "Add-ons"
                 Paperplane -> "Go to Object"
                 Speedometer -> "Speed Control"
+                NewsArchive -> "News Archive"
                 else -> this.toString()
             }
             return CelestiaString(orig, "")
@@ -63,7 +64,7 @@ enum class ToolbarAction : Serializable {
                 listOf(Share, Search, Home, Paperplane),
                 listOf(Camera, Time, Script, Speedometer),
                 listOf(Browse, Favorite, Event),
-                listOf(Addons),
+                listOf(Addons, NewsArchive),
                 listOf(Help),
                 listOf(Exit)
             )

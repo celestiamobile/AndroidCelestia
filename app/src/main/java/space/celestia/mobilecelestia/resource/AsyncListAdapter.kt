@@ -30,11 +30,28 @@ interface AsyncListItem: Serializable {
 
 class AsyncListAdapterItem<T: AsyncListItem>(val item: T): RecyclerViewItem
 
-class AsyncListAdapter<T: AsyncListItem>(
+open class BaseAsyncListAdapter<T: AsyncListItem>(
+    showSeparators: Boolean,
+    private val showHeader: Boolean,
     private val listener: AsyncListFragment.Listener<T>?
-) : SeparatorRecyclerViewAdapter(
-    showSeparators = false
+) : SeparatorHeaderRecyclerViewAdapter(
+    showSeparators = showSeparators
 ) {
+    open fun updateItems(items: List<T>) {
+        updateSectionsWithHeader(listOf(CommonSectionV2( items.map { AsyncListAdapterItem(it) }, if (showHeader) "" else null)))
+    }
+
+    override fun onItemSelected(item: RecyclerViewItem) {
+        if (item is AsyncListAdapterItem<*>) {
+            @Suppress("UNCHECKED_CAST")
+            listener?.onAsyncListItemSelected(item.item as T)
+        }
+    }
+}
+
+class AsyncListAdapter<T: AsyncListItem>(
+    listener: AsyncListFragment.Listener<T>?
+) : BaseAsyncListAdapter<T>(false, false, listener) {
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is AsyncListAdapterItem<*>)
             return ITEM
@@ -62,13 +79,6 @@ class AsyncListAdapter<T: AsyncListItem>(
         super.bindVH(holder, item)
     }
 
-    override fun onItemSelected(item: RecyclerViewItem) {
-        if (item is AsyncListAdapterItem<*>) {
-            @Suppress("UNCHECKED_CAST")
-            listener?.onAsyncListItemSelected(item.item as T)
-        }
-    }
-
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView
             get() = itemView.findViewById(R.id.resource_title)
@@ -76,8 +86,35 @@ class AsyncListAdapter<T: AsyncListItem>(
             get() = itemView.findViewById(R.id.resource_image)
     }
 
-    fun updateItems(items: List<T>) {
-        updateSections(listOf(CommonSectionV2(items.map { AsyncListAdapterItem(it) })))
+    private companion object {
+        const val ITEM = 0
+    }
+}
+
+class PlainAsyncListAdapter<T: AsyncListItem>(
+    listener: AsyncListFragment.Listener<T>?
+) : BaseAsyncListAdapter<T>(true, true, listener) {
+    override fun itemViewType(item: RecyclerViewItem): Int {
+        if (item is AsyncListAdapterItem<*>)
+            return ITEM
+        return super.itemViewType(item)
+    }
+
+    override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        if (viewType == ITEM) {
+            val holder = CommonTextViewHolder(parent)
+            holder.accessory.visibility = View.VISIBLE
+            return holder
+        }
+        return super.createVH(parent, viewType)
+    }
+
+    override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
+        if (item is AsyncListAdapterItem<*> && holder is CommonTextViewHolder) {
+            holder.title.text = item.item.name
+            return
+        }
+        super.bindVH(holder, item)
     }
 
     private companion object {

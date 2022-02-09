@@ -32,7 +32,8 @@ class PreferenceManager(context: Context, name: String) {
         MSAA,
         FrameRateOption,
         Language,
-        PrivacyPolicyAccepted;
+        PrivacyPolicyAccepted,
+        LastNewsID;
 
         override val valueString: String
             get() = toString()

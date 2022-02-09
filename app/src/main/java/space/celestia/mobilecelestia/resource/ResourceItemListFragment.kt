@@ -61,6 +61,10 @@ class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
         return service.items(lang, categoryID).commonHandler<List<ResourceItem>>(object: TypeToken<ArrayList<ResourceItem>>() {}.type, ResourceAPI.gson)
     }
 
+    override fun createViewHolder(listener: Listener<ResourceItem>?): BaseAsyncListAdapter<ResourceItem> {
+        return AsyncListAdapter(listener)
+    }
+
     companion object {
         private const val ARG_CATEGORY = "category"
 

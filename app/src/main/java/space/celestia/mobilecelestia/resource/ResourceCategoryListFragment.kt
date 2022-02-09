@@ -43,7 +43,11 @@ class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
     override suspend fun refresh(): List<ResourceCategory> {
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        return service.categories(lang).commonHandler<List<ResourceCategory>>(object: TypeToken<ArrayList<ResourceCategory>>() {}.type, ResourceAPI.gson)
+        return service.categories(lang).commonHandler(object: TypeToken<ArrayList<ResourceCategory>>() {}.type, ResourceAPI.gson)
+    }
+
+    override fun createViewHolder(listener: Listener<ResourceCategory>?): BaseAsyncListAdapter<ResourceCategory> {
+        return AsyncListAdapter(listener)
     }
 
     override fun menuItemClicked(groupId: Int, id: Int): Boolean {

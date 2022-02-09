@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -38,7 +39,10 @@ abstract class AsyncListFragment<T: AsyncListItem>: NavigationFragment.SubFragme
     private var circularProgressDrawable: CircularProgressDrawable? = null
 
     private var items: List<T> = listOf()
-    private val listAdapter by lazy { AsyncListAdapter(selectListener) }
+    private val listAdapter by lazy { createViewHolder(selectListener) }
+
+    open val shouldAddItemDecoration: Boolean
+        get() = true
 
     interface Listener<T> {
         fun onAsyncListItemSelected(item: T)
@@ -74,12 +78,13 @@ abstract class AsyncListFragment<T: AsyncListItem>: NavigationFragment.SubFragme
         imageView.setImageDrawable(drawable)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView?.adapter = listAdapter
-        recyclerView.addItemDecoration(SpaceItemDecoration())
+        if (shouldAddItemDecoration)
+            recyclerView.addItemDecoration(SpaceItemDecoration())
         this.imageView = imageView
         this.circularProgressDrawable = drawable
         this.refreshTextView = refresh
 
-        if (items.size == 0) {
+        if (items.isEmpty()) {
             callRefresh()
         } else {
             stopRefreshing(true)
@@ -110,6 +115,8 @@ abstract class AsyncListFragment<T: AsyncListItem>: NavigationFragment.SubFragme
         outState.putSerializable(ARG_LIST, ArrayList(items))
     }
 
+    abstract fun createViewHolder(listener: Listener<T>?):  BaseAsyncListAdapter<T>
+
     private fun callRefresh() {
         startRefreshing()
 
@@ -119,9 +126,11 @@ abstract class AsyncListFragment<T: AsyncListItem>: NavigationFragment.SubFragme
                 listAdapter.updateItems(items)
                 listAdapter.notifyDataSetChanged()
                 stopRefreshing(true)
+            } catch (ignored: CancellationException) {
+                stopRefreshing(false)
             } catch (error: Throwable) {
                 stopRefreshing(false)
-                val message = defaultErrorMessage ?: error.message ?: return@launch
+                val message = defaultErrorMessage ?: error.message ?: CelestiaString("Unknown error", "")
                 activity?.showAlert(message)
             }
         }
@@ -130,13 +139,13 @@ abstract class AsyncListFragment<T: AsyncListItem>: NavigationFragment.SubFragme
     abstract val defaultErrorMessage: String?
     abstract suspend fun refresh(): List<T>
 
-    fun startRefreshing() {
+    private fun startRefreshing() {
         imageView?.visibility = View.VISIBLE
         refreshTextView?.visibility = View.INVISIBLE
         circularProgressDrawable?.start()
     }
 
-    fun stopRefreshing(success: Boolean) {
+    private fun stopRefreshing(success: Boolean) {
         imageView?.visibility = View.INVISIBLE
         refreshTextView?.visibility = if (success) View.INVISIBLE else View.VISIBLE
         circularProgressDrawable?.stop()

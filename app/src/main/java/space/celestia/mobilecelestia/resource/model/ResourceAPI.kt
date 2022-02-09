@@ -41,12 +41,24 @@ object ResourceAPI {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    val gson by lazy { GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create() }
+    val gson: Gson by lazy { GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create() }
 }
 
 interface ResourceAPIService {
     @GET("categories")
     suspend fun categories(
+        @Query("lang") lang: String
+    ): BaseResult
+
+    @GET("guides")
+    suspend fun guides(
+        @Query("type") type: String,
+        @Query("lang") lang: String
+    ): BaseResult
+
+    @GET("latest")
+    suspend fun latest(
+        @Query("type") type: String,
         @Query("lang") lang: String
     ): BaseResult
 

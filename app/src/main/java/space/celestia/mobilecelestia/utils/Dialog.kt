@@ -152,6 +152,6 @@ fun Activity.showAlert(title: String, handler: (() -> Unit)? = null) {
 fun Activity.showError(error: Throwable) {
     var message = error.message
     if (message == null)
-        message = "Unknown error"
+        message = CelestiaString("Unknown error", "")
     showAlert(message)
 }

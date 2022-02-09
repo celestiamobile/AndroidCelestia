@@ -215,7 +215,7 @@ fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     return innerSections
 }
 
-open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = listOf()): SeparatorRecyclerViewAdapter(sections = sections.transformed()) {
+open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = listOf(), showSeparators: Boolean = true): SeparatorRecyclerViewAdapter(sections = sections.transformed(), showSeparators = showSeparators) {
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is HeaderRecyclerViewItem)
             return HEADER
