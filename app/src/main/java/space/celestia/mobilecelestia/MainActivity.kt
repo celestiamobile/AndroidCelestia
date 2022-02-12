@@ -1061,6 +1061,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openURL(url)
     }
 
+    override fun onShareURL(title: String, url: String) {
+        shareURLDirect(title, url)
+    }
+
     override fun onSearchItemSelected(text: String) {
         hideKeyboard()
 
@@ -1119,10 +1123,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val baseURL = "https://celestia.mobi/resources/item"
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", lang).build()
-        val intent = ShareCompat.IntentBuilder(this@MainActivity)
+        shareURLDirect(name, uri.toString())
+    }
+
+    private fun shareURLDirect(title: String, url: String) {
+        val intent = ShareCompat.IntentBuilder(this)
             .setType("text/plain")
-            .setChooserTitle(name)
-            .setText(uri.toString())
+            .setChooserTitle(title)
+            .setText(url)
             .intent
         val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
         if (ai != null && ai.exported)
@@ -1779,16 +1787,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 try {
                     val result = service.create(title, encodedURL, versionCode.toString()).commonHandler(URLCreationResponse::class.java)
                     withContext(Dispatchers.Main) {
-                        val intent = ShareCompat.IntentBuilder(this@MainActivity)
-                            .setType("text/plain")
-                            .setChooserTitle(name)
-                            .setText(result.publicURL)
-                            .intent
-                        val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
-                        if (ai != null && ai.exported)
-                            startActivity(intent)
-                        else
-                            showUnsupportedAction()
+                        shareURLDirect(name, result.publicURL)
                     }
                 } catch (ignored: CancellationException) {
                 } catch (ignored: Throwable) {
@@ -1948,7 +1947,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     companion object {
         private const val CURRENT_DATA_VERSION = "29.4"
-        // 29: 1.5.0-Dev Data update
+        // 30: 1.5.2 Localization update, data update (commit 430b955920e31c84fa433bc7aaa43938c5e04ca7)
+        // 29: 1.5.0 Data update
         // 28: 1.4.5 Always remove old files
         // 27: 1.4.4 Data update
         // 26: 1.4.3 Localization update

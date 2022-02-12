@@ -28,6 +28,7 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
     interface Listener {
         fun onExternalWebLinkClicked(url: String)
         fun onRunScript(type: String, content: String)
+        fun onShareURL(title: String, url: String)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,6 +105,10 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
 
     override fun runScript(type: String, content: String) {
         listener?.onRunScript(type, content)
+    }
+
+    override fun shareURL(title: String, url: String) {
+        listener?.onShareURL(title, url)
     }
 
     companion object {

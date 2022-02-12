@@ -7,6 +7,7 @@ import java.lang.ref.WeakReference
 class CelestiaJavascriptInterface(handler: MessageHandler) {
     interface MessageHandler {
         fun runScript(type: String, content: String)
+        fun shareURL(title: String, url: String)
     }
 
     class MessagePayload(val operation: String, val content: String)
@@ -16,6 +17,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     }
 
     class RunScriptContext(val scriptContent: String, val scriptType: String)
+    class ShareURLContext(val title: String, val url: String)
 
     abstract class JavascriptHandler<T>(private val clazz: Class<T>): BaseJavascriptHandler() {
         abstract fun execute(context: T, handler: MessageHandler)
@@ -40,6 +42,15 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
+    class ShareURLHandler: JavascriptHandler<ShareURLContext>(ShareURLContext::class.java) {
+        override val operation: String
+            get() = "shareURL"
+
+        override fun execute(context: ShareURLContext, handler: MessageHandler) {
+            handler.shareURL(context.title, context.url)
+        }
+    }
+
     private val handler = WeakReference(handler)
 
     @JavascriptInterface
@@ -59,6 +70,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     private companion object {
         val contextHandlers: List<BaseJavascriptHandler> = listOf(
             RunScriptHandler(),
+            ShareURLHandler(),
         )
     }
 }
