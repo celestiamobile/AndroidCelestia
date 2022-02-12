@@ -2,13 +2,12 @@
 
 export PATH="/usr/local/opt/gettext/bin:$PATH"
 
-cd `dirname $0`;
-
-DIDBUILD=0
+cd `dirname $0`
 
 CELESTIA_ROOT=`pwd`/src/main/assets/CelestiaResources
 CELESTIA_REPO_ROOT=`pwd`/../../Celestia
 CELESTIA_CONTENT_REPO_ROOT=`pwd`/../../CelestiaContent
+CELESTIA_LOCALIZATION_REPO_ROOT=`pwd`/../../CelestiaLocalization
 
 LOCALE_ROOT=$CELESTIA_ROOT/locale
 PROJECT_TEMP_DIR=`pwd`/temp
@@ -27,13 +26,12 @@ convert_po()
             echo "Create $LANG_ROOT/$2.mo"
             msgmerge --quiet --output-file=$PROJECT_TEMP_DIR/$f.po --lang=$f --sort-output $po $POT
             msgfmt -o $LANG_ROOT/$2.mo $PROJECT_TEMP_DIR/$f.po
-            DIDBUILD=1
         fi
     done
 }
 
 convert_po "$CELESTIA_REPO_ROOT/po" "celestia"
 convert_po "$CELESTIA_CONTENT_REPO_ROOT/po" "celestia-data"
-convert_po "$CELESTIA_REPO_ROOT/po3" "celestia_ui"
+convert_po "$CELESTIA_LOCALIZATION_REPO_ROOT/common" "celestia_ui"
 
 rm -rf $PROJECT_TEMP_DIR

@@ -49,6 +49,13 @@ android {
         }
     }
 
+    task copyLocalizedFiles(type: Exec) {
+        println "Copying localized files"
+        workingDir projectDir
+        executable = '/bin/sh'
+        args = ["copy_localized_files.sh"]
+    }
+
     task copyGeneralData(type: Exec) {
         println "Copying general data"
         workingDir projectDir
@@ -63,7 +70,9 @@ android {
         args = ["convert_po.sh"]
     }
 
+    copyGeneralData.mustRunAfter copyLocalizedFiles
     convertPO.mustRunAfter copyGeneralData
+    preBuild.dependsOn copyLocalizedFiles
     preBuild.dependsOn copyGeneralData
     preBuild.dependsOn convertPO
 }

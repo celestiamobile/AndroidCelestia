@@ -8,6 +8,10 @@ resources:
     type: github
     endpoint: GithubAuth
     name: CelestiaProject/CelestiaContent
+  - repository: CelestiaLocalization
+    type: github
+    endpoint: GithubAuth
+    name: levinli303/CelestiaLocalization
 
 trigger:
   branches:
