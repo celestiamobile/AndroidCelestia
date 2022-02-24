@@ -706,7 +706,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             lifecycleScope.launch {
                 try {
                     val result = service.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    showBottomSheetFragment(SingleResourceItemFragment.newInstance(result))
+                    showBottomSheetFragment(ResourceItemFragment.newInstance(result))
                 } catch (ignored: Throwable) {}
             }
             cleanup()
