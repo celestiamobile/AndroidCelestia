@@ -1,8 +1,6 @@
 #!/bin/sh
 
-cd `dirname $0`;
-
-DIDCOPY=0
+cd `dirname $0`
 
 CELESTIA_ROOT=`pwd`/src/main/assets/CelestiaResources
 CELESTIA_REPO_ROOT=`pwd`/../../Celestia
@@ -16,7 +14,6 @@ for directory in 'images' 'locale' 'scripts' 'shaders';do
     if [ $f -nt $CELESTIA_ROOT/$directory ];then
         echo "rsync -rv --quiet --exclude='CMakeLists.txt' $f $CELESTIA_ROOT"
         rsync -rv --quiet --exclude='CMakeLists.txt' $f $CELESTIA_ROOT
-        DIDCOPY=1
     fi
 done
 
@@ -25,7 +22,6 @@ for directory in 'data' 'extras' 'extras-standard' 'models' 'textures' 'warp';do
     if [ $f -nt $CELESTIA_ROOT/$directory ];then
         echo "rsync -rv --quiet --exclude='CMakeLists.txt' --exclude='well-known-dsonames.txt' --exclude='well-known-starnames.txt' $f $CELESTIA_ROOT"
         rsync -rv --quiet --exclude='CMakeLists.txt' --exclude='well-known-dsonames.txt' --exclude='well-known-starnames.txt' $f $CELESTIA_ROOT
-        DIDCOPY=1
     fi
 done
 
