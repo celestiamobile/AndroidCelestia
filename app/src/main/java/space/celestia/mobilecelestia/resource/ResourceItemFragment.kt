@@ -18,19 +18,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.progressindicator.LinearProgressIndicator
-import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.resource.model.ResourceAPI
-import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.commonHandler
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
 
@@ -84,13 +79,6 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onViewCreated(view, savedInstanceState)
 
         if (savedInstanceState == null) {
-            val resourceItem = this.item
-
-            title = resourceItem.name
-            rightNavigationBarItems = listOf(
-                NavigationFragment.BarButtonItem(SHARE_BUTTON_ID, CelestiaString("Share", ""), R.drawable.baseline_share_24)
-            )
-
             val baseURL = "https://celestia.mobi/resources/item"
             val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
             val uri = Uri.parse(baseURL)
@@ -99,28 +87,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 .appendQueryParameter("lang", lang)
                 .appendQueryParameter("environment", "app")
                 .appendQueryParameter("theme", "dark")
+                .appendQueryParameter("titleVisibility", "visible")
                 .build()
             replace(CommonWebFragment.newInstance(uri), R.id.resource_item_container)
-
-            // Fetch the latest data from server since user might have come from `Installed`
-            val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-            lifecycleScope.launch {
-                try {
-                    val result = service.item(lang, resourceItem.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    item = result
-                    title = result.name
-                    updateUI()
-                } catch (ignored: Throwable) {}
-            }
         }
-    }
-
-    override fun menuItemClicked(groupId: Int, id: Int): Boolean {
-        if (id == SHARE_BUTTON_ID) {
-            listener?.onShareAddon(item.name, item.id)
-            return true
-        }
-        return super.menuItemClicked(groupId, id)
     }
 
     override fun onAttach(context: Context) {
@@ -242,7 +212,6 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     companion object {
         private const val ARG_ITEM = "item"
-        private const val SHARE_BUTTON_ID = 142
 
         @JvmStatic
         fun newInstance(item: ResourceItem) =
