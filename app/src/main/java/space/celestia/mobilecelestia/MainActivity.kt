@@ -172,7 +172,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (!AppCenter.isConfigured()) {
             AppCenter.start(
-                application, "d1108985-aa25-4fb5-9269-31a70a87d28e",
+                application, "APPCENTER-APP-ID",
                 Analytics::class.java, Crashes::class.java
             )
 

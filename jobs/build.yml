@@ -47,6 +47,13 @@ jobs:
     displayName: 'Cherry-Pick Asset Pack Integration'
     condition: eq( variables['outputFormat'], 'aab' )
 
+  - script: |
+      sed -i '' 's/APPCENTER-APP-ID/d1108985-aa25-4fb5-9269-31a70a87d28e/g' app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
+      echo "New Content:"
+      cat app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
+    workingDirectory: '$(System.DefaultWorkingDirectory)/AndroidCelestia'
+    displayName: 'Replace AppCenter Placeholders'
+
   - task: JavaToolInstaller@0
     inputs:
       versionSpec: '11'
