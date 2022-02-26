@@ -58,8 +58,8 @@ import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
 import space.celestia.mobilecelestia.favorite.*
-import space.celestia.mobilecelestia.goto.GoToContainerFragment
-import space.celestia.mobilecelestia.goto.GoToInputFragment
+import space.celestia.mobilecelestia.travel.GoToContainerFragment
+import space.celestia.mobilecelestia.travel.GoToInputFragment
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment

@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.goto
+package space.celestia.mobilecelestia.travel
 
 import android.content.Context
 import android.os.Bundle
@@ -23,7 +23,6 @@ import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.utils.*
 import java.io.Serializable
-import java.util.*
 
 class GoToInputFragment : NavigationFragment.SubFragment() {
     class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: GoToLocation.DistanceUnit) :

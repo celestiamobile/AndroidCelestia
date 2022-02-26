@@ -9,16 +9,13 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.goto
+package space.celestia.mobilecelestia.travel
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
-import space.celestia.mobilecelestia.R
 import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.utils.CelestiaString
-import android.util.TypedValue
 import space.celestia.mobilecelestia.common.*
 
 

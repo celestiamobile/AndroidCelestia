@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.goto
+package space.celestia.mobilecelestia.travel
 
 import android.os.Bundle
 import space.celestia.mobilecelestia.common.NavigationFragment
