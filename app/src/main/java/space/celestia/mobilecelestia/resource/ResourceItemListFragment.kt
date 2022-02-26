@@ -14,15 +14,22 @@ package space.celestia.mobilecelestia.resource
 import android.os.Bundle
 import android.view.View
 import com.google.gson.reflect.TypeToken
-import space.celestia.celestia.AppCore
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
+    @Inject
+    lateinit var celestiaLanguage: String
+    @Inject
+    lateinit var resourceAPI: ResourceAPIService
+
     private var category: ResourceCategory? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,9 +63,7 @@ class ResourceItemListFragment : AsyncListFragment<ResourceItem>() {
 
     override suspend fun refresh(): List<ResourceItem> {
         val categoryID = category?.id ?: return listOf()
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        return service.items(lang, categoryID).commonHandler<List<ResourceItem>>(object: TypeToken<ArrayList<ResourceItem>>() {}.type, ResourceAPI.gson)
+        return resourceAPI.items(celestiaLanguage, categoryID).commonHandler(object: TypeToken<ArrayList<ResourceItem>>() {}.type, ResourceAPI.gson)
     }
 
     override fun createViewHolder(listener: Listener<ResourceItem>?): BaseAsyncListAdapter<ResourceItem> {

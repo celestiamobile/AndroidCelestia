@@ -14,15 +14,22 @@ package space.celestia.mobilecelestia.resource
 import android.os.Bundle
 import android.view.View
 import com.google.gson.reflect.TypeToken
-import space.celestia.celestia.AppCore
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
+    @Inject
+    lateinit var celestiaLanguage: String
+    @Inject
+    lateinit var resourceAPI: ResourceAPIService
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -41,9 +48,7 @@ class ResourceCategoryListFragment : AsyncListFragment<ResourceCategory>() {
         get() = CelestiaString("Failed to load add-ons.", "")
 
     override suspend fun refresh(): List<ResourceCategory> {
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        return service.categories(lang).commonHandler(object: TypeToken<ArrayList<ResourceCategory>>() {}.type, ResourceAPI.gson)
+        return resourceAPI.categories(celestiaLanguage).commonHandler(object: TypeToken<ArrayList<ResourceCategory>>() {}.type, ResourceAPI.gson)
     }
 
     override fun createViewHolder(listener: Listener<ResourceCategory>?): BaseAsyncListAdapter<ResourceCategory> {

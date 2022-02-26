@@ -3,13 +3,20 @@ package space.celestia.mobilecelestia.resource
 import android.os.Bundle
 import android.view.View
 import com.google.gson.reflect.TypeToken
-import space.celestia.celestia.AppCore
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.resource.model.GuideItem
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.utils.commonHandler
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class GuideListFragment: AsyncListFragment<GuideItem>() {
+    @Inject
+    lateinit var celestiaLanguage: String
+    @Inject
+    lateinit var resourceAPI: ResourceAPIService
+
     private lateinit var type: String
     private lateinit var listTitle: String
     private lateinit var errorMessage: String
@@ -25,9 +32,7 @@ class GuideListFragment: AsyncListFragment<GuideItem>() {
     }
 
     override suspend fun refresh(): List<GuideItem> {
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
-        return service.guides(type, lang).commonHandler(object: TypeToken<ArrayList<GuideItem>>() {}.type, ResourceAPI.gson)
+        return resourceAPI.guides(type, celestiaLanguage).commonHandler(object: TypeToken<ArrayList<GuideItem>>() {}.type, ResourceAPI.gson)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

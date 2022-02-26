@@ -19,6 +19,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -28,8 +29,13 @@ import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
+    @Inject
+    lateinit var celestiaLanguage: String
+
     private lateinit var item: ResourceItem
     private lateinit var statusButton: Button
     private lateinit var goToButton: Button
@@ -80,11 +86,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         if (savedInstanceState == null) {
             val baseURL = "https://celestia.mobi/resources/item"
-            val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
             val uri = Uri.parse(baseURL)
                 .buildUpon()
                 .appendQueryParameter("item", item.id)
-                .appendQueryParameter("lang", lang)
+                .appendQueryParameter("lang", celestiaLanguage)
                 .appendQueryParameter("environment", "app")
                 .appendQueryParameter("theme", "dark")
                 .appendQueryParameter("titleVisibility", "visible")

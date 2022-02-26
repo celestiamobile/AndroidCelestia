@@ -42,6 +42,7 @@ import com.google.gson.reflect.TypeToken
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import space.celestia.mobilecelestia.browser.*
@@ -87,6 +88,7 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.system.exitProcess
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     ToolbarFragment.Listener,
     InfoFragment.Listener,
