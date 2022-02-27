@@ -17,7 +17,7 @@ class GuideFragment: NavigationFragment() {
     }
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return GuideListFragment.newInstance(type, title, errorMessage)
+        return GuideListPagingFragment.newInstance(type, title)
     }
 
     companion object {

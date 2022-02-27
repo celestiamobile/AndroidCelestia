@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsLanguageFragment.Listener,
     SettingsLanguageFragment.DataSource,
     ResourceFragment.Listener,
-    AsyncListFragment.Listener<Any>,
+    AsyncListPagingFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
@@ -1881,7 +1881,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(ResourceFragment.newInstance())
     }
 
-    override fun onAsyncListItemSelected(item: Any) {
+    override fun onAsyncListPagingItemSelected(item: AsyncListItem) {
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is ResourceFragment) {
             if (item is ResourceCategory) {
