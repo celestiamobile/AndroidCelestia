@@ -13,6 +13,7 @@ package space.celestia.mobilecelestia.common
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.LayoutDirection
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
@@ -20,12 +21,16 @@ import space.celestia.mobilecelestia.R
 import kotlin.math.max
 
 @SuppressLint("ViewConstructor")
-class SeparatorView(context: Context, height: Float, left: Float, backgroundColor: Int): FrameLayout(context) {
+class SeparatorView(context: Context, height: Float, private var inset: Float, backgroundColor: Int): FrameLayout(context) {
     init {
         val density = resources.displayMetrics.density
 
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, (height * density).toInt())
-        setPadding((left * density).toInt(), 0, 0, 0)
+        if (resources.configuration.layoutDirection == LayoutDirection.RTL) {
+            setPadding(0, 0, (inset * density).toInt(), 0)
+        } else {
+            setPadding((inset * density).toInt(), 0, 0, 0)
+        }
 
         setBackgroundResource(backgroundColor)
 
@@ -37,6 +42,18 @@ class SeparatorView(context: Context, height: Float, left: Float, backgroundColo
 
         addView(view)
     }
+
+    var separatorInset: Float
+        get() = inset
+        set(value) {
+            inset = value
+            val density = resources.displayMetrics.density
+            if (resources.configuration.layoutDirection == LayoutDirection.RTL) {
+                setPadding(0, 0, (value * density).toInt(), 0)
+            } else {
+                setPadding((value * density).toInt(), 0, 0, 0)
+            }
+        }
 
     private companion object {
         const val separatorHeight: Float = 0.5F
