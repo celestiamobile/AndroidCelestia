@@ -221,7 +221,6 @@ class ResourceManager {
     }
 
     companion object {
-        var shared = ResourceManager()
         private const val TAG = "ResourceManager"
     }
 }

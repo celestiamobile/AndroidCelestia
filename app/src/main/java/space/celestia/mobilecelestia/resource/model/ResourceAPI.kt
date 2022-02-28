@@ -12,8 +12,6 @@
 package space.celestia.mobilecelestia.resource.model
 
 import com.google.gson.*
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import space.celestia.mobilecelestia.utils.BaseResult
@@ -35,11 +33,6 @@ object ResourceAPI {
             }
         }
     }
-
-    val shared: Retrofit = Retrofit.Builder()
-        .baseUrl("https://celestia.mobi/api/resource/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
 
     val gson: Gson by lazy { GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create() }
 }

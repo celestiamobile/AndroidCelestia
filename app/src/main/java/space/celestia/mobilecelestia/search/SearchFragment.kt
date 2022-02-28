@@ -28,6 +28,7 @@ import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -37,6 +38,7 @@ import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestia.AppCore
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
@@ -57,6 +59,7 @@ fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
     }
 }
 
+@AndroidEntryPoint
 class SearchFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
     private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
@@ -64,6 +67,9 @@ class SearchFragment : NavigationFragment.SubFragment() {
     private lateinit var searchView: SearchView
     private lateinit var backButton: ImageButton
     private lateinit var listView: RecyclerView
+
+    @Inject
+    lateinit var appCore: AppCore
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -117,8 +123,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
             .debounce(300)
             .mapLatest {
                 val key = it.first
-                val core = AppCore.shared()
-                val result = if (key.isEmpty()) listOf<String>() else core.simulation.completionForText(key, SEARCH_RESULT_LIMIT)
+                val result = if (key.isEmpty()) listOf<String>() else appCore.simulation.completionForText(key, SEARCH_RESULT_LIMIT)
                 Triple(key, result, it.second)
             }
             .onEach {

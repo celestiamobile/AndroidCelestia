@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
@@ -33,7 +34,9 @@ import space.celestia.ui.linkpreview.LPLinkMetadata
 import space.celestia.ui.linkpreview.LPMetadataProvider
 import java.net.MalformedURLException
 import java.net.URL
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class InfoFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
     private lateinit var selection: Selection
@@ -41,6 +44,9 @@ class InfoFragment : NavigationFragment.SubFragment() {
     private var linkMetadata: LPLinkMetadata? = null
 
     private lateinit var recyclerView: RecyclerView
+
+    @Inject
+    lateinit var appCore: AppCore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,9 +97,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
     }
 
     private fun reload() {
-        val core = AppCore.shared()
-        val overview = core.getOverviewForSelection(selection)
-        val name = core.simulation.universe.getNameForSelection(selection)
+        val overview = appCore.getOverviewForSelection(selection)
+        val name = appCore.simulation.universe.getNameForSelection(selection)
         val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
 
         var hasWebInfo = false
@@ -138,7 +143,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
         otherActions.add(MarkItem())
         actions.addAll(otherActions)
         recyclerView.adapter = InfoRecyclerViewAdapter(actions, selection, listener)
-        while (recyclerView.getItemDecorationCount() > 0) {
+        while (recyclerView.itemDecorationCount > 0) {
             recyclerView.removeItemDecorationAt(0)
         }
         recyclerView.addItemDecoration(SpaceItemDecoration(firstSingleColumnItem))

@@ -20,10 +20,10 @@ import android.os.Build
 import android.util.Log
 import android.view.*
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Renderer
+import kotlin.math.abs
 
-class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
-    protected val core by lazy { AppCore.shared() }
-
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -51,7 +51,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
     }
 
     private val scaleGestureDetector = ScaleGestureDetector(context, this)
-    protected val gestureDetector = GestureDetector(context, this)
+    private val gestureDetector = GestureDetector(context, this)
 
     var isReady = false
     var zoomMode: ZoomMode? = null
@@ -72,7 +72,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
     private var lastMouseButton = AppCore.MOUSE_BUTTON_LEFT
 
     fun setInteractionMode(interactionMode: InteractionMode) {
-        CelestiaView.callOnRenderThread {
+        renderer.enqueueTask {
             internalInteractionMode = interactionMode
         }
     }
@@ -84,9 +84,9 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
     private fun callZoom(deltaY: Float) {
         if (internalInteractionMode == InteractionMode.Camera) {
-            core.mouseMove(AppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), AppCore.SHIFT_KEY)
+            appCore.mouseMove(AppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), AppCore.SHIFT_KEY)
         } else {
-            core.mouseWheel(deltaY, 0)
+            appCore.mouseWheel(deltaY, 0)
         }
     }
 
@@ -108,8 +108,8 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
             return true
         } else if (event.source == InputDevice.SOURCE_MOUSE && event.action == MotionEvent.ACTION_SCROLL) {
             val y = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
-            CelestiaView.callOnRenderThread {
-                core.mouseWheel(-y * scaleFactor, event.keyModifier())
+            renderer.enqueueTask {
+                appCore.mouseWheel(-y * scaleFactor, event.keyModifier())
             }
             return true
         }
@@ -238,7 +238,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
         Log.d(TAG, "Pinch with deltaY: $deltaY")
 
-        CelestiaView.callOnRenderThread {
+        renderer.enqueueTask {
             callZoom(deltaY)
         }
 
@@ -258,9 +258,9 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         }
 
         val point = PointF(event.x, event.y).scaleBy(scaleFactor)
-        CelestiaView.callOnRenderThread {
-            core.mouseButtonDown(button, point, 0)
-            core.mouseButtonUp(button, point, 0)
+        renderer.enqueueTask {
+            appCore.mouseButtonDown(button, point, 0)
+            appCore.mouseButtonUp(button, point, 0)
         }
 
         return true
@@ -300,14 +300,14 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         val newPoint = PointF(event2.x, event2.y).scaleBy(scaleFactor)
 
         if (!isScrolling) {
-            CelestiaView.callOnRenderThread {
+            renderer.enqueueTask {
                 lastMouseButton = button
-                core.mouseButtonDown(button, originalPoint, event2.keyModifier())
-                core.mouseMove(button, offset, event2.keyModifier())
+                appCore.mouseButtonDown(button, originalPoint, event2.keyModifier())
+                appCore.mouseMove(button, offset, event2.keyModifier())
             }
         } else {
-            CelestiaView.callOnRenderThread {
-                core.mouseMove(button, offset, event2.keyModifier())
+            renderer.enqueueTask {
+                appCore.mouseMove(button, offset, event2.keyModifier())
             }
         }
         lastPoint = newPoint
@@ -323,9 +323,9 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         // Bring up the context menu
         val point = PointF(e.x, e.y).scaleBy(scaleFactor)
         val button = AppCore.MOUSE_BUTTON_RIGHT
-        CelestiaView.callOnRenderThread {
-            core.mouseButtonDown(button, point, 0)
-            core.mouseButtonUp(button, point, 0)
+        renderer.enqueueTask {
+            appCore.mouseButtonDown(button, point, 0)
+            appCore.mouseButtonUp(button, point, 0)
         }
     }
 
@@ -341,13 +341,13 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         if (event.source and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) {
             val key = event.keyCode
             if (event.action == KeyEvent.ACTION_UP) {
-                CelestiaView.callOnRenderThread {
-                    core.joystickButtonUp(key)
+                renderer.enqueueTask {
+                    appCore.joystickButtonUp(key)
                 }
                 return true
             } else if (event.action == KeyEvent.ACTION_DOWN) {
-                CelestiaView.callOnRenderThread {
-                    core.joystickButtonDown(key)
+                renderer.enqueueTask {
+                    appCore.joystickButtonDown(key)
                 }
                 return true
             }
@@ -369,23 +369,22 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
             if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
                 input = (keyCode - KeyEvent.KEYCODE_A) + 1
         }
-        if (keyCode == KeyEvent.KEYCODE_ESCAPE)
-            input = 27
-        else if (keyCode == KeyEvent.KEYCODE_FORWARD_DEL)
-            input = 127
-        else if (keyCode == KeyEvent.KEYCODE_DEL)
-            input = 8
+        when (keyCode) {
+            KeyEvent.KEYCODE_ESCAPE -> input = 27
+            KeyEvent.KEYCODE_FORWARD_DEL -> input = 127
+            KeyEvent.KEYCODE_DEL -> input = 8
+        }
 
-        CelestiaView.callOnRenderThread {
-            core.keyDown(input, keyCode, event.keyModifier())
+        renderer.enqueueTask {
+            appCore.keyDown(input, keyCode, event.keyModifier())
         }
         return true
     }
 
     private fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         if (!isReady) return false
-        CelestiaView.callOnRenderThread {
-            core.keyUp(event.unicodeChar, keyCode, 0)
+        renderer.enqueueTask {
+            appCore.keyUp(event.unicodeChar, keyCode, 0)
         }
         return true
     }
@@ -394,8 +393,8 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
         Log.d(TAG, "stop scrolling")
         val lp = lastPoint!!
 
-        CelestiaView.callOnRenderThread {
-            core.mouseButtonUp(lastMouseButton, lp, 0)
+        renderer.enqueueTask {
+            appCore.mouseButtonUp(lastMouseButton, lp, 0)
         }
         lastPoint = null
     }
@@ -420,7 +419,7 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
 
             // Ignore axis values that are within the 'flat' region of the
             // joystick axis center.
-            if (Math.abs(value) > flat) {
+            if (abs(value) > flat) {
                 return value
             }
         }
@@ -453,9 +452,9 @@ class CelestiaInteraction(context: Context): View.OnTouchListener, View.OnKeyLis
             y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
         }
 
-        CelestiaView.callOnRenderThread {
-            core.joystickAxis(AppCore.JOYSTICK_AXIS_X, x)
-            core.joystickAxis(AppCore.JOYSTICK_AXIS_Y, -y)
+        renderer.enqueueTask {
+            appCore.joystickAxis(AppCore.JOYSTICK_AXIS_X, x)
+            appCore.joystickAxis(AppCore.JOYSTICK_AXIS_Y, -y)
         }
     }
 

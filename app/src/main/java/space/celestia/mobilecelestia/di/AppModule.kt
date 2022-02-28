@@ -4,9 +4,15 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
+import space.celestia.mobilecelestia.resource.model.ResourceManager
+import space.celestia.mobilecelestia.share.ShareAPIService
+import space.celestia.mobilecelestia.utils.AppStatusReporter
 import javax.inject.Singleton
 
 @Module
@@ -23,6 +29,44 @@ object AppModule {
     @Singleton
     @Provides
     fun provideResourceAPI(): ResourceAPIService {
-        return ResourceAPI.shared.create(ResourceAPIService::class.java)
+        return Retrofit.Builder()
+            .baseUrl("https://celestia.mobi/api/resource/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ResourceAPIService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideShareAPI(): ShareAPIService {
+        return Retrofit.Builder()
+            .baseUrl("https://celestia.mobi/api/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ShareAPIService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideResourceManager(): ResourceManager {
+        return ResourceManager()
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppCore(): AppCore {
+        return AppCore()
+    }
+
+    @Singleton
+    @Provides
+    fun provideRenderer(): Renderer {
+        return Renderer()
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppStatusReporter(): AppStatusReporter {
+        return AppStatusReporter()
     }
 }

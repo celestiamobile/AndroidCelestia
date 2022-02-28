@@ -11,20 +11,11 @@
 
 package space.celestia.mobilecelestia.share
 
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import space.celestia.mobilecelestia.utils.BaseResult
 
 class URLCreationResponse(val publicURL: String)
 class URLResolultionResponse(val resolvedURL: String)
-
-object ShareAPI {
-    val shared: Retrofit = Retrofit.Builder()
-        .baseUrl("https://celestia.mobi/api/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-}
 
 interface ShareAPIService {
     @FormUrlEncoded

@@ -13,13 +13,22 @@ package space.celestia.mobilecelestia.settings
 
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Renderer
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SettingsFragment : NavigationFragment() {
+    @Inject
+    lateinit var appCore: AppCore
+    @Inject
+    lateinit var renderer: Renderer
+
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return SettingsItemFragment.newInstance()
     }
@@ -33,8 +42,8 @@ class SettingsFragment : NavigationFragment() {
                 pushFragment(SettingsCurrentTimeFragment.newInstance())
             }
             is SettingsRenderInfoItem -> {
-                CelestiaView.callOnRenderThread {
-                    val renderInfo = AppCore.shared().renderInfo
+                renderer.enqueueTask {
+                    val renderInfo = appCore.renderInfo
                     lifecycleScope.launch {
                         pushFragment(SimpleTextFragment.newInstance(item.name, renderInfo))
                     }

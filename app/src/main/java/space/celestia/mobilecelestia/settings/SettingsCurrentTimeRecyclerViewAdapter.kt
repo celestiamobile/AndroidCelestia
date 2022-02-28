@@ -57,7 +57,8 @@ private fun createSections(): List<CommonSectionV2> {
 }
 
 class SettingsCurrentTimeRecyclerViewAdapter(
-    private val listener: SettingsCurrentTimeFragment.Listener?
+    private val listener: SettingsCurrentTimeFragment.Listener?,
+    private val appCore: AppCore
 ) : SeparatorHeaderRecyclerViewAdapter(createSections()) {
     private val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
 
@@ -87,10 +88,9 @@ class SettingsCurrentTimeRecyclerViewAdapter(
             return
         }
         if (item is DatePickerItem && holder is CommonTextViewHolder) {
-            val core = AppCore.shared()
             holder.title.text = item.title
             holder.detail.visibility = View.VISIBLE
-            holder.detail.text = formatter.format(Utils.createDateFromJulianDay(core.simulation.time))
+            holder.detail.text = formatter.format(Utils.createDateFromJulianDay(appCore.simulation.time))
             return
         }
         super.bindVH(holder, item)

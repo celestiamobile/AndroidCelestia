@@ -19,22 +19,28 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.AppStatusReporter
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class LoadingFragment : Fragment(), AppStatusReporter.Listener {
+
+    @Inject
+    lateinit var appStatusReporter: AppStatusReporter
 
     private var loadingLabel: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        AppStatusReporter.shared().register(this)
+        appStatusReporter.register(this)
     }
 
     override fun onDestroy() {
-        AppStatusReporter.shared().unregister(this)
+        appStatusReporter.unregister(this)
 
         super.onDestroy()
     }
@@ -46,7 +52,7 @@ class LoadingFragment : Fragment(), AppStatusReporter.Listener {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_loading, container, false)
         loadingLabel = view.findViewById(R.id.loading_label)
-        loadingLabel?.text = AppStatusReporter.shared().status
+        loadingLabel?.text = appStatusReporter.status
         return view
     }
 
@@ -64,5 +70,4 @@ class LoadingFragment : Fragment(), AppStatusReporter.Listener {
 
         fun newInstance() = LoadingFragment()
     }
-
 }

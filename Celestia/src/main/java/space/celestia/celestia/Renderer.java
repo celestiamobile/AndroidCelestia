@@ -36,13 +36,7 @@ public class Renderer implements AutoCloseable {
     private boolean started = false;
     private boolean closed = false;
 
-    private static Renderer sharedRenderer = null;
     private EngineStartedListener engineStartedListener = null;
-
-    private Renderer(long pointer) {
-        this.pointer = pointer;
-        c_initialize(pointer);
-    }
 
     @Override
     public void close() throws Exception {
@@ -52,10 +46,9 @@ public class Renderer implements AutoCloseable {
         }
     }
 
-    public static Renderer shared() {
-        if (sharedRenderer == null)
-            sharedRenderer = new Renderer(c_createNativeRenderObject());
-        return sharedRenderer;
+    public Renderer() {
+        pointer = c_createNativeRenderObject();
+        c_initialize(pointer);
     }
 
     public void makeContextCurrent() {

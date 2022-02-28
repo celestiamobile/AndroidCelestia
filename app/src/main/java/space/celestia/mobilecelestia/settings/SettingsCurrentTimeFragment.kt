@@ -18,13 +18,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
+import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.CelestiaString
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SettingsCurrentTimeFragment : SettingsBaseFragment() {
     private var listener: Listener? = null
 
-    private val listAdapter by lazy { SettingsCurrentTimeRecyclerViewAdapter(listener) }
+    @Inject
+    lateinit var appCore: AppCore
+
+    private val listAdapter by lazy { SettingsCurrentTimeRecyclerViewAdapter(listener, appCore) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

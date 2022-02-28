@@ -18,11 +18,10 @@ import java.util.ArrayList;
 import space.celestia.celestia.AppCore;
 
 public class AppStatusReporter implements AppCore.ProgressWatcher {
-    private static AppStatusReporter singleton = null;
-    private ArrayList<Listener> listeners = new ArrayList<>();
+    private final ArrayList<Listener> listeners = new ArrayList<>();
     private String status = "";
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     public enum State {
         EXTERNAL_LOADING_FAILURE(-2),
@@ -33,13 +32,13 @@ public class AppStatusReporter implements AppCore.ProgressWatcher {
         LOADING_SUCCESS(3),
         FINISHED(4);
 
-        private int value;
+        private final int value;
 
         public int getValue() {
             return value;
         }
 
-        private State(int i) {
+        State(int i) {
             this.value = i;
         }
     }
@@ -56,12 +55,6 @@ public class AppStatusReporter implements AppCore.ProgressWatcher {
         synchronized (lock) {
             return status;
         }
-    }
-
-    @NonNull public static AppStatusReporter shared() {
-        if (singleton == null)
-            singleton = new AppStatusReporter();
-        return singleton;
     }
 
     public interface Listener {
@@ -92,9 +85,7 @@ public class AppStatusReporter implements AppCore.ProgressWatcher {
         synchronized (lock) {
             this.state = state;
             currentListeners = new ArrayList<>(listeners.size());
-            for (Listener listener : listeners) {
-                currentListeners.add(listener);
-            }
+            currentListeners.addAll(listeners);
         }
         for (Listener listener : currentListeners) {
             listener.celestiaLoadingStateChanged(state);
@@ -106,9 +97,7 @@ public class AppStatusReporter implements AppCore.ProgressWatcher {
         synchronized (lock) {
             this.status = status;
             currentListeners = new ArrayList<>(listeners.size());
-            for (Listener listener : listeners) {
-                currentListeners.add(listener);
-            }
+            currentListeners.addAll(listeners);
         }
         for (Listener listener : currentListeners) {
             listener.celestiaLoadingProgress(status);
