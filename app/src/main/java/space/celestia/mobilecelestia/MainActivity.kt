@@ -22,7 +22,9 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.LayoutDirection
 import android.util.Log
-import android.view.*
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -33,7 +35,10 @@ import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.Insets
-import androidx.core.view.*
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -42,24 +47,25 @@ import com.google.gson.reflect.TypeToken
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.*
 import org.json.JSONObject
+import space.celestia.celestia.*
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
-import space.celestia.mobilecelestia.celestia.CelestiaView
-import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.Poppable
-import space.celestia.mobilecelestia.control.*
-import space.celestia.celestia.*
-import space.celestia.celestia.BrowserItem
 import space.celestia.mobilecelestia.common.RoundedCorners
+import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
 import space.celestia.mobilecelestia.favorite.*
-import space.celestia.mobilecelestia.travel.GoToContainerFragment
-import space.celestia.mobilecelestia.travel.GoToInputFragment
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
@@ -71,22 +77,38 @@ import space.celestia.mobilecelestia.search.SearchContainerFragment
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.search.hideKeyboard
 import space.celestia.mobilecelestia.settings.*
-import space.celestia.mobilecelestia.share.ShareAPI
 import space.celestia.mobilecelestia.share.ShareAPIService
 import space.celestia.mobilecelestia.share.URLCreationResponse
 import space.celestia.mobilecelestia.share.URLResolultionResponse
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
+import space.celestia.mobilecelestia.travel.GoToContainerFragment
+import space.celestia.mobilecelestia.travel.GoToInputFragment
 import space.celestia.mobilecelestia.utils.*
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.URL
 import java.util.*
+import javax.inject.Inject
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.arrayListOf
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.firstOrNull
+import kotlin.collections.iterator
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapNotNull
+import kotlin.collections.mapOf
+import kotlin.collections.set
+import kotlin.collections.sorted
 import kotlin.system.exitProcess
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     ToolbarFragment.Listener,
     InfoFragment.Listener,
@@ -110,7 +132,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsLanguageFragment.Listener,
     SettingsLanguageFragment.DataSource,
     ResourceFragment.Listener,
-    AsyncListFragment.Listener<Any>,
+    AsyncListPagingFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
@@ -123,7 +145,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val celestiaParentPath by lazy { this.noBackupFilesDir.absolutePath }
     private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
 
-    private val core by lazy { AppCore.shared() }
+    @Inject
+    lateinit var appCore: AppCore
+    @Inject
+    lateinit var renderer: Renderer
+    @Inject
+    lateinit var resourceAPI: ResourceAPIService
+    @Inject
+    lateinit var shareAPI: ShareAPIService
+    @Inject
+    lateinit var resourceManager: ResourceManager
+
+    lateinit var appStatusReporter: AppStatusReporter
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface AppStatusInterface {
+        fun getAppStatusReporter(): AppStatusReporter
+    }
 
     private var interactionBlocked = false
 
@@ -161,9 +200,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
-        val reporter = AppStatusReporter.shared()
-        val currentState = reporter.state
+        val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
+        appStatusReporter = factory.getAppStatusReporter()
 
+        val currentState = appStatusReporter.state
         val savedState = if (currentState == AppStatusReporter.State.NONE) null else savedInstanceState
 
         super.onCreate(savedState)
@@ -212,7 +252,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        reporter.register(this)
+        appStatusReporter.register(this)
 
         // Handle notch
         ViewCompat.setOnApplyWindowInsetsListener( findViewById<View>(android.R.id.content).rootView) { _, insets ->
@@ -314,7 +354,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onDestroy() {
-        AppStatusReporter.shared().unregister(this)
+        appStatusReporter.unregister(this)
 
         Log.d(TAG, "Destroying MainActivity")
 
@@ -377,7 +417,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
                 .commitAllowingStateLoss()
         }
-        AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING)
+        appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 copyAssetIfNeeded()
@@ -391,7 +431,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             } catch (error: Throwable) {
                 withContext(Dispatchers.Main) {
-                    AppStatusReporter.shared().updateState(AppStatusReporter.State.EXTERNAL_LOADING_FAILURE)
+                    appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING_FAILURE)
                     loadConfigFailed(error)
                 }
             }
@@ -419,10 +459,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun celestiaLoadingSucceeded() {
-        CelestiaView.callOnRenderThread {
+        renderer.enqueueTask {
             readSettings()
 
-            AppStatusReporter.shared().updateState(AppStatusReporter.State.FINISHED)
+            appStatusReporter.updateState(AppStatusReporter.State.FINISHED)
         }
     }
 
@@ -433,7 +473,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
 
-            ResourceManager.shared.addonDirectory = addonPaths.firstOrNull()
+            resourceManager.addonDirectory = addonPaths.firstOrNull()
 
             readyForInteraction = true
 
@@ -442,7 +482,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun celestiaLoadingFailed() {
-        AppStatusReporter.shared().updateStatus(CelestiaString("Loading Celestia failed…", ""))
+        appStatusReporter.updateStatus(CelestiaString("Loading Celestia failed…", ""))
         lifecycleScope.launch {
             removeCelestiaFragment()
         }
@@ -462,7 +502,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun copyAssetIfNeeded() {
-        AppStatusReporter.shared().updateStatus(CelestiaString("Copying data…", ""))
+        appStatusReporter.updateStatus(CelestiaString("Copying data…", ""))
         if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
             // When version name does not match, copy the asset again
             copyAssetsAndRemoveOldAssets()
@@ -586,10 +626,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         when (path) {
             "/api/url" -> {
                 val id = uri.getQueryParameter("id") ?: return
-                val service = ShareAPI.shared.create(ShareAPIService::class.java)
                 lifecycleScope.launch {
                     try {
-                        val result = service.resolve(path, id).commonHandler(URLResolultionResponse::class.java)
+                        val result = shareAPI.resolve(path, id).commonHandler(URLResolultionResponse::class.java)
                         requestOpenURL(result.resolvedURL)
                     } catch (ignored: Throwable) {}
                 }
@@ -661,11 +700,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun openCelestiaURL(uri: String) {
         val isURL = uri.startsWith("cel://")
-        CelestiaView.callOnRenderThread {
+        renderer.enqueueTask {
             if (isURL) {
-                core.goToURL(uri)
+                appCore.goToURL(uri)
             } else {
-                core.runScript(uri)
+                appCore.runScript(uri)
             }
         }
     }
@@ -702,10 +741,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val addon = addonToOpen
         if (addon != null) {
             val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-            val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
             lifecycleScope.launch {
                 try {
-                    val result = service.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                    val result = resourceAPI.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
                     showBottomSheetFragment(ResourceItemFragment.newInstance(result))
                 } catch (ignored: Throwable) {}
             }
@@ -715,10 +753,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         // Check news
         val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        val service = ResourceAPI.shared.create(ResourceAPIService::class.java)
         lifecycleScope.launch {
             try {
-                val result = service.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
+                val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
                 if (preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] = result.id
                 showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(result.id)))
@@ -841,15 +878,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         for ((key, value) in bools) {
-            core.setBooleanValueForField(key, value)
+            appCore.setBooleanValueForField(key, value)
         }
 
         for ((key, value) in ints) {
-            core.setIntValueForField(key, value)
+            appCore.setIntValueForField(key, value)
         }
 
         for ((key, value) in doubles) {
-            core.setDoubleValueForField(key, value)
+            appCore.setDoubleValueForField(key, value)
         }
     }
 
@@ -947,8 +984,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             }
             ToolbarAction.Home -> {
-                CelestiaView.callOnRenderThread {
-                    core.charEnter(CelestiaAction.Home.value)
+                renderer.enqueueTask {
+                    appCore.charEnter(CelestiaAction.Home.value)
                 }
             }
             ToolbarAction.Event -> {
@@ -976,14 +1013,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onInfoActionSelected(action: InfoActionItem, item: Selection) {
         when (action) {
             is InfoNormalActionItem -> {
-                CelestiaView.callOnRenderThread {
-                    core.simulation.selection = item
-                    core.charEnter(action.item.value)
+                renderer.enqueueTask {
+                    appCore.simulation.selection = item
+                    appCore.charEnter(action.item.value)
                 }
             }
             is InfoSelectActionItem -> {
-                CelestiaView.callOnRenderThread {
-                    core.simulation.selection = item
+                renderer.enqueueTask {
+                    appCore.simulation.selection = item
                 }
             }
             is InfoWebActionItem -> {
@@ -994,16 +1031,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             is SubsystemActionItem -> {
                 val entry = item.`object` ?: return
                 val browserItem = BrowserItem(
-                    core.simulation.universe.getNameForSelection(item),
+                    appCore.simulation.universe.getNameForSelection(item),
                     null,
                     entry,
-                    core.simulation.universe
+                    appCore.simulation.universe
                 )
                 showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
             }
             is AlternateSurfacesItem -> {
                 val alternateSurfaces = item.body?.alternateSurfaceNames ?: return
-                val current = core.simulation.activeObserver.displayedSurface
+                val current = appCore.simulation.activeObserver.displayedSurface
                 var currentIndex = 0
                 if (current != "") {
                     val index = alternateSurfaces.indexOf(current)
@@ -1016,9 +1053,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSingleSelection(CelestiaString("Alternate Surfaces", ""), surfaces, currentIndex) { index ->
                     if (index == null) return@showSingleSelection
                     if (index == 0)
-                        core.simulation.activeObserver.displayedSurface = ""
+                        appCore.simulation.activeObserver.displayedSurface = ""
                     else
-                        core.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
+                        appCore.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
                 }
             }
             is MarkItem -> {
@@ -1026,10 +1063,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSingleSelection(CelestiaString("Mark", ""), markers, -1) { newIndex ->
                     if (newIndex != null) {
                         if (newIndex >= Universe.MARKER_COUNT) {
-                            core.simulation.universe.unmark(item)
+                            appCore.simulation.universe.unmark(item)
                         } else {
-                            core.simulation.universe.mark(item, newIndex)
-                            core.showMarkers = true
+                            appCore.simulation.universe.mark(item, newIndex)
+                            appCore.showMarkers = true
                         }
                     }
                 }
@@ -1075,7 +1112,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        val selection = core.simulation.findObject(text)
+        val selection = appCore.simulation.findObject(text)
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return
@@ -1092,30 +1129,30 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onInstantActionSelected(item: CelestiaAction) {
-        CelestiaView.callOnRenderThread { core.charEnter(item.value) }
+        renderer.enqueueTask { appCore.charEnter(item.value) }
     }
 
     override fun onContinuousActionUp(item: CelestiaContinuosAction) {
-        CelestiaView.callOnRenderThread { core.keyUp(item.value) }
+        renderer.enqueueTask { appCore.keyUp(item.value) }
     }
 
     override fun onContinuousActionDown(item: CelestiaContinuosAction) {
-        CelestiaView.callOnRenderThread { core.keyDown(item.value) }
+        renderer.enqueueTask { appCore.keyDown(item.value) }
     }
 
     override fun objectExistsWithName(name: String): Boolean {
-        return !core.simulation.findObject(name).isEmpty
+        return !appCore.simulation.findObject(name).isEmpty
     }
 
     override fun onGoToObject(name: String) {
-        val sel = core.simulation.findObject(name)
+        val sel = appCore.simulation.findObject(name)
         if (sel.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return
         }
-        CelestiaView.callOnRenderThread {
-            core.simulation.selection = sel
-            core.charEnter(CelestiaAction.GoTo.value)
+        renderer.enqueueTask {
+            appCore.simulation.selection = sel
+            appCore.charEnter(CelestiaAction.GoTo.value)
         }
     }
 
@@ -1158,21 +1195,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onCameraActionClicked(action: CameraControlAction) {
-        CelestiaView.callOnRenderThread { core.simulation.reverseObserverOrientation() }
+        renderer.enqueueTask { appCore.simulation.reverseObserverOrientation() }
     }
 
     override fun onCameraActionStepperTouchDown(action: CameraControlAction) {
-        CelestiaView.callOnRenderThread { core.keyDown(action.value) }
+        renderer.enqueueTask { appCore.keyDown(action.value) }
     }
 
     override fun onCameraActionStepperTouchUp(action: CameraControlAction) {
-        CelestiaView.callOnRenderThread { core.keyUp(action.value) }
+        renderer.enqueueTask { appCore.keyUp(action.value) }
     }
 
     override fun onHelpActionSelected(action: HelpAction) {
         when (action) {
             HelpAction.RunDemo -> {
-                CelestiaView.callOnRenderThread { core.charEnter(CelestiaAction.RunDemo.value) }
+                renderer.enqueueTask { appCore.charEnter(CelestiaAction.RunDemo.value) }
             }
             HelpAction.ShowDestinations -> {
                 showDestinations()
@@ -1187,7 +1224,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun addFavoriteItem(item: MutableFavoriteBaseItem) {
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
-            val bookmark = core.currentBookmark
+            val bookmark = appCore.currentBookmark
             if (bookmark == null) {
                 showAlert(CelestiaString("Cannot add object", ""))
                 return
@@ -1249,7 +1286,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onGoToDestination(destination: Destination) {
-        CelestiaView.callOnRenderThread { core.simulation.goTo(destination) }
+        renderer.enqueueTask { appCore.simulation.goTo(destination) }
     }
 
     override fun deleteFavoriteItem(index: Int) {
@@ -1280,12 +1317,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onCommonSettingActionItemSelected(action: Int) {
-        CelestiaView.callOnRenderThread { core.charEnter(action) }
+        renderer.enqueueTask { appCore.charEnter(action) }
     }
 
     override fun onCommonSettingUnknownAction(id: String) {
         if (id == settingUnmarkAllID)
-            core.simulation.universe.unmarkAll()
+            appCore.simulation.universe.unmarkAll()
     }
 
     override fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean) {
@@ -1300,8 +1337,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
-        CelestiaView.callOnRenderThread {
-            core.setBooleanValueForField(field, value)
+        renderer.enqueueTask {
+            appCore.setBooleanValueForField(field, value)
             lifecycleScope.launch {
                 if (!volatile)
                     settingManager[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
@@ -1312,8 +1349,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun applyIntValue(value: Int, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
-        CelestiaView.callOnRenderThread {
-            core.setIntValueForField(field, value)
+        renderer.enqueueTask {
+            appCore.setIntValueForField(field, value)
             lifecycleScope.launch {
                 if (!volatile)
                     settingManager[PreferenceManager.CustomKey(field)] = value.toString()
@@ -1324,8 +1361,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun applyDoubleValue(value: Double, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
-        CelestiaView.callOnRenderThread {
-            core.setDoubleValueForField(field, value)
+        renderer.enqueueTask {
+            appCore.setDoubleValueForField(field, value)
             lifecycleScope.launch {
                 if (!volatile)
                     settingManager[PreferenceManager.CustomKey(field)] = value.toString()
@@ -1355,21 +1392,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun commonSettingSliderValue(field: String): Double {
-        return core.getDoubleValueForField(field)
+        return appCore.getDoubleValueForField(field)
     }
 
     override fun commonSettingSelectionValue(field: String): Int {
-        return core.getIntValueForField(field)
+        return appCore.getIntValueForField(field)
     }
 
     override fun commonSettingSwitchState(field: String): Boolean {
-        return core.getBooleanValueForPield(field)
+        return appCore.getBooleanValueForPield(field)
     }
 
     override fun onCurrentTimeActionRequested(action: CurrentTimeAction) {
         when (action) {
             CurrentTimeAction.SetToCurrentTime -> {
-                CelestiaView.callOnRenderThread { core.charEnter(CelestiaAction.CurrentTime.value) }
+                renderer.enqueueTask { appCore.charEnter(CelestiaAction.CurrentTime.value) }
                 reloadSettings()
             }
             CurrentTimeAction.PickDate -> {
@@ -1379,8 +1416,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                         showAlert(CelestiaString("Unrecognized time string.", ""))
                         return@showDateInput
                     }
-                    CelestiaView.callOnRenderThread {
-                        core.simulation.time = date.julianDay
+                    renderer.enqueueTask {
+                        appCore.simulation.time = date.julianDay
                         lifecycleScope.launch {
                             reloadSettings()
                         }
@@ -1443,7 +1480,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
-        val body = core.simulation.findObject(objectName).`object` as? Body
+        val body = appCore.simulation.findObject(objectName).`object` as? Body
         if (body == null) {
             showAlert(CelestiaString("Object not found", ""))
             return
@@ -1471,8 +1508,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onEclipseChosen(eclipse: EclipseFinder.Eclipse) {
-        CelestiaView.callOnRenderThread {
-            core.simulation.goToEclipse(eclipse)
+        renderer.enqueueTask {
+            appCore.simulation.goToEclipse(eclipse)
         }
     }
 
@@ -1500,8 +1537,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun celestiaFragmentDidRequestObjectInfo() {
-        CelestiaView.callOnRenderThread {
-            val selection = core.simulation.selection
+        renderer.enqueueTask {
+            val selection = appCore.simulation.selection
             if (!selection.isEmpty) {
                 lifecycleScope.launch {
                     showInfo(selection)
@@ -1739,12 +1776,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             scripts.addAll(Script.getScriptsInDirectory(extraScriptPath, true))
         }
         updateCurrentScripts(scripts)
-        updateCurrentDestinations(core.destinations)
+        updateCurrentDestinations(appCore.destinations)
         showBottomSheetFragment(FavoriteFragment.newInstance(FavoriteRoot()))
     }
 
     private fun showDestinations() {
-        updateCurrentDestinations(core.destinations)
+        updateCurrentDestinations(appCore.destinations)
         showBottomSheetFragment(FavoriteFragment.newInstance(FavoriteTypeItem(FavoriteType.Destination)))
     }
 
@@ -1769,9 +1806,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun shareURL() {
-        CelestiaView.callOnRenderThread {
-            val orig = core.currentURL
-            val name = core.simulation.universe.getNameForSelection(core.simulation.selection)
+        renderer.enqueueTask {
+            val orig = appCore.currentURL
+            val name = appCore.simulation.universe.getNameForSelection(appCore.simulation.selection)
             lifecycleScope.launch {
                 shareURL(orig, name)
             }
@@ -1782,10 +1819,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val encodedURL = android.util.Base64.encodeToString(url.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
         showTextInput(CelestiaString("Share", ""), name) { title ->
             showToast(CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT)
-            val service = ShareAPI.shared.create(ShareAPIService::class.java)
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val result = service.create(title, encodedURL, versionCode.toString()).commonHandler(URLCreationResponse::class.java)
+                    val result = shareAPI.create(title, encodedURL, versionCode.toString()).commonHandler(URLCreationResponse::class.java)
                     withContext(Dispatchers.Main) {
                         shareURLDirect(name, result.publicURL)
                     }
@@ -1805,9 +1841,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             directory.mkdir()
 
         val file = File(directory, "${UUID.randomUUID()}.png")
-        CelestiaView.callOnRenderThread {
-            core.draw()
-            if (core.saveScreenshot(file.absolutePath, AppCore.IMAGE_TYPE_PNG)) {
+        renderer.enqueueTask {
+            appCore.draw()
+            if (appCore.saveScreenshot(file.absolutePath, AppCore.IMAGE_TYPE_PNG)) {
                 lifecycleScope.launch {
                     shareFile(file, "image/png")
                 }
@@ -1845,7 +1881,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(ResourceFragment.newInstance())
     }
 
-    override fun onAsyncListItemSelected(item: Any) {
+    override fun onAsyncListPagingItemSelected(item: AsyncListItem) {
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is ResourceFragment) {
             if (item is ResourceCategory) {
@@ -1872,7 +1908,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onGoToObject(goToData: GoToInputFragment.GoToData) {
-        val selection = core.simulation.findObject(goToData.objectName)
+        val selection = appCore.simulation.findObject(goToData.objectName)
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return
@@ -1885,8 +1921,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             goToData.distance,
             goToData.distanceUnit
         )
-        CelestiaView.callOnRenderThread {
-            core.simulation.goToLocation(location)
+        renderer.enqueueTask {
+            appCore.simulation.goToLocation(location)
         }
     }
 

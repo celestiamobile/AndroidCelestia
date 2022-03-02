@@ -15,7 +15,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PointF
 import android.view.SurfaceView
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.Renderer
+import javax.inject.Inject
 
 @SuppressLint("ViewConstructor")
 class CelestiaView(context: Context, private val scaleFactor: Float) : SurfaceView(context) {
@@ -25,28 +27,6 @@ class CelestiaView(context: Context, private val scaleFactor: Float) : SurfaceVi
         super.onLayout(changed, left, top, right, bottom)
 
         holder.setFixedSize((width * scaleFactor).toInt(), (height * scaleFactor).toInt())
-    }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-
-        sharedView = this
-    }
-
-    override fun onDetachedFromWindow() {
-        sharedView = null
-
-        super.onDetachedFromWindow()
-    }
-
-    companion object {
-        private var sharedView: CelestiaView? = null
-        private val renderer by lazy { Renderer.shared() }
-
-        // Call on render thread to avoid concurrency issue.
-        fun callOnRenderThread(block: () -> Unit) {
-            renderer.enqueueTask(block)
-        }
     }
 }
 

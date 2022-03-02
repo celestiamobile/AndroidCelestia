@@ -21,6 +21,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
+        android:name=".CelestiaApplication"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/extraction_rules"

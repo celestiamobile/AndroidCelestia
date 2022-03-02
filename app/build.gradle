@@ -9,8 +9,12 @@
  * of the License, or (at your option) any later version.
  */
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'dagger.hilt.android.plugin'
+    id "org.jetbrains.kotlin.kapt"
+}
 
 android {
     compileSdkVersion constants.compileSdkVersion
@@ -40,6 +44,11 @@ android {
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     externalNativeBuild {
@@ -86,9 +95,11 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.3"
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    implementation "androidx.paging:paging-runtime-ktx:3.1.0"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
+    implementation "androidx.fragment:fragment-ktx:1.4.1"
 
     implementation "com.google.android.material:material:$material_version"
     implementation "com.google.code.gson:gson:2.8.9"
@@ -109,6 +120,9 @@ dependencies {
     def appCenterSdkVersion = '4.4.2'
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
+
+    implementation "com.google.dagger:hilt-android:2.38.1"
+    kapt 'com.google.dagger:hilt-compiler:2.38.1'
 
     testImplementation "junit:junit:4.13.2"
     androidTestImplementation "androidx.test.ext:junit:1.1.3"

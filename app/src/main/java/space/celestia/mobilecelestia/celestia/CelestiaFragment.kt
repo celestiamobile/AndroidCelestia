@@ -25,11 +25,11 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.browser.createStaticBrowserItems
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.common.RoundedCorners
@@ -38,10 +38,19 @@ import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.showToast
 import java.util.*
+import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
+@AndroidEntryPoint
 class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler {
     private var activity: Activity? = null
+
+    @Inject
+    lateinit var appCore: AppCore
+    @Inject
+    lateinit var appStatusReporter: AppStatusReporter
+    @Inject
+    lateinit var renderer: Renderer
 
     // MARK: GL View
     private lateinit var glView: CelestiaView
@@ -59,8 +68,6 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private lateinit var languageOverride: String
 
     // MARK: Celestia
-    private val core by lazy { AppCore.shared() }
-    private val renderer by lazy { Renderer.shared() }
     private var pendingTarget: Selection? = null
     private var browserItems: ArrayList<BrowserItem> = arrayListOf()
     private var density: Float = 1f
@@ -110,7 +117,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         }
 
         if (savedInstanceState == null) {
-            core.setRenderer(renderer)
+            appCore.setRenderer(renderer)
             renderer.setEngineStartedListener {
                 loadCelestia()
             }
@@ -130,8 +137,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val reporter = AppStatusReporter.shared()
-        reporter.register(this)
+        appStatusReporter.register(this)
 
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
         setupGLView(view.findViewById(R.id.celestia_gl_view))
@@ -156,8 +162,8 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     }
 
     override fun onDestroyView() {
-        AppStatusReporter.shared().unregister(this)
-        core.setContextMenuHandler(null)
+        appStatusReporter.unregister(this)
+        appCore.setContextMenuHandler(null)
 
         super.onDestroyView()
     }
@@ -221,7 +227,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
     fun updateFrameRateOption(newFrameRateOption: Int) {
         frameRateOption = newFrameRateOption
-        CelestiaView.callOnRenderThread {
+        renderer.enqueueTask {
             renderer.setFrameRateOption(newFrameRateOption)
         }
     }
@@ -234,8 +240,8 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         }
 
         val insets = safeInsets.scaleBy(scaleFactor)
-        CelestiaView.callOnRenderThread {
-            core.setSafeAreaInsets(insets)
+        renderer.enqueueTask {
+            appCore.setSafeAreaInsets(insets)
         }
 
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
@@ -255,7 +261,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         registerForContextMenu(view)
 
-        val interaction = CelestiaInteraction(activity)
+        val interaction = CelestiaInteraction(activity, appCore, renderer)
         glView = view
         viewInteraction = interaction
 
@@ -277,11 +283,11 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         val addonDirs = addonDirsToLoad.toTypedArray()
 
         if (data == null || cfg == null) {
-            AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+            appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }
 
-        AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING)
+        appStatusReporter.updateState(AppStatusReporter.State.LOADING)
 
         AppCore.initGL()
         AppCore.chdir(data)
@@ -290,7 +296,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         AppCore.setLocaleDirectoryPath("$data/locale", languageOverride)
 
         // Reading config, data
-        if (!core.startSimulation(cfg, addonDirs, AppStatusReporter.shared())) {
+        if (!appCore.startSimulation(cfg, addonDirs, appStatusReporter)) {
             val lis = listener
             if (lis != null) {
                 // Read from fallback
@@ -300,33 +306,33 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                     lis.celestiaFragmentLoadingFromFallback()
                     AppCore.chdir(fallbackDataPath)
                     AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride)
-                    if (!core.startSimulation(fallbackConfigPath, addonDirs, AppStatusReporter.shared())) {
-                        AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+                    if (!appCore.startSimulation(fallbackConfigPath, addonDirs, appStatusReporter)) {
+                        appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
                         return false
                     }
                 } else {
-                    AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+                    appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
                     return false
                 }
             } else {
-                AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+                appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
                 return false
             }
         }
 
         // Prepare renderer
-        if (!core.startRenderer()) {
-            AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_FAILURE)
+        if (!appCore.startRenderer()) {
+            appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }
 
         updateContentScale()
 
         // Display
-        core.tick()
-        core.start()
+        appCore.tick()
+        appCore.start()
 
-        AppStatusReporter.shared().updateState(AppStatusReporter.State.LOADING_SUCCESS)
+        appStatusReporter.updateState(AppStatusReporter.State.LOADING_SUCCESS)
 
         return true
     }
@@ -336,16 +342,16 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         renderer.makeContextCurrent()
 
-        core.setDPI((96 * density * scaleFactor).toInt())
-        core.setPickTolerance(10f * density * scaleFactor)
+        appCore.setDPI((96 * density * scaleFactor).toInt())
+        appCore.setPickTolerance(10f * density * scaleFactor)
 
         val insets = savedInsets
         if (insets != null) {
-            core.setSafeAreaInsets(insets.scaleBy(scaleFactor))
+            appCore.setSafeAreaInsets(insets.scaleBy(scaleFactor))
             savedInsets = null
         }
 
-        core.clearFonts()
+        appCore.clearFonts()
 
         // Use installed font
         val locale = AppCore.getLocalizedString("LANGUAGE", "celestia")
@@ -353,17 +359,17 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         if (preferredInstalledFont != null) {
             val font = preferredInstalledFont.first
             val boldFont = preferredInstalledFont.second
-            core.setFont(font.filePath, font.collectionIndex, 9)
-            core.setTitleFont(boldFont.filePath, boldFont.collectionIndex, 15)
-            core.setRendererFont(font.filePath, font.collectionIndex, 9, AppCore.RENDER_FONT_STYLE_NORMAL)
-            core.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, AppCore.RENDER_FONT_STYLE_LARGE)
+            appCore.setFont(font.filePath, font.collectionIndex, 9)
+            appCore.setTitleFont(boldFont.filePath, boldFont.collectionIndex, 15)
+            appCore.setRendererFont(font.filePath, font.collectionIndex, 9, AppCore.RENDER_FONT_STYLE_NORMAL)
+            appCore.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, AppCore.RENDER_FONT_STYLE_LARGE)
         }
         previousDensity = density
     }
 
     private fun loadingFinished() {
         if (!haveSurface) return
-        CelestiaView.callOnRenderThread {
+        renderer.enqueueTask {
             updateContentScale()
             lifecycleScope.launch {
                 setupInteractions()
@@ -385,7 +391,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         }
         glView.setOnKeyListener(viewInteraction)
         glView.setOnGenericMotionListener(viewInteraction)
-        core.setContextMenuHandler(this)
+        appCore.setContextMenuHandler(this)
         registerForContextMenu(glView)
         loadSuccess = true
 
@@ -417,7 +423,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             MenuCompat.setGroupDividerEnabled(menu, true)
         }
 
-        menu.setHeaderTitle(core.simulation.universe.getNameForSelection(selection))
+        menu.setHeaderTitle(appCore.simulation.universe.getNameForSelection(selection))
 
         CelestiaAction.allActions.withIndex().forEach {
             menu.add(GROUP_ACTION, it.index, Menu.NONE, it.value.title)
@@ -426,10 +432,10 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         if (obj != null) {
             val browserItem = BrowserItem(
-                core.simulation.universe.getNameForSelection(selection),
+                appCore.simulation.universe.getNameForSelection(selection),
                 null,
                 obj,
-                core.simulation.universe
+                appCore.simulation.universe
             )
             for (child in browserItem.children) {
                 val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, child.name)
@@ -460,40 +466,40 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         val actions = CelestiaAction.allActions
         if (item.groupId == GROUP_ACTION) {
             if (item.itemId >= 0 && item.itemId < actions.size) {
-                CelestiaView.callOnRenderThread {
-                    core.simulation.selection = selection
-                    core.charEnter(actions[item.itemId].value)
+                renderer.enqueueTask {
+                    appCore.simulation.selection = selection
+                    appCore.charEnter(actions[item.itemId].value)
                 }
             }
         } else if (item.groupId == GROUP_ALT_SURFACE) {
             val body = selection.body
             if (body != null) {
-                CelestiaView.callOnRenderThread {
+                renderer.enqueueTask {
                     val alternateSurfaces = body.alternateSurfaceNames
                     if (item.itemId == 0) {
-                        core.simulation.activeObserver.displayedSurface = ""
+                        appCore.simulation.activeObserver.displayedSurface = ""
                     } else if (item.itemId >= 0 && item.itemId < alternateSurfaces.size) {
-                        core.simulation.activeObserver.displayedSurface = alternateSurfaces[item.itemId - 1]
+                        appCore.simulation.activeObserver.displayedSurface = alternateSurfaces[item.itemId - 1]
                     }
                 }
             }
         } else if (item.groupId == GROUP_MARK) {
-            CelestiaView.callOnRenderThread {
+            renderer.enqueueTask {
                 if (item.itemId == availableMarkers.size) {
-                    core.simulation.universe.unmark(selection)
+                    appCore.simulation.universe.unmark(selection)
                 } else {
-                    core.simulation.universe.mark(selection, item.itemId)
-                    core.showMarkers = true
+                    appCore.simulation.universe.mark(selection, item.itemId)
+                    appCore.showMarkers = true
                 }
             }
         } else if (item.groupId == GROUP_BROWSER_ITEM_GO) {
             if (item.itemId >= 0 && item.itemId < browserItems.size) {
                 val ent = browserItems[item.itemId].`object`
                 if (ent != null) {
-                    CelestiaView.callOnRenderThread {
+                    renderer.enqueueTask {
                         val newSelection = Selection(ent)
-                        core.simulation.selection = newSelection
-                        core.charEnter(CelestiaAction.GoTo.value)
+                        appCore.simulation.selection = newSelection
+                        appCore.charEnter(CelestiaAction.GoTo.value)
                     }
                 }
             }
@@ -505,7 +511,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         renderer.setSurface(holder.surface)
         renderer.setFrameRateOption(frameRateOption)
         haveSurface = true
-        if (AppStatusReporter.shared().state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
+        if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
             loadingFinished()
         }
     }
@@ -609,7 +615,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         zoomTimer?.cancel()
         zoomTimer = fixedRateTimer("zoom", false, 0, 100) {
-            CelestiaView.callOnRenderThread {
+            renderer.enqueueTask {
                 viewInteraction.callZoom()
             }
         }

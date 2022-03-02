@@ -56,14 +56,6 @@ public class AppCore {
     private Simulation simulation;
     private ContextMenuHandler contextMenuHandler;
 
-    // Singleton
-    private static AppCore shared;
-    public static AppCore shared() {
-        if (shared == null)
-            shared = new AppCore();
-        return shared;
-    }
-
     public boolean isInitialized() {
         return initialized;
     }

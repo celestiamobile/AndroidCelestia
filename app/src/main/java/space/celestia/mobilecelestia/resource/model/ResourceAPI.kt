@@ -12,8 +12,6 @@
 package space.celestia.mobilecelestia.resource.model
 
 import com.google.gson.*
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import space.celestia.mobilecelestia.utils.BaseResult
@@ -36,24 +34,23 @@ object ResourceAPI {
         }
     }
 
-    val shared: Retrofit = Retrofit.Builder()
-        .baseUrl("https://celestia.mobi/api/resource/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
     val gson: Gson by lazy { GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create() }
 }
 
 interface ResourceAPIService {
     @GET("categories")
     suspend fun categories(
-        @Query("lang") lang: String
+        @Query("lang") lang: String,
+        @Query("pageStart") pageStart: Int? = null,
+        @Query("pageSize") pageSize: Int? = null,
     ): BaseResult
 
     @GET("guides")
     suspend fun guides(
         @Query("type") type: String,
-        @Query("lang") lang: String
+        @Query("lang") lang: String,
+        @Query("pageStart") pageStart: Int? = null,
+        @Query("pageSize") pageSize: Int? = null,
     ): BaseResult
 
     @GET("latest")
@@ -65,7 +62,9 @@ interface ResourceAPIService {
     @GET("items")
     suspend fun items(
         @Query("lang") lang: String,
-        @Query("category") category: String
+        @Query("category") category: String,
+        @Query("pageStart") pageStart: Int? = null,
+        @Query("pageSize") pageSize: Int? = null,
     ): BaseResult
 
     @GET("item")

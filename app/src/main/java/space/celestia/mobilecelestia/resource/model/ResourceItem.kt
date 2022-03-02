@@ -11,19 +11,19 @@
 
 package space.celestia.mobilecelestia.resource.model
 
-import space.celestia.mobilecelestia.resource.AsyncListItem
 import space.celestia.mobilecelestia.utils.GlideUrlCustomCacheKey
 import java.io.Serializable
 import java.util.*
 
-class ResourceItem(val id: String,
-                   override val name: String,
-                   val description: String,
-                   val item: String,
-                   val image: String?,
-                   val authors: List<String>?,
-                   val publishTime: Date?,
-                   val objectName: String?
+class ResourceItem(
+    override val id: String,
+    override val name: String,
+    val description: String,
+    val item: String,
+    val image: String?,
+    val authors: List<String>?,
+    val publishTime: Date?,
+    val objectName: String?
 ): AsyncListItem, Serializable {
     override val imageURL: GlideUrlCustomCacheKey?
         get() {

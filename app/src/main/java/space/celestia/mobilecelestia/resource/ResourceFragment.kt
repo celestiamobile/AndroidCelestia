@@ -22,7 +22,7 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return ResourceCategoryListFragment.newInstance()
+        return ResourceCategoryListPagingFragment.newInstance()
     }
 
     override fun onAttach(context: Context) {
@@ -40,7 +40,7 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun pushItem(item: ResourceCategory) {
-        val frag = ResourceItemListFragment.newInstance(item)
+        val frag = ResourceItemListPagingFragment.newInstance(item)
         pushFragment(frag)
     }
 

@@ -20,23 +20,26 @@ import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.BrowserItem
+import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.celestia.CelestiaView
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.utils.createLoadingDrawable
 import java.io.Serializable
+import javax.inject.Inject
 
 interface BrowserRootFragment {
     fun pushItem(browserItem: BrowserItem)
     fun showInfo(selection: Selection)
 }
 
+@AndroidEntryPoint
 class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBarView.OnItemSelectedListener {
     private var currentPath = ""
     private var selectedItemIndex = 0
@@ -45,6 +48,11 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
     private lateinit var browserContainer: LinearLayout
     private lateinit var navigation: BottomNavigationView
     private var tabs = listOf<Tab>()
+
+    @Inject
+    lateinit var appCore: AppCore
+    @Inject
+    lateinit var renderer: Renderer
 
     class Tab(private val type: Type): Serializable {
         enum class Type: Serializable {
@@ -66,9 +74,8 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
             }
         }
 
-        val browserItem: BrowserItem
-        get() {
-            val sim = AppCore.shared().simulation
+        fun getBrowserItem(appCore: AppCore): BrowserItem {
+            val sim = appCore.simulation
             return when (type) {
                 Type.SolarSystem -> {
                     sim.universe.solBrowserRoot()!!
@@ -143,7 +150,7 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         circularProgressDrawable.stop()
         for (i in 0 until tabs.count()) {
             val tab = tabs[i]
-            val item = tab.browserItem
+            val item = tab.getBrowserItem(appCore)
             navigation.menu.add(Menu.NONE, i, Menu.NONE, item.alternativeName ?: item.name).setIcon(tab.iconResource)
         }
         navigation.selectedItemId = selectedItemIndex
@@ -152,7 +159,7 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
 
     private fun showTab(index: Int) {
         selectedItemIndex = index
-        replaceItem(tabs[selectedItemIndex].browserItem)
+        replaceItem(tabs[selectedItemIndex].getBrowserItem(appCore))
     }
 
     private fun replaceItem(browserItem: BrowserItem) {
@@ -187,8 +194,8 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         browserContainer.visibility = View.GONE
         imageView.visibility = View.VISIBLE
         circularProgressDrawable.start()
-        CelestiaView.callOnRenderThread {
-            val sim = AppCore.shared().simulation
+        renderer.enqueueTask {
+            val sim = appCore.simulation
             sim.createStaticBrowserItems()
             sim.createDynamicBrowserItems()
             val browserTabs = arrayListOf(Tab(Tab.Type.Star), Tab(Tab.Type.DSO))

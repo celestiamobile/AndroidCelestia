@@ -19,7 +19,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import com.google.android.material.progressindicator.LinearProgressIndicator
-import space.celestia.celestia.AppCore
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
@@ -28,8 +28,16 @@ import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
+    @Inject
+    lateinit var celestiaLanguage: String
+
+    @Inject
+    lateinit var resourceManager: ResourceManager
+
     private lateinit var item: ResourceItem
     private lateinit var statusButton: Button
     private lateinit var goToButton: Button
@@ -51,7 +59,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        ResourceManager.shared.addListener(this)
+        resourceManager.addListener(this)
         item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
     }
 
@@ -80,11 +88,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         if (savedInstanceState == null) {
             val baseURL = "https://celestia.mobi/resources/item"
-            val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
             val uri = Uri.parse(baseURL)
                 .buildUpon()
                 .appendQueryParameter("item", item.id)
-                .appendQueryParameter("lang", lang)
+                .appendQueryParameter("lang", celestiaLanguage)
                 .appendQueryParameter("environment", "app")
                 .appendQueryParameter("theme", "dark")
                 .appendQueryParameter("titleVisibility", "visible")
@@ -108,7 +115,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     }
 
     override fun onDestroy() {
-        ResourceManager.shared.removeListener(this)
+        resourceManager.removeListener(this)
 
         super.onDestroy()
     }
@@ -116,7 +123,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     private fun onProgressViewClick() {
         val activity = this.activity ?: return
 
-        val dm = ResourceManager.shared
+        val dm = resourceManager
 
         // Already installed, offer an option for uninstalling
         if (dm.isInstalled(item.id)) {
@@ -176,7 +183,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     private fun updateUI() {
         // Ensure we are up to date with these cases
-        val dm = ResourceManager.shared
+        val dm = resourceManager
         if (dm.isInstalled(item.id))
             currentState = ResourceItemState.Installed
         if (dm.isDownloading(item.id))

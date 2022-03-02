@@ -21,6 +21,7 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
+import javax.inject.Singleton
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
@@ -221,7 +222,6 @@ class ResourceManager {
     }
 
     companion object {
-        var shared = ResourceManager()
         private const val TAG = "ResourceManager"
     }
 }
