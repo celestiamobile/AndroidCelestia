@@ -131,12 +131,14 @@ fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): Al
     return builder.show()
 }
 
-fun Activity.showAlert(title: String, handler: (() -> Unit)? = null) {
+fun Activity.showAlert(title: String, message: String? = null, handler: (() -> Unit)? = null) {
     if (isFinishing || isDestroyed)
         return
 
     val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
+    if (message != null)
+        builder.setMessage(message)
     builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->
         if (handler != null)
             handler()

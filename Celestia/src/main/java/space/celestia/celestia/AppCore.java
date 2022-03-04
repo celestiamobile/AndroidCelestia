@@ -200,6 +200,7 @@ public class AppCore {
     }
 
     // Locale
+    public static @NonNull String getLanguage() { return c_getLanguage(); };
     public static void setLocaleDirectoryPath(@NonNull String localeDirectoryPath, @NonNull String locale) { c_setLocaleDirectoryPath(localeDirectoryPath, locale); }
     public static void setUpLocale() { c_setUpLocale(); }
     public static @NonNull String getLocalizedString(@NonNull String string) { return getLocalizedString(string, "celestia_ui"); }
@@ -208,9 +209,7 @@ public class AppCore {
 
     private static String formatDate(double julianDay) {
         if (dateFormatter == null) {
-            String celestiaLang = getLocalizedString("LANGUAGE", "celestia");
-            if (celestiaLang.isEmpty() || celestiaLang.equals("LANGUAGE"))
-                celestiaLang = "en";
+            String celestiaLang = getLanguage();
             Locale locale = Locale.getDefault();
             String[] splitted = celestiaLang.split("_");
             if (splitted.length == 1) {
@@ -284,6 +283,7 @@ public class AppCore {
     private static native List<Destination> c_getDestinations(long ptr);
 
     // Locale
+    private static native String c_getLanguage();
     private static native void c_setLocaleDirectoryPath(String path, String locale);
     private static native void c_setUpLocale();
     private static native String c_getLocalizedString(String string, String domain);

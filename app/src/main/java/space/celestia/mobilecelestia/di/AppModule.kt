@@ -20,14 +20,6 @@ import javax.inject.Singleton
 object AppModule {
     @Singleton
     @Provides
-    fun provideCelestiaLanguage(): String {
-        val key = "LANGUAGE"
-        val lang = AppCore.getLocalizedString(key, "celestia")
-        return if (lang == key) "en" else lang
-    }
-
-    @Singleton
-    @Provides
     fun provideResourceAPI(): ResourceAPIService {
         return Retrofit.Builder()
             .baseUrl("https://celestia.mobi/api/resource/")

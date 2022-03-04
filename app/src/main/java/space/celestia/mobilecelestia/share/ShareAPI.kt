@@ -23,8 +23,9 @@ interface ShareAPIService {
     suspend fun create(
         @Field("title") title: String,
         @Field("url") url: String,
-        @Field("version") version: String
-    ): BaseResult
+        @Field("version") version: String,
+        @Field("lang") lang: String? = null
+        ): BaseResult
 
     @GET("resolve")
     suspend fun resolve(

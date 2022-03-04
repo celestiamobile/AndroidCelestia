@@ -354,7 +354,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         appCore.clearFonts()
 
         // Use installed font
-        val locale = AppCore.getLocalizedString("LANGUAGE", "celestia")
+        val locale = AppCore.getLanguage()
         val preferredInstalledFont = MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
         if (preferredInstalledFont != null) {
             val font = preferredInstalledFont.first

@@ -131,7 +131,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     EventFinderResultFragment.Listener,
     SettingsLanguageFragment.Listener,
     SettingsLanguageFragment.DataSource,
-    ResourceFragment.Listener,
     AsyncListPagingFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
@@ -739,12 +738,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
         val addon = addonToOpen
+        val lang = AppCore.getLanguage()
         if (addon != null) {
-            val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
             lifecycleScope.launch {
                 try {
                     val result = resourceAPI.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    showBottomSheetFragment(ResourceItemFragment.newInstance(result))
+                    showBottomSheetFragment(ResourceItemFragment.newInstance(result, lang))
                 } catch (ignored: Throwable) {}
             }
             cleanup()
@@ -752,7 +751,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         // Check news
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         lifecycleScope.launch {
             try {
                 val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
@@ -765,11 +763,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun buildGuideURI(id: String): Uri {
         val baseURL = "https://celestia.mobi/resources/guide"
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
         return Uri.parse(baseURL)
             .buildUpon()
             .appendQueryParameter("guide", id)
-            .appendQueryParameter("lang", lang)
+            .appendQueryParameter("lang", AppCore.getLanguage())
             .appendQueryParameter("environment", "app")
             .appendQueryParameter("theme", "dark")
             .build()
@@ -1004,7 +1001,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSpeedControl()
             }
             ToolbarAction.NewsArchive -> {
-                showBottomSheetFragment(GuideFragment.newInstance("news", CelestiaString("News", ""), CelestiaString("Failed to load news.", "")))
+                showBottomSheetFragment(GuideFragment.newInstance("news", CelestiaString("News", ""), AppCore.getLanguage()))
             }
         }
     }
@@ -1158,8 +1155,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onShareAddon(name: String, id: String) {
         val baseURL = "https://celestia.mobi/resources/item"
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", lang).build()
+        val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", AppCore.getLanguage()).build()
         shareURLDirect(name, uri.toString())
     }
 
@@ -1465,10 +1461,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun currentLanguage(): String {
-        val lang = AppCore.getLocalizedString("LANGUAGE", "celestia")
-        if (lang == "LANGUAGE")
-            return "en"
-        return lang
+        return AppCore.getLanguage()
     }
 
     override fun currentOverrideLanguage(): String? {
@@ -1819,17 +1812,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val encodedURL = android.util.Base64.encodeToString(url.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
         showTextInput(CelestiaString("Share", ""), name) { title ->
             showToast(CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT)
-            lifecycleScope.launch(Dispatchers.IO) {
+            lifecycleScope.launch {
                 try {
-                    val result = shareAPI.create(title, encodedURL, versionCode.toString()).commonHandler(URLCreationResponse::class.java)
-                    withContext(Dispatchers.Main) {
-                        shareURLDirect(name, result.publicURL)
-                    }
+                    val result = shareAPI.create(title, encodedURL, versionCode.toString(), AppCore.getLanguage()).commonHandler(URLCreationResponse::class.java)
+                    shareURLDirect(name, result.publicURL)
                 } catch (ignored: CancellationException) {
+                } catch (exception: ResultException) {
+                    showShareError(reason = exception.reason)
                 } catch (ignored: Throwable) {
-                    withContext(Dispatchers.Main) {
-                        showShareError()
-                    }
+                    showShareError()
                 }
             }
         }
@@ -1872,13 +1863,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(EventFinderContainerFragment.newInstance())
     }
 
-    private fun showShareError() {
-        showAlert(CelestiaString("Cannot share URL", ""))
+    private fun showShareError(reason: String? = null) {
+        showAlert(title = CelestiaString("Cannot share URL", ""), message = reason)
     }
 
     // Resource
     private fun showOnlineResource() {
-        showBottomSheetFragment(ResourceFragment.newInstance())
+        showBottomSheetFragment(ResourceFragment.newInstance(AppCore.getLanguage()))
     }
 
     override fun onAsyncListPagingItemSelected(item: AsyncListItem) {

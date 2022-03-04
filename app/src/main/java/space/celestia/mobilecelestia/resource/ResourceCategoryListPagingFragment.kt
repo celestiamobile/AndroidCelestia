@@ -38,6 +38,10 @@ class ResourceCategoryListPagingFragment: AsyncListPagingFragment() {
 
     companion object {
         const val MENU_ITEM_MANAGE_INSTALLED = 0
-        fun newInstance() = ResourceCategoryListPagingFragment()
+        fun newInstance(language: String) = ResourceCategoryListPagingFragment().apply {
+            arguments = Bundle().apply {
+                putString(ResourceCategoryListViewModel.ARG_LANG, language)
+            }
+        }
     }
 }

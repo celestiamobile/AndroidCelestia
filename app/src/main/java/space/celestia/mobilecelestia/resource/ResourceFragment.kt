@@ -11,7 +11,6 @@
 
 package space.celestia.mobilecelestia.resource
 
-import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -19,40 +18,35 @@ import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 
 class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
-    private var listener: Listener? = null
+    private lateinit var language: String
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        language = requireArguments().getString(ARG_LANG, "en")
+    }
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return ResourceCategoryListPagingFragment.newInstance()
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement ResourceFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
+        return ResourceCategoryListPagingFragment.newInstance(language)
     }
 
     fun pushItem(item: ResourceCategory) {
-        val frag = ResourceItemListPagingFragment.newInstance(item)
+        val frag = ResourceItemListPagingFragment.newInstance(item, language)
         pushFragment(frag)
     }
 
     fun pushItem(item: ResourceItem) {
-        val frag = ResourceItemFragment.newInstance(item)
+        val frag = ResourceItemFragment.newInstance(item, language)
         pushFragment(frag)
     }
 
-    interface Listener {
-    }
-
     companion object {
-        fun newInstance() = ResourceFragment()
+        private const val ARG_LANG = "lang"
+
+        fun newInstance(language: String) = ResourceFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_LANG, language)
+            }
+        }
     }
 }

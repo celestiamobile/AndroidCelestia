@@ -1075,3 +1075,12 @@ Java_space_celestia_celestia_AppCore_c_1setPickTolerance(JNIEnv *env,
     auto core = (CelestiaCore *)ptr;
     core->setPickTolerance((float)pick_tolerance);
 }
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_celestia_AppCore_c_1getLanguage(JNIEnv *env, jclass clazz) {
+    const char *lang = dgettext("celestia", "LANGUAGE");
+    if (strcmp(lang, "LANGUAGE") == 0)
+        return env->NewStringUTF("en");
+    return env->NewStringUTF(lang);
+}

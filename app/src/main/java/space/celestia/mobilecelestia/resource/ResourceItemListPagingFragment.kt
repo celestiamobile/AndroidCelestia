@@ -19,10 +19,11 @@ class ResourceItemListPagingFragment: AsyncListPagingFragment() {
     }
 
     companion object {
-        fun newInstance(category: ResourceCategory) =
+        fun newInstance(category: ResourceCategory, language: String) =
             ResourceItemListPagingFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ResourceItemListViewModel.ARG_CATEGORY, category)
+                    putString(ResourceItemListViewModel.ARG_LANG, language)
                 }
             }
     }

@@ -33,10 +33,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
     @Inject
-    lateinit var celestiaLanguage: String
-
-    @Inject
     lateinit var resourceManager: ResourceManager
+
+    private lateinit var language: String
 
     private lateinit var item: ResourceItem
     private lateinit var statusButton: Button
@@ -61,6 +60,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         resourceManager.addListener(this)
         item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
+        language = requireArguments().getString(ARG_LANG, "en")
     }
 
     override fun onCreateView(
@@ -91,7 +91,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             val uri = Uri.parse(baseURL)
                 .buildUpon()
                 .appendQueryParameter("item", item.id)
-                .appendQueryParameter("lang", celestiaLanguage)
+                .appendQueryParameter("lang", language)
                 .appendQueryParameter("environment", "app")
                 .appendQueryParameter("theme", "dark")
                 .appendQueryParameter("titleVisibility", "visible")
@@ -219,12 +219,14 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     companion object {
         private const val ARG_ITEM = "item"
+        private const val ARG_LANG = "lang"
 
         @JvmStatic
-        fun newInstance(item: ResourceItem) =
+        fun newInstance(item: ResourceItem, language: String) =
             ResourceItemFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, item)
+                    putString(ARG_LANG, language)
                 }
             }
     }

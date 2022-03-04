@@ -19,11 +19,12 @@ class GuideListPagingFragment: AsyncListPagingFragment() {
     }
 
     companion object {
-        fun newInstance(type: String, title: String) =
+        fun newInstance(type: String, title: String, language: String) =
             GuideListPagingFragment().apply {
                 arguments = Bundle().apply {
                     putString(GuideListViewModel.ARG_TYPE, type)
                     putString(GuideListViewModel.ARG_TITLE, title)
+                    putString(GuideListViewModel.ARG_LANG, language)
                 }
             }
     }
