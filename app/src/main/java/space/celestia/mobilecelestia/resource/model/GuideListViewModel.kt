@@ -11,13 +11,12 @@ import javax.inject.Inject
 @HiltViewModel
 class GuideListViewModel @Inject constructor(
     repository: ResourceRepository,
-    celestiaLanguage: String,
     savedStateHandle: SavedStateHandle) : AsyncListPagingViewModel() {
     val type: String = savedStateHandle.get(ARG_TYPE)!!
     val title: String = savedStateHandle.get(ARG_TITLE)!!
 
     override val itemsWithoutSeparators =
-        repository.getGuides(type = type, lang = celestiaLanguage).map { it.map { it as AsyncListItem } }
+        repository.getGuides(type = type).map { it.map { it as AsyncListItem } }
 
     override val stylized: Boolean
         get() = false

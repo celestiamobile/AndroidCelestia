@@ -7,34 +7,35 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ResourceRepository @Inject constructor(val resourceAPI: ResourceAPIService, val resourceManager: ResourceManager) {
-    fun getCategories(lang: String) =
-        Pager(
-            config = PagingConfig(
-                pageSize = 20,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = { ResourceCategoryListDataSource(resourceAPI, lang) }
-        ).liveData
-
-    fun getItems(category: String, lang: String) =
+class ResourceRepository @Inject constructor(val resourceAPI: ResourceAPIService, val celestiaLanguage: String, val resourceManager: ResourceManager) {
+    fun getCategories() =
         Pager(
             config = PagingConfig(
                 pageSize = 20,
                 initialLoadSize = 20,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { ResourceItemListDataSource(resourceAPI, lang, category) }
+            pagingSourceFactory = { ResourceCategoryListDataSource(resourceAPI, celestiaLanguage) }
         ).liveData
 
-    fun getGuides(type: String, lang: String) =
+    fun getItems(category: String) =
         Pager(
             config = PagingConfig(
                 pageSize = 20,
                 initialLoadSize = 20,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { GuideListDataSource(resourceAPI, lang, type) }
+            pagingSourceFactory = { ResourceItemListDataSource(resourceAPI, celestiaLanguage, category) }
+        ).liveData
+
+    fun getGuides(type: String) =
+        Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                initialLoadSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { GuideListDataSource(resourceAPI, celestiaLanguage, type) }
         ).liveData
 
     fun getInstalledItems() =

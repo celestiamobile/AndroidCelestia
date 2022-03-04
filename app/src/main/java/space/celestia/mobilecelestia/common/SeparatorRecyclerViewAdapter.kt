@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Space;
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 
@@ -187,31 +188,75 @@ private class FooterRecyclerViewItem(val title: String?): RecyclerViewItem {
         get() = false
 }
 
+private class SpaceRecyclerViewItem: RecyclerViewItem {
+    override val clickable: Boolean
+        get() = false
+}
+
+private class ShortSpaceRecyclerViewItem: RecyclerViewItem {
+    override val clickable: Boolean
+        get() = false
+}
+
 fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     val innerSections = ArrayList<CommonSection>()
-    var lastSectionHasFooter = size == 0
-    for (section in this) {
-        if (section.header != null) {
+    var lastSectionHasFooter = false
+    for (indexedSection in this.withIndex()) {
+        val index = indexedSection.index
+        val section = indexedSection.value
+        val spaceAdded = false
+        val showHeader = section.header != null && section.header != ""
+        val showFooter = section.footer != null && section.footer != ""
+
+        if (showHeader || lastSectionHasFooter) {
+            // Add a short space between header/footer, footer/section, section/header
+            if (index > 0) {
+                innerSections.add(
+                    CommonSection(
+                        listOf(ShortSpaceRecyclerViewItem()),
+                        showSectionSeparator = false, showRowSeparator = false
+                    )
+                )
+            }
+        } else {
+            // Add a tall space between section/section
+            innerSections.add(
+                CommonSection(
+                    listOf(SpaceRecyclerViewItem()),
+                    showSectionSeparator = false, showRowSeparator = false
+                )
+            )
+        }
+
+        if (showHeader) {
             innerSections.add(
                 CommonSection(listOf(HeaderRecyclerViewItem(section.header)),
                     showSectionSeparator = false, showRowSeparator = false
-                ))
+                )
+            )
         }
 
         innerSections.add(section)
 
-        if (section.footer != null) {
+        if (showFooter) {
             innerSections.add(
                 CommonSection(
                     listOf(FooterRecyclerViewItem(section.footer)),
                     showSectionSeparator = false, showRowSeparator = false
                 )
             )
-            lastSectionHasFooter = true
         }
+        lastSectionHasFooter = showFooter
     }
-    if (!lastSectionHasFooter)
-        innerSections.add(CommonSection(listOf(FooterRecyclerViewItem(null)), showRowSeparator = false ,showSectionSeparator = false))
+    if (!lastSectionHasFooter) {
+        // Always add a tall space at the end
+        innerSections.add(
+            CommonSection(
+                listOf(SpaceRecyclerViewItem()),
+                showSectionSeparator = false, showRowSeparator = false
+            )
+        )
+    }
     return innerSections
 }
 
@@ -221,6 +266,10 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
             return HEADER
         if (item is FooterRecyclerViewItem)
             return FOOTER
+        if (item is SpaceRecyclerViewItem)
+            return SPACE
+        if (item is ShortSpaceRecyclerViewItem)
+            return SPACE_SHORT
         throw RuntimeException("$this must deal with item type $item")
     }
 
@@ -231,6 +280,12 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
         }
         if (holder is FooterViewHolder && item is FooterRecyclerViewItem) {
             holder.textView.text = item.title
+            return
+        }
+        if (holder is SpaceViewHolder && item is SpaceRecyclerViewItem) {
+            return
+        }
+        if (holder is SpaceViewHolder && item is ShortSpaceRecyclerViewItem) {
             return
         }
         throw RuntimeException("$this must deal with item type $item")
@@ -244,6 +299,16 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
         if (viewType == FOOTER) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.common_section_footer, parent, false)
             return FooterViewHolder(view)
+        }
+        if (viewType == SPACE) {
+            val space = Space(parent.context)
+            space.minimumHeight = (parent.context.resources.displayMetrics.density * 28).toInt()
+            return SpaceViewHolder(space)
+        }
+        if (viewType == SPACE_SHORT) {
+            val space = Space(parent.context)
+            space.minimumHeight = (parent.context.resources.displayMetrics.density * 8).toInt()
+            return SpaceViewHolder(space)
         }
         throw RuntimeException("$this must deal with item type $viewType")
     }
@@ -260,8 +325,12 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
         val textView: TextView by lazy { itemView.findViewById(R.id.text) }
     }
 
+    inner class SpaceViewHolder(view: Space) : RecyclerView.ViewHolder(view)
+
     companion object {
         const val HEADER = 99997
         const val FOOTER = 99996
+        const val SPACE = 99995
+        const val SPACE_SHORT = 99994
     }
 }

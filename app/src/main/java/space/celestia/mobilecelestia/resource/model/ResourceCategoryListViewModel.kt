@@ -8,10 +8,9 @@ import javax.inject.Inject
 @HiltViewModel
 class ResourceCategoryListViewModel @Inject constructor(
     repository: ResourceRepository,
-    celestiaLanguage: String
 ): AsyncListPagingViewModel() {
     override val itemsWithoutSeparators =
-        repository.getCategories(celestiaLanguage).map { it.map { it as AsyncListItem } }
+        repository.getCategories().map { it.map { it as AsyncListItem } }
 
     override val stylized: Boolean
         get() = true

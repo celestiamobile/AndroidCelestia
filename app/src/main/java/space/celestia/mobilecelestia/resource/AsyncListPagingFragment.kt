@@ -6,19 +6,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.resource.model.AsyncListItem
 import space.celestia.mobilecelestia.resource.model.AsyncListPagingAdapter
 import space.celestia.mobilecelestia.resource.model.AsyncListPagingViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.createLoadingDrawable
 
 abstract class AsyncListPagingFragment: NavigationFragment.SubFragment() {
     abstract val viewModel: AsyncListPagingViewModel
@@ -35,9 +34,7 @@ abstract class AsyncListPagingFragment: NavigationFragment.SubFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_loading_grouped_list, container, false)
-        val imageView = view.findViewById<ImageView>(R.id.loading_image)
-        val drawable = createLoadingDrawable(inflater.context)
-        imageView.setImageDrawable(drawable)
+        val loadingIndicator = view.findViewById<CircularProgressIndicator>(R.id.loading_indicator)
         val refresh = view.findViewById<TextView>(R.id.refresh)
         refresh.text = CelestiaString("Refresh", "")
 
@@ -46,24 +43,24 @@ abstract class AsyncListPagingFragment: NavigationFragment.SubFragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
         recyclerView.isVisible = false
-        imageView.isVisible = true
+        loadingIndicator.isVisible = true
         refresh.isVisible = false
 
         adapter.addLoadStateListener { states ->
             when (states.source.refresh) {
                 is LoadState.NotLoading -> {
                     recyclerView.isVisible = true
-                    imageView.isVisible = false
+                    loadingIndicator.isVisible = false
                     refresh.isVisible = false
                 }
                 is LoadState.Loading -> {
                     recyclerView.isVisible = false
-                    imageView.isVisible = true
+                    loadingIndicator.isVisible = true
                     refresh.isVisible = false
                 }
                 is LoadState.Error -> {
                     recyclerView.isVisible = false
-                    imageView.isVisible = false
+                    loadingIndicator.isVisible = false
                     refresh.isVisible = true
                 }
             }

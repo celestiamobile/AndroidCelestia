@@ -114,6 +114,10 @@ class AsyncListPagingAdapter(private val stylized: Boolean, listener: AsyncListP
                     return oldItem.data.id == newItem.data.id
                 } else if (oldItem is AsyncListPagingItem.Separator && newItem is AsyncListPagingItem.Separator) {
                     return oldItem.inset == newItem.inset
+                } else if (oldItem is AsyncListPagingItem.Header && newItem is AsyncListPagingItem.Header) {
+                    return true
+                } else if (oldItem is AsyncListPagingItem.Footer && newItem is AsyncListPagingItem.Footer) {
+                    return true
                 }
                 return false
             }

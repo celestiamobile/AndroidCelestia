@@ -13,13 +13,12 @@ package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
 import android.view.*
-import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
@@ -30,7 +29,6 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.info.InfoFragment
-import space.celestia.mobilecelestia.utils.createLoadingDrawable
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -43,8 +41,7 @@ interface BrowserRootFragment {
 class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBarView.OnItemSelectedListener {
     private var currentPath = ""
     private var selectedItemIndex = 0
-    private lateinit var imageView: ImageView
-    private lateinit var circularProgressDrawable: CircularProgressDrawable
+    private lateinit var loadingIndicator: CircularProgressIndicator
     private lateinit var browserContainer: LinearLayout
     private lateinit var navigation: BottomNavigationView
     private var tabs = listOf<Tab>()
@@ -114,12 +111,9 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_browser, container, false)
-        imageView = view.findViewById(R.id.loading_image)
-        val drawable = createLoadingDrawable(inflater.context)
-        imageView.setImageDrawable(drawable)
+        loadingIndicator = view.findViewById(R.id.loading_indicator)
         browserContainer = view.findViewById(R.id.browser_container)
         navigation = view.findViewById(R.id.navigation)
-        circularProgressDrawable = drawable
         return view
     }
 
@@ -146,8 +140,7 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
 
     private fun rootItemsLoaded() {
         browserContainer.visibility = View.VISIBLE
-        imageView.visibility = View.GONE
-        circularProgressDrawable.stop()
+        loadingIndicator.visibility = View.GONE
         for (i in 0 until tabs.count()) {
             val tab = tabs[i]
             val item = tab.getBrowserItem(appCore)
@@ -192,8 +185,7 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
 
     private fun loadRootBrowserItems() {
         browserContainer.visibility = View.GONE
-        imageView.visibility = View.VISIBLE
-        circularProgressDrawable.start()
+        loadingIndicator.visibility = View.VISIBLE
         renderer.enqueueTask {
             val sim = appCore.simulation
             sim.createStaticBrowserItems()
