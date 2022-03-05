@@ -20,16 +20,17 @@ class BaseResult(val status: Int, val info: Info) {
 }
 
 class ResultException internal constructor(val code: Int, val reason: String?) : java.lang.Exception()
+class MissingBodyException : java.lang.Exception()
 
 fun <T> BaseResult.commonHandler(t: Type, gson: Gson = GsonBuilder().create()): T {
     if (status != 0) throw ResultException(status, info.reason)
-    val detail = info.detail ?: throw ResultException(status, info.reason)
+    val detail = info.detail ?: throw MissingBodyException()
     return gson.fromJson(detail, t)
 }
 
 fun <T> BaseResult.commonHandler(cls: Class<T>, gson: Gson = GsonBuilder().create()): T {
     if (status != 0) throw ResultException(status, info.reason)
-    val detail = info.detail ?: throw ResultException(status, info.reason)
+    val detail = info.detail ?: throw MissingBodyException()
     @Suppress("UNCHECKED_CAST")
     if (cls == String::class.java) return cls.cast(detail) as T
     return gson.fromJson(detail, cls)
