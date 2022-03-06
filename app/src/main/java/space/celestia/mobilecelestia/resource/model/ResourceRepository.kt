@@ -12,7 +12,7 @@ class ResourceRepository @Inject constructor(val resourceAPI: ResourceAPIService
         Pager(
             config = PagingConfig(
                 pageSize = 20,
-                initialLoadSize = 20,
+                initialLoadSize = 40,
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { ResourceCategoryListDataSource(resourceAPI, language) }
@@ -22,7 +22,7 @@ class ResourceRepository @Inject constructor(val resourceAPI: ResourceAPIService
         Pager(
             config = PagingConfig(
                 pageSize = 20,
-                initialLoadSize = 20,
+                initialLoadSize = 40,
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { ResourceItemListDataSource(resourceAPI, language, category) }
@@ -32,7 +32,7 @@ class ResourceRepository @Inject constructor(val resourceAPI: ResourceAPIService
         Pager(
             config = PagingConfig(
                 pageSize = 20,
-                initialLoadSize = 20,
+                initialLoadSize = 40,
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { GuideListDataSource(resourceAPI, language, type) }
@@ -42,7 +42,7 @@ class ResourceRepository @Inject constructor(val resourceAPI: ResourceAPIService
         Pager(
             config = PagingConfig(
                 pageSize = 20,
-                initialLoadSize = 20,
+                initialLoadSize = 40,
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { InstalledResourceItemListDataSource(resourceManager) }
