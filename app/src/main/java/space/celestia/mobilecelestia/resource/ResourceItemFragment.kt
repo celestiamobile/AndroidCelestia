@@ -18,14 +18,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
+import space.celestia.mobilecelestia.resource.model.ResourceAPI
+import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.commonHandler
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
 import javax.inject.Inject
@@ -34,6 +39,8 @@ import javax.inject.Inject
 class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.Listener {
     @Inject
     lateinit var resourceManager: ResourceManager
+    @Inject
+    lateinit var resourceAPI: ResourceAPIService
 
     private lateinit var language: String
 
@@ -97,6 +104,16 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 .appendQueryParameter("titleVisibility", "visible")
                 .build()
             replace(CommonWebFragment.newInstance(uri), R.id.resource_item_container)
+
+            // Fetch the latest item, this is needed as user might come
+            // here from Installed where the URL might be incorrect
+            lifecycleScope.launch {
+                try {
+                    val result = resourceAPI.item(language, item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                    item = result
+                    updateUI()
+                } catch (ignored: Throwable) {}
+            }
         }
     }
 
