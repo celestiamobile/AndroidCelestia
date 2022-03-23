@@ -10,7 +10,4 @@ class InstalledResourceItemListViewModel @Inject constructor(
     repository: ResourceRepository) : AsyncListPagingViewModel() {
     override val itemsWithoutSeparators =
         repository.getInstalledItems().map { it.map { it as AsyncListItem } }
-
-    override val stylized: Boolean
-        get() = true
 }

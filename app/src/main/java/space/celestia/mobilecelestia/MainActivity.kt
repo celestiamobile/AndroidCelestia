@@ -951,7 +951,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 moveTaskToBack(true)
             }
             ToolbarAction.Addons -> {
-                showOnlineResource()
+                showInstalledAddons()
             }
             ToolbarAction.Paperplane -> {
                 showGoTo()
@@ -960,7 +960,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSpeedControl()
             }
             ToolbarAction.NewsArchive -> {
-                showBottomSheetFragment(GuideFragment.newInstance("news", CelestiaString("News", ""), AppCore.getLanguage()))
+                val baseURL = "https://celestia.mobi/resources/guides"
+                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("type", "news").appendQueryParameter("lang", AppCore.getLanguage()).build()
+                openURL(uri.toString())
+            }
+            ToolbarAction.Download -> {
+                val baseURL = "https://celestia.mobi/resources/categories"
+                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
+                openURL(uri.toString())
             }
         }
     }
@@ -1827,21 +1834,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Resource
-    private fun showOnlineResource() {
+    private fun showInstalledAddons() {
         showBottomSheetFragment(ResourceFragment.newInstance(AppCore.getLanguage()))
     }
 
     override fun onAsyncListPagingItemSelected(item: AsyncListItem) {
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is ResourceFragment) {
-            if (item is ResourceCategory) {
+            if (item is ResourceItem) {
                 frag.pushItem(item)
-            } else if (item is ResourceItem) {
-                frag.pushItem(item)
-            }
-        } else if (frag is GuideFragment) {
-            if (item is GuideItem) {
-                frag.pushFragment(CommonWebFragment.newInstance(buildGuideURI(item.id)))
             }
         }
     }

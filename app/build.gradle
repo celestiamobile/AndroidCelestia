@@ -94,7 +94,7 @@ dependencies {
     implementation "androidx.core:core-ktx:$core_ktx_version"
     implementation "androidx.constraintlayout:constraintlayout:2.1.3"
     implementation "androidx.recyclerview:recyclerview:1.2.1"
-    implementation "androidx.paging:paging-runtime-ktx:3.1.0"
+    implementation "androidx.paging:paging-runtime-ktx:3.1.1"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
@@ -107,9 +107,6 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:4.9.3"
 
     implementation "net.lingala.zip4j:zip4j:2.9.1"
-
-    implementation "com.github.bumptech.glide:glide:$glide_version"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
 
     implementation 'androidx.webkit:webkit:1.4.0'
 

@@ -14,7 +14,6 @@ package space.celestia.mobilecelestia.resource
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 
 class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
@@ -27,12 +26,7 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return ResourceCategoryListPagingFragment.newInstance(language)
-    }
-
-    fun pushItem(item: ResourceCategory) {
-        val frag = ResourceItemListPagingFragment.newInstance(item, language)
-        pushFragment(frag)
+        return InstalledResourceItemListPagingFragment.newInstance()
     }
 
     fun pushItem(item: ResourceItem) {

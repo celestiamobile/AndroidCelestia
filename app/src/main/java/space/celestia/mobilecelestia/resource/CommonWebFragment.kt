@@ -112,7 +112,7 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
     }
 
     companion object {
-        private val ARG_URI = "uri"
+        private const val ARG_URI = "uri"
 
         fun newInstance(uri: Uri) = CommonWebFragment().apply {
             arguments = Bundle().apply {

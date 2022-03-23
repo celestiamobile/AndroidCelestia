@@ -5,7 +5,6 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.resource.model.InstalledResourceItemListViewModel
-import space.celestia.mobilecelestia.resource.model.ResourceCategory
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 @AndroidEntryPoint

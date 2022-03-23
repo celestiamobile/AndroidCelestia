@@ -30,7 +30,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 enum class ToolbarAction : Serializable {
-    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Paperplane, Speedometer, NewsArchive;
+    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Download, Paperplane, Speedometer, NewsArchive;
 
     val title: String
         get() {
@@ -43,7 +43,8 @@ enum class ToolbarAction : Serializable {
                 Setting -> "Settings"
                 Home -> "Home (Sol)"
                 Event -> "Eclipse Finder"
-                Addons -> "Add-ons"
+                Addons -> "Manage Installed Add-ons"
+                Download -> "Download Add-ons"
                 Paperplane -> "Go to Object"
                 Speedometer -> "Speed Control"
                 NewsArchive -> "News Archive"
@@ -64,7 +65,7 @@ enum class ToolbarAction : Serializable {
                 listOf(Share, Search, Home, Paperplane),
                 listOf(Camera, Time, Script, Speedometer),
                 listOf(Browse, Favorite, Event),
-                listOf(Addons, NewsArchive),
+                listOf(Addons, Download, NewsArchive),
                 listOf(Help),
                 listOf(Exit)
             )

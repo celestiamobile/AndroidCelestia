@@ -3,27 +3,18 @@ package space.celestia.mobilecelestia.resource.model
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.SeparatorView
 import space.celestia.mobilecelestia.resource.AsyncListPagingFragment
 import java.lang.ref.WeakReference
 
-class AsyncListPagingAdapter(private val stylized: Boolean, listener: AsyncListPagingFragment.Listener?): PagingDataAdapter<AsyncListPagingItem, RecyclerView.ViewHolder>(COMPARATOR) {
+class AsyncListPagingAdapter(listener: AsyncListPagingFragment.Listener?): PagingDataAdapter<AsyncListPagingItem, RecyclerView.ViewHolder>(COMPARATOR) {
     private val listener = if (listener == null) null else WeakReference(listener)
-
-    inner class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val title: TextView
-            get() = itemView.findViewById(R.id.resource_title)
-        val image: ImageView
-            get() = itemView.findViewById(R.id.resource_image)
-    }
 
     inner class SeparatorViewHolder(val view: SeparatorView) : RecyclerView.ViewHolder(view)
 
@@ -52,12 +43,7 @@ class AsyncListPagingAdapter(private val stylized: Boolean, listener: AsyncListP
                 return FooterViewHolder(view)
             }
             else -> {
-                if (stylized) {
-                    val view = LayoutInflater.from(parent.context).inflate(R.layout.common_resource_item, parent, false)
-                    ItemViewHolder(view)
-                } else {
-                    CommonTextViewHolder(parent)
-                }
+                return CommonTextViewHolder(parent)
             }
         }
     }
@@ -67,16 +53,7 @@ class AsyncListPagingAdapter(private val stylized: Boolean, listener: AsyncListP
 
         when (item) {
             is AsyncListPagingItem.Data -> {
-                if (holder is ItemViewHolder) {
-                    holder.title.text = item.data.name
-                    val imageURL = item.data.imageURL
-                    if (imageURL != null) {
-                        Glide.with(holder.image).load(imageURL).placeholder(R.drawable.resource_item_placeholder).into(holder.image)
-                    } else {
-                        Glide.with(holder.image).clear(holder.image)
-                        holder.image.setImageResource(R.drawable.resource_item_placeholder)
-                    }
-                } else if (holder is CommonTextViewHolder) {
+                if (holder is CommonTextViewHolder) {
                     holder.title.text = item.data.name
                 }
                 holder.itemView.setOnClickListener {

@@ -8,36 +8,6 @@ import javax.inject.Singleton
 
 @Singleton
 class ResourceRepository @Inject constructor(val resourceAPI: ResourceAPIService, val resourceManager: ResourceManager) {
-    fun getCategories(language: String) =
-        Pager(
-            config = PagingConfig(
-                pageSize = 20,
-                initialLoadSize = 40,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = { ResourceCategoryListDataSource(resourceAPI, language) }
-        ).liveData
-
-    fun getItems(category: String, language: String) =
-        Pager(
-            config = PagingConfig(
-                pageSize = 20,
-                initialLoadSize = 40,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = { ResourceItemListDataSource(resourceAPI, language, category) }
-        ).liveData
-
-    fun getGuides(type: String, language: String) =
-        Pager(
-            config = PagingConfig(
-                pageSize = 20,
-                initialLoadSize = 40,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = { GuideListDataSource(resourceAPI, language, type) }
-        ).liveData
-
     fun getInstalledItems() =
         Pager(
             config = PagingConfig(

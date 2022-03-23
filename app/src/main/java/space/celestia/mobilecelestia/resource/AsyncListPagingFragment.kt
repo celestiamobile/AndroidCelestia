@@ -39,7 +39,7 @@ abstract class AsyncListPagingFragment: NavigationFragment.SubFragment() {
         refresh.text = CelestiaString("Refresh", "")
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.list)
-        val adapter = AsyncListPagingAdapter(viewModel.stylized, selectListener)
+        val adapter = AsyncListPagingAdapter(selectListener)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
         recyclerView.isVisible = false
@@ -65,9 +65,6 @@ abstract class AsyncListPagingFragment: NavigationFragment.SubFragment() {
                 }
             }
         }
-
-        if (viewModel.stylized)
-            recyclerView.addItemDecoration(SpaceItemDecoration())
 
         refresh.setOnClickListener {
             adapter.retry()
