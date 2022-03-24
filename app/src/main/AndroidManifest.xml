@@ -14,8 +14,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="space.celestia.mobilecelestia"
     android:installLocation="auto"
-    android:versionCode="257"
-    android:versionName="1.5.5">
+    android:versionCode="258"
+    android:versionName="1.5.6">
 
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -31,7 +31,14 @@
         android:largeHeap="true"
         android:hasFragileUserData="true"
         android:theme="@style/AppTheme"
+        android:resizeableActivity="true"
         tools:targetApi="s">
+
+        <meta-data android:name="WindowManagerPreference:FreeformWindowSize"
+            android:value="[phone|tablet|maximize]" />
+        <meta-data android:name="WindowManagerPreference:FreeformWindowOrientation"
+            android:value="[portrait|landscape]" />
+
         <activity
             android:name="space.celestia.mobilecelestia.MainActivity"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
@@ -118,16 +125,6 @@
                     android:host="celestia.mobi"
                     android:pathPattern="/resources/guide" />
             </intent-filter>
-            <meta-data android:name="WindowManagerPreference:FreeformWindowSize"
-                android:value="[phone|tablet|maximize]" />
-            <meta-data android:name="WindowManagerPreference:FreeformWindowOrientation"
-                android:value="[portrait|landscape]" />
-            <layout android:defaultHeight="600dp"
-                android:defaultWidth="800dp"
-                android:gravity="top|end"
-                android:minHeight="600dp"
-                android:minWidth="800dp"
-                tools:targetApi="n" />
         </activity>
         <provider
             android:name="androidx.core.content.FileProvider"

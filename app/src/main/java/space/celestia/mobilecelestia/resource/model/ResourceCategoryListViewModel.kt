@@ -11,7 +11,7 @@ class ResourceCategoryListViewModel @Inject constructor(
     repository: ResourceRepository,
     savedStateHandle: SavedStateHandle
 ): AsyncListPagingViewModel() {
-    val language: String = savedStateHandle.get(ResourceItemListViewModel.ARG_LANG)!!
+    val language: String = savedStateHandle.get(ARG_LANG)!!
     override val itemsWithoutSeparators =
         repository.getCategories(language = language).map { it.map { it as AsyncListItem } }
 
