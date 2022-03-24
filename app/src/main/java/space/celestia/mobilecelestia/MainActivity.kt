@@ -91,21 +91,9 @@ import java.lang.ref.WeakReference
 import java.net.URL
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.List
-import kotlin.collections.Map
-import kotlin.collections.arrayListOf
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.firstOrNull
-import kotlin.collections.iterator
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mapNotNull
-import kotlin.collections.mapOf
 import kotlin.collections.set
-import kotlin.collections.sorted
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
@@ -551,37 +539,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val languageFromSettings = preferenceManager[PreferenceManager.PredefinedKey.Language]
         if (languageFromSettings == null) {
-            val locale = Locale.getDefault()
-            val lang = locale.language
-            var country = locale.country
-            if (lang == "zh") {
-                // Special handling for Chinese script
-                // Basically mapping zh_CN => zh_Hans
-                //                   zh_TW => zh_Hant
-                if (locale.script.contains("Hans"))
-                    country = "CN"
-                else if (locale.script.contains("Hant"))
-                    country = "TW"
-                // Is it possible for script to be empty?
-                // Singapore uses Hans, Hong Kong, Macao uses Hant
-                else if (country == "SG")
-                    country = "CN"
-                else if (country == "HK" || country == "MO")
-                    country = "TW"
-            }
-            var localeString = "${lang}_${country}"
-            if (availableLanguageCodes.contains(localeString)) {
-                language = localeString
-            } else {
-                localeString = lang
-                language = if (availableLanguageCodes.contains(localeString)) {
-                    localeString
-                } else {
-                    "en"
-                }
-            }
+            language = getString(R.string.celestia_language)
         } else {
-            languageOverride = languageFromSettings
             language = languageFromSettings
         }
 
@@ -2017,7 +1976,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var language: String = "en"
         private var addonPaths: List<String> = listOf()
         private var extraScriptPaths: List<String> = listOf()
-        private var languageOverride: String? = null
         private var enableMultisample = false
         private var enableHiDPI = false
 

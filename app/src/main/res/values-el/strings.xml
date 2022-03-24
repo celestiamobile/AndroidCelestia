@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Celestia</string>
+    <string name="celestia_language">el</string>
 </resources>

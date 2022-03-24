@@ -51,6 +51,7 @@ create_values_folder()
             cat <<EOF >$STRINGS_XML
 <resources>
     <string name="app_name">Celestia</string>
+    <string name="celestia_language">$f</string>
 </resources>
 EOF
         fi

@@ -11,6 +11,7 @@
 
 <resources>
     <string name="app_name">Celestia</string>
+    <string name="celestia_language">zh_CN</string>
     <string name="privacy_policy_alert_decline_button_title">暂不同意</string>
     <string name="privacy_policy_alert_show_policy_button_title">查看协议</string>
     <string name="privacy_policy_alert_title">隐私政策与服务协议</string>

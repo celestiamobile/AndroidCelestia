@@ -11,6 +11,7 @@
 
 <resources>
     <string name="app_name">Celestia</string>
+    <string name="celestia_language">en</string>
     <string name="privacy_policy_alert_title">Privacy Policy and Service Agreement</string>
     <string name="privacy_policy_alert_detail">Please read Privacy Policy and Service Agreement carefully.</string>
     <string name="privacy_policy_alert_show_policy_button_title">View Policy</string>
