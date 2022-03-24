@@ -35,3 +35,26 @@ convert_po "$CELESTIA_CONTENT_REPO_ROOT/po" "celestia-data"
 convert_po "$CELESTIA_LOCALIZATION_REPO_ROOT/common" "celestia_ui"
 
 rm -rf $PROJECT_TEMP_DIR
+
+CELESTIA_APP_RES_ROOT=`pwd`/src/main/res
+
+create_values_folder()
+{
+    for po in $1/*.po; do
+        f=${po##*/};f=${f%.*}
+        VALUES_FOLDER=$CELESTIA_APP_RES_ROOT/values-${f/_/-r}
+        mkdir -p $VALUES_FOLDER
+        STRINGS_XML=$VALUES_FOLDER/strings.xml
+        if [ ! -f $STRINGS_XML ];then
+            echo "Create $STRINGS_XML"
+            touch $STRINGS_XML
+            cat <<EOF >$STRINGS_XML
+<resources>
+    <string name="app_name">Celestia</string>
+</resources>
+EOF
+        fi
+    done
+}
+
+create_values_folder "$CELESTIA_LOCALIZATION_REPO_ROOT/common"
