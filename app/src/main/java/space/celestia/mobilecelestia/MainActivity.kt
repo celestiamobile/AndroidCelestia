@@ -692,7 +692,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         val guide = guideToOpen
         if (guide != null) {
-            showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(guide)))
+            showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(guide), listOf("guide")))
             cleanup()
             return
         }
@@ -715,7 +715,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
                 if (preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] = result.id
-                showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(result.id)))
+                showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(result.id), listOf("guide")))
             } catch (ignored: Throwable) {}
         }
     }

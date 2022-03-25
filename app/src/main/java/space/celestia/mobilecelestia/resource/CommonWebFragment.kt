@@ -21,6 +21,7 @@ import java.lang.ref.WeakReference
 
 class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInterface.MessageHandler {
     private lateinit var uri: Uri
+    private lateinit var matchingQueryKeys: List<String>
     private lateinit var webView: WebView
 
     private var listener: Listener? = null
@@ -34,7 +35,8 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        uri = requireArguments().getParcelable<Uri>(ARG_URI)!!
+        uri = requireArguments().getParcelable(ARG_URI)!!
+        matchingQueryKeys = requireArguments().getStringArrayList(ARG_MATCHING_QUERY_KEYS) ?: listOf()
     }
 
     override fun onCreateView(
@@ -54,6 +56,7 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
         val weakSelf = WeakReference(this)
 
         val defaultUri = uri
+        val queryKeys = matchingQueryKeys
         webView.addJavascriptInterface(CelestiaJavascriptInterface(this), "AndroidCelestia")
         webView.webViewClient = object: WebViewClient() {
             @TargetApi(Build.VERSION_CODES.N)
@@ -69,12 +72,23 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
                 return shouldOverrideUrl(url)
             }
 
+            fun isURLAllowed(uri: Uri): Boolean {
+                if (uri.host != defaultUri.host || uri.path != defaultUri.path) {
+                    return false
+                }
+                for (key in queryKeys) {
+                    if (uri.getQueryParameter(key) != defaultUri.getQueryParameter(key)) {
+                        return false
+                    }
+                }
+                return true
+            }
+
             fun shouldOverrideUrl(url: String?): Boolean {
                 if (url == null) return true
                 val uri = Uri.parse(url)
-                if (uri.host == defaultUri.host && uri.path == defaultUri.path) {
+                if (isURLAllowed(uri))
                     return false
-                }
                 weakSelf.get()?.listener?.onExternalWebLinkClicked(url)
                 return true
             }
@@ -113,10 +127,12 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
 
     companion object {
         private const val ARG_URI = "uri"
+        private const val ARG_MATCHING_QUERY_KEYS = "query_keys"
 
-        fun newInstance(uri: Uri) = CommonWebFragment().apply {
+        fun newInstance(uri: Uri, matchingQueryKeys: List<String>) = CommonWebFragment().apply {
             arguments = Bundle().apply {
                 putParcelable(ARG_URI, uri)
+                putStringArrayList(ARG_MATCHING_QUERY_KEYS, ArrayList(matchingQueryKeys))
             }
         }
     }
