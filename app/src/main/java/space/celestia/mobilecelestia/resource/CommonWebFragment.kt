@@ -13,8 +13,10 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.view.isVisible
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import java.lang.ref.WeakReference
@@ -45,6 +47,7 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_common_web, container, false)
+        val loadingIndicator = view.findViewById<CircularProgressIndicator>(R.id.loading_indicator)
         webView = view.findViewById(R.id.webview)
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.isHorizontalScrollBarEnabled = false
@@ -91,6 +94,10 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
                     return false
                 weakSelf.get()?.listener?.onExternalWebLinkClicked(url)
                 return true
+            }
+
+            override fun onPageCommitVisible(view: WebView?, url: String?) {
+                loadingIndicator.isVisible = false
             }
         }
 
