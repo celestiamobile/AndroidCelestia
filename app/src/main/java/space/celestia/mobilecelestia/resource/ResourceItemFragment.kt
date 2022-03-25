@@ -45,6 +45,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     private lateinit var language: String
 
     private lateinit var item: ResourceItem
+    private var hasFetchedLatestData = false
     private lateinit var statusButton: Button
     private lateinit var goToButton: Button
     private lateinit var progressIndicator: LinearProgressIndicator
@@ -66,7 +67,13 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onCreate(savedInstanceState)
 
         resourceManager.addListener(this)
-        item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
+        if (savedInstanceState != null) {
+            item = savedInstanceState.getSerializable(ARG_ITEM) as ResourceItem
+            hasFetchedLatestData = savedInstanceState.getBoolean(ARG_LATEST, false)
+        } else {
+            item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
+            hasFetchedLatestData = false
+        }
         language = requireArguments().getString(ARG_LANG, "en")
     }
 
@@ -104,7 +111,9 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 .appendQueryParameter("titleVisibility", "visible")
                 .build()
             replace(CommonWebFragment.newInstance(uri), R.id.resource_item_container)
+        }
 
+        if (!hasFetchedLatestData) {
             // Fetch the latest item, this is needed as user might come
             // here from Installed where the URL might be incorrect
             lifecycleScope.launch {
@@ -115,6 +124,12 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 } catch (ignored: Throwable) {}
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable(ARG_ITEM, item)
+        outState.putBoolean(ARG_LATEST, hasFetchedLatestData)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onAttach(context: Context) {
@@ -164,6 +179,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             activity.showAlert(CelestiaString("Do you want to cancel this task?", "")) {
                 dm.cancel(item.id)
                 currentState = ResourceItemState.None
+                hasFetchedLatestData = true
                 updateUI()
             }
             return
@@ -237,6 +253,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     companion object {
         private const val ARG_ITEM = "item"
         private const val ARG_LANG = "lang"
+        private const val ARG_LATEST = "latest"
 
         @JvmStatic
         fun newInstance(item: ResourceItem, language: String) =
