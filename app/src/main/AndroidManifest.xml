@@ -14,7 +14,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="space.celestia.mobilecelestia"
     android:installLocation="auto"
-    android:versionCode="260"
+    android:versionCode="261"
     android:versionName="1.5.7">
 
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
@@ -94,16 +94,6 @@
                 <data
                     android:scheme="celguide"
                     android:host="*" />
-            </intent-filter>
-            <intent-filter android:autoVerify="true"
-                tools:targetApi="m">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="celestia.mobi"
-                    android:pathPattern="/api/url" />
             </intent-filter>
             <intent-filter android:autoVerify="true"
                 tools:targetApi="m">

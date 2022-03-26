@@ -8,10 +8,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
-import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceManager
-import space.celestia.mobilecelestia.share.ShareAPIService
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import javax.inject.Singleton
 
@@ -26,16 +24,6 @@ object AppModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ResourceAPIService::class.java)
-    }
-
-    @Singleton
-    @Provides
-    fun provideShareAPI(): ShareAPIService {
-        return Retrofit.Builder()
-            .baseUrl("https://celestia.mobi/api/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ShareAPIService::class.java)
     }
 
     @Singleton

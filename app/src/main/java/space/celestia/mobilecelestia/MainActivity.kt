@@ -77,9 +77,6 @@ import space.celestia.mobilecelestia.search.SearchContainerFragment
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.search.hideKeyboard
 import space.celestia.mobilecelestia.settings.*
-import space.celestia.mobilecelestia.share.ShareAPIService
-import space.celestia.mobilecelestia.share.URLCreationResponse
-import space.celestia.mobilecelestia.share.URLResolultionResponse
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
@@ -138,8 +135,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var renderer: Renderer
     @Inject
     lateinit var resourceAPI: ResourceAPIService
-    @Inject
-    lateinit var shareAPI: ShareAPIService
     @Inject
     lateinit var resourceManager: ResourceManager
 
@@ -582,15 +577,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun handleAppLink(uri: Uri) {
         val path = uri.path ?: return
         when (path) {
-            "/api/url" -> {
-                val id = uri.getQueryParameter("id") ?: return
-                lifecycleScope.launch {
-                    try {
-                        val result = shareAPI.resolve(path, id).commonHandler(URLResolultionResponse::class.java)
-                        requestOpenURL(result.resolvedURL)
-                    } catch (ignored: Throwable) {}
-                }
-            }
             "/resources/item" -> {
                 val id = uri.getQueryParameter("item") ?: return
                 requestOpenAddon(id)
@@ -1197,7 +1183,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun shareFavoriteItem(item: MutableFavoriteBaseItem) {
         if (item is FavoriteBookmarkItem && item.bookmark.isLeaf) {
-            shareURL(item.bookmark.url, item.bookmark.name)
+            shareURLDirect(item.bookmark.name, item.bookmark.url)
         }
     }
 
@@ -1766,28 +1752,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun shareURL() {
         renderer.enqueueTask {
-            val orig = appCore.currentURL
+            val url = appCore.currentURL
             val name = appCore.simulation.universe.getNameForSelection(appCore.simulation.selection)
             lifecycleScope.launch {
-                shareURL(orig, name)
-            }
-        }
-    }
-
-    private fun shareURL(url: String, name: String) {
-        val encodedURL = android.util.Base64.encodeToString(url.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
-        showTextInput(CelestiaString("Share", ""), name) { title ->
-            showToast(CelestiaString("Generating sharing link…", ""), Toast.LENGTH_SHORT)
-            lifecycleScope.launch {
-                try {
-                    val result = shareAPI.create(title, encodedURL, versionCode.toString(), AppCore.getLanguage()).commonHandler(URLCreationResponse::class.java)
-                    shareURLDirect(name, result.publicURL)
-                } catch (ignored: CancellationException) {
-                } catch (exception: ResultException) {
-                    showShareError(reason = exception.reason)
-                } catch (ignored: Throwable) {
-                    showShareError()
-                }
+                shareURLDirect(name, url)
             }
         }
     }
