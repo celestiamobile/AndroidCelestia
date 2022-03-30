@@ -6,18 +6,20 @@ import java.lang.ref.WeakReference
 
 class CelestiaJavascriptInterface(handler: MessageHandler) {
     interface MessageHandler {
-        fun runScript(type: String, content: String)
+        fun runScript(type: String, content: String, scriptName: String?, scriptLocation: String?)
         fun shareURL(title: String, url: String)
+        fun receivedACK(id: String)
     }
 
-    class MessagePayload(val operation: String, val content: String)
+    class MessagePayload(val operation: String, val content: String, val minScriptVersion: Int)
     abstract class BaseJavascriptHandler {
         abstract val operation: String
         abstract fun executeWithContent(content: String, handler: MessageHandler)
     }
 
-    class RunScriptContext(val scriptContent: String, val scriptType: String)
+    class RunScriptContext(val scriptContent: String, val scriptType: String, val scriptName: String?, val scriptLocation: String?)
     class ShareURLContext(val title: String, val url: String)
+    class SendACKContext(val id: String)
 
     abstract class JavascriptHandler<T>(private val clazz: Class<T>): BaseJavascriptHandler() {
         abstract fun execute(context: T, handler: MessageHandler)
@@ -35,10 +37,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
             get() = "runScript"
 
         override fun execute(context: RunScriptContext, handler: MessageHandler) {
-            val type = context.scriptType
-            val content = context.scriptContent
-
-            handler.runScript(type, content)
+            handler.runScript(context.scriptType, context.scriptContent, context.scriptName, context.scriptLocation)
         }
     }
 
@@ -51,6 +50,15 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
+    class SendACKHandler: JavascriptHandler<SendACKContext>(SendACKContext::class.java) {
+        override val operation: String
+            get() = "sendACK"
+
+        override fun execute(context: SendACKContext, handler: MessageHandler) {
+            handler.receivedACK(context.id)
+        }
+    }
+
     private val handler = WeakReference(handler)
 
     @JavascriptInterface
@@ -58,6 +66,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         val messageHandler = handler.get() ?: return
         try {
             val payload = Gson().fromJson(message, MessagePayload::class.java)
+            if (payload.minScriptVersion > supportedScriptVersion) return
             for (handler in contextHandlers) {
                 if (handler.operation == payload.operation) {
                     handler.executeWithContent(payload.content, messageHandler)
@@ -68,9 +77,12 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     }
 
     private companion object {
+        val supportedScriptVersion = 2
+
         val contextHandlers: List<BaseJavascriptHandler> = listOf(
             RunScriptHandler(),
             ShareURLHandler(),
+            SendACKHandler(),
         )
     }
 }

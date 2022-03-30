@@ -19,19 +19,22 @@ import androidx.webkit.WebViewFeature
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import java.io.File
 import java.lang.ref.WeakReference
 
 class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInterface.MessageHandler {
     private lateinit var uri: Uri
     private lateinit var matchingQueryKeys: List<String>
+    private var contextDirectory: File? = null
     private lateinit var webView: WebView
 
     private var listener: Listener? = null
 
     interface Listener {
         fun onExternalWebLinkClicked(url: String)
-        fun onRunScript(type: String, content: String)
+        fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?)
         fun onShareURL(title: String, url: String)
+        fun onReceivedACK(id: String)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +42,7 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
 
         uri = requireArguments().getParcelable(ARG_URI)!!
         matchingQueryKeys = requireArguments().getStringArrayList(ARG_MATCHING_QUERY_KEYS) ?: listOf()
+        contextDirectory = requireArguments().getSerializable(ARG_CONTEXT_DIRECTORY) as? File
     }
 
     override fun onCreateView(
@@ -124,21 +128,27 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
         listener = null
     }
 
-    override fun runScript(type: String, content: String) {
-        listener?.onRunScript(type, content)
+    override fun runScript(type: String, content: String, scriptName: String?, scriptLocation: String?) {
+        listener?.onRunScript(type, content, scriptName, scriptLocation, contextDirectory)
     }
 
     override fun shareURL(title: String, url: String) {
         listener?.onShareURL(title, url)
     }
 
+    override fun receivedACK(id: String) {
+        listener?.onReceivedACK(id)
+    }
+
     companion object {
         private const val ARG_URI = "uri"
         private const val ARG_MATCHING_QUERY_KEYS = "query_keys"
+        private const val ARG_CONTEXT_DIRECTORY = "context_directory"
 
-        fun newInstance(uri: Uri, matchingQueryKeys: List<String>) = CommonWebFragment().apply {
+        fun newInstance(uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File? = null) = CommonWebFragment().apply {
             arguments = Bundle().apply {
                 putParcelable(ARG_URI, uri)
+                putSerializable(ARG_CONTEXT_DIRECTORY, contextDirectory)
                 putStringArrayList(ARG_MATCHING_QUERY_KEYS, ArrayList(matchingQueryKeys))
             }
         }

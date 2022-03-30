@@ -180,6 +180,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var currentGoToData: GoToInputFragment.GoToData? = null
 
+    private var latestNewsID: String? = null
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
@@ -700,7 +702,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             try {
                 val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
                 if (preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
-                preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] = result.id
+                latestNewsID = result.id
                 showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(result.id), listOf("guide")))
             } catch (ignored: Throwable) {}
         }
@@ -712,7 +714,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .buildUpon()
             .appendQueryParameter("guide", id)
             .appendQueryParameter("lang", AppCore.getLanguage())
-            .appendQueryParameter("environment", "app")
+            .appendQueryParameter("platform", "android")
             .appendQueryParameter("theme", "dark")
             .build()
     }
@@ -1029,17 +1031,33 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openURL(url.toString())
     }
 
-    override fun onRunScript(type: String, content: String) {
+    override fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
         if (!supportedScriptTypes.contains(type)) return
+        val supportedScriptLocations = listOf("temp", "context")
+        if (location != null && !supportedScriptLocations.contains(location)) return
+        if (location == "context" && contextDirectory == null) return
+
+        val scriptFile: File
+        val scriptFileName = name ?: "${UUID.randomUUID()}.${type}"
+        if (location == "context") {
+            scriptFile = File(contextDirectory, scriptFileName)
+        } else {
+            scriptFile = File(cacheDir, scriptFileName)
+        }
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val file = File(cacheDir, "${UUID.randomUUID()}.${type}")
             try {
-                file.writeText(content)
+                scriptFile.writeText(content)
                 withContext(Dispatchers.Main) {
-                    openCelestiaURL(file.absolutePath)
+                    openCelestiaURL(scriptFile.absolutePath)
                 }
             } catch (ignored: Throwable) {}
+        }
+    }
+
+    override fun onReceivedACK(id: String) {
+        if (id == latestNewsID) {
+            preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] = id
         }
     }
 

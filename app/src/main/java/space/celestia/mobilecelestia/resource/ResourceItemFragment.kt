@@ -106,11 +106,11 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 .buildUpon()
                 .appendQueryParameter("item", item.id)
                 .appendQueryParameter("lang", language)
-                .appendQueryParameter("environment", "app")
+                .appendQueryParameter("platform", "android")
                 .appendQueryParameter("theme", "dark")
                 .appendQueryParameter("titleVisibility", "visible")
                 .build()
-            replace(CommonWebFragment.newInstance(uri, listOf("item")), R.id.resource_item_container)
+            replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item.id)), R.id.resource_item_container)
         }
 
         if (!hasFetchedLatestData) {

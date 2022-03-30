@@ -75,7 +75,7 @@ class ResourceManager {
     }
 
     fun isInstalled(identifier: String): Boolean {
-        return File(addonDirectory, identifier).exists()
+        return contextDirectory(identifier).exists()
     }
 
     suspend fun installedResourcesAsync(): List<ResourceItem> {
@@ -110,8 +110,12 @@ class ResourceManager {
         return items
     }
 
+    fun contextDirectory(identifier: String): File {
+        return File(addonDirectory, identifier)
+    }
+
     fun uninstall(identifier: String): Boolean {
-        return File(addonDirectory, identifier).deleteRecursively()
+        return contextDirectory(identifier).deleteRecursively()
     }
 
     fun cancel(identifier: String) {
@@ -120,7 +124,7 @@ class ResourceManager {
 
     @Suppress("BlockingMethodInNonBlockingContext")
     fun download(item: ResourceItem, destination: File) {
-        val unzipDestination = File(addonDirectory, item.id)
+        val unzipDestination = contextDirectory(item.id)
         val reference = WeakReference(this)
         val task = CoroutineScope(parentJob + Dispatchers.IO).executeAsyncTask(doInBackground = { publishProgress: suspend (progress: Progress) -> Unit ->
             val client = OkHttpClient()
