@@ -57,7 +57,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowEclipticGrid("Ecliptic"),
     ShowHorizonGrid("Horizontal"),
     ShowGalacticGrid("Galactic"),
-    ShowDiagrams("Show Constellations"),
+    ShowDiagrams("Show Diagrams"),
     ShowConstellationLabels("Constellation Labels"),
     ShowLatinConstellationLabels("Constellations in Latin"),
     ShowBoundaries("Show Boundaries"),
@@ -87,6 +87,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowMarkers("Show Markers"),
     ShowEcliptic("Ecliptic Line"),
     ShowTintedIllumination("Tinted Illumination"),
+    ShowAutoMag("Auto Mag"),
+    ShowSmoothLines("Smooth Lines"),
     // Int values
     TimeZone("Time Zone"),
     DateFormat("Date Format"),
@@ -145,6 +147,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 ShowGalacticGrid,
                 ShowEcliptic,
                 ShowTintedIllumination,
+                ShowAutoMag,
+                ShowSmoothLines,
                 ShowDiagrams,
                 ShowConstellationLabels,
                 ShowLatinConstellationLabels,
@@ -183,7 +187,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 StarStyle,
                 HudDetail,
                 MeasurementSystem,
-                TemperatureScale
+                TemperatureScale,
             )
 
         val allDoubleCases: List<SettingsKey>
@@ -389,7 +393,7 @@ class SettingsCurrentTimeItem : SettingsItem {
         get() = CelestiaString("Current Time", "")
 }
 
-private val staticTimeItems: List<SettingsItem> = listOf(
+private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.TimeZone.displayName, ""),
         listOf(
@@ -405,60 +409,7 @@ private val staticTimeItems: List<SettingsItem> = listOf(
             SettingsKeyedSelectionItem(SettingsKey.DateFormat, CelestiaString("UTC Offset", ""), 2)
         )
     ),
-    SettingsCurrentTimeItem()
-)
-
-class SettingsDataLocationItem : SettingsItem, Serializable {
-    override val name: String
-        get() = CelestiaString("Data Location", "")
-}
-
-class SettingsRefreshRateItem : SettingsItem, Serializable {
-    override val name: String
-        get() = CelestiaString("Frame Rate", "")
-}
-
-private val staticAdvancedItems: List<SettingsItem> = listOf(
-    SettingsCommonItem.create(
-        CelestiaString(SettingsKey.Resolution.displayName, ""),
-        listOf(
-            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("Low", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("Medium", ""), 1),
-            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("High", ""), 2)
-        )
-    ),
-    SettingsCommonItem.create(
-        CelestiaString(SettingsKey.StarStyle.displayName, ""),
-        listOf(
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Fuzzy Points", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Points", ""), 1),
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Scaled Discs", ""), 2)
-        )
-    ),
-    SettingsCommonItem.create(
-        CelestiaString(SettingsKey.HudDetail.displayName, ""),
-        listOf(
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("None", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("Terse", ""), 1),
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("Verbose", ""), 2)
-        )
-    ),
-
-    SettingsLanguageItem(),
-    SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(
-        SettingsCommonItem.Section(listOf(
-            SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0),
-            SettingsSwitchItem(SettingsKey.ShowTintedIllumination, SettingsSwitchItem.Representation.Switch),
-        )),
-        SettingsCommonItem.Section(listOf(
-            SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0),
-            SettingsSliderItem(SettingsKey.GalaxyBrightness, 0.0, 1.0)
-        )),
-        SettingsCommonItem.Section(listOf(
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI", true),
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
-        ),  footer =  CelestiaString("Configuration will take effect after a restart.", ""))
-    )),
+    SettingsCurrentTimeItem(),
     SettingsCommonItem(
         CelestiaString(SettingsKey.MeasurementSystem.displayName, ""),
         listOf(
@@ -478,7 +429,67 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
             )
         )
     ),
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.HudDetail.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("None", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("Terse", ""), 1),
+            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("Verbose", ""), 2)
+        )
+    ),
+    SettingsLanguageItem(),
+)
+
+class SettingsDataLocationItem : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString("Data Location", "")
+}
+
+class SettingsRefreshRateItem : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString("Frame Rate", "")
+}
+
+private val staticRendererItems: List<SettingsItem> = listOf(
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.Resolution.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("Low", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("Medium", ""), 1),
+            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("High", ""), 2)
+        )
+    ),
+    SettingsCommonItem.create(
+        CelestiaString(SettingsKey.StarStyle.displayName, ""),
+        listOf(
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Fuzzy Points", ""), 0),
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Points", ""), 1),
+            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Scaled Discs", ""), 2)
+        )
+    ),
+    SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(
+        SettingsCommonItem.Section(listOf(
+            SettingsSwitchItem(SettingsKey.ShowSmoothLines, SettingsSwitchItem.Representation.Switch),
+            SettingsSwitchItem(SettingsKey.ShowTintedIllumination, SettingsSwitchItem.Representation.Switch),
+        )),
+        SettingsCommonItem.Section(listOf(
+            SettingsSwitchItem(SettingsKey.ShowAutoMag, SettingsSwitchItem.Representation.Switch),
+            SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0),
+            SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0),
+            SettingsSliderItem(SettingsKey.GalaxyBrightness, 0.0, 1.0)
+        )),
+    )),
     SettingsRefreshRateItem(),
+    SettingsCommonItem(CelestiaString("Advanced", ""), listOf(
+        SettingsCommonItem.Section(listOf(
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI", true),
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
+        ),  footer =  CelestiaString("Configuration will take effect after a restart.", ""))
+    )),
+    SettingsRenderInfoItem()
+)
+
+private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsDataLocationItem()
 )
 
@@ -497,7 +508,6 @@ class SettingsUnknownTextItem(override val name: String, val id: String) : Setti
 class SettingsActionItem(override val name: String, val action: Int): SettingsItem, Serializable
 
 private val staticOtherItems: List<SettingsItem> = listOf(
-    SettingsRenderInfoItem(),
     SettingsCommonItem.create(
         CelestiaString("Debug", ""),
         listOf(
@@ -510,9 +520,10 @@ private val staticOtherItems: List<SettingsItem> = listOf(
 
 val mainSettingSections: List<CommonSectionV2> = listOf(
     CommonSectionV2(staticDisplayItems, CelestiaString("Display", "")),
-    CommonSectionV2(staticTimeItems, CelestiaString("Time", "")),
+    CommonSectionV2(staticTimeAndRegionItems, CelestiaString("Time & Region", "")),
+    CommonSectionV2(staticRendererItems, CelestiaString("Renderer", "")),
     CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "")),
-    CommonSectionV2(staticOtherItems, CelestiaString("Other", ""))
+    CommonSectionV2(staticOtherItems, "")
 )
 
 class SettingsCommonItem(override val name: String, val sections: List<Section>) : SettingsItem, Serializable {
