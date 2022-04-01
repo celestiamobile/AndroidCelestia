@@ -7,7 +7,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InstalledResourceItemListViewModel @Inject constructor(
-    repository: ResourceRepository) : AsyncListPagingViewModel() {
-    override val itemsWithoutSeparators =
+    private val repository: ResourceRepository) : AsyncListPagingViewModel() {
+    override fun getItemsWithoutSeparators() =
         repository.getInstalledItems().map { it.map { it as AsyncListItem } }
+
+    override val cacheEnabled: Boolean
+        get() = false
 }
