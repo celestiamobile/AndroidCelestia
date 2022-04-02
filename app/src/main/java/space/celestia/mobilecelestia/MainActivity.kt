@@ -991,13 +991,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             is AlternateSurfacesItem -> {
                 val alternateSurfaces = item.body?.alternateSurfaceNames ?: return
-                val current = appCore.simulation.activeObserver.displayedSurface
-                var currentIndex = 0
-                if (current != "") {
-                    val index = alternateSurfaces.indexOf(current)
-                    if (index >= 0)
-                        currentIndex = index + 1
-                }
                 val surfaces = ArrayList<String>()
                 surfaces.add(CelestiaString("Default", ""))
                 surfaces.addAll(alternateSurfaces)
@@ -1917,6 +1910,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     companion object {
         private const val CURRENT_DATA_VERSION = "31"
+        // 32: 1.5.7 Localization update, data update (commit 7f816ccd97eeaa5d3f1364a3f17cf378946b708e)
         // 31: 1.5.5 Localization update, data update (commit 9e7a8ee18a875ae8fc202439952256a5a2378a0b)
         // 30: 1.5.2 Localization update, data update (commit 430b955920e31c84fa433bc7aaa43938c5e04ca7)
         // 29: 1.5.0 Data update
