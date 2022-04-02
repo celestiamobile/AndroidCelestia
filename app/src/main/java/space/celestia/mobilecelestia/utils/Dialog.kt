@@ -82,23 +82,6 @@ fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Un
     builder.show()
 }
 
-fun Activity.showSingleSelection(title: String, selections: List<String>, checkedIndex: Int, handler: (Int?) -> Unit) {
-    if (isFinishing || isDestroyed)
-        return
-
-    val builder = MaterialAlertDialogBuilder(this)
-    builder.setTitle(title)
-    builder.setSingleChoiceItems(selections.toTypedArray(), checkedIndex) { dialog, index ->
-        handler(index)
-        dialog.dismiss()
-    }
-    builder.setOnCancelListener {
-        handler(null)
-    }
-
-    builder.show()
-}
-
 fun Activity.showOptions(title: String, options: Array<String>, handler: (Int) -> Unit) {
     if (isFinishing || isDestroyed)
         return

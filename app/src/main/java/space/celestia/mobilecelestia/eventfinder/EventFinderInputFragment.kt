@@ -56,8 +56,7 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
             val objects = listOf(AppCore.getLocalizedString("Earth", "celestia-data"), AppCore.getLocalizedString("Jupiter", "celestia-data"))
             val other = CelestiaString("Other", "")
             val currentIndex = 0.coerceAtLeast(objects.indexOf(current))
-            ac.showSingleSelection(CelestiaString("Please choose an object.", ""), objects + other, currentIndex) { index ->
-                if (index == null) return@showSingleSelection
+            ac.showOptions(CelestiaString("Please choose an object.", ""), (objects + other).toTypedArray()) { index ->
                 if (index >= objects.size) {
                     // User choose other, show text input for the object name
                     ac.showTextInput(CelestiaString("Please enter an object name.", ""), current) { objectName ->
@@ -65,7 +64,7 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
                         adapter?.reload()
                         adapter?.notifyDataSetChanged()
                     }
-                    return@showSingleSelection
+                    return@showOptions
                 }
                 adapter?.objectName = objects[index]
                 adapter?.reload()
