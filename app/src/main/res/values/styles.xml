@@ -145,9 +145,10 @@
         <item name="android:textAlignment">viewStart</item>
     </style>
 
-    <style name="ResourceItemTitleLabel" parent="HeadlineLabel"/>
-
-    <style name="ResourceItemContentLabel" parent="BodyLabel"/>
+    <style name="EmptyHint" parent="PrimaryLabel">
+        <item name="android:textAppearance">@style/TextAppearance.Material3.LabelLarge</item>
+        <item name="android:textAlignment">center</item>
+    </style>
 
     <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
     </style>

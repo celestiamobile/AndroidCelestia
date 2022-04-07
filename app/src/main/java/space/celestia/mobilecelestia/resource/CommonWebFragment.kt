@@ -13,12 +13,14 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.File
 import java.lang.ref.WeakReference
 
@@ -26,7 +28,6 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
     private lateinit var uri: Uri
     private lateinit var matchingQueryKeys: List<String>
     private var contextDirectory: File? = null
-    private lateinit var webView: WebView
 
     private var listener: Listener? = null
 
@@ -50,9 +51,21 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_common_web, container, false)
+        return try {
+            val view = inflater.inflate(R.layout.fragment_common_web, container, false)
+            configureWebView(view)
+            view
+        } catch (ignored: Throwable) {
+            val view = inflater.inflate(R.layout.layout_empty_hint, container, false)
+            val hint = view.findViewById<TextView>(R.id.hint)
+            hint.text = CelestiaString("WebView is not available.", "")
+            view
+        }
+    }
+
+    private fun configureWebView(view: View) {
         val loadingIndicator = view.findViewById<CircularProgressIndicator>(R.id.loading_indicator)
-        webView = view.findViewById(R.id.webview)
+        val webView = view.findViewById<WebView>(R.id.webview)
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.isHorizontalScrollBarEnabled = false
 
@@ -74,7 +87,7 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
                 return shouldOverrideUrl(request?.url.toString())
             }
 
-            @SuppressWarnings("deprecation")
+            @Deprecated("Deprecated in Java")
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return shouldOverrideUrl(url)
             }
@@ -110,9 +123,7 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
         }
 
         webView.loadUrl(uri.toString())
-        return view
     }
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)

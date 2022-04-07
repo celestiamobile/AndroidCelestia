@@ -928,8 +928,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             }
             ToolbarAction.Home -> {
-                renderer.enqueueTask {
-                    appCore.charEnter(CelestiaAction.Home.value)
+                hideOverlay {
+                    renderer.enqueueTask {
+                        appCore.charEnter(CelestiaAction.Home.value)
+                    }
                 }
             }
             ToolbarAction.Event -> {
@@ -950,12 +952,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ToolbarAction.NewsArchive -> {
                 val baseURL = "https://celestia.mobi/resources/guides"
                 val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("type", "news").appendQueryParameter("lang", AppCore.getLanguage()).build()
-                openURL(uri.toString())
+                hideOverlay {
+                    openURL(uri.toString())
+                }
             }
             ToolbarAction.Download -> {
                 val baseURL = "https://celestia.mobi/resources/categories"
                 val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
-                openURL(uri.toString())
+                hideOverlay {
+                    openURL(uri.toString())
+                }
             }
         }
     }
