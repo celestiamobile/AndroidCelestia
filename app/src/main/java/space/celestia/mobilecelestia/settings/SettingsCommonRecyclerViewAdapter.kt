@@ -23,6 +23,8 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
 import java.lang.ref.WeakReference
+import kotlin.math.max
+import kotlin.math.min
 
 class SettingsCommonRecyclerViewAdapter(
     private val item: SettingsCommonItem,
@@ -163,7 +165,8 @@ class SettingsCommonRecyclerViewAdapter(
             title.text = text
             seekBar.valueFrom = minValue.toFloat()
             seekBar.valueTo = maxValue.toFloat()
-            seekBar.value = value.toFloat()
+            // Avoid exceeding the range
+            seekBar.value = max(minValue, min(maxValue, value)).toFloat()
             progressCallback = callback
         }
     }
