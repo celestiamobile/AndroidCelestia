@@ -204,7 +204,6 @@ fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     for (indexedSection in this.withIndex()) {
         val index = indexedSection.index
         val section = indexedSection.value
-        val spaceAdded = false
         val showHeader = section.header != null && section.header != ""
         val showFooter = section.footer != null && section.footer != ""
 

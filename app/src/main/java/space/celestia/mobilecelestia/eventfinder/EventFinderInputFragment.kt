@@ -55,7 +55,6 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
             val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
             val objects = listOf(AppCore.getLocalizedString("Earth", "celestia-data"), AppCore.getLocalizedString("Jupiter", "celestia-data"))
             val other = CelestiaString("Other", "")
-            val currentIndex = 0.coerceAtLeast(objects.indexOf(current))
             ac.showOptions(CelestiaString("Please choose an object.", ""), (objects + other).toTypedArray()) { index ->
                 if (index >= objects.size) {
                     // User choose other, show text input for the object name

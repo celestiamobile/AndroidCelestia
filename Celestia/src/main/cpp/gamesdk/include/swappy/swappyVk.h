@@ -131,16 +131,11 @@ bool SwappyVk_initAndGetRefreshCycleDuration_internal(
  * @return bool            - true if the value returned by pRefreshDuration is
  * valid, otherwise false if an error.
  */
-static inline bool SwappyVk_initAndGetRefreshCycleDuration(
-    JNIEnv* env, jobject jactivity, VkPhysicalDevice physicalDevice,
-    VkDevice device, VkSwapchainKHR swapchain, uint64_t* pRefreshDuration) {
-    // This call ensures that the header and the linked library are from the
-    // same version (if not, a linker error will be triggered because of an
-    // undefined symbol).
-    SWAPPY_VERSION_SYMBOL();
-    return SwappyVk_initAndGetRefreshCycleDuration_internal(
-        env, jactivity, physicalDevice, device, swapchain, pRefreshDuration);
-}
+bool SwappyVk_initAndGetRefreshCycleDuration(JNIEnv* env, jobject jactivity,
+                                             VkPhysicalDevice physicalDevice,
+                                             VkDevice device,
+                                             VkSwapchainKHR swapchain,
+                                             uint64_t* pRefreshDuration);
 
 /**
  * @brief Tell Swappy which ANativeWindow to use when calling to ANativeWindow_*

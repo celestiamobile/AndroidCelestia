@@ -42,7 +42,7 @@
 
 // Internal macros to track Swappy version, do not use directly.
 #define SWAPPY_MAJOR_VERSION 1
-#define SWAPPY_MINOR_VERSION 9
+#define SWAPPY_MINOR_VERSION 10
 #define SWAPPY_BUGFIX_VERSION 0
 #define SWAPPY_PACKED_VERSION                                                  \
     ANDROID_GAMESDK_PACKED_VERSION(SWAPPY_MAJOR_VERSION, SWAPPY_MINOR_VERSION, \
@@ -50,13 +50,14 @@
 
 // Internal macros to generate a symbol to track Swappy version, do not use
 // directly.
-#define SWAPPY_VERSION_CONCAT_NX(PREFIX, MAJOR, MINOR, BUGFIX) \
-    PREFIX##_##MAJOR##_##MINOR##_##BUGFIX
-#define SWAPPY_VERSION_CONCAT(PREFIX, MAJOR, MINOR, BUGFIX) \
-    SWAPPY_VERSION_CONCAT_NX(PREFIX, MAJOR, MINOR, BUGFIX)
-#define SWAPPY_VERSION_SYMBOL                                   \
-    SWAPPY_VERSION_CONCAT(Swappy_version, SWAPPY_MAJOR_VERSION, \
-                          SWAPPY_MINOR_VERSION, SWAPPY_BUGFIX_VERSION)
+#define SWAPPY_VERSION_CONCAT_NX(PREFIX, MAJOR, MINOR, BUGFIX, GITCOMMIT) \
+    PREFIX##_##MAJOR##_##MINOR##_##BUGFIX##_##GITCOMMIT
+#define SWAPPY_VERSION_CONCAT(PREFIX, MAJOR, MINOR, BUGFIX, GITCOMMIT) \
+    SWAPPY_VERSION_CONCAT_NX(PREFIX, MAJOR, MINOR, BUGFIX, GITCOMMIT)
+#define SWAPPY_VERSION_SYMBOL                                          \
+    SWAPPY_VERSION_CONCAT(Swappy_version, SWAPPY_MAJOR_VERSION,        \
+                          SWAPPY_MINOR_VERSION, SWAPPY_BUGFIX_VERSION, \
+                          AGDK_GIT_COMMIT)
 
 /** @endcond */
 
@@ -100,16 +101,6 @@ typedef struct SwappyThreadFunctions {
 extern "C" {
 #endif
 
-/** @cond INTERNAL */
-
-// Internal function to track Swappy version bundled in a binary. Do not call
-// directly. If you are getting linker errors related to Swappy_version_x_y, you
-// probably have a mismatch between the header used at compilation and the
-// actually library used by the linker.
-void SWAPPY_VERSION_SYMBOL();
-
-/** @endcond */
-
 /**
  * @brief Return the version of the Swappy library at runtime.
  */
@@ -124,6 +115,12 @@ uint32_t Swappy_version();
  *
  */
 void Swappy_setThreadFunctions(const SwappyThreadFunctions* thread_functions);
+
+/**
+ * @brief Return the full version of the Swappy library at runtime, e.g.
+ * "1.9.0_8a85ab7c46"
+ */
+const char* Swappy_versionString();
 
 #ifdef __cplusplus
 }  // extern "C"

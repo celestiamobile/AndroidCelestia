@@ -160,6 +160,10 @@ void SwappyGL_recordFrameStart(EGLDisplay display, EGLSurface surface);
  */
 void SwappyGL_getStats(SwappyStats *swappyStats);
 
+/** @brief Remove callbacks that were previously added using
+ * SwappyGL_injectTracer. */
+void SwappyGL_uninjectTracer(const SwappyTracer *t);
+
 #ifdef __cplusplus
 };
 #endif
