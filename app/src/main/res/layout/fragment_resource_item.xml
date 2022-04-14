@@ -13,7 +13,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clickable="true"
     style="@style/Background">
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progress_indicator"
@@ -35,7 +34,7 @@
         android:orientation="vertical">
 
         <FrameLayout
-            android:id="@+id/resource_item_container"
+            android:id="@+id/webview_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"/>

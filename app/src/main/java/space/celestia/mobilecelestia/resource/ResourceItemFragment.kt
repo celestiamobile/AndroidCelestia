@@ -110,7 +110,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 .appendQueryParameter("theme", "dark")
                 .appendQueryParameter("titleVisibility", "visible")
                 .build()
-            replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item.id)), R.id.resource_item_container)
+            replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item.id)), R.id.webview_container)
         }
 
         if (!hasFetchedLatestData) {

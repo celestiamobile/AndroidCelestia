@@ -52,7 +52,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.browser.*
@@ -958,10 +961,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             ToolbarAction.Download -> {
                 val baseURL = "https://celestia.mobi/resources/categories"
-                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
-                hideOverlay {
-                    openURL(uri.toString())
-                }
+                val uri = Uri.parse(baseURL)
+                    .buildUpon()
+                    .appendQueryParameter("lang", AppCore.getLanguage())
+                    .appendQueryParameter("platform", "android")
+                    .appendQueryParameter("theme", "dark")
+                    .build()
+                showBottomSheetFragment(CommonWebNavigationFragment.newInstance(uri))
             }
         }
     }
