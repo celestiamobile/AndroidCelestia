@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -157,6 +158,15 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
                 val self = weakSelf.get() ?: return
                 if ((self.parentFragment as? NavigationFragment)?.top == self) {
                     self.title = view?.title ?: ""
+                }
+            }
+        }
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onReceivedTitle(view: WebView?, title: String?) {
+                super.onReceivedTitle(view, title)
+                val self = weakSelf.get() ?: return
+                if ((self.parentFragment as? NavigationFragment)?.top == self) {
+                    self.title = title ?: ""
                 }
             }
         }
