@@ -40,6 +40,7 @@
 
 #include <stdio.h>
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -70,9 +71,13 @@ class SourceLineResolverBase::AutoFileCloser {
 };
 
 struct SourceLineResolverBase::InlineOrigin {
-  InlineOrigin(int32_t source_file_id, const string& name)
-      : source_file_id(source_file_id), name(name) {}
-
+  InlineOrigin() {}
+  InlineOrigin(bool has_file_id, int32_t source_file_id, const string& name)
+      : has_file_id(has_file_id),
+        source_file_id(source_file_id),
+        name(name) {}
+  // If it's old format, source file id is set, otherwise not useful.
+  bool has_file_id;
   int32_t source_file_id;
   string name;
 };
@@ -80,20 +85,26 @@ struct SourceLineResolverBase::InlineOrigin {
 struct SourceLineResolverBase::Inline {
   // A vector of (address, size) pair for a INLINE record.
   using InlineRanges = std::vector<std::pair<MemAddr, MemAddr>>;
-  Inline(int32_t inline_nest_level,
+  Inline() {}
+  Inline(bool has_call_site_file_id,
+         int32_t inline_nest_level,
          int32_t call_site_line,
+         int32_t call_site_file_id,
          int32_t origin_id,
          InlineRanges inline_ranges)
-      : inline_nest_level(inline_nest_level),
+      : has_call_site_file_id(has_call_site_file_id),
+        inline_nest_level(inline_nest_level),
         call_site_line(call_site_line),
+        call_site_file_id(call_site_file_id),
         origin_id(origin_id),
         inline_ranges(inline_ranges) {}
-
+  // If it's new format, call site file id is set, otherwise not useful.
+  bool has_call_site_file_id;
   int32_t inline_nest_level;
   int32_t call_site_line;
+  int32_t call_site_file_id;
   int32_t origin_id;
   InlineRanges inline_ranges;
-  RangeMap<MemAddr, linked_ptr<Inline>> child_inlines;
 };
 
 struct SourceLineResolverBase::Line {
@@ -174,7 +185,7 @@ class SourceLineResolverBase::Module {
   // with the result.
   virtual void LookupAddress(
       StackFrame* frame,
-      std::vector<std::unique_ptr<StackFrame>>* inlined_frames) const = 0;
+      std::deque<std::unique_ptr<StackFrame>>* inlined_frames) const = 0;
 
   // If Windows stack walking information is available covering ADDRESS,
   // return a WindowsFrameInfo structure describing it. If the information
