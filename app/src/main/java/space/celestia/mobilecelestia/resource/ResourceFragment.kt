@@ -15,6 +15,7 @@ import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceItem
+import java.util.*
 
 class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private lateinit var language: String
@@ -30,7 +31,8 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun pushItem(item: ResourceItem) {
-        val frag = ResourceItemFragment.newInstance(item, language)
+        // Installed item, update time is unknown so set to epoch time here
+        val frag = ResourceItemFragment.newInstance(item, language, Date(0))
         pushFragment(frag)
     }
 

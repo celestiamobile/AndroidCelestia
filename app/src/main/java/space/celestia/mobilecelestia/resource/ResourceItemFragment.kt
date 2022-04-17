@@ -33,6 +33,7 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -45,7 +46,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     private lateinit var language: String
 
     private lateinit var item: ResourceItem
-    private var hasFetchedLatestData = false
+    private lateinit var lastUpdateDate: Date
     private lateinit var statusButton: Button
     private lateinit var goToButton: Button
     private lateinit var progressIndicator: LinearProgressIndicator
@@ -69,10 +70,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         resourceManager.addListener(this)
         if (savedInstanceState != null) {
             item = savedInstanceState.getSerializable(ARG_ITEM) as ResourceItem
-            hasFetchedLatestData = savedInstanceState.getBoolean(ARG_LATEST, false)
+            lastUpdateDate = savedInstanceState.getSerializable(ARG_UPDATED_DATE) as Date
         } else {
             item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
-            hasFetchedLatestData = false
+            lastUpdateDate = requireArguments().getSerializable(ARG_UPDATED_DATE) as Date
         }
         language = requireArguments().getString(ARG_LANG, "en")
     }
@@ -113,13 +114,14 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item.id)), R.id.webview_container)
         }
 
-        if (!hasFetchedLatestData) {
+        if (Date().time - lastUpdateDate.time > UPDATE_INTERVAL_MILLISECONDS) {
             // Fetch the latest item, this is needed as user might come
             // here from Installed where the URL might be incorrect
             lifecycleScope.launch {
                 try {
                     val result = resourceAPI.item(language, item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
                     item = result
+                    lastUpdateDate = Date()
                     updateUI()
                 } catch (ignored: Throwable) {}
             }
@@ -128,7 +130,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable(ARG_ITEM, item)
-        outState.putBoolean(ARG_LATEST, hasFetchedLatestData)
+        outState.putSerializable(ARG_UPDATED_DATE, lastUpdateDate)
         super.onSaveInstanceState(outState)
     }
 
@@ -179,7 +181,6 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             activity.showAlert(CelestiaString("Do you want to cancel this task?", "")) {
                 dm.cancel(item.id)
                 currentState = ResourceItemState.None
-                hasFetchedLatestData = true
                 updateUI()
             }
             return
@@ -253,14 +254,16 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     companion object {
         private const val ARG_ITEM = "item"
         private const val ARG_LANG = "lang"
-        private const val ARG_LATEST = "latest"
+        private const val ARG_UPDATED_DATE = "date"
+        private const val UPDATE_INTERVAL_MILLISECONDS = 1800000L
 
         @JvmStatic
-        fun newInstance(item: ResourceItem, language: String) =
+        fun newInstance(item: ResourceItem, language: String, lastUpdateDate: Date) =
             ResourceItemFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, item)
                     putString(ARG_LANG, language)
+                    putSerializable(ARG_UPDATED_DATE, lastUpdateDate)
                 }
             }
     }

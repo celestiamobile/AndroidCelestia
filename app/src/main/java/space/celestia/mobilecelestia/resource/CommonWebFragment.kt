@@ -34,6 +34,7 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
 import java.io.File
 import java.lang.ref.WeakReference
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -249,7 +250,7 @@ class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInt
                 val result = resourceAPI.item(lang, id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
                 val frag = parentFragment
                 if (frag is NavigationFragment) {
-                    frag.pushFragment(ResourceItemFragment.newInstance(result, lang))
+                    frag.pushFragment(ResourceItemFragment.newInstance(result, lang, Date()))
                 }
             } catch (ignored: Throwable) {}
         }
