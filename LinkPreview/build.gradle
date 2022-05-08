@@ -12,6 +12,7 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
+    id "org.jetbrains.kotlin.kapt"
 }
 
 android {
@@ -50,6 +51,6 @@ dependencies {
     implementation "com.google.android.material:material:$material_version"
     implementation "org.jsoup:jsoup:1.14.3"
     implementation "com.github.bumptech.glide:glide:$glide_version"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
+    kapt "com.github.bumptech.glide:compiler:$glide_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
 }
