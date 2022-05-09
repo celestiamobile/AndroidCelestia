@@ -108,6 +108,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass 
             switch (bodyClass)
             {
                 case Body::Invisible:
+                case Body::Diffuse:
                     continue;
                 case Body::Planet:
                     planets[name] = jitem;
@@ -204,6 +205,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
             switch (bodyClass)
             {
                 case Body::Invisible:
+                case Body::Diffuse:
                     continue;
                 case Body::Moon:
                 case Body::MinorMoon:
