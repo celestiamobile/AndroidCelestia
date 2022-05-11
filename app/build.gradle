@@ -78,6 +78,7 @@ android {
         executable = '/bin/sh'
         args = ["convert_po.sh"]
     }
+    namespace 'space.celestia.mobilecelestia'
 
     copyGeneralData.mustRunAfter copyLocalizedFiles
     convertPO.mustRunAfter copyGeneralData
@@ -108,7 +109,7 @@ dependencies {
 
     implementation "net.lingala.zip4j:zip4j:2.10.0"
 
-    implementation 'androidx.webkit:webkit:1.4.0'
+    implementation "androidx.webkit:webkit:1.4.0"
 
     implementation project(path: ':LinkPreview')
     implementation project(path: ':Celestia')
@@ -117,8 +118,8 @@ dependencies {
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
-    implementation "com.google.dagger:hilt-android:2.38.1"
-    kapt 'com.google.dagger:hilt-compiler:2.38.1'
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
 
     testImplementation "junit:junit:4.13.2"
     androidTestImplementation "androidx.test.ext:junit:1.1.3"
