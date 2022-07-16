@@ -953,8 +953,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSpeedControl()
             }
             ToolbarAction.NewsArchive -> {
-                val baseURL = "https://celestia.mobi/resources/guides"
-                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("type", "news").appendQueryParameter("lang", AppCore.getLanguage()).build()
+                val baseURL = "https://celestia.mobi/news"
+                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
                 hideOverlay {
                     openURL(uri.toString())
                 }

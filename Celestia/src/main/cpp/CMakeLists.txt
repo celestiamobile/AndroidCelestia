@@ -20,6 +20,8 @@ set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/moviecapture.h
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.cpp
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.h
+        ${CELESTIA_SRC_DIR}/celestia/textprintposition.cpp
+        ${CELESTIA_SRC_DIR}/celestia/textprintposition.h
         ${CELESTIA_SRC_DIR}/celestia/url.cpp
         ${CELESTIA_SRC_DIR}/celestia/url.h
         ${CELESTIA_SRC_DIR}/celestia/view.cpp
