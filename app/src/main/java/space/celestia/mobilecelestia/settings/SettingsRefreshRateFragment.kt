@@ -75,6 +75,7 @@ class SettingsRefreshRateFragment : SettingsBaseFragment() {
         val activity = this.activity ?: return null
         val displayManager = DisplayManagerCompat.getInstance(activity)
         val display = displayManager.getDisplay(Display.DEFAULT_DISPLAY) ?: return null
+        @Suppress("DEPRECATION")
         val supportedRefreshRates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display.supportedModes.map { it.refreshRate } else display.supportedRefreshRates.toList()
         val maxRefreshRate = supportedRefreshRates.maxOrNull()?.toInt() ?: return null
         return Pair(listOf(

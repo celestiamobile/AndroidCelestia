@@ -51,7 +51,7 @@ open class InsetAwareFragment: Fragment() {
                 RoundedCorners(0, 0, 0, 0)
             }
             onInsetChanged(view, EdgeInsets(insets), roundedCorners)
-            return@setOnApplyWindowInsetsListener insets ?: WindowInsetsCompat(insets)
+            return@setOnApplyWindowInsetsListener insets
         }
     }
 

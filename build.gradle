@@ -12,13 +12,13 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.6.21'
-    ext.core_ktx_version = '1.7.0'
-    ext.core_appcompat_version = '1.4.1'
-    ext.material_version = '1.6.0'
+    ext.kotlin_version = '1.7.10'
+    ext.core_ktx_version = '1.8.0'
+    ext.core_appcompat_version = '1.4.2'
+    ext.material_version = '1.6.1'
     ext.glide_version = '4.13.2'
-    ext.kotlinx_coroutines_version = '1.6.1'
-    ext.hilt_version = '2.40.1'
+    ext.kotlinx_coroutines_version = '1.6.4'
+    ext.hilt_version = '2.42'
 
     repositories {
         google()
@@ -26,7 +26,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.0'
+        classpath 'com.android.tools.build:gradle:7.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
     }
