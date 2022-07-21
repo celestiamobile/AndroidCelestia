@@ -59,6 +59,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         fun objectExistsWithName(name: String): Boolean
         fun onGoToObject(name: String)
         fun onShareAddon(name: String, id: String)
+        fun onRunScript(file: File)
     }
 
     enum class ResourceItemState {
@@ -90,7 +91,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             onProgressViewClick()
         }
         goToButton = view.findViewById(R.id.go_to_button)
-        goToButton.text = CelestiaString("Go", "")
+        goToButton.text = CelestiaString(if (item.type == "script") "Run" else "Go", "")
         goToButton.visibility = View.GONE
         progressIndicator = view.findViewById(R.id.progress_indicator)
 
@@ -233,14 +234,31 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             }
         }
 
-        val objectName = item.objectName
-        if (currentState == ResourceItemState.Installed && objectName != null && listener?.objectExistsWithName(objectName) == true) {
-            goToButton.visibility = View.VISIBLE
-            goToButton.setOnClickListener {
-                listener?.onGoToObject(objectName)
+        if (item.type == "script") {
+            val mainScriptName = item.mainScriptName
+            if (currentState == ResourceItemState.Installed && mainScriptName != null) {
+                val scriptFile = File(resourceManager.contextDirectory(item.id), mainScriptName)
+                if (scriptFile.exists()) {
+                    goToButton.visibility = View.VISIBLE
+                    goToButton.setOnClickListener {
+                        listener?.onRunScript(scriptFile)
+                    }
+                } else {
+                    goToButton.visibility = View.GONE
+                }
+            } else {
+                goToButton.visibility = View.GONE
             }
         } else {
-            goToButton.visibility = View.GONE
+            val objectName = item.objectName
+            if (currentState == ResourceItemState.Installed && objectName != null && listener?.objectExistsWithName(objectName) == true) {
+                goToButton.visibility = View.VISIBLE
+                goToButton.setOnClickListener {
+                    listener?.onGoToObject(objectName)
+                }
+            } else {
+                goToButton.visibility = View.GONE
+            }
         }
     }
 

@@ -17,10 +17,12 @@ import java.util.*
 class ResourceItem(
     override val id: String,
     override val name: String,
+    val type: String?,
     val description: String,
     val item: String,
     val image: String?,
     val authors: List<String>?,
     val publishTime: Date?,
-    val objectName: String?
+    val objectName: String?,
+    val mainScriptName: String?
 ): AsyncListItem, Serializable

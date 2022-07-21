@@ -956,6 +956,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     .appendQueryParameter("lang", AppCore.getLanguage())
                     .appendQueryParameter("platform", "android")
                     .appendQueryParameter("theme", "dark")
+                    .appendQueryParameter("api", "1")
                     .build()
                 showBottomSheetFragment(CommonWebNavigationFragment.newInstance(uri))
             }
@@ -1021,6 +1022,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onInfoLinkMetaDataClicked(url: URL) {
         openURL(url.toString())
+    }
+
+    override fun onRunScript(file: File) {
+        requestRunScript(file.absolutePath)
     }
 
     override fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
