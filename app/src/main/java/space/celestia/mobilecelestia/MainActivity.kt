@@ -71,6 +71,7 @@ import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
 import space.celestia.mobilecelestia.favorite.*
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
+import space.celestia.mobilecelestia.help.NewHelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
@@ -682,13 +683,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
         val guide = guideToOpen
+        val lang = AppCore.getLanguage()
         if (guide != null) {
-            showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(guide), listOf("guide")))
+            showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(guide, lang), listOf("guide")))
             cleanup()
             return
         }
         val addon = addonToOpen
-        val lang = AppCore.getLanguage()
         if (addon != null) {
             lifecycleScope.launch {
                 try {
@@ -706,20 +707,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
                 if (preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
-                showBottomSheetFragment(CommonWebFragment.newInstance(buildGuideURI(result.id), listOf("guide")))
+                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(result.id, lang), listOf("guide")))
             } catch (ignored: Throwable) {}
         }
-    }
-
-    private fun buildGuideURI(id: String): Uri {
-        val baseURL = "https://celestia.mobi/resources/guide"
-        return Uri.parse(baseURL)
-            .buildUpon()
-            .appendQueryParameter("guide", id)
-            .appendQueryParameter("lang", AppCore.getLanguage())
-            .appendQueryParameter("platform", "android")
-            .appendQueryParameter("theme", "dark")
-            .build()
     }
 
     @Throws(IOException::class)
@@ -1069,6 +1059,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onShareURL(title: String, url: String) {
         shareURLDirect(title, url)
+    }
+
+    override fun onRunDemo() {
+        renderer.enqueueTask {
+            renderer.enqueueTask { appCore.charEnter(CelestiaAction.RunDemo.value) }
+        }
     }
 
     override fun onSearchItemSelected(text: String) {
@@ -1731,7 +1727,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showHelp() {
-        showBottomSheetFragment(HelpFragment.newInstance())
+        showBottomSheetFragment(NewHelpFragment.newInstance(AppCore.getLanguage()))
     }
 
     private fun showFavorite() {

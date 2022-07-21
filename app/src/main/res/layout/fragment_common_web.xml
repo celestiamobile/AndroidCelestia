@@ -15,7 +15,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/Background">
-
+    <FrameLayout
+        android:id="@+id/fallback"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"

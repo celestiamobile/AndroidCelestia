@@ -10,6 +10,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         fun shareURL(title: String, url: String)
         fun receivedACK(id: String)
         fun openAddonNext(id: String)
+        fun runDemo()
     }
 
     class MessagePayload(val operation: String, val content: String, val minScriptVersion: Int)
@@ -22,6 +23,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     class ShareURLContext(val title: String, val url: String)
     class SendACKContext(val id: String)
     class OpenAddonNextContext(val id: String)
+    class RunDemoContext
 
     abstract class JavascriptHandler<T>(private val clazz: Class<T>): BaseJavascriptHandler() {
         abstract fun execute(context: T, handler: MessageHandler)
@@ -70,6 +72,15 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
+    class RunDemoHandler: JavascriptHandler<RunDemoContext>(RunDemoContext::class.java) {
+        override val operation: String
+            get() = "runDemo"
+
+        override fun execute(context: RunDemoContext, handler: MessageHandler) {
+            handler.runDemo()
+        }
+    }
+
     private val handler = WeakReference(handler)
 
     @JavascriptInterface
@@ -88,13 +99,14 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     }
 
     private companion object {
-        val supportedScriptVersion = 3
+        val supportedScriptVersion = 4
 
         val contextHandlers: List<BaseJavascriptHandler> = listOf(
             RunScriptHandler(),
             ShareURLHandler(),
             SendACKHandler(),
             OpenAddonNextHandler(),
+            RunDemoHandler(),
         )
     }
 }

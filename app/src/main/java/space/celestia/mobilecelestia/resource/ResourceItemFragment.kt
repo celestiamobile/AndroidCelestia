@@ -30,6 +30,7 @@ import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.URLHelper
 import space.celestia.mobilecelestia.utils.commonHandler
 import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
@@ -102,15 +103,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onViewCreated(view, savedInstanceState)
 
         if (savedInstanceState == null) {
-            val baseURL = "https://celestia.mobi/resources/item"
-            val uri = Uri.parse(baseURL)
-                .buildUpon()
-                .appendQueryParameter("item", item.id)
-                .appendQueryParameter("lang", language)
-                .appendQueryParameter("platform", "android")
-                .appendQueryParameter("theme", "dark")
-                .appendQueryParameter("titleVisibility", "visible")
-                .build()
+            val uri = URLHelper.buildInAppAddonURI(item.id, language)
             replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item.id)), R.id.webview_container)
         }
 
