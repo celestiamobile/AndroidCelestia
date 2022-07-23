@@ -12,12 +12,15 @@
 package space.celestia.mobilecelestia.resource
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
@@ -85,6 +88,13 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_resource_item, container, false)
+        val contentContainer = view.findViewById<LinearLayout>(R.id.content_container)
+
+        ViewCompat.setOnApplyWindowInsetsListener(contentContainer) { contentView, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            contentView.updatePadding(bottom = insets.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
 
         statusButton = view.findViewById(R.id.status_button)
         statusButton.setOnClickListener {

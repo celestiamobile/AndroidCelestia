@@ -18,7 +18,7 @@ buildscript {
     ext.material_version = '1.6.1'
     ext.glide_version = '4.13.2'
     ext.kotlinx_coroutines_version = '1.6.4'
-    ext.hilt_version = '2.42'
+    ext.hilt_version = '2.43'
 
     repositories {
         google()
