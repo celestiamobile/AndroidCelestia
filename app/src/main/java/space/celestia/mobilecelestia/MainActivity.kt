@@ -676,7 +676,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val scriptOrURL = scriptOrURLPath
         if (scriptOrURL != null) {
             val isURL = scriptOrURL.startsWith("cel://")
-            showAlert(if (isURL) CelestiaString("Open URL?", "") else CelestiaString("Run Script?", "")) {
+            showAlert(if (isURL) CelestiaString("Open URL?", "") else CelestiaString("Run script?", "")) {
                 openCelestiaURL(scriptOrURL)
             }
             cleanup()
