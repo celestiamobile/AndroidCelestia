@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @Inject
     lateinit var resourceManager: ResourceManager
 
-    lateinit var appStatusReporter: AppStatusReporter
+    private lateinit var appStatusReporter: AppStatusReporter
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
@@ -266,8 +266,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.bottom_sheet_overlay)) { _, insets ->
-            // TODO: the suggested replacement for the deprecated methods does not work
-            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0, 0, 0, insets.systemWindowInsetBottom))
+            var builder = WindowInsetsCompat.Builder(insets)
+            builder = builder.setInsets(WindowInsetsCompat.Type.displayCutout(), Insets.of(0, 0, 0, insets.getInsets(WindowInsetsCompat.Type.displayCutout()).bottom))
+            val bottom = builder.build().systemWindowInsetBottom
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
@@ -276,14 +277,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        if (currentState == AppStatusReporter.State.NONE || currentState == AppStatusReporter.State.EXTERNAL_LOADING)  {
-            loadExternalConfig(savedState)
-        } else if (currentState == AppStatusReporter.State.LOADING) {
-            // Do nothing
-        } else if (currentState == AppStatusReporter.State.LOADING_SUCCESS) {
-            celestiaLoadingSucceeded()
-        } else if (currentState == AppStatusReporter.State.FINISHED) {
-            celestiaLoadingFinished()
+        when (currentState) {
+            AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
+                loadExternalConfig(savedState)
+            }
+            AppStatusReporter.State.LOADING -> {
+                // Do nothing
+            }
+            AppStatusReporter.State.LOADING_SUCCESS -> {
+                celestiaLoadingSucceeded()
+            }
+            AppStatusReporter.State.FINISHED -> {
+                celestiaLoadingFinished()
+            }
+            else -> {}
         }
 
         if (savedState != null) {
@@ -437,12 +444,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun celestiaLoadingProgress(status: String) {}
 
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
-        if (newState == AppStatusReporter.State.FINISHED) {
-            celestiaLoadingFinished()
-        } else if (newState == AppStatusReporter.State.LOADING_SUCCESS) {
-            celestiaLoadingSucceeded()
-        } else if (newState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE || newState == AppStatusReporter.State.LOADING_FAILURE) {
-            celestiaLoadingFailed()
+        when (newState) {
+            AppStatusReporter.State.FINISHED -> {
+                celestiaLoadingFinished()
+            }
+            AppStatusReporter.State.LOADING_SUCCESS -> {
+                celestiaLoadingSucceeded()
+            }
+            AppStatusReporter.State.EXTERNAL_LOADING_FAILURE, AppStatusReporter.State.LOADING_FAILURE -> {
+                celestiaLoadingFailed()
+            }
+            else -> {}
         }
     }
 
@@ -528,7 +540,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // Read custom paths here
         customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
         customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
-        customFrameRateOption = preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS
+        customFrameRateOption =
+            preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull()
+                ?: Renderer.FRAME_60FPS
 
         val localeDirectory = File("${celestiaDataDirPath}/locale")
         if (localeDirectory.exists()) {
@@ -538,15 +552,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             availableLanguageCodes = languageCodes.sorted()
         }
 
-        val languageFromSettings = preferenceManager[PreferenceManager.PredefinedKey.Language]
-        if (languageFromSettings == null) {
-            language = getString(R.string.celestia_language)
-        } else {
-            language = languageFromSettings
-        }
+        language = preferenceManager[PreferenceManager.PredefinedKey.Language]
+            ?: getString(R.string.celestia_language)
 
         enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
-        enableHiDPI = preferenceManager[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
+        enableHiDPI =
+            preferenceManager[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -1036,10 +1047,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val scriptFile: File
         val scriptFileName = name ?: "${UUID.randomUUID()}.${type}"
-        if (location == "context") {
-            scriptFile = File(contextDirectory, scriptFileName)
+        scriptFile = if (location == "context") {
+            File(contextDirectory, scriptFileName)
         } else {
-            scriptFile = File(cacheDir, scriptFileName)
+            File(cacheDir, scriptFileName)
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -1818,10 +1829,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(EventFinderContainerFragment.newInstance())
     }
 
-    private fun showShareError(reason: String? = null) {
-        showAlert(title = CelestiaString("Cannot share URL", ""), message = reason)
-    }
-
     // Resource
     private fun showInstalledAddons() {
         showBottomSheetFragment(ResourceFragment.newInstance(AppCore.getLanguage()))
@@ -1922,7 +1929,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "31"
+        private const val CURRENT_DATA_VERSION = "33"
+        // 33: 1.5.11 Localization update, data update (commit 9b7df828cbd7205119d378fa864aabd8f3272456)
         // 32: 1.5.7 Localization update, data update (commit 7f816ccd97eeaa5d3f1364a3f17cf378946b708e)
         // 31: 1.5.5 Localization update, data update (commit 9e7a8ee18a875ae8fc202439952256a5a2378a0b)
         // 30: 1.5.2 Localization update, data update (commit 430b955920e31c84fa433bc7aaa43938c5e04ca7)
