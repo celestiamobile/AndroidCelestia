@@ -12,8 +12,8 @@
 package space.celestia.ui.linkpreview
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
-import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -22,14 +22,14 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
 
-class LPLinkView(context: Context, val attrs: AttributeSet) : CardView(context, attrs) {
+class LPLinkView(context: Context, attrs: AttributeSet) : CardView(context, attrs) {
     private var titleLabelSize = context.resources.getDimension(R.dimen.LPLinkView_titleTextDefaultSize)
     private var footerLabelSize = context.resources.getDimension(R.dimen.LPLinkView_footnoteTextDefaultSize)
-    private var titleLabelColor = R.color.colorLabel
-    private var footerLabelColor = R.color.colorSecondaryLabel
+    private var titleLabelColor: ColorStateList?
+    private var footerLabelColor: ColorStateList?
     private var textContentSpacing = context.resources.getDimensionPixelSize(R.dimen.LPLinkView_textContentDefaultSpacing)
     private var textContentVerticalPadding = context.resources.getDimensionPixelSize(R.dimen.LPLinkView_textContentDefaultVerticalPadding)
     private var textContentHorizontalPadding = context.resources.getDimensionPixelSize(R.dimen.LPLinkView_textContentDefaultHorizontalPadding)
@@ -39,8 +39,8 @@ class LPLinkView(context: Context, val attrs: AttributeSet) : CardView(context, 
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.LPLinkView, 0, 0)
         titleLabelSize = typedArray.getDimension(R.styleable.LPLinkView_titleTextSize, titleLabelSize)
         footerLabelSize = typedArray.getDimension(R.styleable.LPLinkView_footnoteTextSize, footerLabelSize)
-        titleLabelColor = typedArray.getResourceId(R.styleable.LPLinkView_titleTextColor, titleLabelColor)
-        footerLabelColor = typedArray.getResourceId(R.styleable.LPLinkView_footnoteTextColor, footerLabelColor)
+        titleLabelColor = typedArray.getColorStateList(R.styleable.LPLinkView_titleTextColor) ?: ResourcesCompat.getColorStateList(resources, R.color.colorLabel, null)
+        footerLabelColor = typedArray.getColorStateList(R.styleable.LPLinkView_footnoteTextColor) ?: ResourcesCompat.getColorStateList(resources, R.color.colorSecondaryLabel, null)
         textContentSpacing = typedArray.getDimensionPixelSize(R.styleable.LPLinkView_textContentSpacing, textContentSpacing)
         textContentVerticalPadding = typedArray.getDimensionPixelSize(R.styleable.LPLinkView_textContentPaddingVertical, textContentVerticalPadding)
         textContentHorizontalPadding = typedArray.getDimensionPixelSize(R.styleable.LPLinkView_textContentPaddingHorizontal, textContentHorizontalPadding)
@@ -57,8 +57,7 @@ class LPLinkView(context: Context, val attrs: AttributeSet) : CardView(context, 
     fun reload() {
         removeAllViews()
 
-        val metaData = linkMetadata
-        if (metaData == null) return
+        val metaData = linkMetadata ?: return
 
         val container = LinearLayout(context)
         addView(container)
@@ -70,14 +69,14 @@ class LPLinkView(context: Context, val attrs: AttributeSet) : CardView(context, 
         textContentView.orientation = LinearLayout.VERTICAL
         val titleView = TextView(context)
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_PX, titleLabelSize)
-        titleView.setTextColor(ContextCompat.getColor(context, titleLabelColor))
+        titleView.setTextColor(titleLabelColor)
         titleView.text = metaData.title
         titleView.textAlignment = TEXT_ALIGNMENT_VIEW_START
         titleView.setBackgroundColor(Color.TRANSPARENT)
         val urlView = TextView(context)
         urlView.text = metaData.url.host
         urlView.setTextSize(TypedValue.COMPLEX_UNIT_PX, footerLabelSize)
-        urlView.setTextColor(ContextCompat.getColor(context, footerLabelColor))
+        urlView.setTextColor(footerLabelColor)
         urlView.textAlignment = TEXT_ALIGNMENT_VIEW_START
         urlView.setBackgroundColor(Color.TRANSPARENT)
 
