@@ -1502,7 +1502,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showWrongPathProvided() {
         val expectedParent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) externalMediaDirs.firstOrNull() else getExternalFilesDir(null)
-        showAlert(CelestiaString("Unable to resolve path, please ensure that you have selected a path inside %s.", "").format(expectedParent?.absolutePath ?: ""))
+        showAlert(CelestiaString("Unable to resolve path", ""), CelestiaString("Please ensure that you have selected a path under %s.", "").format(expectedParent?.absolutePath ?: ""))
     }
 
     private fun showUnsupportedAction() {
