@@ -14,13 +14,15 @@
     android:orientation="horizontal"
     android:layout_width="90dp"
     android:layout_height="28dp"
-    style="@style/Container">
+    style="@style/Container"
+    android:baselineAligned="false">
 
     <FrameLayout
         android:id="@+id/stepper_start"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:padding="4dp"
         android:clickable="true">
         <ImageView
             android:layout_width="wrap_content"
@@ -28,10 +30,9 @@
             android:layout_gravity="center"
             android:src="@drawable/ic_remove"
             style="@style/Image"/>
-
     </FrameLayout>
 
-    <FrameLayout
+    <Space
         android:layout_width="1dp"
         android:layout_height="match_parent"/>
 
@@ -40,6 +41,7 @@
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:padding="4dp"
         android:clickable="true">
         <ImageView
             android:layout_width="wrap_content"
@@ -47,7 +49,5 @@
             android:layout_gravity="center"
             android:src="@drawable/ic_add"
             style="@style/Image"/>
-
     </FrameLayout>
-
 </LinearLayout>

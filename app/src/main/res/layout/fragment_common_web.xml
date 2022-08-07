@@ -51,7 +51,7 @@
             android:id="@+id/backward_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:icon="@drawable/ic_action_back_tint" />
+            app:icon="@drawable/ic_action_arrow_back" />
 
         <Space
             android:layout_width="16dp"
@@ -62,7 +62,7 @@
             android:id="@+id/forward_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:icon="@drawable/ic_action_forward_tint" />
+            app:icon="@drawable/ic_action_arrow_forward" />
 
         <Space
             android:layout_width="0dp"

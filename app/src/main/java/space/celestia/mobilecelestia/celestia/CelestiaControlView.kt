@@ -16,6 +16,7 @@ import android.content.Context
 import android.view.MotionEvent
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.setPadding
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.StandardImageButton
 
@@ -40,13 +41,19 @@ class CelestiaControlView(context: Context, private val items: List<CelestiaCont
         orientation = VERTICAL
         val density = resources.displayMetrics.density
 
-        for (item in items) {
+        setPadding((4 * density).toInt())
 
+        for (index in items.indices) {
+            val item = items[index]
             val button = StandardImageButton(context)
             button.setColorFilter(ContextCompat.getColor(context, R.color.colorSecondaryLabel))
 
-            val size = (44 * density).toInt()
-            button.layoutParams = LayoutParams(size, size)
+            val size = (40 * density).toInt()
+            val params = LayoutParams(size, size)
+            if (index != 0) {
+                params.topMargin = (6 * density).toInt()
+            }
+            button.layoutParams = params
             when (item) {
                 is CelestiaTapButton -> {
                     button.setImageResource(item.image)

@@ -1,15 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ accessory_full_disclosure.xml
-  ~
-  ~ Copyright (C) 2001-2020, Celestia Development Team
-  ~
-  ~ This program is free software; you can redistribute it and/or
-  ~ modify it under the terms of the GNU General Public License
-  ~ as published by the Free Software Foundation; either version 2
-  ~ of the License, or (at your option) any later version.
-  -->
-
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/accessory_full_disclosure_right"
-    android:autoMirrored="true"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="10dp"
+    android:height="18dp"
+    android:viewportWidth="745.000000"
+    android:viewportHeight="1223.000000"
+    android:autoMirrored="true">
+    <group
+        android:scaleX="0.1"
+        android:scaleY="-0.1"
+        android:translateY="1223">
+        <path
+            android:fillColor="#FF000000"
+            android:strokeWidth="1"
+            android:pathData="M2253 10415c-111-31-186-82-250-169-63-85-86-171-81-294 3-87 7-106 41-177 35-75 50-93 231-270 107-104 935-914 1840-1800 905-885 1646-1612 1646-1615 0-3-822-809-1827-1792-1128-1103-1841-1807-1862-1840-103-156-95-382 17-530 133-174 375-227 577-126 43 22 99 69 200 168 2007 1962 3870 3787 3903 3824 24 26 58 77 75 114 30 63 32 74 32 182 0 108-2 119-31 181-18 37-49 86-70 110-91 101-4015 3939-4058 3968-26 18-73 42-104 53-75 27-209 33-279 13z"/>
+    </group>
+</vector>

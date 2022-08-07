@@ -63,7 +63,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
             var items: List<NavigationFragment.BarButtonItem> = listOf()
             if (favoriteItem is MutableFavoriteBaseItem) {
                 items = listOf(
-                    NavigationFragment.BarButtonItem(MENU_ITEM_ADD, CelestiaString("Add", ""), R.drawable.ic_add_tint)
+                    NavigationFragment.BarButtonItem(MENU_ITEM_ADD, CelestiaString("Add", ""), R.drawable.ic_add)
                 )
             }
             rightNavigationBarItems = items
