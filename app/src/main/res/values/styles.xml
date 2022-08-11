@@ -176,7 +176,7 @@
         <item name="android:layout_height">0.5dp</item>
     </style>
 
-    <style name="AppTheme" parent="@style/DefaultTheme">
+    <style name="AppTheme" parent="DefaultTheme">
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="colorOnBackground">@color/colorLabel</item>
         <item name="colorPrimary">@color/colorPrimary</item>
