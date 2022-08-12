@@ -16,15 +16,13 @@
     tools:context=".control.BottomControlFragment"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:clickable="true"
-    style="@style/Container">
+    style="@style/ControlViewBackground">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="4dp"
-        android:layout_marginVertical="2dp"
-        style="@style/ControlViewBackground"/>
-
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/bottom_control_view_margin_horizontal"
+        android:paddingVertical="@dimen/bottom_control_view_margin_vertical" />
 </FrameLayout>

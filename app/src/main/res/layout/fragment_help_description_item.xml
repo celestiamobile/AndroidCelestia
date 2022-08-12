@@ -17,10 +17,10 @@
 
     <ImageView
         android:id="@+id/image"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginVertical="12dp"
+        android:layout_width="@dimen/tutorial_list_icon_dimension"
+        android:layout_height="@dimen/tutorial_list_icon_dimension"
+        android:layout_marginStart="@dimen/list_item_margin_horizontal"
+        android:layout_marginVertical="@dimen/list_item_margin_vertical"
         style="@style/Image"/>
 
     <TextView
@@ -28,7 +28,7 @@
         style="@style/HelpText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="12dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp" />
+        android:layout_marginVertical="@dimen/list_item_margin_vertical"
+        android:layout_marginStart="@dimen/tutorial_list_item_gap_horizontal"
+        android:layout_marginEnd="@dimen/list_item_margin_horizontal" />
 </LinearLayout>

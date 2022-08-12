@@ -23,7 +23,7 @@
         style="@style/LargeTitleLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp" />
+        android:layout_margin="@dimen/common_page_margin_horizontal" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"

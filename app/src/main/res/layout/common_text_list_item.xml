@@ -21,8 +21,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="12dp"
-        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="@dimen/list_item_margin_vertical"
+        android:layout_marginHorizontal="@dimen/list_item_margin_horizontal"
         android:layout_weight="1">
         <TextView
             android:id="@+id/title"
@@ -48,9 +48,9 @@
             app:constraint_referenced_ids="title,detail"
             app:flow_horizontalStyle="spread_inside"
             app:flow_wrapMode="chain"
-            app:flow_verticalGap="6dp"
+            app:flow_verticalGap="@dimen/list_item_gap_vertical"
             app:flow_verticalAlign="center"
-            app:flow_horizontalGap="8dp"
+            app:flow_horizontalGap="@dimen/list_item_gap_horizontal"
             app:flow_horizontalBias="0"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:src="@drawable/accessory_full_disclosure"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="@dimen/list_item_gap_horizontal"
         android:visibility="gone"
         style="@style/Accessory"
         tools:ignore="ContentDescription" />

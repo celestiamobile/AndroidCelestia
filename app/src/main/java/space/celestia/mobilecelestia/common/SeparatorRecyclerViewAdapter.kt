@@ -16,7 +16,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Space;
+import androidx.annotation.DimenRes
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.divider.MaterialDivider
 import space.celestia.mobilecelestia.R
 
 interface ViewItem
@@ -30,8 +32,7 @@ open class CommonSection(val items: List<RecyclerViewItem>,
                          val showSectionSeparator: Boolean = true,
                          val showRowSeparator: Boolean = true)
 
-open class SeparatorRecyclerViewAdapter(private val separatorHeight: Float = 0.5f,
-                                        private val separatorLeft: Float = 16f,
+open class SeparatorRecyclerViewAdapter(@DimenRes private val separatorInsetStartResource: Int = 0,
                                         private val separatorBackgroundColor: Int = R.color.colorSecondaryBackground,
                                         sections: List<CommonSection> = listOf(),
                                         private val fullSection: Boolean = true,
@@ -89,11 +90,19 @@ open class SeparatorRecyclerViewAdapter(private val separatorHeight: Float = 0.5
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == SEPARATOR_0) {
-            val view = SeparatorView(parent.context, 0.5f, 0f, separatorBackgroundColor)
+            val view = MaterialDivider(parent.context)
+            view.setDividerThicknessResource(R.dimen.default_separator_height)
+            view.setDividerInsetStartResource(R.dimen.full_separator_inset_start)
+            view.setDividerColorResource(R.color.colorSeparator)
+            view.setBackgroundResource(separatorBackgroundColor)
             return SeparatorViewHolder(view)
         }
         if (viewType == SEPARATOR_1) {
-            val view = SeparatorView(parent.context, separatorHeight, separatorLeft, separatorBackgroundColor)
+            val view = MaterialDivider(parent.context)
+            view.setDividerThicknessResource(R.dimen.default_separator_height)
+            view.setDividerInsetStartResource(if (separatorInsetStartResource != 0) separatorInsetStartResource else R.dimen.partial_separator_inset_start)
+            view.setDividerColorResource(R.color.colorSeparator)
+            view.setBackgroundResource(separatorBackgroundColor)
             return SeparatorViewHolder(view)
         }
         return createVH(parent, viewType)

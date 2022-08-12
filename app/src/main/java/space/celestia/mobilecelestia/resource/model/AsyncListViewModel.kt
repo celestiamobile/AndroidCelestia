@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
+import space.celestia.mobilecelestia.R
 
 abstract class AsyncListPagingViewModel: ViewModel() {
     abstract fun getItemsWithoutSeparators(): LiveData<PagingData<AsyncListItem>>
@@ -25,8 +26,8 @@ abstract class AsyncListPagingViewModel: ViewModel() {
                 if (before == null && after == null)
                     return@insertSeparators null
                 if (before == null || after == null)
-                    return@insertSeparators AsyncListPagingItem.Separator(0.0f)
-                return@insertSeparators AsyncListPagingItem.Separator(16.0f)
+                    return@insertSeparators AsyncListPagingItem.Separator(R.dimen.full_separator_inset_start)
+                return@insertSeparators AsyncListPagingItem.Separator(R.dimen.partial_separator_inset_start)
             }
             transformed = transformed.insertHeaderItem(item = AsyncListPagingItem.Header)
                 .insertFooterItem(item = AsyncListPagingItem.Footer)

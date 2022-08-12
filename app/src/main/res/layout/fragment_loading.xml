@@ -30,12 +30,9 @@
             android:layout_gravity="center_horizontal"
             android:src="@drawable/loading_icon"/>
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="24dp"/>
-
         <TextView
             android:id="@+id/loading_label"
+            android:layout_marginTop="@dimen/loading_gap_vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"

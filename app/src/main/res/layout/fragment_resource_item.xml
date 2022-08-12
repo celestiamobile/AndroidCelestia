@@ -40,22 +40,19 @@
             android:layout_height="0dp"
             android:layout_weight="1"/>
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="8dp" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginTop="@dimen/common_page_gap_vertical"
+            android:layout_marginHorizontal="@dimen/common_page_margin_horizontal"
+            android:layout_marginBottom="@dimen/common_page_margin_horizontal"
             android:orientation="vertical">
             <Button
                 android:id="@+id/go_to_button"
                 style="@style/Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="@dimen/common_page_text_gap_vertical"/>
 
             <Button
                 style="@style/Button"

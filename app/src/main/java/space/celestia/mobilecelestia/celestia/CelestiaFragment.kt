@@ -81,11 +81,6 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private val scaleFactor: Float
         get() = if (enableFullResolution) 1.0f else (1.0f / density)
 
-    private val controlMargin
-        get() = (4 * density).toInt()
-    private val controlContainerTrailingMargin
-        get() = (8 * density).toInt()
-
     private var zoomTimer: Timer? = null
 
     private var loadSuccess = false
@@ -142,22 +137,9 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
         setupGLView(view.findViewById(R.id.celestia_gl_view))
 
-        val activeControlView = CelestiaControlView(inflater.context, listOf(
-            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera),
-            CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn),
-            CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
-            CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),
-            CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu),
-            CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide)
-        ))
-        val activeControlContainer = view.findViewById<FrameLayout>(R.id.active_control_view_container)
 
-        activeControlContainer.addView(activeControlView)
-
-        val layoutParamsForControls = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
-        layoutParamsForControls.setMargins(controlMargin, controlMargin, controlMargin, controlMargin)
-        activeControlView.layoutParams = layoutParamsForControls
-        activeControlView.listener = this
+        val controlView = view.findViewById<CelestiaControlView>(R.id.control_view)
+        controlView.listener = this
         return view
     }
 
@@ -250,7 +232,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         val controlView = view.findViewById<FrameLayout>(currentControlViewID) ?: return
         val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
         if (params != null) {
-            params.marginEnd = controlContainerTrailingMargin + safeInsetEnd
+            params.marginEnd = resources.getDimensionPixelOffset(R.dimen.control_view_container_margin_end) + safeInsetEnd
             controlView.layoutParams = params
         }
     }

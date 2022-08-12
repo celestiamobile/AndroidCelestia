@@ -7,16 +7,16 @@ import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.divider.MaterialDivider
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CommonTextViewHolder
-import space.celestia.mobilecelestia.common.SeparatorView
 import space.celestia.mobilecelestia.resource.AsyncListPagingFragment
 import java.lang.ref.WeakReference
 
 class AsyncListPagingAdapter(listener: AsyncListPagingFragment.Listener?): PagingDataAdapter<AsyncListPagingItem, RecyclerView.ViewHolder>(COMPARATOR) {
     private val listener = if (listener == null) null else WeakReference(listener)
 
-    inner class SeparatorViewHolder(val view: SeparatorView) : RecyclerView.ViewHolder(view)
+    inner class SeparatorViewHolder(val view: MaterialDivider) : RecyclerView.ViewHolder(view)
 
     override fun getItemViewType(position: Int): Int {
         return when(getItem(position)){
@@ -29,10 +29,14 @@ class AsyncListPagingAdapter(listener: AsyncListPagingFragment.Listener?): Pagin
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when (viewType) {
+        when (viewType) {
             TYPE_SEPARATOR -> {
-                val view = SeparatorView(parent.context, 0.5f, 0.0f, R.color.colorSecondaryBackground)
-                SeparatorViewHolder(view)
+                val view = MaterialDivider(parent.context)
+                view.setDividerThicknessResource(R.dimen.default_separator_height)
+                view.setDividerInsetStartResource(R.dimen.full_separator_inset_start)
+                view.setDividerColorResource(R.color.colorSeparator)
+                view.setBackgroundResource(R.color.colorSecondaryBackground)
+                return SeparatorViewHolder(view)
             }
             TYPE_HEADER -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.common_section_header, parent, false)
@@ -62,7 +66,7 @@ class AsyncListPagingAdapter(listener: AsyncListPagingFragment.Listener?): Pagin
             }
             is AsyncListPagingItem.Separator -> {
                 val viewHolder = holder as SeparatorViewHolder
-                viewHolder.view.separatorInset = item.inset
+                viewHolder.view.setDividerInsetStartResource(item.dividerInsetStartResource)
             }
             else -> {}
         }
@@ -90,7 +94,7 @@ class AsyncListPagingAdapter(listener: AsyncListPagingFragment.Listener?): Pagin
                 if (oldItem is AsyncListPagingItem.Data && newItem is AsyncListPagingItem.Data) {
                     return oldItem.data.id == newItem.data.id
                 } else if (oldItem is AsyncListPagingItem.Separator && newItem is AsyncListPagingItem.Separator) {
-                    return oldItem.inset == newItem.inset
+                    return oldItem.dividerInsetStartResource == newItem.dividerInsetStartResource
                 } else if (oldItem is AsyncListPagingItem.Header && newItem is AsyncListPagingItem.Header) {
                     return true
                 } else if (oldItem is AsyncListPagingItem.Footer && newItem is AsyncListPagingItem.Footer) {

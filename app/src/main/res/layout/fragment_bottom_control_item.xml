@@ -11,13 +11,13 @@
   -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="60dp"
-    android:layout_height="60dp">
+    android:layout_width="@dimen/bottom_control_view_dimension"
+    android:layout_height="@dimen/bottom_control_view_dimension">
 
     <space.celestia.mobilecelestia.common.StandardImageButton
         android:id="@+id/button"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
+        android:layout_width="@dimen/bottom_control_view_item_dimension"
+        android:layout_height="@dimen/bottom_control_view_item_dimension"
         android:layout_gravity="center"
         style="@style/Image"/>
 </FrameLayout>

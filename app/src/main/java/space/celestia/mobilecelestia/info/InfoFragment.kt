@@ -163,26 +163,26 @@ class InfoFragment : NavigationFragment.SubFragment() {
             parent: RecyclerView,
             state: RecyclerView.State
         ) {
-            val density =  parent.resources.displayMetrics.density
             val isRTL = parent.resources.configuration.layoutDirection == LayoutDirection.RTL
-            val spacing = (16 * density).toInt()
-            val buttonSpacing = (spacing - 6 * density).toInt()
+            val verticalSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_gap_vertical)
+            val horizontalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_text_gap_horizontal)
+            val verticalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_text_gap_vertical)
 
             val pos = parent.getChildLayoutPosition(view)
             if (pos < firstSingleColumnItem) {
-                outRect.left = spacing
-                outRect.right = spacing
-                outRect.top = spacing
-                outRect.bottom = if (pos == firstSingleColumnItem - 1) spacing else 0
+                outRect.left = 0
+                outRect.right = 0
+                outRect.top = 0
+                outRect.bottom = verticalSpacing
             } else {
                 outRect.top = 0
-                outRect.bottom = buttonSpacing
+                outRect.bottom = verticalButtonSpacing
                 if ((pos - firstSingleColumnItem) % 2 == 1) {
-                    outRect.left = if (isRTL) spacing else (spacing / 2)
-                    outRect.right = if (isRTL) (spacing / 2) else spacing
+                    outRect.left = if (isRTL) 0 else (horizontalButtonSpacing / 2)
+                    outRect.right = if (isRTL) (horizontalButtonSpacing / 2) else 0
                 } else {
-                    outRect.left = if (isRTL) (spacing / 2) else spacing
-                    outRect.right = if (isRTL) spacing else (spacing / 2)
+                    outRect.left = if (isRTL) (horizontalButtonSpacing / 2) else 0
+                    outRect.right = if (isRTL) 0 else (horizontalButtonSpacing / 2)
                 }
             }
         }

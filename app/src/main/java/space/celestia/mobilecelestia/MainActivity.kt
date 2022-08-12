@@ -266,9 +266,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.bottom_sheet_overlay)) { _, insets ->
-            var builder = WindowInsetsCompat.Builder(insets)
-            builder = builder.setInsets(WindowInsetsCompat.Type.displayCutout(), Insets.of(0, 0, 0, insets.getInsets(WindowInsetsCompat.Type.displayCutout()).bottom))
-            val bottom = builder.build().systemWindowInsetBottom
+            // TODO: the suggested replacement for the deprecated methods does not work
+            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0, 0, 0, insets.systemWindowInsetBottom))
             return@setOnApplyWindowInsetsListener builder.build()
         }
 

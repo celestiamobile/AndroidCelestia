@@ -13,10 +13,10 @@ package space.celestia.mobilecelestia.celestia
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
-import androidx.core.view.setPadding
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.StandardImageButton
 
@@ -30,28 +30,33 @@ class CelestiaToggleButton(val image: Int, val offAction: CelestiaControlAction,
 class CelestiaTapButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton
 class CelestiaPressButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton
 
-@SuppressLint("ViewConstructor")
-class CelestiaControlView(context: Context, private val items: List<CelestiaControlButton>): LinearLayout(context) {
+class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs)  {
     init {
-        setup()
+        setUp()
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    fun setup() {
+    fun setUp() {
         orientation = VERTICAL
-        val density = resources.displayMetrics.density
 
-        setPadding((4 * density).toInt())
+        val items = listOf(
+            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera),
+            CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn),
+            CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
+            CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),
+            CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu),
+            CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide)
+        )
 
         for (index in items.indices) {
             val item = items[index]
             val button = StandardImageButton(context)
             button.setColorFilter(ContextCompat.getColor(context, R.color.colorSecondaryLabel))
 
-            val size = (40 * density).toInt()
+            val size = resources.getDimensionPixelSize(R.dimen.control_view_icon_size)
             val params = LayoutParams(size, size)
             if (index != 0) {
-                params.topMargin = (6 * density).toInt()
+                params.topMargin = resources.getDimensionPixelOffset(R.dimen.control_view_icon_spacing)
             }
             button.layoutParams = params
             when (item) {

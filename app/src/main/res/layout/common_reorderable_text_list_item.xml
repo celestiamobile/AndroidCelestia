@@ -23,9 +23,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginVertical="12dp"
+        android:layout_marginStart="@dimen/list_item_margin_horizontal"
+        android:layout_marginEnd="@dimen/list_item_gap_horizontal"
+        android:layout_marginVertical="@dimen/list_item_margin_vertical"
         style="@style/PrimaryListItemLabel"/>
 
     <ImageView
@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:src="@drawable/accessory_full_disclosure"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="@dimen/list_item_gap_horizontal"
         android:visibility="gone"
         style="@style/Accessory"/>
 
@@ -44,6 +44,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:src="@drawable/ic_dehaze"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="@dimen/list_item_margin_horizontal"
         style="@style/Accessory"/>
 </LinearLayout>
