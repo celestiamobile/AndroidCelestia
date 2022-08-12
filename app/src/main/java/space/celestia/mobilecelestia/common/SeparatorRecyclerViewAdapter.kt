@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Space;
 import androidx.annotation.DimenRes
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.divider.MaterialDivider
 import space.celestia.mobilecelestia.R
@@ -33,6 +34,7 @@ open class CommonSection(val items: List<RecyclerViewItem>,
                          val showRowSeparator: Boolean = true)
 
 open class SeparatorRecyclerViewAdapter(@DimenRes private val separatorInsetStartResource: Int = 0,
+                                        @DimenRes private val separatorContainerHeightResource: Int = 0,
                                         private val separatorBackgroundColor: Int = R.color.colorSecondaryBackground,
                                         sections: List<CommonSection> = listOf(),
                                         private val fullSection: Boolean = true,
@@ -90,18 +92,22 @@ open class SeparatorRecyclerViewAdapter(@DimenRes private val separatorInsetStar
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewType == SEPARATOR_0) {
-            val view = MaterialDivider(parent.context)
-            view.setDividerThicknessResource(R.dimen.default_separator_height)
-            view.setDividerInsetStartResource(R.dimen.full_separator_inset_start)
-            view.setDividerColorResource(R.color.colorSeparator)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_separator, parent, false)
+            val separator = view.findViewById<MaterialDivider>(R.id.separator_view)
+            separator.setDividerInsetStartResource(R.dimen.full_separator_inset_start)
             view.setBackgroundResource(separatorBackgroundColor)
+            view.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = if (separatorContainerHeightResource != 0) parent.resources.getDimensionPixelSize(separatorContainerHeightResource) else ViewGroup.LayoutParams.WRAP_CONTENT
+            }
             return SeparatorViewHolder(view)
         }
         if (viewType == SEPARATOR_1) {
-            val view = MaterialDivider(parent.context)
-            view.setDividerThicknessResource(R.dimen.default_separator_height)
-            view.setDividerInsetStartResource(if (separatorInsetStartResource != 0) separatorInsetStartResource else R.dimen.partial_separator_inset_start)
-            view.setDividerColorResource(R.color.colorSeparator)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_separator, parent, false)
+            val separator = view.findViewById<MaterialDivider>(R.id.separator_view)
+            separator.setDividerInsetStartResource(if (separatorInsetStartResource != 0) separatorInsetStartResource else R.dimen.partial_separator_inset_start)
+            view.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = if (separatorContainerHeightResource != 0) parent.resources.getDimensionPixelSize(separatorContainerHeightResource) else ViewGroup.LayoutParams.WRAP_CONTENT
+            }
             view.setBackgroundResource(separatorBackgroundColor)
             return SeparatorViewHolder(view)
         }

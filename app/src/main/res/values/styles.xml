@@ -162,7 +162,7 @@
         <item name="itemActiveIndicatorStyle">@null</item>
     </style>
 
-    <style name="Button" parent="Widget.Material3.Button.TonalButton">\
+    <style name="Button" parent="Widget.Material3.Button.TonalButton">
     </style>
 
     <style name="AppTheme" parent="DefaultTheme">

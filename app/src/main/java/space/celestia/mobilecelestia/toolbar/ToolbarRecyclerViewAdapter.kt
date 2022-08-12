@@ -28,7 +28,7 @@ import space.celestia.mobilecelestia.toolbar.model.ToolbarListItem
 class ToolbarRecyclerViewAdapter(
     values: List<List<ToolbarListItem>>,
     private val listener: Listener?
-) : SeparatorRecyclerViewAdapter(separatorInsetStartResource = R.dimen.toolbar_separator_inset_start, sections = values.map { CommonSection(it,
+) : SeparatorRecyclerViewAdapter(separatorInsetStartResource = R.dimen.toolbar_separator_inset_start, separatorContainerHeightResource = R.dimen.toolbar_separator_container_height, sections = values.map { CommonSection(it,
     showSectionSeparator = true,
     showRowSeparator = false
 ) }, fullSection = false, showFirstAndLastSeparator = false) {
