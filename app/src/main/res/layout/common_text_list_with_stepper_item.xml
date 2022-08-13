@@ -22,9 +22,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:layout_marginStart="@dimen/list_item_margin_horizontal"
+        android:layout_marginStart="@dimen/list_item_medium_margin_horizontal"
         android:layout_marginEnd="@dimen/list_item_gap_horizontal"
-        android:layout_marginVertical="@dimen/list_item_margin_vertical"
+        android:layout_marginVertical="@dimen/list_item_medium_margin_vertical"
         style="@style/PrimaryListItemLabel" />
 
     <space.celestia.mobilecelestia.common.StepperView
@@ -32,5 +32,5 @@
         android:layout_gravity="center_vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/list_item_margin_horizontal"/>
+        android:layout_marginEnd="@dimen/list_item_medium_margin_horizontal"/>
 </LinearLayout>

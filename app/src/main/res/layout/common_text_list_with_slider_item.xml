@@ -24,15 +24,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginHorizontal="@dimen/list_item_margin_horizontal"
-            android:layout_marginTop="@dimen/list_item_margin_vertical"
+            android:layout_marginHorizontal="@dimen/list_item_medium_margin_horizontal"
+            android:layout_marginTop="@dimen/list_item_medium_margin_vertical"
             android:layout_marginBottom="@dimen/list_item_gap_vertical"
             style="@style/PrimaryListItemLabel"/>
     </LinearLayout>
 
     <com.google.android.material.slider.Slider
         android:id="@+id/slider"
-        android:layout_marginBottom="@dimen/list_item_margin_vertical"
+        android:layout_marginBottom="@dimen/list_item_medium_margin_vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginHorizontal="@dimen/list_item_slider_margin_horizontal"/>

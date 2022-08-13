@@ -15,8 +15,10 @@
     <dimen name="partial_separator_inset_start">16dp</dimen>
     <dimen name="full_separator_inset_start">0dp</dimen>
 
-    <dimen name="list_item_margin_horizontal">16dp</dimen>
-    <dimen name="list_item_margin_vertical">12dp</dimen>
+    <dimen name="list_item_medium_margin_horizontal">16dp</dimen>
+    <dimen name="list_item_medium_margin_vertical">12dp</dimen>
+    <dimen name="list_item_small_margin_horizontal">12dp</dimen>
+    <dimen name="list_item_small_margin_vertical">8dp</dimen>
     <dimen name="section_header_margin_horizontal">16dp</dimen>
     <dimen name="section_header_margin_vertical">12dp</dimen>
     <dimen name="section_footer_margin_horizontal">16dp</dimen>
@@ -32,14 +34,18 @@
     <dimen name="toolbar_separator_inset_start">32dp</dimen>
     <dimen name="toolbar_separator_container_height">6dp</dimen>
 
-    <dimen name="common_page_margin_horizontal">16dp</dimen>
-    <dimen name="common_page_margin_vertical">12dp</dimen>
-    <dimen name="common_page_gap_vertical">12dp</dimen>
-    <dimen name="common_page_gap_horizontal">12dp</dimen>
-    <dimen name="common_page_button_gap_vertical">8dp</dimen>
-    <dimen name="common_page_button_gap_horizontal">12dp</dimen>
-    <dimen name="common_page_text_gap_vertical">4dp</dimen>
-    <dimen name="common_page_text_gap_horizontal">6dp</dimen>
+    <dimen name="common_page_medium_margin_horizontal">16dp</dimen>
+    <dimen name="common_page_medium_margin_vertical">12dp</dimen>
+    <dimen name="common_page_small_margin_horizontal">12dp</dimen>
+    <dimen name="common_page_small_margin_vertical">8dp</dimen>
+    <dimen name="common_page_large_gap_vertical">12dp</dimen>
+    <dimen name="common_page_large_gap_horizontal">16dp</dimen>
+    <dimen name="common_page_medium_gap_vertical">8dp</dimen>
+    <dimen name="common_page_medium_gap_horizontal">12dp</dimen>
+    <dimen name="common_page_small_gap_vertical">4dp</dimen>
+    <dimen name="common_page_small_gap_horizontal">6dp</dimen>
+
+    <dimen name="common_page_button_gap_vertical">4dp</dimen>
 
     <dimen name="list_text_gap_vertical">4dp</dimen>
 

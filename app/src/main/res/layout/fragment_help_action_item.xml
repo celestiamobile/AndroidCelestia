@@ -16,7 +16,7 @@
 
     <Button
         android:id="@+id/action_button"
-        android:layout_marginHorizontal="@dimen/list_item_margin_horizontal"
+        android:layout_marginHorizontal="@dimen/list_item_medium_margin_horizontal"
         android:layout_marginVertical="@dimen/list_text_gap_vertical"
         style="@style/Button"
         android:layout_width="match_parent"

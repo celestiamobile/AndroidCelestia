@@ -21,7 +21,7 @@
         android:layout_width="@dimen/toolbar_list_icon_dimension"
         android:layout_height="@dimen/toolbar_list_icon_dimension"
         android:layout_gravity="center_vertical"
-        android:layout_marginStart="@dimen/list_item_margin_horizontal"
+        android:layout_marginStart="@dimen/list_item_medium_margin_horizontal"
         style="@style/Image"/>
 
     <TextView
@@ -29,8 +29,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/list_item_gap_horizontal"
-        android:layout_marginEnd="@dimen/list_item_margin_horizontal"
-        android:layout_marginVertical="@dimen/list_item_margin_vertical"
+        android:layout_marginEnd="@dimen/list_item_medium_margin_horizontal"
+        android:layout_marginVertical="@dimen/list_item_medium_margin_vertical"
         android:layout_gravity="center_vertical"
         style="@style/PrimaryListItemLabel"/>
 </LinearLayout>

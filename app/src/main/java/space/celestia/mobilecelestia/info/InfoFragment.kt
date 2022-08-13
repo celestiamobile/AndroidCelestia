@@ -164,8 +164,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
             state: RecyclerView.State
         ) {
             val isRTL = parent.resources.configuration.layoutDirection == LayoutDirection.RTL
-            val verticalSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_gap_vertical)
-            val horizontalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_button_gap_horizontal)
+            val verticalSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_medium_gap_vertical)
+            val horizontalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_medium_gap_horizontal)
             val verticalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_button_gap_vertical)
 
             val pos = parent.getChildLayoutPosition(view)
