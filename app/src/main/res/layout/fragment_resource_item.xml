@@ -52,7 +52,7 @@
                 style="@style/Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/common_page_text_gap_vertical"/>
+                android:layout_marginBottom="@dimen/common_page_button_gap_vertical"/>
 
             <Button
                 style="@style/Button"

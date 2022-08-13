@@ -165,8 +165,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
         ) {
             val isRTL = parent.resources.configuration.layoutDirection == LayoutDirection.RTL
             val verticalSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_gap_vertical)
-            val horizontalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_text_gap_horizontal)
-            val verticalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_text_gap_vertical)
+            val horizontalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_button_gap_horizontal)
+            val verticalButtonSpacing = resources.getDimensionPixelOffset(R.dimen.common_page_button_gap_vertical)
 
             val pos = parent.getChildLayoutPosition(view)
             if (pos < firstSingleColumnItem) {

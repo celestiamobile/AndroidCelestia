@@ -36,8 +36,10 @@
     <dimen name="common_page_margin_vertical">12dp</dimen>
     <dimen name="common_page_gap_vertical">12dp</dimen>
     <dimen name="common_page_gap_horizontal">12dp</dimen>
-    <dimen name="common_page_text_gap_vertical">8dp</dimen>
-    <dimen name="common_page_text_gap_horizontal">12dp</dimen>
+    <dimen name="common_page_button_gap_vertical">8dp</dimen>
+    <dimen name="common_page_button_gap_horizontal">12dp</dimen>
+    <dimen name="common_page_text_gap_vertical">4dp</dimen>
+    <dimen name="common_page_text_gap_horizontal">6dp</dimen>
 
     <dimen name="list_text_gap_vertical">4dp</dimen>
 
