@@ -25,6 +25,11 @@
         android:layout_height="match_parent"
         style="@style/Container"/>
 
+    <View
+        android:id="@+id/interaction_filter"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/menu_overlay"
         android:layout_width="match_parent"
@@ -148,10 +153,4 @@
         android:layout_height="match_parent"
         android:clickable="true"
         style="@style/Container" />
-
-    <View
-        android:id="@+id/interaction_filter"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
 </FrameLayout>
