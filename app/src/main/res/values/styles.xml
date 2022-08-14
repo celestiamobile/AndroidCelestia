@@ -28,24 +28,8 @@
         <item name="android:background">@drawable/ripple_background</item>
     </style>
 
-    <style name="ListItemGrouped" parent="Container">
-        <item name="android:background">@drawable/ripple_grouped_background</item>
-    </style>
-
     <style name="Background">
-        <item name="android:background">@color/colorBackground</item>
-    </style>
-
-    <style name="BackgroundElevated">
-        <item name="android:background">@color/colorBackgroundElevated</item>
-    </style>
-
-    <style name="SecondaryBackground">
-        <item name="android:background">@color/colorSecondaryBackground</item>
-    </style>
-
-    <style name="SecondaryBackgroundElevated">
-        <item name="android:background">@color/colorSecondaryBackgroundElevated</item>
+        <item name="android:background">?android:attr/colorBackground</item>
     </style>
 
     <style name="ControlViewBackground">
@@ -57,15 +41,31 @@
     </style>
 
     <style name="Image">
-        <item name="android:tint">?attr/colorOnBackground</item>
+        <item name="tint">?attr/colorOnBackground</item>
+    </style>
+
+    <style name="ImageOnTintedBackground">
+        <item name="tint">?attr/colorOnSecondaryContainer</item>
     </style>
 
     <style name="SecondaryImage">
-        <item name="android:tint">@color/colorSecondaryLabel</item>
+        <item name="tint">@color/material_on_background_emphasis_medium</item>
     </style>
 
     <style name="Accessory">
-        <item name="android:tint">@color/colorTertiaryLabel</item>
+        <item name="tint">@color/material_on_background_disabled</item>
+    </style>
+
+    <style name="Card">
+        <item name="strokeColor">@android:color/transparent</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cardBackgroundColor">?android:attr/colorBackground</item>
+    </style>
+
+    <style name="LinkCard" parent="Card">
+        <item name="android:clickable">true</item>
+        <item name="cardElevation">1dp</item>
+        <item name="cardCornerRadius">@dimen/link_card_corner_radius</item>
     </style>
 
     <style name="PrimaryLabel">
@@ -116,7 +116,7 @@
     </style>
 
     <style name="SecondaryLabel">
-        <item name="android:textColor">@color/colorSecondaryLabel</item>
+        <item name="android:textColor">@color/material_on_background_emphasis_medium</item>
     </style>
 
     <style name="BodyLabel" parent="SecondaryLabel">
@@ -125,8 +125,8 @@
     </style>
 
     <style name="SectionHeaderLabel" parent="SecondaryLabel">
+        <item name="android:textColor">?attr/colorPrimary</item>
         <item name="android:textAppearance">@style/TextAppearance.Material3.LabelMedium</item>
-        <item name="android:textAllCaps">true</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
 
@@ -152,8 +152,9 @@
         <item name="android:imeOptions">actionDone|flagNoExtractUi|flagNoFullscreen</item>
     </style>
 
-    <style name="Toolbar" parent="Widget.Material3.Toolbar">
-    </style>
+    <style name="AppBar" parent="Widget.Material3.AppBarLayout"/>
+
+    <style name="Toolbar" parent="Widget.Material3.Toolbar"/>
 
     <style name="BottomNav" parent="Widget.Material3.BottomNavigationView">
         <item name="android:minHeight">@dimen/bottom_navigation_view_min_height</item>
@@ -178,7 +179,7 @@
         <item name="colorOnSecondaryContainer">@color/colorOnSecondaryContainer</item>
         <item name="colorOutline">@color/colorSecondaryLabel</item>
         <item name="colorSurface">@color/colorBarBackground</item>
-        <item name="colorSurfaceVariant">@color/colorSecondaryBackgroundElevated</item>
+        <item name="colorSurfaceVariant">@color/colorBackgroundElevated</item>
         <item name="colorOnSurface">@color/colorLabel</item>
         <item name="colorOnSurfaceVariant">@color/colorSecondaryLabel</item>
     </style>

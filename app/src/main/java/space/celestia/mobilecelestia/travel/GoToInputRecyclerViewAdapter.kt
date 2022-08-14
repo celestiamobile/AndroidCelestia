@@ -13,6 +13,7 @@ package space.celestia.mobilecelestia.travel
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -84,7 +85,7 @@ class GoToInputRecyclerViewAdapter(
             return CommonTextViewHolder(parent)
         if (viewType == PROCEED_BUTTON) {
             val holder = CommonTextViewHolder(parent)
-            holder.title.setTextColor(parent.context.getSecondaryColor())
+            holder.title.setTextColor(parent.context.getPrimaryColor())
             return holder
         }
         return super.createVH(parent, viewType)
@@ -111,12 +112,15 @@ class GoToInputRecyclerViewAdapter(
         }
         if (item is GoToUnitItem && holder is CommonTextViewHolder) {
             holder.title.text = ""
+            holder.title.visibility = View.GONE
             holder.detail.visibility = View.VISIBLE
+            holder.detail.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin = 0 }
             holder.detail.text = CelestiaString(item.unit.name, "")
             return
         }
         if (item is GoToProceedItem && holder is CommonTextViewHolder) {
             holder.title.text = CelestiaString("Go", "")
+            holder.title.visibility = View.VISIBLE
             return
         }
         super.bindVH(holder, item)

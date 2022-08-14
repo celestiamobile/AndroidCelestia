@@ -15,7 +15,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:clickable="true"
-    style="@style/ListItemGrouped">
+    style="@style/ListItem">
 
     <TextView
         android:id="@+id/title"

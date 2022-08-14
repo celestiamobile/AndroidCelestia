@@ -62,10 +62,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
         savedInstanceState: Bundle?
     ): View {
         recyclerView = inflater.inflate(R.layout.fragment_info_list, container, false) as RecyclerView
-
-        if (embeddedInNavigation)
-            recyclerView.setBackgroundResource(R.color.colorBackground)
-
         reload()
         return recyclerView
     }

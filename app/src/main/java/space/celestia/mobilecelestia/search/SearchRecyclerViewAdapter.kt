@@ -21,7 +21,7 @@ import space.celestia.mobilecelestia.search.model.SearchResultItem
 
 class SearchRecyclerViewAdapter(
     private val listener: SearchFragment.Listener?
-) : SeparatorRecyclerViewAdapter() {
+) : SeparatorRecyclerViewAdapter(showSeparators = false) {
 
     override fun itemViewType(item: RecyclerViewItem): Int {
         return SEARCH_RESULT

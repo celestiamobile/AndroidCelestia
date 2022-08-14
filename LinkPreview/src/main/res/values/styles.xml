@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="PrimaryLabel">
-        <item name="android:textColor">@color/colorLabel</item>
+        <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
 
     <style name="SecondaryLabel">

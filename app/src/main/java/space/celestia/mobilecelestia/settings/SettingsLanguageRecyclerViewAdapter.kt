@@ -108,7 +108,7 @@ class SettingsLanguageRecyclerViewAdapter(
         if (viewType == LANG_ITEM) {
             val holder = CommonTextViewHolder(parent)
             holder.accessory.setImageResource(R.drawable.ic_check)
-            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(parent.context.getSecondaryColor()))
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(parent.context.getPrimaryColor()))
             return holder
         }
         return super.createVH(parent, viewType)
@@ -122,7 +122,7 @@ class SettingsLanguageRecyclerViewAdapter(
         }
         if (item is LanguageItem && holder is CommonTextViewHolder) {
             holder.title.text = item.title
-            holder.detail.visibility = View.VISIBLE
+            holder.detail.visibility = if (item.subtitle != null) View.VISIBLE else View.GONE
             holder.detail.text = item.subtitle
             return
         }

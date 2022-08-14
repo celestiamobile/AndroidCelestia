@@ -20,6 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/section_footer_margin_horizontal"
-        android:layout_marginVertical="@dimen/section_footer_margin_vertical"
+        android:layout_marginTop="@dimen/section_footer_margin_top"
+        android:layout_marginBottom="@dimen/section_footer_margin_bottom"
         style="@style/SectionFooterLabel"/>
 </FrameLayout>

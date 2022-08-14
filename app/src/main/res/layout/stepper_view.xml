@@ -23,13 +23,14 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:padding="@dimen/stepper_button_padding"
-        android:clickable="true">
+        android:clickable="true"
+        android:focusable="true">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:src="@drawable/ic_remove"
-            style="@style/Image"/>
+            style="@style/ImageOnTintedBackground"/>
     </FrameLayout>
 
     <Space
@@ -42,12 +43,13 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:padding="@dimen/stepper_button_padding"
-        android:clickable="true">
+        android:clickable="true"
+        android:focusable="true">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:src="@drawable/ic_add"
-            style="@style/Image"/>
+            style="@style/ImageOnTintedBackground"/>
     </FrameLayout>
 </LinearLayout>

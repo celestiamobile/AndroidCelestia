@@ -15,9 +15,7 @@
     android:id="@+id/link_preview"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:titleTextColor="@color/colorLabel"
-    app:footnoteTextColor="@color/colorSecondaryLabel"
-    app:cardCornerRadius="@dimen/link_card_corner_radius"
-    android:foreground="?attr/selectableItemBackground"
-    app:cardBackgroundColor="@color/colorCardBackground">
+    app:titleTextColor="?attr/colorOnBackground"
+    app:footnoteTextColor="@color/material_on_background_emphasis_medium"
+    style="@style/LinkCard">
 </space.celestia.ui.linkpreview.LPLinkView>

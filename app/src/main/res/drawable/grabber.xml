@@ -10,28 +10,8 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_selected="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/colorTertiaryLabel"/>
-            <corners
-                android:radius="3dp"/>
-        </shape>
-    </item>
-
-    <item android:state_pressed="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/colorTertiaryLabel"/>
-            <corners
-                android:radius="3dp"/>
-        </shape>
-    </item>
-
-    <item android:state_pressed="false">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/colorTertiaryLabel"/>
-            <corners
-                android:radius="3dp"/>
-        </shape>
-    </item>
-</selector>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/material_on_background_disabled" />
+    <corners android:radius="@dimen/sheet_handle_corner_radius"/>
+</shape>

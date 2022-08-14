@@ -73,7 +73,7 @@ class AboutRecyclerViewAdapter(
         }
         if (viewType == ACTION_ITEM) {
             val holder = CommonTextViewHolder(parent)
-            holder.title.setTextColor(parent.context.getSecondaryColor())
+            holder.title.setTextColor(parent.context.getPrimaryColor())
             return holder
         }
         if (viewType == TITLE_ITEM) {

@@ -4,7 +4,7 @@
     android:viewportWidth="1185.000000"
     android:viewportHeight="1223.000000"
     android:autoMirrored="true"
-    android:tint="@color/colorLabel">
+    android:tint="?attr/colorOnBackground">
     <group
         android:scaleX="0.1"
         android:scaleY="-0.1"

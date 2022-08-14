@@ -12,19 +12,10 @@
 
 <resources>
     <color name="colorBackground">#000000</color>
-    <color name="colorBackgroundElevated">#1C1C1E</color>
-    <color name="colorSecondaryBackground">#1C1C1E</color>
-    <color name="colorSecondaryBackgroundElevated">#2C2C2E</color>
+    <color name="colorBackgroundElevated">#2C2C2E</color>
     <color name="colorBarBackground">#0E0E0F</color>
-    <color name="colorBarBackgroundElevated">#242426</color>
     <color name="colorLabel">#FFFFFF</color>
     <color name="colorSecondaryLabel">#99EBEBF5</color>
-    <color name="colorTertiaryLabel">#4DEBEBF5</color>
-
-    <color name="colorCardBackground">#39393D</color>
-    <color name="colorFill">#5B787880</color>
-
-    <color name="colorSelection">#3A3A3C</color>
 
     <color name="colorSeparator">#99545458</color>
 
@@ -38,7 +29,4 @@
     <color name="colorOnPrimaryContainer">#D8E2FF</color>
     <color name="colorSecondaryContainer">#404659</color>
     <color name="colorOnSecondaryContainer">#DCE1F9</color>
-
-    <color name="colorTextGradientBackgroundTop">#00000000</color>
-    <color name="colorTextGradientBackgroundBottom">#80000000</color>
 </resources>

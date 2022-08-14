@@ -20,4 +20,4 @@
     android:paddingVertical="@dimen/common_page_medium_margin_vertical"
     android:paddingHorizontal="@dimen/common_page_medium_margin_horizontal"
     android:clipToPadding="false"
-    style="@style/SecondaryBackground"/>
+    style="@style/Background"/>

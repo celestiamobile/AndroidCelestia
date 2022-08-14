@@ -16,7 +16,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Space;
+import androidx.annotation.ColorRes
 import androidx.annotation.DimenRes
+import androidx.annotation.DrawableRes
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.divider.MaterialDivider
@@ -31,11 +33,12 @@ interface RecyclerViewItem : ViewItem {
 
 open class CommonSection(val items: List<RecyclerViewItem>,
                          val showSectionSeparator: Boolean = true,
-                         val showRowSeparator: Boolean = true)
+                         val showRowSeparator: Boolean = true,
+                         val showTopSectionSeparatorOnly: Boolean = false)
 
 open class SeparatorRecyclerViewAdapter(@DimenRes private val separatorInsetStartResource: Int = 0,
                                         @DimenRes private val separatorContainerHeightResource: Int = 0,
-                                        private val separatorBackgroundColor: Int = R.color.colorSecondaryBackground,
+                                        @DrawableRes private val separatorBackgroundResource: Int = R.drawable.background,
                                         sections: List<CommonSection> = listOf(),
                                         private val fullSection: Boolean = true,
                                         private val showFirstAndLastSeparator: Boolean = true,
@@ -94,8 +97,8 @@ open class SeparatorRecyclerViewAdapter(@DimenRes private val separatorInsetStar
         if (viewType == SEPARATOR_0) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_separator, parent, false)
             val separator = view.findViewById<MaterialDivider>(R.id.separator_view)
-            separator.setDividerInsetStartResource(R.dimen.full_separator_inset_start)
-            view.setBackgroundResource(separatorBackgroundColor)
+            separator.setDividerInsetStartResource(R.dimen.partial_separator_inset_start)
+            view.setBackgroundResource(separatorBackgroundResource)
             view.updateLayoutParams<ViewGroup.LayoutParams> {
                 height = if (separatorContainerHeightResource != 0) parent.resources.getDimensionPixelSize(separatorContainerHeightResource) else ViewGroup.LayoutParams.WRAP_CONTENT
             }
@@ -108,7 +111,7 @@ open class SeparatorRecyclerViewAdapter(@DimenRes private val separatorInsetStar
             view.updateLayoutParams<ViewGroup.LayoutParams> {
                 height = if (separatorContainerHeightResource != 0) parent.resources.getDimensionPixelSize(separatorContainerHeightResource) else ViewGroup.LayoutParams.WRAP_CONTENT
             }
-            view.setBackgroundResource(separatorBackgroundColor)
+            view.setBackgroundResource(separatorBackgroundResource)
             return SeparatorViewHolder(view)
         }
         return createVH(parent, viewType)
@@ -167,10 +170,12 @@ open class SeparatorRecyclerViewAdapter(@DimenRes private val separatorInsetStar
                 }
             }
             // add a separator to section bottom
-            if (showSectionSeparator) {
+            if (showSectionSeparator && !section.showTopSectionSeparatorOnly) {
                 data.add(SeparatorItem(fullSection))
+                prevSectionHasSep = true
+            } else {
+                prevSectionHasSep = false
             }
-            prevSectionHasSep = showSectionSeparator
         }
         if (showSeparators && !showFirstAndLastSeparator && data.size > 1) {
             if (data[0] is SeparatorItem) {
@@ -215,61 +220,38 @@ private class ShortSpaceRecyclerViewItem: RecyclerViewItem {
 
 fun List<CommonSectionV2>.transformed(): List<CommonSection> {
     val innerSections = ArrayList<CommonSection>()
-    var lastSectionHasFooter = false
     for (indexedSection in this.withIndex()) {
         val index = indexedSection.index
         val section = indexedSection.value
         val showHeader = section.header != null && section.header != ""
         val showFooter = section.footer != null && section.footer != ""
 
-        if (showHeader || lastSectionHasFooter) {
-            // Add a short space between header/footer, footer/section, section/header
-            if (index > 0) {
-                innerSections.add(
-                    CommonSection(
-                        listOf(ShortSpaceRecyclerViewItem()),
-                        showSectionSeparator = false, showRowSeparator = false
-                    )
-                )
-            }
-        } else {
-            // Add a tall space between section/section
-            innerSections.add(
-                CommonSection(
-                    listOf(SpaceRecyclerViewItem()),
-                    showSectionSeparator = false, showRowSeparator = false
-                )
-            )
-        }
-
+        val items = arrayListOf<RecyclerViewItem>()
         if (showHeader) {
-            innerSections.add(
-                CommonSection(listOf(HeaderRecyclerViewItem(section.header)),
-                    showSectionSeparator = false, showRowSeparator = false
-                )
-            )
+            items.add(HeaderRecyclerViewItem(section.header))
+        } else {
+            // add a short space if no header is given
+            items.add(ShortSpaceRecyclerViewItem())
         }
 
-        innerSections.add(section)
+        items.addAll(section.items)
 
         if (showFooter) {
-            innerSections.add(
-                CommonSection(
-                    listOf(FooterRecyclerViewItem(section.footer)),
-                    showSectionSeparator = false, showRowSeparator = false
-                )
-            )
+            items.add(FooterRecyclerViewItem(section.footer))
         }
-        lastSectionHasFooter = showFooter
-    }
-    if (!lastSectionHasFooter) {
-        // Always add a tall space at the end
-        innerSections.add(
-            CommonSection(
-                listOf(SpaceRecyclerViewItem()),
-                showSectionSeparator = false, showRowSeparator = false
-            )
-        )
+
+        if (index == this.size - 1) {
+            // always add space in below the last one
+            items.add(SpaceRecyclerViewItem())
+        } else {
+            val nextHeader = get(index + 1).header
+            val nextHasHeader = nextHeader != null && nextHeader != ""
+            if (!nextHasHeader) {
+                // add a short space if next section has no header
+                items.add(ShortSpaceRecyclerViewItem())
+            }
+        }
+        innerSections.add(CommonSection(items, showSectionSeparator = !showHeader && index != 0, showRowSeparator = false, showTopSectionSeparatorOnly = true))
     }
     return innerSections
 }

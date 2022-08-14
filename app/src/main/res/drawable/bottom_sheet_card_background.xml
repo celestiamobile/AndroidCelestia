@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ control_view_background.xml
+  ~ bottom_sheet_card_backrond.xml
   ~
-  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~ Copyright (C) 2001-2022, Celestia Development Team
   ~
   ~ This program is free software; you can redistribute it and/or
   ~ modify it under the terms of the GNU General Public License
@@ -12,6 +12,11 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="?android:attr/colorBackground" />
-    <corners android:radius="@dimen/bottom_control_container_corner_radius" />
+
+    <solid android:color="?android:attr/colorBackground"/>
+    <corners
+        android:bottomLeftRadius="0dp"
+        android:bottomRightRadius="0dp"
+        android:topLeftRadius="@dimen/sheet_background_corner_radius"
+        android:topRightRadius="@dimen/sheet_background_corner_radius"/>
 </shape>

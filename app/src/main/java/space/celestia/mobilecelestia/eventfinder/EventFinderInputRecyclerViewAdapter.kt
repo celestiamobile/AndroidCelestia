@@ -63,7 +63,7 @@ class EventFinderInputRecyclerViewAdapter(
             return CommonTextViewHolder(parent)
         if (viewType == PROCEED_BUTTON) {
             val holder = CommonTextViewHolder(parent)
-            holder.title.setTextColor(parent.context.getSecondaryColor())
+            holder.title.setTextColor(parent.context.getPrimaryColor())
             return holder
         }
         return super.createVH(parent, viewType)

@@ -47,7 +47,7 @@ class SettingsRefreshRateRecyclerViewAdapter(
         if (viewType == SETTING_ITEM) {
             val holder =  CommonTextViewHolder(parent)
             holder.accessory.setImageResource(R.drawable.ic_check)
-            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(parent.context.getSecondaryColor()))
+            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(parent.context.getPrimaryColor()))
             return holder
         }
         return super.createVH(parent, viewType)

@@ -16,47 +16,30 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    style="@style/ListItemGrouped">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="@dimen/list_item_medium_margin_vertical"
+    style="@style/ListItem">
+    <LinearLayout
         android:layout_marginStart="@dimen/list_item_medium_margin_horizontal"
-        android:layout_weight="1">
+        android:layout_marginVertical="@dimen/list_item_medium_margin_vertical"
+        android:orientation="vertical"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
+
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:ignore="MissingConstraints"
             style="@style/PrimaryListItemLabel"/>
 
         <TextView
+            android:layout_marginTop="@dimen/list_item_gap_vertical"
             android:id="@+id/detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            tools:ignore="MissingConstraints"
             android:visibility="gone"
             style="@style/SecondaryListItemLabel" />
-
-        <androidx.constraintlayout.helper.widget.Flow
-            android:id="@+id/flow"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:constraint_referenced_ids="title,detail"
-            app:flow_horizontalStyle="spread_inside"
-            app:flow_wrapMode="chain"
-            app:flow_verticalGap="@dimen/list_item_gap_vertical"
-            app:flow_verticalAlign="center"
-            app:flow_horizontalGap="@dimen/list_item_gap_horizontal"
-            app:flow_horizontalBias="0"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/accessory"

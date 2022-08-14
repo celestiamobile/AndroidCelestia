@@ -12,7 +12,7 @@
 
 <resources>
     <dimen name="default_separator_height">0.5dp</dimen>
-    <dimen name="partial_separator_inset_start">16dp</dimen>
+    <dimen name="partial_separator_inset_start">32dp</dimen>
     <dimen name="full_separator_inset_start">0dp</dimen>
 
     <dimen name="list_item_medium_margin_horizontal">16dp</dimen>
@@ -20,9 +20,11 @@
     <dimen name="list_item_small_margin_horizontal">12dp</dimen>
     <dimen name="list_item_small_margin_vertical">8dp</dimen>
     <dimen name="section_header_margin_horizontal">16dp</dimen>
-    <dimen name="section_header_margin_vertical">12dp</dimen>
+    <dimen name="section_header_margin_top">16dp</dimen>
+    <dimen name="section_header_margin_bottom">8dp</dimen>
     <dimen name="section_footer_margin_horizontal">16dp</dimen>
-    <dimen name="section_footer_margin_vertical">12dp</dimen>
+    <dimen name="section_footer_margin_top">8dp</dimen>
+    <dimen name="section_footer_margin_bottom">12dp</dimen>
     <dimen name="list_item_gap_horizontal">8dp</dimen>
     <dimen name="list_item_gap_vertical">8dp</dimen>
 
@@ -71,6 +73,7 @@
 
     <dimen name="sheet_handle_container_height">30dp</dimen>
     <dimen name="sheet_handle_height">6dp</dimen>
+    <dimen name="sheet_handle_corner_radius">3dp</dimen>
     <dimen name="sheet_handle_width">35dp</dimen>
     <dimen name="sheet_close_button_padding">5dp</dimen>
     <dimen name="sheet_background_corner_radius">6dp</dimen>
@@ -89,4 +92,6 @@
     <dimen name="control_view_margin">8dp</dimen>
     <dimen name="control_view_icon_size">40dp</dimen>
     <dimen name="control_view_icon_spacing">6dp</dimen>
+
+    <dimen name="stepper_corner_radius">4dp</dimen>
 </resources>

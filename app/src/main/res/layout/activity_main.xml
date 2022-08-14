@@ -107,16 +107,16 @@
         android:visibility="invisible"
         style="@style/Container">
 
-        <androidx.cardview.widget.CardView
+        <FrameLayout
             android:id="@+id/bottom_sheet_card"
-            app:cardBackgroundColor="@color/colorSecondaryBackground"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:cardCornerRadius="@dimen/sheet_background_corner_radius">
+            android:background="@drawable/bottom_sheet_card_background">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                tools:ignore="UselessParent">
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/sheet_handle_container_height">
@@ -133,8 +133,7 @@
                         android:layout_width="@dimen/sheet_handle_width"
                         android:layout_height="@dimen/sheet_handle_height"
                         android:layout_gravity="center"
-                        android:src="@drawable/grabber"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                        android:src="@drawable/grabber"/>
                 </FrameLayout>
                 <FrameLayout
                     android:id="@+id/bottom_sheet"
@@ -143,7 +142,7 @@
                     android:layout_weight="1"
                     android:clickable="true" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </FrameLayout>
 
     </space.celestia.mobilecelestia.common.SheetLayout>
 

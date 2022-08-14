@@ -35,7 +35,7 @@ class AsyncListPagingAdapter(listener: AsyncListPagingFragment.Listener?): Pagin
                 view.setDividerThicknessResource(R.dimen.default_separator_height)
                 view.setDividerInsetStartResource(R.dimen.full_separator_inset_start)
                 view.setDividerColorResource(R.color.colorSeparator)
-                view.setBackgroundResource(R.color.colorSecondaryBackground)
+                view.setBackgroundResource(R.drawable.background)
                 return SeparatorViewHolder(view)
             }
             TYPE_HEADER -> {

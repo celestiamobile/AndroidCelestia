@@ -11,13 +11,10 @@
 
 package space.celestia.mobilecelestia.common
 
-import android.graphics.drawable.Drawable
-import android.util.LayoutDirection
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.constraintlayout.helper.widget.Flow
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 
@@ -35,8 +32,4 @@ class CommonTextViewHolder(parent: ViewGroup):
 
     val detail: TextView
         get() = itemView.findViewById(R.id.detail)
-
-    init {
-        itemView.findViewById<Flow>(R.id.flow).setHorizontalBias(if (itemView.resources.configuration.layoutDirection == LayoutDirection.RTL) 1f else 0f)
-    }
 }

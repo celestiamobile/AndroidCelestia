@@ -24,8 +24,9 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
+import com.google.android.material.card.MaterialCardView
 
-class LPLinkView(context: Context, attrs: AttributeSet) : CardView(context, attrs) {
+class LPLinkView(context: Context, attrs: AttributeSet) : MaterialCardView(context, attrs) {
     private var titleLabelSize = context.resources.getDimension(R.dimen.LPLinkView_titleTextDefaultSize)
     private var footerLabelSize = context.resources.getDimension(R.dimen.LPLinkView_footnoteTextDefaultSize)
     private var titleLabelColor: ColorStateList?
