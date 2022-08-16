@@ -70,13 +70,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
         return recyclerView
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = ""
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Listener) {

@@ -13,9 +13,7 @@ package space.celestia.mobilecelestia.common
 
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import space.celestia.mobilecelestia.R
-
 
 fun Fragment.push(fragment: Fragment, containerID: Int): Int? {
     if (!isAdded) return null
@@ -32,12 +30,6 @@ fun Fragment.push(fragment: Fragment, containerID: Int): Int? {
         .addToBackStack(childFragmentManager.backStackEntryCount.toString())
         .replace(containerID, fragment)
         .commitAllowingStateLoss()
-}
-
-fun Fragment.pop() {
-    if (!isAdded) return
-
-    childFragmentManager.popBackStack((childFragmentManager.backStackEntryCount - 1).toString(), FragmentManager.POP_BACK_STACK_INCLUSIVE)
 }
 
 fun Fragment.replace(fragment: Fragment, containerID: Int): Int? {

@@ -40,6 +40,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
@@ -60,10 +61,7 @@ import org.json.JSONObject
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
-import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.common.Poppable
-import space.celestia.mobilecelestia.common.RoundedCorners
-import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
@@ -182,9 +180,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val fontDirPath: String
         get() = "$celestiaParentPath/$CELESTIA_FONT_FOLDER_NAME"
 
-    private var currentGoToData: GoToInputFragment.GoToData? = null
-
     private var latestNewsID: String? = null
+
+    private var bottomSheetCommitIds = arrayListOf<Int>()
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -296,7 +294,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
             val menuVisible = savedState.getBoolean(MENU_VISIBLE_TAG, false)
             val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
-            currentGoToData = savedState.getSerializable(GO_TO_DATA_TAG) as? GoToInputFragment.GoToData
+            bottomSheetCommitIds = savedState.getIntegerArrayList(ARG_COMMIT_IDS) ?: arrayListOf()
 
             findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
@@ -343,7 +341,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         outState.putBoolean(MENU_VISIBLE_TAG, findViewById<View>(R.id.menu_container).visibility == View.VISIBLE)
         outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
-        outState.putSerializable(GO_TO_DATA_TAG, currentGoToData)
+        outState.putIntegerArrayList(ARG_COMMIT_IDS, bottomSheetCommitIds)
         super.onSaveInstanceState(outState)
     }
 
@@ -366,6 +364,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is Poppable && frag.canPop()) {
             frag.popLast()
+        } else if (canPopBottomSheetFragment()) {
+            popBottomSheetFragment()
         } else {
             hideOverlay(true)
         }
@@ -1085,10 +1085,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onSearchItemSelected(text: String) {
         hideKeyboard()
 
-        val savedGoToData = currentGoToData
-        if (savedGoToData != null) {
-            savedGoToData.objectName = text
-            showGoTo(savedGoToData)
+        val goToFragment = supportFragmentManager.findFragmentByTag(BOTTOM_SHEET_ROOT_FRAGMENT_TAG) as? GoToContainerFragment
+        if (goToFragment != null) {
+            popBottomSheetFragment()
+            goToFragment.updateObjectName(text)
             return
         }
 
@@ -1260,8 +1260,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onEditGoToObject(goToData: GoToInputFragment.GoToData) {
-        currentGoToData = goToData
-        showBottomSheetFragment(SearchContainerFragment.newInstance())
+        pushBottomSheetFragment(SearchContainerFragment.newInstance())
     }
 
     override fun onGoToDestination(destination: Destination) {
@@ -1590,11 +1589,39 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         hideView(animated, R.id.bottom_sheet_card, false) {
             findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
             val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-            if (fragment != null)
-                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
+            if (fragment != null) {
+                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment)
+                    .commitAllowingStateLoss()
+                bottomSheetCommitIds = arrayListOf()
+            }
             if (completion != null)
                 completion()
         }
+    }
+
+    private fun pushBottomSheetFragment(fragment: Fragment) {
+        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+
+        val ani1 = if (ltr) R.anim.enter_from_right else R.anim.enter_from_left
+        val ani2 = if (ltr) R.anim.exit_to_left else R.anim.exit_to_right
+        val ani3 = if (ltr) R.anim.enter_from_left else R.anim.enter_from_right
+        val ani4 = if (ltr) R.anim.exit_to_right else R.anim.exit_to_left
+
+        val id = supportFragmentManager.beginTransaction()
+            .setCustomAnimations(ani1, ani2, ani3, ani4)
+            .addToBackStack(supportFragmentManager.backStackEntryCount.toString())
+            .replace(R.id.bottom_sheet, fragment)
+            .commitAllowingStateLoss()
+        bottomSheetCommitIds.add(id)
+    }
+
+    private fun canPopBottomSheetFragment(): Boolean {
+        return bottomSheetCommitIds.size > 1
+    }
+
+    private fun popBottomSheetFragment() {
+        supportFragmentManager.popBackStackImmediate(bottomSheetCommitIds[bottomSheetCommitIds.size - 1], FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        bottomSheetCommitIds.removeLast()
     }
 
     private fun showView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
@@ -1671,7 +1698,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showSearch() {
-        currentGoToData = null
         showBottomSheetFragment(SearchContainerFragment.newInstance())
     }
 
@@ -1902,10 +1928,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showBottomSheetFragmentDirect(fragment: Fragment) {
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
-        supportFragmentManager
+        val id = supportFragmentManager
             .beginTransaction()
-            .add(R.id.bottom_sheet, fragment)
+            .add(R.id.bottom_sheet, fragment, BOTTOM_SHEET_ROOT_FRAGMENT_TAG)
             .commitAllowingStateLoss()
+        bottomSheetCommitIds = arrayListOf(id)
         showView(true, R.id.bottom_sheet_card, false)
     }
 
@@ -1965,6 +1992,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val MENU_VISIBLE_TAG = "menu_visible"
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
         private const val GO_TO_DATA_TAG = "go_to"
+
+        private const val ARG_COMMIT_IDS = "commit-ids"
+        private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
 
         private const val TAG = "MainActivity"
 

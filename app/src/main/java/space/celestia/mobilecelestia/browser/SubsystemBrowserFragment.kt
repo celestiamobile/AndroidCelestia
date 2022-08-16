@@ -24,7 +24,9 @@ class SubsystemBrowserFragment : NavigationFragment(), BrowserRootFragment {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (savedInstanceState != null) {
+        if (rootPath.isNotEmpty() || currentPath.isNotEmpty()) {
+            // Do nothing
+        } else if (savedInstanceState != null) {
             rootPath = savedInstanceState.getString(ARG_ROOT_PATH, SUBSYSTEM_DEFAULT_PREFIX)
             currentPath = savedInstanceState.getString(ARG_CURR_PATH, rootPath)
         } else {

@@ -33,6 +33,12 @@ class SettingsCurrentTimeFragment : SettingsBaseFragment() {
 
     private val listAdapter by lazy { SettingsCurrentTimeRecyclerViewAdapter(listener, appCore) }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        title = CelestiaString("Current Time", "")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,13 +54,6 @@ class SettingsCurrentTimeFragment : SettingsBaseFragment() {
             }
         }
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = CelestiaString("Current Time", "")
     }
 
     override fun onAttach(context: Context) {

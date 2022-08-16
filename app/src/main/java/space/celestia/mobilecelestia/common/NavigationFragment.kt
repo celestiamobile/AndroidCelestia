@@ -152,26 +152,34 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         var title: String
             get() = innerTitle
             set(value) {
-                innerTitle = value
-                updateParentFragment()
+                if (innerTitle != value) {
+                    innerTitle = value
+                    updateParentFragment()
+                }
             }
         var rightNavigationBarItems: List<NavigationBarItem>
             get() = innerRightNavigationBarItems
             set(value) {
-                innerRightNavigationBarItems = value
-                updateParentFragment()
+                if (innerRightNavigationBarItems != value) {
+                    innerRightNavigationBarItems = value
+                    updateParentFragment()
+                }
             }
         var leftNavigationBarItem: BarButtonItem?
             get() = innerLeftNavigationBarItem
             set(value) {
-                innerLeftNavigationBarItem = value
-                updateParentFragment()
+                if (innerLeftNavigationBarItem != value) {
+                    innerLeftNavigationBarItem = value
+                    updateParentFragment()
+                }
             }
         var showNavigationBar: Boolean
             get() = innerShowNavigationBar
             set(value) {
-                innerShowNavigationBar = value
-                updateParentFragment()
+                if (innerShowNavigationBar != value) {
+                    innerShowNavigationBar = value
+                    updateParentFragment()
+                }
             }
 
         private var innerTitle: String = ""
@@ -181,8 +189,9 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
 
         private fun updateParentFragment() {
             val parent = parentFragment
-            if (parent is NavigationFragment)
-                parent.configureToolbar(title, rightNavigationBarItems, leftNavigationBarItem, parent.lastGoBack, showNavigationBar)
+            if (parent !is NavigationFragment) return
+            if (parent.top != this) return
+            parent.configureToolbar(title, rightNavigationBarItems, leftNavigationBarItem, parent.lastGoBack, showNavigationBar)
         }
 
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -209,8 +218,8 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         }
     }
 
-    val toolbar by lazy { requireView().findViewById<Toolbar>(R.id.toolbar) }
-    val appBar: AppBarLayout? by lazy { requireView().findViewById(R.id.appbar) }
+    private lateinit var toolbar: Toolbar
+    private lateinit var appBar: AppBarLayout
 
     private var lastTitle: String = ""
     private var lastLeftItem: BarButtonItem? = null
@@ -218,6 +227,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
     private var lastGoBack = false
     private var lastShowNavigationBar: Boolean = true
     private var commitIds = arrayListOf<Int>()
+    private var fragmentCreated = false
 
     open val fragmentResource: Int
         get() = R.layout.fragment_general_container_with_toolbar
@@ -229,7 +239,10 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(fragmentResource, container, false)
+        val view = inflater.inflate(fragmentResource, container, false)
+        toolbar = view.findViewById(R.id.toolbar)
+        appBar = view.findViewById(R.id.appbar)
+        return view
     }
 
     abstract fun createInitialFragment(savedInstanceState: Bundle?): SubFragment
@@ -248,8 +261,11 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         super.onViewCreated(view, savedInstanceState)
 
         toolbar.setOnMenuItemClickListener(this)
-        if (savedInstanceState == null) {
+        if (fragmentCreated) {
+            configureToolbarByCurrentFragment()
+        } else if (savedInstanceState == null) {
             replaceFragment(createInitialFragment(savedInstanceState))
+            fragmentCreated = true
         } else {
             lastTitle = savedInstanceState.getString(ARG_TITLE, "")
             lastRightItems = savedInstanceState.getParcelableArrayList(ARG_RIGHT_ITEMS) ?: listOf()
@@ -264,7 +280,8 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
                 lastGoBack,
                 lastShowNavigationBar
             )
-            appBar?.setExpanded(true)
+            appBar.setExpanded(true)
+            fragmentCreated = true
         }
     }
 
@@ -272,14 +289,14 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         val commitId = replace(fragment, R.id.fragment_container) ?: return
         commitIds = arrayListOf(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false, fragment.showNavigationBar)
-        appBar?.setExpanded(true)
+        appBar.setExpanded(true)
     }
 
     fun pushFragment(fragment: SubFragment) {
         val commitId = push(fragment, R.id.fragment_container) ?: return
         commitIds.add(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem, true, fragment.showNavigationBar)
-        appBar?.setExpanded(true)
+        appBar.setExpanded(true)
     }
 
     private fun configureToolbar(name: String, rightNavigationBarItems: List<NavigationBarItem>, leftNavigationBarItem: BarButtonItem?, canGoBack: Boolean, showNavigationBar: Boolean) {
@@ -379,18 +396,20 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             toolbar.navigationIcon = null
             lastGoBack = false
         }
-        val frag = childFragmentManager.fragments[0]
         commitIds = ArrayList(commitIds.subList(0, index + 1))
-        if (frag is SubFragment) {
-            configureToolbar(
-                frag.title,
-                frag.rightNavigationBarItems,
-                frag.leftNavigationBarItem,
-                lastGoBack,
-                frag.showNavigationBar
-            )
-            appBar?.setExpanded(true)
-        }
+        configureToolbarByCurrentFragment()
+    }
+
+    private fun configureToolbarByCurrentFragment() {
+        val frag = top ?: return
+        configureToolbar(
+            frag.title,
+            frag.rightNavigationBarItems,
+            frag.leftNavigationBarItem,
+            lastGoBack,
+            frag.showNavigationBar
+        )
+        appBar.setExpanded(true)
     }
 
     open fun fragmentDidPop() {}

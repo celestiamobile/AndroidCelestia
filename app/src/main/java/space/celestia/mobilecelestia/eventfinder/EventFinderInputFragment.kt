@@ -11,7 +11,6 @@
 
 package space.celestia.mobilecelestia.eventfinder
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateFormat
@@ -20,16 +19,23 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.utils.*
+import java.lang.ref.WeakReference
 import java.util.*
 
 class EventFinderInputFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
-    private var adapter: EventFinderInputRecyclerViewAdapter? = null
+    private val adapter by lazy { createAdapter() }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        title = CelestiaString("Eclipse Finder", "")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,42 +45,6 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
 
         val recView = view.findViewById<RecyclerView>(R.id.list)
         recView.layoutManager = LinearLayoutManager(context)
-        adapter = EventFinderInputRecyclerViewAdapter({ isStartTime ->
-            val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
-            val format = DateFormat.getBestDateTimePattern(Locale.getDefault(),"yyyyMMddHHmmss")
-            ac.showDateInput(CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format) { date ->
-                if (date == null) {
-                    ac.showAlert(CelestiaString("Unrecognized time string.", ""))
-                    return@showDateInput
-                }
-                if (isStartTime) adapter?.startDate = date else adapter?.endDate = date
-                adapter?.reload()
-                adapter?.notifyDataSetChanged()
-            }
-        }, { current ->
-            val ac = context as? Activity ?: return@EventFinderInputRecyclerViewAdapter
-            val objects = listOf(AppCore.getLocalizedString("Earth", "celestia-data"), AppCore.getLocalizedString("Jupiter", "celestia-data"))
-            val other = CelestiaString("Other", "")
-            ac.showOptions(CelestiaString("Please choose an object.", ""), (objects + other).toTypedArray()) { index ->
-                if (index >= objects.size) {
-                    // User choose other, show text input for the object name
-                    ac.showTextInput(CelestiaString("Please enter an object name.", ""), current) { objectName ->
-                        adapter?.objectName = objectName
-                        adapter?.reload()
-                        adapter?.notifyDataSetChanged()
-                    }
-                    return@showOptions
-                }
-                adapter?.objectName = objects[index]
-                adapter?.reload()
-                adapter?.notifyDataSetChanged()
-            }
-        }, {
-            val startDate = adapter?.startDate ?: return@EventFinderInputRecyclerViewAdapter
-            val endDate = adapter?.endDate ?: return@EventFinderInputRecyclerViewAdapter
-            val objectName = adapter?.objectName ?: return@EventFinderInputRecyclerViewAdapter
-            listener?.onSearchForEvent(objectName, startDate, endDate)
-        })
 
         if (savedInstanceState != null) {
             val objectName = savedInstanceState.getString(OBJECT_TAG)
@@ -82,12 +52,12 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
             val endDate = savedInstanceState.getSerializable(END_TIME_TAG) as? Date
 
             if (objectName != null)
-                adapter?.objectName = objectName
+                adapter.objectName = objectName
             if (startDate != null)
-                adapter?.startDate = startDate
+                adapter.startDate = startDate
             if (endDate != null)
-                adapter?.endDate = endDate
-            adapter?.reload()
+                adapter.endDate = endDate
+            adapter.reload()
         }
 
         recView.adapter = adapter
@@ -95,18 +65,69 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(START_TIME_TAG, adapter?.startDate)
-        outState.putSerializable(END_TIME_TAG, adapter?.startDate)
-        outState.putString(OBJECT_TAG, adapter?.objectName)
+        outState.putSerializable(START_TIME_TAG, adapter.startDate)
+        outState.putSerializable(END_TIME_TAG, adapter.startDate)
+        outState.putString(OBJECT_TAG, adapter.objectName)
 
         super.onSaveInstanceState(outState)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = CelestiaString("Eclipse Finder", "")
+    private fun createAdapter(): EventFinderInputRecyclerViewAdapter {
+        val weakSelf = WeakReference(this)
+        return EventFinderInputRecyclerViewAdapter({ isStartTime ->
+            val self = weakSelf.get() ?: return@EventFinderInputRecyclerViewAdapter
+            val ac = self.activity ?: return@EventFinderInputRecyclerViewAdapter
+            val format =
+                DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss")
+            ac.showDateInput(
+                CelestiaString(
+                    "Please enter the time in \"%s\" format.",
+                    ""
+                ).format(format), format
+            ) { date ->
+                if (date == null) {
+                    ac.showAlert(CelestiaString("Unrecognized time string.", ""))
+                    return@showDateInput
+                }
+                if (isStartTime) self.adapter.startDate = date else self.adapter.endDate = date
+                self.adapter.reload()
+                self.adapter.notifyDataSetChanged()
+            }
+        }, { current ->
+            val self = weakSelf.get() ?: return@EventFinderInputRecyclerViewAdapter
+            val ac = self.activity ?: return@EventFinderInputRecyclerViewAdapter
+            val objects = listOf(
+                AppCore.getLocalizedString("Earth", "celestia-data"),
+                AppCore.getLocalizedString("Jupiter", "celestia-data")
+            )
+            val other = CelestiaString("Other", "")
+            ac.showOptions(
+                CelestiaString("Please choose an object.", ""),
+                (objects + other).toTypedArray()
+            ) { index ->
+                if (index >= objects.size) {
+                    // User choose other, show text input for the object name
+                    ac.showTextInput(
+                        CelestiaString("Please enter an object name.", ""),
+                        current
+                    ) { objectName ->
+                        self.adapter.objectName = objectName
+                        self.adapter.reload()
+                        self.adapter.notifyDataSetChanged()
+                    }
+                    return@showOptions
+                }
+                self.adapter.objectName = objects[index]
+                self.adapter.reload()
+                self.adapter.notifyDataSetChanged()
+            }
+        }, {
+            val self = weakSelf.get() ?: return@EventFinderInputRecyclerViewAdapter
+            val startDate = self.adapter.startDate
+            val endDate = self.adapter.endDate
+            val objectName = self.adapter.objectName
+            self.listener?.onSearchForEvent(objectName, startDate, endDate)
+        })
     }
 
     override fun onAttach(context: Context) {
@@ -121,7 +142,6 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
-        adapter = null
     }
 
     interface Listener {

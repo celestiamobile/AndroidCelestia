@@ -15,16 +15,20 @@ import android.os.Bundle
 import space.celestia.mobilecelestia.common.NavigationFragment
 
 class GoToContainerFragment : NavigationFragment() {
-    private lateinit var goToData: GoToInputFragment.GoToData
+    private val goToData: GoToInputFragment.GoToData
+        get() = requireNotNull(_goToData)
+    private var _goToData: GoToInputFragment.GoToData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (savedInstanceState != null) {
-            goToData = savedInstanceState.getSerializable(ARG_DATA) as GoToInputFragment.GoToData
-        } else {
-            arguments?.let {
-                goToData = it.getSerializable(ARG_DATA) as GoToInputFragment.GoToData
+        if (_goToData == null) {
+            if (savedInstanceState != null) {
+                _goToData = savedInstanceState.getSerializable(ARG_DATA) as GoToInputFragment.GoToData
+            } else {
+                arguments?.let {
+                    _goToData = it.getSerializable(ARG_DATA) as GoToInputFragment.GoToData
+                }
             }
         }
     }
@@ -36,6 +40,11 @@ class GoToContainerFragment : NavigationFragment() {
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return GoToInputFragment.newInstance(goToData)
+    }
+
+    fun updateObjectName(name: String) {
+        goToData.objectName = name
+        (top as? GoToInputFragment)?.updateObjectName(name)
     }
 
     companion object {

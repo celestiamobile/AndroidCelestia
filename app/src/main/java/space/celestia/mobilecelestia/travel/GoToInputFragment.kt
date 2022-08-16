@@ -23,6 +23,7 @@ import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.utils.*
 import java.io.Serializable
+import java.lang.ref.WeakReference
 
 class GoToInputFragment : NavigationFragment.SubFragment() {
     class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: GoToLocation.DistanceUnit) :
@@ -30,18 +31,24 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
 
     private var listener: Listener? = null
 
-    private var adapter: GoToInputRecyclerViewAdapter? = null
+    private val adapter by lazy { createAdapter() }
 
-    private lateinit var goToData: GoToInputFragment.GoToData
+    private val goToData: GoToData
+        get() = requireNotNull(_goToData)
+    private var _goToData: GoToData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (savedInstanceState != null) {
-            goToData = savedInstanceState.getSerializable(ARG_DATA) as GoToData
-        } else {
-            arguments?.let {
-                goToData = it.getSerializable(ARG_DATA) as GoToInputFragment.GoToData
+        title = CelestiaString("Go to Object", "")
+
+        if (_goToData == null) {
+            if (savedInstanceState != null) {
+                _goToData = savedInstanceState.getSerializable(ARG_DATA) as GoToData
+            } else {
+                arguments?.let {
+                    _goToData = it.getSerializable(ARG_DATA) as GoToData
+                }
             }
         }
     }
@@ -54,61 +61,13 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
 
         val recView = view.findViewById<RecyclerView>(R.id.list)
         recView.layoutManager = LinearLayoutManager(context)
-        adapter = GoToInputRecyclerViewAdapter(longitude = goToData.longitude, latitude = goToData.latitude, distance = goToData.distance, unit = goToData.distanceUnit, objectName = goToData.objectName, chooseFloatValueCallback = {
-            type, value ->
-            val ac = activity ?: return@GoToInputRecyclerViewAdapter
-            ac.showTextInput("", String.format("%.2f", value)) { newValue ->
-                val floatValue = newValue.toFloatOrNull() ?: return@showTextInput
-                when (type) {
-                    GoToFloatValueType.Longitude -> {
-                        goToData.longitude = floatValue
-                        adapter?.longitude = floatValue
-                    }
-                    GoToFloatValueType.Latitude -> {
-                        goToData.latitude = floatValue
-                        adapter?.latitude = floatValue
-                    }
-                }
-                adapter?.reload()
-                adapter?.notifyDataSetChanged()
-            }
-        }, chooseDoubleValueCallback = {
-            type, value ->
-            val ac = activity ?: return@GoToInputRecyclerViewAdapter
-            ac.showTextInput("", String.format("%.2f", value)) { newValue ->
-                val doubleValue = newValue.toDoubleOrNull() ?: return@showTextInput
-                when (type) {
-                    GoToDoubleValueType.Distance -> {
-                        goToData.distance = doubleValue
-                        adapter?.distance = doubleValue
-                    }
-                }
-                adapter?.reload()
-                adapter?.notifyDataSetChanged()
-            }
-        }, chooseObjectCallback = { _ ->
-            listener?.onEditGoToObject(goToData)
-        }, chooseUnitCallback = {
-            val ac = activity ?: return@GoToInputRecyclerViewAdapter
-            ac.showOptions("", distanceUnits.map { value -> CelestiaString(value.name, "") }.toTypedArray(),) { newIndex ->
-                val unit = distanceUnits[newIndex]
-                adapter?.unit = unit
-                goToData.distanceUnit = unit
-                adapter?.reload()
-                adapter?.notifyDataSetChanged()
-            }
-        }, proceedCallback = {
-            adapter?.let {
-                listener?.onGoToObject(goToData)
-            }
-        })
 
-        adapter?.objectName = goToData.objectName
-        adapter?.longitude = goToData.longitude
-        adapter?.latitude = goToData.latitude
-        adapter?.distance = goToData.distance
-        adapter?.unit = goToData.distanceUnit
-        adapter?.reload()
+        adapter.objectName = goToData.objectName
+        adapter.longitude = goToData.longitude
+        adapter.latitude = goToData.latitude
+        adapter.distance = goToData.distance
+        adapter.unit = goToData.distanceUnit
+        adapter.reload()
 
         recView.adapter = adapter
         return view
@@ -118,13 +77,6 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         outState.putSerializable(ARG_DATA, goToData)
 
         super.onSaveInstanceState(outState)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = CelestiaString("Go to Object", "")
     }
 
     override fun onAttach(context: Context) {
@@ -139,7 +91,68 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
-        adapter = null
+    }
+
+    fun createAdapter(): GoToInputRecyclerViewAdapter {
+        val weakSelf = WeakReference(this)
+        return GoToInputRecyclerViewAdapter(longitude = goToData.longitude, latitude = goToData.latitude, distance = goToData.distance, unit = goToData.distanceUnit, objectName = goToData.objectName, chooseFloatValueCallback = {
+                type, value ->
+            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
+            val ac = self.activity ?: return@GoToInputRecyclerViewAdapter
+            ac.showTextInput("", String.format("%.2f", value)) { newValue ->
+                val floatValue = newValue.toFloatOrNull() ?: return@showTextInput
+                when (type) {
+                    GoToFloatValueType.Longitude -> {
+                        self.goToData.longitude = floatValue
+                        self.adapter.longitude = floatValue
+                    }
+                    GoToFloatValueType.Latitude -> {
+                        self.goToData.latitude = floatValue
+                        self.adapter.latitude = floatValue
+                    }
+                }
+                self.adapter.reload()
+                self.adapter.notifyDataSetChanged()
+            }
+        }, chooseDoubleValueCallback = {
+                type, value ->
+            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
+            val ac = self.activity ?: return@GoToInputRecyclerViewAdapter
+            ac.showTextInput("", String.format("%.2f", value)) { newValue ->
+                val doubleValue = newValue.toDoubleOrNull() ?: return@showTextInput
+                when (type) {
+                    GoToDoubleValueType.Distance -> {
+                        self.goToData.distance = doubleValue
+                        self.adapter.distance = doubleValue
+                    }
+                }
+                self.adapter.reload()
+                self.adapter.notifyDataSetChanged()
+            }
+        }, chooseObjectCallback = {
+            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
+            self.listener?.onEditGoToObject(self.goToData)
+        }, chooseUnitCallback = {
+            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
+            val ac = self.activity ?: return@GoToInputRecyclerViewAdapter
+            ac.showOptions("", distanceUnits.map { value -> CelestiaString(value.name, "") }.toTypedArray(),) { newIndex ->
+                val unit = distanceUnits[newIndex]
+                self.adapter.unit = unit
+                self.goToData.distanceUnit = unit
+                self.adapter.reload()
+                self.adapter.notifyDataSetChanged()
+            }
+        }, proceedCallback = {
+            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
+            self.listener?.onGoToObject(goToData)
+        })
+    }
+
+    fun updateObjectName(name: String) {
+        goToData.objectName = name
+        adapter.objectName = name
+        adapter.reload()
+        adapter.notifyDataSetChanged()
     }
 
     interface Listener {
@@ -156,12 +169,6 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             GoToLocation.DistanceUnit.km,
             GoToLocation.DistanceUnit.au
         )
-
-        private const val LONGITUDE_TAG = "longitude"
-        private const val LATITUDE_TAG = "latitude"
-        private const val OBJECT_TAG = "object"
-        private const val DISTANCE_TAG = "distance"
-        private const val UNIT_TAG = "unit"
 
         @JvmStatic
         fun newInstance(goToData: GoToData) =

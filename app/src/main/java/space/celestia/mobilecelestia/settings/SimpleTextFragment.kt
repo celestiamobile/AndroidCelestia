@@ -31,6 +31,7 @@ class SimpleTextFragment : NavigationFragment.SubFragment() {
             textTitle = it.getString(ARG_TITLE, null)
             textDetail = it.getString(ARG_DETAIL, null)
         }
+        title = textTitle ?: ""
     }
 
     override fun onCreateView(
@@ -41,13 +42,6 @@ class SimpleTextFragment : NavigationFragment.SubFragment() {
         val view = inflater.inflate(R.layout.fragment_simple_text, container, false)
         view.findViewById<TextView>(R.id.text).text = textDetail
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = textTitle ?: ""
     }
 
     companion object {

@@ -33,6 +33,8 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         arguments?.let {
             item = it.getSerializable(ARG_ITEM) as SettingsCommonItem
         }
+
+        title = item?.name ?: ""
     }
 
     override fun onCreateView(
@@ -46,13 +48,6 @@ class SettingsCommonFragment : SettingsBaseFragment() {
             it.adapter = adapter
         }
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = item?.name ?: ""
     }
 
     override fun onAttach(context: Context) {

@@ -49,7 +49,9 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     private lateinit var language: String
 
-    private lateinit var item: ResourceItem
+    private var _item: ResourceItem? = null
+    private val item: ResourceItem
+    get() = requireNotNull(_item)
     private lateinit var lastUpdateDate: Date
     private lateinit var statusButton: Button
     private lateinit var goToButton: Button
@@ -73,14 +75,16 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onCreate(savedInstanceState)
 
         resourceManager.addListener(this)
-        if (savedInstanceState != null) {
-            item = savedInstanceState.getSerializable(ARG_ITEM) as ResourceItem
-            lastUpdateDate = savedInstanceState.getSerializable(ARG_UPDATED_DATE) as Date
-        } else {
-            item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
-            lastUpdateDate = requireArguments().getSerializable(ARG_UPDATED_DATE) as Date
+        if (_item ==  null) {
+            if (savedInstanceState != null) {
+                _item = savedInstanceState.getSerializable(ARG_ITEM) as ResourceItem
+                lastUpdateDate = savedInstanceState.getSerializable(ARG_UPDATED_DATE) as Date
+            } else {
+                _item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
+                lastUpdateDate = requireArguments().getSerializable(ARG_UPDATED_DATE) as Date
+            }
+            language = requireArguments().getString(ARG_LANG, "en")
         }
-        language = requireArguments().getString(ARG_LANG, "en")
     }
 
     override fun onCreateView(
@@ -124,7 +128,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             lifecycleScope.launch {
                 try {
                     val result = resourceAPI.item(language, item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    item = result
+                    _item = result
                     lastUpdateDate = Date()
                     updateUI()
                 } catch (ignored: Throwable) {}

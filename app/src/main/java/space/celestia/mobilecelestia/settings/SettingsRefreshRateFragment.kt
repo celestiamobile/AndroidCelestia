@@ -31,6 +31,12 @@ class SettingsRefreshRateFragment : SettingsBaseFragment() {
 
     private val listAdapter by lazy { SettingsRefreshRateRecyclerViewAdapter(listener) }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        title = CelestiaString("Frame Rate", "")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,13 +54,6 @@ class SettingsRefreshRateFragment : SettingsBaseFragment() {
             }
         }
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = CelestiaString("Frame Rate", "")
     }
 
     override fun onAttach(context: Context) {

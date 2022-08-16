@@ -24,6 +24,12 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 class SettingsItemFragment : SettingsBaseFragment() {
     var listener: Listener? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        title = CelestiaString("Settings", "")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,13 +44,6 @@ class SettingsItemFragment : SettingsBaseFragment() {
             }
         }
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = CelestiaString("Settings", "")
     }
 
     override fun onAttach(context: Context) {

@@ -28,6 +28,12 @@ import space.celestia.mobilecelestia.utils.versionName
 class AboutFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        title = CelestiaString("About", "")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,13 +48,6 @@ class AboutFragment : NavigationFragment.SubFragment() {
             }
         }
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null)
-            title = CelestiaString("About", "")
     }
 
     private fun createAboutItems(): List<List<AboutItem>> {

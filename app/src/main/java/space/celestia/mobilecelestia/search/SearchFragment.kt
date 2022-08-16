@@ -71,6 +71,12 @@ class SearchFragment : NavigationFragment.SubFragment() {
     @Inject
     lateinit var appCore: AppCore
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        showNavigationBar = false
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -104,10 +110,6 @@ class SearchFragment : NavigationFragment.SubFragment() {
         searchView.setIconifiedByDefault(false)
 
         setupSearchSearchView()
-
-        if (savedInstanceState == null) {
-            showNavigationBar = false
-        }
     }
 
     @FlowPreview

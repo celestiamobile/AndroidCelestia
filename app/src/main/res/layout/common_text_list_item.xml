@@ -23,7 +23,6 @@
         android:layout_height="wrap_content"
         android:layout_marginVertical="@dimen/list_item_medium_margin_vertical"
         android:layout_marginStart="@dimen/list_item_medium_margin_horizontal"
-        android:layout_marginEnd="@dimen/list_item_gap_horizontal"
         android:layout_weight="1">
         <TextView
             android:id="@+id/title"
@@ -65,8 +64,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:src="@drawable/accessory_full_disclosure"
-        android:layout_marginEnd="@dimen/list_item_medium_margin_horizontal"
+        android:layout_marginStart="@dimen/list_item_gap_horizontal"
         android:visibility="gone"
         style="@style/Accessory"
         tools:ignore="ContentDescription" />
+    <Space
+        android:layout_width="@dimen/list_item_medium_margin_horizontal"
+        android:layout_height="0dp"/>
 </LinearLayout>
