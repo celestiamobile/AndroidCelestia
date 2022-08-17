@@ -30,17 +30,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             style="@style/Toolbar">
-
-            <ImageButton
-                android:id="@+id/back_button"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:padding="@dimen/back_button_padding"
-                android:visibility="gone"
-                android:src="@drawable/ic_action_arrow_back" />
-
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/search_view"
                 android:layout_width="match_parent"

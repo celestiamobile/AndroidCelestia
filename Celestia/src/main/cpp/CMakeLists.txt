@@ -94,6 +94,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celscript/lua/celx.cpp
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_frame.cpp
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_frame.h
+        ${CELESTIA_SRC_DIR}/celscript/lua/celx_gl.cpp
+        ${CELESTIA_SRC_DIR}/celscript/lua/celx_gl.h
         ${CELESTIA_SRC_DIR}/celscript/lua/celx.h
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_internal.h
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_misc.cpp
@@ -110,6 +112,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_rotation.h
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_vector.cpp
         ${CELESTIA_SRC_DIR}/celscript/lua/celx_vector.h
+        ${CELESTIA_SRC_DIR}/celscript/lua/glcompat.cpp
+        ${CELESTIA_SRC_DIR}/celscript/lua/glcompat.h
         ${CELESTIA_SRC_DIR}/celscript/lua/luascript.cpp
         ${CELESTIA_SRC_DIR}/celscript/lua/luascript.h
         )

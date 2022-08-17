@@ -65,8 +65,10 @@ class SearchFragment : NavigationFragment.SubFragment() {
     private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
 
     private lateinit var searchView: SearchView
-    private lateinit var backButton: ImageButton
     private lateinit var listView: RecyclerView
+
+    private var searchKey: String = ""
+    private var searchResults = listOf<String>()
 
     @Inject
     lateinit var appCore: AppCore
@@ -74,7 +76,10 @@ class SearchFragment : NavigationFragment.SubFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        showNavigationBar = false
+        if (savedInstanceState != null) {
+            searchKey = savedInstanceState.getString(SEARCH_KEY_ARG, "")
+            searchResults = savedInstanceState.getStringArrayList(SEARCH_RESULTS_ARG) ?: listOf()
+        }
     }
 
     override fun onCreateView(
@@ -84,12 +89,13 @@ class SearchFragment : NavigationFragment.SubFragment() {
         val view = inflater.inflate(R.layout.fragment_search_item_list, container, false)
 
         searchView = view.findViewById(R.id.search_view)
+        searchView.setQuery(searchKey, false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             searchView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         }
-        backButton = view.findViewById(R.id.back_button)
 
         // Set the adapter
+        listAdapter.updateSearchResults(searchResults)
         listView = view.findViewById(R.id.list)
         listView.layoutManager = LinearLayoutManager(context)
         listView.adapter = listAdapter
@@ -130,9 +136,9 @@ class SearchFragment : NavigationFragment.SubFragment() {
             }
             .onEach {
                 withContext(Dispatchers.Main) {
-                    val lastSearchText = it.first
-                    val lastSearchResultCount = it.second.size
-                    listAdapter.updateSearchResults(it.second)
+                    searchKey = it.first
+                    searchResults = it.second
+                    listAdapter.updateSearchResults(searchResults)
                     listAdapter.notifyDataSetChanged()
 
                     if (!it.third) return@withContext
@@ -142,13 +148,19 @@ class SearchFragment : NavigationFragment.SubFragment() {
                     searchView.clearFocus()
                     setupSearchSearchView()
 
-                    if (lastSearchText.isNotEmpty() && lastSearchResultCount == 0) {
-                        listener?.onSearchItemSubmit(lastSearchText)
+                    if (searchKey.isNotEmpty() && searchResults.isEmpty()) {
+                        listener?.onSearchItemSubmit(searchKey)
                     }
                 }
             }
             .flowOn(Dispatchers.IO)
             .launchIn(lifecycleScope)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(SEARCH_KEY_ARG, searchKey)
+        outState.putStringArrayList(SEARCH_RESULTS_ARG, ArrayList(searchResults))
+        super.onSaveInstanceState(outState)
     }
 
     override fun onAttach(context: Context) {
@@ -172,6 +184,9 @@ class SearchFragment : NavigationFragment.SubFragment() {
 
     companion object {
         private const val SEARCH_RESULT_LIMIT = 20
+
+        private const val SEARCH_KEY_ARG = "search-key"
+        private const val SEARCH_RESULTS_ARG = "search-results"
 
         @JvmStatic
         fun newInstance() = SearchFragment()

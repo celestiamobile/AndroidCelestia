@@ -75,7 +75,6 @@ import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.resource.*
 import space.celestia.mobilecelestia.resource.model.*
-import space.celestia.mobilecelestia.search.SearchContainerFragment
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.search.hideKeyboard
 import space.celestia.mobilecelestia.settings.*
@@ -1098,10 +1097,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is SearchContainerFragment) {
-            frag.pushSearchResult(selection)
-        }
+        pushBottomSheetFragment(InfoFragment.newInstance(selection))
     }
 
     override fun onSearchItemSubmit(text: String) {
@@ -1260,7 +1256,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onEditGoToObject(goToData: GoToInputFragment.GoToData) {
-        pushBottomSheetFragment(SearchContainerFragment.newInstance())
+        pushBottomSheetFragment(SearchFragment.newInstance())
     }
 
     override fun onGoToDestination(destination: Destination) {
@@ -1698,7 +1694,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showSearch() {
-        showBottomSheetFragment(SearchContainerFragment.newInstance())
+        showBottomSheetFragment(SearchFragment.newInstance())
     }
 
     private fun showBrowser() {
