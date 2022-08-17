@@ -27,12 +27,6 @@ class SettingsLanguageFragment : SettingsBaseFragment() {
 
     private val listAdapter by lazy { SettingsLanguageRecyclerViewAdapter(listener, dataSource) }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        title = CelestiaString("Language", "")
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,6 +42,12 @@ class SettingsLanguageFragment : SettingsBaseFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Language", "")
     }
 
     override fun onAttach(context: Context) {

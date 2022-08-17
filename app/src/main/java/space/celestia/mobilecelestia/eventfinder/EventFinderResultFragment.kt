@@ -26,12 +26,6 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 class EventFinderResultFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        title = CelestiaString("Eclipse Finder", "")
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,6 +39,12 @@ class EventFinderResultFragment : NavigationFragment.SubFragment() {
         }, eclipses)
         recView.adapter = adapter
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Eclipse Finder", "")
     }
 
     override fun onAttach(context: Context) {

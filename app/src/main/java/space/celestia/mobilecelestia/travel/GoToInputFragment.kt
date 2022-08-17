@@ -40,8 +40,6 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        title = CelestiaString("Go to Object", "")
-
         if (_goToData == null) {
             if (savedInstanceState != null) {
                 _goToData = savedInstanceState.getSerializable(ARG_DATA) as GoToData
@@ -71,6 +69,12 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
 
         recView.adapter = adapter
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Go to Object", "")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

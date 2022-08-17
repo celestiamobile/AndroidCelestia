@@ -31,12 +31,6 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
 
     private val adapter by lazy { createAdapter() }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        title = CelestiaString("Eclipse Finder", "")
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -62,6 +56,12 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
 
         recView.adapter = adapter
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Eclipse Finder", "")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

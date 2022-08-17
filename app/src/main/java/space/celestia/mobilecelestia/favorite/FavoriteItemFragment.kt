@@ -36,15 +36,6 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
         arguments?.let {
             favoriteItem = it.getSerializable(ARG_ITEM) as? FavoriteBaseItem
         }
-
-        title = favoriteItem?.title ?: ""
-        var items: List<NavigationFragment.BarButtonItem> = listOf()
-        if (favoriteItem is MutableFavoriteBaseItem) {
-            items = listOf(
-                NavigationFragment.BarButtonItem(MENU_ITEM_ADD, CelestiaString("Add", ""), R.drawable.ic_add)
-            )
-        }
-        rightNavigationBarItems = items
     }
 
     override fun onCreateView(
@@ -62,6 +53,19 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = favoriteItem?.title ?: ""
+        var items: List<NavigationFragment.BarButtonItem> = listOf()
+        if (favoriteItem is MutableFavoriteBaseItem) {
+            items = listOf(
+                NavigationFragment.BarButtonItem(MENU_ITEM_ADD, CelestiaString("Add", ""), R.drawable.ic_add)
+            )
+        }
+        rightNavigationBarItems = items
     }
 
     override fun onAttach(context: Context) {

@@ -35,8 +35,6 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
             val rootPath = it.getString(ARG_ROOT)
             browserItem = if (rootPath != null) SubsystemBrowserFragment.browserMap[rootPath]!![path] else BrowserFragment.browserMap[path]
         }
-
-        title = browserItem?.alternativeName ?: browserItem?.name ?: ""
     }
 
     override fun onCreateView(
@@ -53,6 +51,12 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = browserItem?.alternativeName ?: browserItem?.name ?: ""
     }
 
     override fun onAttach(context: Context) {

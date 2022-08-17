@@ -11,8 +11,8 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 class InstalledResourceItemListPagingFragment: AsyncListPagingFragment() {
     override val viewModel by viewModels<InstalledResourceItemListViewModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         title = CelestiaString("Installed", "")
     }

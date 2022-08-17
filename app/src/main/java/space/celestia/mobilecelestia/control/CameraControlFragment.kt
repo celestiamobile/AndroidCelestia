@@ -29,12 +29,6 @@ enum class CameraControlAction(val value: Int) {
 class CameraControlFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        title = CelestiaString("Camera Control", "")
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,6 +42,12 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
             }
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Camera Control", "")
     }
 
     override fun onAttach(context: Context) {
