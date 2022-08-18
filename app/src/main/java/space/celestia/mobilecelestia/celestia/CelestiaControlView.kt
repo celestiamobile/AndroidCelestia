@@ -26,30 +26,29 @@ enum class CelestiaControlAction {
 
 interface CelestiaControlButton
 
-class CelestiaToggleButton(val image: Int, val offAction: CelestiaControlAction, val onAction: CelestiaControlAction): CelestiaControlButton
+class CelestiaToggleButton(val image: Int, val offAction: CelestiaControlAction, val onAction: CelestiaControlAction, val currentState: Boolean): CelestiaControlButton
 class CelestiaTapButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton
 class CelestiaPressButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton
 
 class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs)  {
+    var buttons: List<CelestiaControlButton> = listOf()
+    set(value) {
+        field = value
+        setUp()
+    }
+
     init {
         setUp()
     }
 
     @SuppressLint("ClickableViewAccessibility")
     fun setUp() {
+        removeAllViews()
+
         orientation = VERTICAL
 
-        val items = listOf(
-            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera),
-            CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn),
-            CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
-            CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),
-            CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu),
-            CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide)
-        )
-
-        for (index in items.indices) {
-            val item = items[index]
+        for (index in buttons.indices) {
+            val item = buttons[index]
             val button = StandardImageButton(context)
             button.setColorFilter(ContextCompat.getColor(context, R.color.colorSecondaryLabel))
 
@@ -79,6 +78,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
                     }
                 }
                 is CelestiaToggleButton -> {
+                    button.isSelected = item.currentState
                     button.setImageResource(item.image)
                     button.setOnClickListener { btn ->
                         btn.isSelected = !btn.isSelected

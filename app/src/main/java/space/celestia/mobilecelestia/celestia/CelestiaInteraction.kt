@@ -23,7 +23,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import kotlin.math.abs
 
-class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer, val interactionMode: InteractionMode): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -38,6 +38,16 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
                 Camera -> Object
                 Object -> Camera
             }
+
+        companion object {
+            fun fromButton(button: Int): InteractionMode {
+                return when (button) {
+                    AppCore.MOUSE_BUTTON_LEFT -> Camera
+                    AppCore.MOUSE_BUTTON_RIGHT -> Object
+                    else -> Object
+                }
+            }
+        }
     }
 
     enum class ZoomMode {
@@ -59,7 +69,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     var density: Float = 1f
 
     private var currentSpan: Float? = null
-    private var internalInteractionMode = InteractionMode.Object
+    private var internalInteractionMode = interactionMode
 
     private var lastPoint: PointF? = null
     private val isScrolling: Boolean

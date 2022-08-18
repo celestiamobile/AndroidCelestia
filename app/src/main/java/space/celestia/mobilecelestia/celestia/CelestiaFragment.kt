@@ -73,6 +73,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private var density: Float = 1f
     private var previousDensity: Float = 0f
     private var savedInsets: EdgeInsets? = null
+    private var hasSetRenderer: Boolean = false
 
     private var isControlViewVisible = true
     private var hideAnimator: ObjectAnimator? = null
@@ -85,6 +86,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
     private var loadSuccess = false
     private var haveSurface = false
+    private var interactionMode = CelestiaInteraction.InteractionMode.Object
 
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
@@ -94,7 +96,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         fun celestiaFragmentLoadingFromFallback()
     }
 
-    var listener: Listener? = null
+    private var listener: Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,20 +113,21 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
             frameRateOption = it.getInt(ARG_FRAME_RATE_OPTION)
         }
 
-        if (savedInstanceState == null) {
-            appCore.setRenderer(renderer)
-            renderer.setEngineStartedListener {
-                loadCelestia()
-            }
-        } else {
+        if (savedInstanceState != null) {
             previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
             frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, Renderer.FRAME_60FPS)
+            hasSetRenderer = savedInstanceState.getBoolean(ARG_HAS_SET_RENDERER, false)
+            if (savedInstanceState.containsKey(ARG_INTERACTION_MODE)) {
+                interactionMode = CelestiaInteraction.InteractionMode.fromButton(savedInstanceState.getInt(ARG_INTERACTION_MODE))
+            }
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putFloat(KEY_PREVIOUS_DENSITY, density)
         outState.putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
+        outState.putInt(ARG_INTERACTION_MODE, interactionMode.button)
+        outState.putBoolean(ARG_HAS_SET_RENDERER, hasSetRenderer)
         super.onSaveInstanceState(outState)
     }
 
@@ -135,11 +138,29 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         appStatusReporter.register(this)
 
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
-        setupGLView(view.findViewById(R.id.celestia_gl_view))
-
-
         val controlView = view.findViewById<CelestiaControlView>(R.id.control_view)
+
+        val items = listOf(
+            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, interactionMode == CelestiaInteraction.InteractionMode.Camera),
+            CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn),
+            CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
+            CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),
+            CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu),
+            CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide)
+        )
+
+        controlView.buttons = items
         controlView.listener = this
+
+        if (!hasSetRenderer) {
+            appCore.setRenderer(renderer)
+            renderer.setEngineStartedListener {
+                loadCelestia()
+            }
+            hasSetRenderer = true
+        }
+
+        setupGLView(view.findViewById(R.id.celestia_gl_view))
         return view
     }
 
@@ -243,7 +264,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         registerForContextMenu(view)
 
-        val interaction = CelestiaInteraction(activity, appCore, renderer)
+        val interaction = CelestiaInteraction(activity, appCore, renderer, interactionMode)
         glView = view
         viewInteraction = interaction
 
@@ -517,10 +538,10 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
                 listener?.celestiaFragmentDidRequestObjectInfo()
             }
             CelestiaControlAction.Hide -> {
-                hideControlView()
+                hideControlViewIfNeeded()
             }
             CelestiaControlAction.Show -> {
-                showControlView()
+                showControlViewIfNeeded()
             }
             else -> {}
         }
@@ -570,17 +591,19 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
     private fun hideControlViewIfNeeded() {
         if (isControlViewVisible) {
-            showControlView()
+            hideControlView()
         }
     }
 
     override fun didToggleToMode(action: CelestiaControlAction) {
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
+                interactionMode = CelestiaInteraction.InteractionMode.Camera
                 viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
                 activity?.showToast(CelestiaString("Switched to camera mode", ""), Toast.LENGTH_SHORT)
             }
             CelestiaControlAction.ToggleModeToObject -> {
+                interactionMode = CelestiaInteraction.InteractionMode.Object
                 viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
                 activity?.showToast(CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT)
             }
@@ -630,13 +653,14 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         private const val ARG_MULTI_SAMPLE = "multisample"
         private const val ARG_FULL_RESOLUTION = "fullresolution"
         private const val ARG_FRAME_RATE_OPTION = "framerateoption"
+        private const val ARG_INTERACTION_MODE = "interaction-mode"
+        private const val ARG_HAS_SET_RENDERER = "has-set-renderer"
         private const val ARG_LANG_OVERRIDE = "lang"
         private const val GROUP_ACTION = 0
         private const val GROUP_ALT_SURFACE_TOP = 1
         private const val GROUP_ALT_SURFACE = 2
         private const val GROUP_MARK_TOP = 3
         private const val GROUP_MARK = 4
-        private const val GROUP_WEB_INFO = 5
         private const val GROUP_BROWSER_ITEM_GO = 6
         private const val GROUP_BROWSER_ITEM = 7
         private const val KEY_PREVIOUS_DENSITY = "density"
