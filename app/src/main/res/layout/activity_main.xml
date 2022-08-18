@@ -120,7 +120,7 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/sheet_handle_container_height">
-                    <ImageView
+                    <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/close_button"
                         android:src="@drawable/ic_close"
                         android:layout_gravity="center_vertical|start"
@@ -129,11 +129,11 @@
                         android:padding="@dimen/sheet_close_button_padding"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         style="@style/SecondaryImage"/>
-                    <ImageView
+                    <FrameLayout
                         android:layout_width="@dimen/sheet_handle_width"
                         android:layout_height="@dimen/sheet_handle_height"
                         android:layout_gravity="center"
-                        android:src="@drawable/grabber"/>
+                        android:background="@drawable/grabber"/>
                 </FrameLayout>
                 <FrameLayout
                     android:id="@+id/bottom_sheet"

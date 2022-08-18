@@ -19,12 +19,12 @@
 
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         style="@style/Container">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -33,6 +33,7 @@
         <TextView
             android:id="@+id/loading_label"
             android:layout_marginTop="@dimen/loading_gap_vertical"
+            android:layout_marginHorizontal="@dimen/common_page_medium_margin_horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"

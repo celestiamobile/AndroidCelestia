@@ -25,7 +25,7 @@
         android:padding="@dimen/stepper_button_padding"
         android:clickable="true"
         android:focusable="true">
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -45,7 +45,7 @@
         android:padding="@dimen/stepper_button_padding"
         android:clickable="true"
         android:focusable="true">
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
