@@ -298,12 +298,12 @@ open class SeparatorHeaderRecyclerViewAdapter(sections: List<CommonSectionV2> = 
         }
         if (viewType == SPACE) {
             val space = Space(parent.context)
-            space.minimumHeight = (parent.context.resources.displayMetrics.density * 28).toInt()
+            space.minimumHeight = parent.resources.getDimensionPixelSize(R.dimen.list_spacing_tall)
             return SpaceViewHolder(space)
         }
         if (viewType == SPACE_SHORT) {
             val space = Space(parent.context)
-            space.minimumHeight = (parent.context.resources.displayMetrics.density * 8).toInt()
+            space.minimumHeight = parent.resources.getDimensionPixelSize(R.dimen.list_spacing_short)
             return SpaceViewHolder(space)
         }
         throw RuntimeException("$this must deal with item type $viewType")

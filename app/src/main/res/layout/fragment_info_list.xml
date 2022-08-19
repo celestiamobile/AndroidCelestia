@@ -10,9 +10,9 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/list"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:name="space.celestia.mobilecelestia.info.InfoFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -20,4 +20,36 @@
     android:paddingVertical="@dimen/common_page_medium_margin_vertical"
     android:paddingHorizontal="@dimen/common_page_medium_margin_horizontal"
     android:clipToPadding="false"
-    style="@style/Background"/>
+    style="@style/Background">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/common_page_medium_gap_vertical"
+            style="@style/HeadlineLabel"/>
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/common_page_medium_gap_vertical"
+            style="@style/BodyLabel"/>
+        <space.celestia.ui.linkpreview.LPLinkView
+            android:visibility="gone"
+            android:id="@+id/link_preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleTextColor="?attr/colorOnBackground"
+            app:footnoteTextColor="@color/material_on_background_emphasis_medium"
+            android:layout_marginBottom="@dimen/common_page_medium_gap_vertical"
+            style="@style/LinkCard"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            style="@style/Background"/>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

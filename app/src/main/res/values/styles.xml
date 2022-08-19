@@ -160,7 +160,6 @@
         <item name="android:minHeight">@dimen/bottom_navigation_view_min_height</item>
         <item name="itemPaddingTop">@dimen/bottom_navigation_view_item_padding_top</item>
         <item name="itemPaddingBottom">@dimen/bottom_navigation_view_item_padding_bottom</item>
-        <item name="itemActiveIndicatorStyle">@null</item>
     </style>
 
     <style name="Button" parent="Widget.Material3.Button.TonalButton">

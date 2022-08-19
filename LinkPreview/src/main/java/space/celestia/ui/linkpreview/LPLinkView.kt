@@ -21,9 +21,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.core.content.res.ResourcesCompat
-import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 
 class LPLinkView(context: Context, attrs: AttributeSet) : MaterialCardView(context, attrs) {
@@ -49,16 +47,16 @@ class LPLinkView(context: Context, attrs: AttributeSet) : MaterialCardView(conte
         typedArray.recycle()
     }
 
-    var linkMetadata: LPLinkMetadata? = null
+    var linkData: LPLinkViewData? = null
         set(value) {
             field = value
             reload()
         }
 
-    fun reload() {
+    private fun reload() {
         removeAllViews()
 
-        val metaData = linkMetadata ?: return
+        val metaData = linkData ?: return
 
         val container = LinearLayout(context)
         addView(container)
@@ -87,8 +85,7 @@ class LPLinkView(context: Context, attrs: AttributeSet) : MaterialCardView(conte
         textContentView.addView(urlView)
         textContentView.setPadding(textContentHorizontalPadding, textContentVerticalPadding, textContentHorizontalPadding, textContentVerticalPadding)
 
-        val imageURL = metaData.imageURL
-        if (imageURL == null) {
+        if (metaData.usesIcon) {
             container.orientation = LinearLayout.HORIZONTAL
 
             val iconView = ImageView(context)
@@ -105,7 +102,7 @@ class LPLinkView(context: Context, attrs: AttributeSet) : MaterialCardView(conte
             textViewParams.height = LayoutParams.MATCH_PARENT
             textViewParams.weight = 1f
 
-            Glide.with(this).load(metaData.iconURL.toString()).into(iconView)
+            iconView.setImageBitmap(metaData.image)
         } else {
             container.orientation = LinearLayout.VERTICAL
 
@@ -120,7 +117,7 @@ class LPLinkView(context: Context, attrs: AttributeSet) : MaterialCardView(conte
             val textViewParams = textContentView.layoutParams as LinearLayout.LayoutParams
             textViewParams.width = LayoutParams.MATCH_PARENT
 
-            Glide.with(this).load(imageURL.toString()).into(imageView)
+            imageView.setImageBitmap(metaData.image)
         }
     }
 }

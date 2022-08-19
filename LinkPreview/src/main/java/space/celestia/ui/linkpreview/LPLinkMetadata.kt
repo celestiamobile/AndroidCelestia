@@ -11,7 +11,9 @@
 
 package space.celestia.ui.linkpreview
 
+import android.graphics.Bitmap
 import java.io.Serializable
 import java.net.URL
 
 class LPLinkMetadata(val url: URL, val originalURL: URL, val title: String, val imageURL: URL?, val iconURL: URL) : Serializable
+class LPLinkViewData(val url: URL, val title: String, val image: Bitmap?, val usesIcon: Boolean)

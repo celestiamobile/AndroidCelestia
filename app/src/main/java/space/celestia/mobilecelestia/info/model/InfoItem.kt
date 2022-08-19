@@ -13,6 +13,7 @@ package space.celestia.mobilecelestia.info.model
 
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.ui.linkpreview.LPLinkMetadata
+import space.celestia.ui.linkpreview.LPLinkViewData
 import java.io.Serializable
 
 enum class CelestiaAction(val value: Int) : Serializable {
@@ -107,5 +108,3 @@ class MarkItem : InfoActionItem {
     override val title: String
         get() = CelestiaString("Mark", "")
 }
-class InfoDescriptionItem(val name: String, val overview: String, val hasWebInfo: Boolean, val hasAlternateSurfaces: Boolean) : InfoItem, Serializable
-class InfoMetadataItem(val metadata: LPLinkMetadata) : InfoItem, Serializable

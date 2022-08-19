@@ -97,7 +97,7 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.2.1"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.fragment:fragment-ktx:1.5.2"
 
     implementation "com.google.android.material:material:$material_version"
