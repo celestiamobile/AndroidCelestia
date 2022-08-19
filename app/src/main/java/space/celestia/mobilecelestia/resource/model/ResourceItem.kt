@@ -15,8 +15,8 @@ import java.io.Serializable
 import java.util.*
 
 class ResourceItem(
-    override val id: String,
-    override val name: String,
+    val id: String,
+    val name: String,
     val type: String?,
     val description: String,
     val item: String,
@@ -25,4 +25,4 @@ class ResourceItem(
     val publishTime: Date?,
     val objectName: String?,
     val mainScriptName: String?
-): AsyncListItem, Serializable
+): Serializable

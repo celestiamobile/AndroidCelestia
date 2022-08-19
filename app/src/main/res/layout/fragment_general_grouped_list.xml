@@ -14,5 +14,4 @@
     android:id="@+id/list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clickable="true"
     style="@style/Background"/>

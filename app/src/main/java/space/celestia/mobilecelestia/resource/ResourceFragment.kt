@@ -27,7 +27,7 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return InstalledResourceItemListPagingFragment.newInstance()
+        return InstalledAddonListFragment.newInstance()
     }
 
     fun pushItem(item: ResourceItem) {

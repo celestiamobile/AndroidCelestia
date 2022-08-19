@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     EventFinderResultFragment.Listener,
     SettingsLanguageFragment.Listener,
     SettingsLanguageFragment.DataSource,
-    AsyncListPagingFragment.Listener,
+    InstalledAddonListFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
@@ -1855,12 +1855,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(ResourceFragment.newInstance(AppCore.getLanguage()))
     }
 
-    override fun onAsyncListPagingItemSelected(item: AsyncListItem) {
+    override fun onInstalledAddonSelected(addon: ResourceItem) {
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is ResourceFragment) {
-            if (item is ResourceItem) {
-                frag.pushItem(item)
-            }
+            frag.pushItem(addon)
         }
     }
 
