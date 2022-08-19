@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.mobilecelestia.utils.getSerializableValue
 
 class SettingsCommonFragment : SettingsBaseFragment() {
     private var item: SettingsCommonItem? = null
@@ -31,7 +32,7 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            item = it.getSerializable(ARG_ITEM) as SettingsCommonItem
+            item = it.getSerializableValue(ARG_ITEM, SettingsCommonItem::class.java)
         }
     }
 

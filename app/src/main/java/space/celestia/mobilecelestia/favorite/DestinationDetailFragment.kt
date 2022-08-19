@@ -22,6 +22,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestia.Destination
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.getSerializableValue
 
 class DestinationDetailFragment : NavigationFragment.SubFragment() {
     private var item: Destination? = null
@@ -31,7 +32,7 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            item = it.getSerializable(ARG_ITEM) as? Destination
+            item = it.getSerializableValue(ARG_ITEM, Destination::class.java)
         }
     }
 

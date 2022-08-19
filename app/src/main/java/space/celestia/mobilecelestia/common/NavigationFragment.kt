@@ -19,6 +19,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.appbar.AppBarLayout
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.utils.getParcelableArrayListValue
+import space.celestia.mobilecelestia.utils.getParcelableValue
 
 abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMenuItemClickListener {
     interface NavigationBarItem: Parcelable
@@ -199,8 +201,8 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
 
             if (savedInstanceState != null) {
                 innerTitle = savedInstanceState.getString(ARG_TITLE, "")
-                innerLeftNavigationBarItem = savedInstanceState.getParcelable(ARG_LEFT_ITEM)
-                innerRightNavigationBarItems = savedInstanceState.getParcelableArrayList(ARG_RIGHT_ITEMS) ?: listOf()
+                innerLeftNavigationBarItem = savedInstanceState.getParcelableValue(ARG_LEFT_ITEM, BarButtonItem::class.java)
+                innerRightNavigationBarItems = savedInstanceState.getParcelableArrayListValue(ARG_RIGHT_ITEMS, BarButtonItem::class.java) ?: listOf()
                 innerShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
             }
         }
@@ -268,8 +270,8 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
             fragmentCreated = true
         } else {
             lastTitle = savedInstanceState.getString(ARG_TITLE, "")
-            lastRightItems = savedInstanceState.getParcelableArrayList(ARG_RIGHT_ITEMS) ?: listOf()
-            lastLeftItem = savedInstanceState.getParcelable(ARG_LEFT_ITEM)
+            lastRightItems = savedInstanceState.getParcelableArrayListValue(ARG_RIGHT_ITEMS, BarButtonItem::class.java) ?: listOf()
+            lastLeftItem = savedInstanceState.getParcelableValue(ARG_LEFT_ITEM, BarButtonItem::class.java)
             lastGoBack = savedInstanceState.getBoolean(ARG_BACK)
             lastShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
             commitIds = savedInstanceState.getIntegerArrayList(ARG_COMMIT_IDS) ?: arrayListOf()

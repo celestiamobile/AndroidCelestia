@@ -25,6 +25,7 @@ import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.getSerializableValue
 import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
@@ -82,7 +83,7 @@ class ToolbarFragment : InsetAwareFragment() {
 
         arguments?.let {
             @Suppress("UNCHECKED_CAST")
-            val value = it.getSerializable(ARG_ACTION_WRAPPER) as? List<List<ToolbarAction>>
+            val value = it.getSerializableValue(ARG_ACTION_WRAPPER, ArrayList::class.java) as? List<List<ToolbarAction>>
             if (value != null) {
                 existingActions = value
             }

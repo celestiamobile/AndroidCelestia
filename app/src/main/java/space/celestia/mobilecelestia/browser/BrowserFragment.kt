@@ -29,6 +29,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.info.InfoFragment
+import space.celestia.mobilecelestia.utils.getSerializableValue
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -94,7 +95,7 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
             currentPath = savedInstanceState.getString(ARG_PATH_TAG, "")
             selectedItemIndex = savedInstanceState.getInt(ARG_ITEM_TAG, 0)
             @Suppress("UNCHECKED_CAST")
-            tabs = savedInstanceState.getSerializable(ARG_TABS) as ArrayList<Tab>
+            tabs = savedInstanceState.getSerializableValue(ARG_TABS, ArrayList::class.java) as List<Tab>
         }
     }
 

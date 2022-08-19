@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.getSerializableValue
 
 class FavoriteItemFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
@@ -34,7 +35,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            favoriteItem = it.getSerializable(ARG_ITEM) as? FavoriteBaseItem
+            favoriteItem = it.getSerializableValue(ARG_ITEM, FavoriteBaseItem::class.java)
         }
     }
 

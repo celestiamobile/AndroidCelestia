@@ -153,8 +153,8 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState != null) {
-            startTime = savedInstanceState.getSerializable(START_TIME_TAG) as? Date ?: startTime
-            endTime = savedInstanceState.getSerializable(END_TIME_TAG) as? Date ?: endTime
+            startTime = savedInstanceState.getSerializableValue(START_TIME_TAG, Date::class.java) ?: startTime
+            endTime = savedInstanceState.getSerializableValue(END_TIME_TAG, Date::class.java) ?: endTime
             objectName = savedInstanceState.getString(OBJECT_TAG, objectName)
         }
     }

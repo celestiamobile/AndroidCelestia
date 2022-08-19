@@ -3,6 +3,7 @@ package space.celestia.mobilecelestia.resource
 import android.net.Uri
 import android.os.Bundle
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.utils.getParcelableValue
 
 class CommonWebNavigationFragment: NavigationFragment() {
     private lateinit var uri: Uri
@@ -10,7 +11,7 @@ class CommonWebNavigationFragment: NavigationFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        uri = requireArguments().getParcelable(ARG_URI)!!
+        uri = requireArguments().getParcelableValue(ARG_URI, Uri::class.java)!!
     }
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {

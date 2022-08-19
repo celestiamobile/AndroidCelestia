@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
+import space.celestia.mobilecelestia.utils.getSerializableValue
 
 class BottomControlFragment : Fragment() {
 
@@ -33,7 +34,7 @@ class BottomControlFragment : Fragment() {
 
         arguments?.let {
             @Suppress("UNCHECKED_CAST")
-            items = it.getSerializable(ARG_ACTIONS) as? List<BottomControlAction> ?: listOf()
+            items = it.getSerializableValue(ARG_ACTIONS, ArrayList::class.java) as List<BottomControlAction>
         }
     }
 

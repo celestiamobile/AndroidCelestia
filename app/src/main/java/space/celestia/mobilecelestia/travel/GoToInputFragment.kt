@@ -26,6 +26,7 @@ import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.getSerializableValue
 import space.celestia.mobilecelestia.utils.showOptions
 import java.io.Serializable
 import java.lang.ref.WeakReference
@@ -55,10 +56,10 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
 
         if (_goToData == null) {
             if (savedInstanceState != null) {
-                _goToData = savedInstanceState.getSerializable(ARG_DATA) as GoToData
+                _goToData = savedInstanceState.getSerializableValue(ARG_DATA, GoToData::class.java)
             } else {
                 arguments?.let {
-                    _goToData = it.getSerializable(ARG_DATA) as GoToData
+                    _goToData = it.getSerializableValue(ARG_DATA, GoToData::class.java)
                 }
             }
         }

@@ -15,6 +15,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.utils.getSerializableValue
 
 class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
@@ -27,7 +28,7 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            initialItem = it.getSerializable(ARG_ITEM) as? FavoriteBaseItem
+            initialItem = it.getSerializableValue(ARG_ITEM, FavoriteBaseItem::class.java)
         }
     }
 

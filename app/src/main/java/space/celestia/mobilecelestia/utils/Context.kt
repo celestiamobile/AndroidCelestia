@@ -22,6 +22,10 @@ private val Context.packageInfo: PackageInfo?
         val pn = packageName
         if (pm == null || pn == null)
             return null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return pm.getPackageInfo(pn, PackageManager.PackageInfoFlags.of(PackageManager.GET_CONFIGURATIONS.toLong()))
+        }
+        @Suppress("DEPRECATION")
         return pm.getPackageInfo(pn, PackageManager.GET_CONFIGURATIONS)
     }
 

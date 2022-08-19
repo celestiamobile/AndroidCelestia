@@ -33,6 +33,8 @@ import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
+import space.celestia.mobilecelestia.utils.getParcelableValue
+import space.celestia.mobilecelestia.utils.getSerializableValue
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.*
@@ -69,9 +71,9 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        uri = requireArguments().getParcelable(ARG_URI)!!
+        uri = requireArguments().getParcelableValue(ARG_URI, Uri::class.java)!!
         matchingQueryKeys = requireArguments().getStringArrayList(ARG_MATCHING_QUERY_KEYS) ?: listOf()
-        contextDirectory = requireArguments().getSerializable(ARG_CONTEXT_DIRECTORY) as? File
+        contextDirectory = requireArguments().getSerializableValue(ARG_CONTEXT_DIRECTORY, File::class.java)
         filterURL = requireArguments().getBoolean(ARG_FILTER_URL, true)
         if (savedInstanceState != null) {
             initialLoadFinished = savedInstanceState.getBoolean(ARG_INITIAL_LOAD_FINISHED, false)
@@ -110,6 +112,12 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         val webSettings = webView.settings
         @SuppressLint("SetJavaScriptEnabled")
         webSettings.javaScriptEnabled = true
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
+                WebSettingsCompat.setAlgorithmicDarkeningAllowed(webSettings, false)
+            }
+        }
 
         val weakSelf = WeakReference(this)
 
@@ -232,10 +240,6 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                     self.title = title ?: ""
                 }
             }
-        }
-
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-            WebSettingsCompat.setForceDark(webSettings, WebSettingsCompat.FORCE_DARK_ON)
         }
 
         this.webView = webView

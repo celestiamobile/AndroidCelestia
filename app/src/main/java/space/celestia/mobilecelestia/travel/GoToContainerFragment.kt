@@ -13,6 +13,7 @@ package space.celestia.mobilecelestia.travel
 
 import android.os.Bundle
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.utils.getSerializableValue
 
 class GoToContainerFragment : NavigationFragment() {
     private val goToData: GoToInputFragment.GoToData
@@ -24,10 +25,10 @@ class GoToContainerFragment : NavigationFragment() {
 
         if (_goToData == null) {
             if (savedInstanceState != null) {
-                _goToData = savedInstanceState.getSerializable(ARG_DATA) as GoToInputFragment.GoToData
+                _goToData = savedInstanceState.getSerializableValue(ARG_DATA, GoToInputFragment.GoToData::class.java)
             } else {
                 arguments?.let {
-                    _goToData = it.getSerializable(ARG_DATA) as GoToInputFragment.GoToData
+                    _goToData = it.getSerializableValue(ARG_DATA, GoToInputFragment.GoToData::class.java)
                 }
             }
         }

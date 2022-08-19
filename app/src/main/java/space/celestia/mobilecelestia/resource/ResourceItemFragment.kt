@@ -32,10 +32,7 @@ import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
-import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.URLHelper
-import space.celestia.mobilecelestia.utils.commonHandler
-import space.celestia.mobilecelestia.utils.showAlert
+import space.celestia.mobilecelestia.utils.*
 import java.io.File
 import java.util.*
 import javax.inject.Inject
@@ -77,11 +74,11 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         resourceManager.addListener(this)
         if (_item ==  null) {
             if (savedInstanceState != null) {
-                _item = savedInstanceState.getSerializable(ARG_ITEM) as ResourceItem
-                lastUpdateDate = savedInstanceState.getSerializable(ARG_UPDATED_DATE) as Date
+                _item = savedInstanceState.getSerializableValue(ARG_ITEM, ResourceItem::class.java)
+                lastUpdateDate = savedInstanceState.getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
             } else {
-                _item = requireArguments().getSerializable(ARG_ITEM) as ResourceItem
-                lastUpdateDate = requireArguments().getSerializable(ARG_UPDATED_DATE) as Date
+                _item = requireArguments().getSerializableValue(ARG_ITEM, ResourceItem::class.java)
+                lastUpdateDate = requireArguments().getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
             }
             language = requireArguments().getString(ARG_LANG, "en")
         }
