@@ -21,13 +21,14 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.*
 import space.celestia.celestia.Destination
 import space.celestia.celestia.Script
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
+import java.util.*
 
 enum class FavoriteItemAction {
     Delete, Rename, Share
@@ -76,12 +77,12 @@ class FavoriteRoot : FavoriteBaseItem {
 class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
     override val children: List<FavoriteBaseItem>
         get() {
-            when (type) {
+            return when (type) {
                 FavoriteType.Script -> {
-                    return currentScripts.map { FavoriteScriptItem(it) }
+                    currentScripts.map { FavoriteScriptItem(it) }
                 }
                 FavoriteType.Destination -> {
-                    return currentDestinations.map { FavoriteDestinationItem(it) }
+                    currentDestinations.map { FavoriteDestinationItem(it) }
                 }
             }
         }
@@ -117,8 +118,7 @@ class FavoriteDestinationItem(val destination: Destination): FavoriteBaseItem {
 }
 
 open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBaseItem {
-    override val children: List<FavoriteBaseItem>
-        get() = if (bookmark.isLeaf) listOf() else bookmark.children!!.map { FavoriteBookmarkItem(it) }
+    override val children: ArrayList<FavoriteBaseItem> by lazy { if (bookmark.isLeaf) arrayListOf() else ArrayList(bookmark.children!!.map { FavoriteBookmarkItem(it) }) }
     override val title: String
         get() = bookmark.name
     override val isLeaf: Boolean
@@ -130,10 +130,12 @@ open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBas
         if (newItem !is FavoriteBookmarkItem)
             throw RuntimeException("$newItem does not match type FavoriteBookmarkItem")
         bookmark.children!!.add(index, newItem.bookmark)
+        children.add(index, newItem)
     }
 
     override fun remove(index: Int) {
         bookmark.children!!.removeAt(index)
+        children.removeAt(index)
     }
 
     override fun rename(newName: String) {
@@ -141,10 +143,8 @@ open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBas
     }
 
     override fun swap(index1: Int, index2: Int) {
-        val i1 = bookmark.children!![index1]
-        val i2 = bookmark.children!![index2]
-        bookmark.children!![index2] = i1
-        bookmark.children!![index1] = i2
+        Collections.swap(bookmark.children!!, index1, index2)
+        Collections.swap(children, index1, index2)
     }
 }
 
@@ -174,14 +174,12 @@ private var currentScripts: List<Script> = listOf()
 private var currentBookmarkRoot: BookmarkNode = BookmarkNode(CelestiaString("Bookmarks", "") , "", arrayListOf())
 private var currentDestinations: List<Destination> = listOf()
 
-class FavoriteItemRecyclerViewAdapter private constructor(
+class FavoriteItemRecyclerViewAdapter(
     private val item: FavoriteBaseItem,
-    private var children: List<FavoriteBaseItem>,
     private val listener: Listener?,
     private val helper: ItemTouchHelper
-) : SeparatorHeaderRecyclerViewAdapter(listOf(CommonSectionV2(children))) {
-
-    constructor(item: FavoriteBaseItem, listener: Listener?, helper: ItemTouchHelper) : this(item, item.children, listener, helper)
+) : SeparatorHeaderRecyclerViewAdapter(listOf(CommonSectionV2(item.children))) {
+    private var children = ArrayList(item.children)
 
     val editable: Boolean
         get() = item is MutableFavoriteBaseItem
@@ -193,7 +191,6 @@ class FavoriteItemRecyclerViewAdapter private constructor(
     }
 
     override fun itemViewType(item: RecyclerViewItem): Int {
-
         if (item is FavoriteBaseItem) {
             return if (editable) FAVORITE_EDITABLE else FAVORITE_CONST
         }
@@ -290,11 +287,12 @@ class FavoriteItemRecyclerViewAdapter private constructor(
             return false
 
         item.swap(index1, index2)
+        Collections.swap(children, index1, index2)
         return true
     }
 
     fun reload() {
-        children = item.children
+        children = ArrayList(item.children)
         updateSectionsWithHeader(listOf(CommonSectionV2(children)))
     }
 
