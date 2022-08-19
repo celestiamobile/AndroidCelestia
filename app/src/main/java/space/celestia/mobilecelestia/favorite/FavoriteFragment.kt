@@ -20,8 +20,8 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
     private var initialItem: FavoriteBaseItem? = null
 
-    private val currentFrag: FavoriteItemFragment
-        get() = childFragmentManager.fragments.last() as FavoriteItemFragment
+    private val current: FavoriteItemFragment
+        get() = requireNotNull(top) as FavoriteItemFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,21 +41,18 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun add(item: FavoriteBaseItem) {
-        val frag = currentFrag
-        (frag.favoriteItem as MutableFavoriteBaseItem).append(item)
-        frag.reload()
+        (current.favoriteItem as MutableFavoriteBaseItem).append(item)
+        current.reload()
     }
 
     fun remove(index: Int) {
-        val frag = currentFrag
-        (frag.favoriteItem as MutableFavoriteBaseItem).remove(index)
-        frag.reload()
+        (current.favoriteItem as MutableFavoriteBaseItem).remove(index)
+        current.reload()
     }
 
     fun rename(item: MutableFavoriteBaseItem, newName: String) {
-        val frag = currentFrag
         item.rename(newName)
-        frag.reload()
+        current.reload()
     }
 
     override fun onAttach(context: Context) {
