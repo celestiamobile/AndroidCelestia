@@ -23,7 +23,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import kotlin.math.abs
 
-class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer, val interactionMode: InteractionMode): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer, interactionMode: InteractionMode): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -217,32 +217,29 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         return true
     }
 
-    override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
-        val det = detector ?: return true
-
+    override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
         if (isScrolling)
             stopScrolling()
 
         Log.d(TAG, "on scale begin")
 
-        currentSpan = det.currentSpan
+        currentSpan = detector.currentSpan
         isScaling = true
 
         return true
     }
 
-    override fun onScaleEnd(detector: ScaleGestureDetector?) {
+    override fun onScaleEnd(detector: ScaleGestureDetector) {
         Log.d(TAG, "on scale end")
     }
 
-    override fun onScale(detector: ScaleGestureDetector?): Boolean {
-        val det = detector ?: return true
+    override fun onScale(detector: ScaleGestureDetector): Boolean {
         val previousSpan = currentSpan ?: return true
-        val currentSpan = det.currentSpan
+        val currentSpan = detector.currentSpan
 
         Log.d(TAG, "on scale")
 
-        val delta = det.currentSpan / previousSpan
+        val delta = detector.currentSpan / previousSpan
         // FIXME: 8 is a magic number
         val deltaY = (1 - delta) * previousSpan / density / 8
 
@@ -257,17 +254,15 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         return true
     }
 
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
-        val event = e ?: return true
-
+    override fun onSingleTapUp(e: MotionEvent): Boolean {
         Log.d(TAG, "on single tap up")
 
         var button = AppCore.MOUSE_BUTTON_LEFT
-        if (event.isAltPressed() || isRightMouseButtonClicked) {
+        if (e.isAltPressed() || isRightMouseButtonClicked) {
             button = AppCore.MOUSE_BUTTON_RIGHT
         }
 
-        val point = PointF(event.x, event.y).scaleBy(scaleFactor)
+        val point = PointF(e.x, e.y).scaleBy(scaleFactor)
         renderer.enqueueTask {
             appCore.mouseButtonDown(button, point, 0)
             appCore.mouseButtonUp(button, point, 0)
@@ -277,8 +272,8 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     override fun onFling(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
+        e1: MotionEvent,
+        e2: MotionEvent,
         velocityX: Float,
         velocityY: Float
     ): Boolean {
@@ -287,15 +282,12 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     override fun onScroll(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
+        event1: MotionEvent,
+        event2: MotionEvent,
         distanceX: Float,
         distanceY: Float
     ): Boolean {
         if (!canScroll) return false
-
-        val event1 = e1 ?: return true
-        val event2 = e2 ?: return true
 
         Log.d(TAG, "on scroll")
 
@@ -324,10 +316,9 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         return true
     }
 
-    override fun onShowPress(e: MotionEvent?) {}
+    override fun onShowPress(e: MotionEvent) {}
 
-    override fun onLongPress(e: MotionEvent?) {
-        if (e == null) return
+    override fun onLongPress(e: MotionEvent) {
         if (e.source == InputDevice.SOURCE_MOUSE) return // Mouse long press detected, ignore
 
         // Bring up the context menu
@@ -339,7 +330,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         }
     }
 
-    override fun onDown(e: MotionEvent?): Boolean {
+    override fun onDown(e: MotionEvent): Boolean {
         Log.d(TAG, "on down")
         return true
     }

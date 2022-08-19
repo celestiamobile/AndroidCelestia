@@ -37,10 +37,10 @@ allprojects {
     project.ext {
         constants = [
                 minSdkVersion     : 21,
-                targetSdkVersion  : 31,
-                compileSdkVersion : 31,
+                targetSdkVersion  : 33,
+                compileSdkVersion : 33,
                 ndkVersion        : "23.1.7779620",
-                buildToolsVersion : "31.0.0",
+                buildToolsVersion : "33.0.0",
                 cmakeVersion      : "3.18.1"
         ]
     }
