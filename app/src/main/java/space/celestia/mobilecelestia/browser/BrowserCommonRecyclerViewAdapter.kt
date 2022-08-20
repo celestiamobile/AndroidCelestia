@@ -20,15 +20,21 @@ import space.celestia.mobilecelestia.common.CommonTextViewHolder
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.celestia.BrowserItem
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 fun BrowserItem.createSection(): List<CommonSectionV2> {
     val list = ArrayList<CommonSectionV2>()
 
+    var hasMainObject = false
     if (`object` != null) {
         val section = CommonSectionV2(listOf( BrowserUIItem(this, true) ))
         list.add(section)
+        hasMainObject = true
     }
-    list.add(CommonSectionV2(children.map { BrowserUIItem(it, it.children.size == 0) }))
+    val childItems = children.map { BrowserUIItem(it, it.children.size == 0) }
+    if (childItems.isNotEmpty()) {
+        list.add(CommonSectionV2(header = if (hasMainObject) CelestiaString("Subsystem", "") else null, items = childItems))
+    }
     return list
 }
 
