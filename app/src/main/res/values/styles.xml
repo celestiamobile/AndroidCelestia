@@ -148,9 +148,19 @@
     <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
     </style>
 
-    <style name="TextInputEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+    <style name="TextInputLayoutAutoComplete" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+    </style>
+
+    <style name="TextInputEditTextBase" parent="Widget.Material3.TextInputEditText.OutlinedBox">
         <item name="android:imeOptions">actionDone|flagNoExtractUi|flagNoFullscreen</item>
     </style>
+
+    <style name="TextInputEditTextAutoCompleteBase" parent="Widget.Material3.AutoCompleteTextView.OutlinedBox">
+        <item name="android:imeOptions">actionDone|flagNoExtractUi|flagNoFullscreen</item>
+    </style>
+
+    <style name="TextInputEditText" parent="TextInputEditTextBase"/>
+    <style name="TextInputEditTextAutoComplete" parent="TextInputEditTextAutoCompleteBase"/>
 
     <style name="AppBar" parent="Widget.Material3.AppBarLayout"/>
 

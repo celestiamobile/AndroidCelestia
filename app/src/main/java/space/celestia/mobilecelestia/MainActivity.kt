@@ -1084,13 +1084,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onSearchItemSelected(text: String) {
         hideKeyboard()
 
-        val goToFragment = supportFragmentManager.findFragmentByTag(BOTTOM_SHEET_ROOT_FRAGMENT_TAG) as? GoToContainerFragment
-        if (goToFragment != null) {
-            popBottomSheetFragment()
-            goToFragment.updateObjectName(text)
-            return
-        }
-
         val selection = appCore.simulation.findObject(text)
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
@@ -1121,6 +1114,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onGoToObject(name: String) {
+        hideKeyboard()
+
         val sel = appCore.simulation.findObject(name)
         if (sel.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
@@ -1253,10 +1248,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 frag.pushItem(item)
             }
         }
-    }
-
-    override fun onEditGoToObject(goToData: GoToInputFragment.GoToData) {
-        pushBottomSheetFragment(SearchFragment.newInstance())
     }
 
     override fun onGoToDestination(destination: Destination) {

@@ -16,26 +16,39 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import android.widget.*
+import androidx.core.view.updateLayoutParams
+import androidx.core.widget.addTextChangedListener
+import com.google.android.material.textfield.TextInputLayout
+import dagger.hilt.android.AndroidEntryPoint
+import space.celestia.celestia.AppCore
+import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.celestia.GoToLocation
-import space.celestia.mobilecelestia.utils.*
+import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.showOptions
 import java.io.Serializable
 import java.lang.ref.WeakReference
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class GoToInputFragment : NavigationFragment.SubFragment() {
     class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: GoToLocation.DistanceUnit) :
         Serializable
 
     private var listener: Listener? = null
-
-    private val adapter by lazy { createAdapter() }
-
     private val goToData: GoToData
         get() = requireNotNull(_goToData)
     private var _goToData: GoToData? = null
+
+    private lateinit var distanceUnitEditText: AutoCompleteTextView
+    private lateinit var distanceEditText: EditText
+    private lateinit var longitudeEditText: EditText
+    private lateinit var latitudeEditText: EditText
+    private lateinit var objectNameEditText: AutoCompleteTextView
+
+    @Inject
+    lateinit var appCore: AppCore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,20 +68,88 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
+        val view = inflater.inflate(R.layout.fragment_go_to, container, false)
 
-        val recView = view.findViewById<RecyclerView>(R.id.list)
-        recView.layoutManager = LinearLayoutManager(context)
+        val objectHeaderContainer = view.findViewById<View>(R.id.object_name_section_header)
+        objectHeaderContainer.findViewById<TextView>(R.id.text).text = CelestiaString("Object", "")
 
-        adapter.objectName = goToData.objectName
-        adapter.longitude = goToData.longitude
-        adapter.latitude = goToData.latitude
-        adapter.distance = goToData.distance
-        adapter.unit = goToData.distanceUnit
-        adapter.reload()
+        objectNameEditText = view.findViewById(R.id.object_name_text_view)
+        val adapter = GoToSuggestionAdapter(requireActivity(), android.R.layout.simple_dropdown_item_1line, appCore)
+        objectNameEditText.threshold = 1
+        objectNameEditText.setAdapter(adapter)
 
-        recView.adapter = adapter
+        val coordinateHeaderContainer = view.findViewById<View>(R.id.coordinate_section_header)
+        coordinateHeaderContainer.findViewById<TextView>(R.id.text).text = CelestiaString("Coordinates", "")
+        longitudeEditText = view.findViewById(R.id.longitude_text_view)
+        view.findViewById<TextInputLayout>(R.id.longitude_text_container).hint = CelestiaString("Longitude", "")
+
+        latitudeEditText = view.findViewById(R.id.latitude_text_view)
+        view.findViewById<TextInputLayout>(R.id.latitude_text_container).hint = CelestiaString("Latitude", "")
+
+        val distanceHeaderContainer = view.findViewById<View>(R.id.distance_section_header)
+        distanceHeaderContainer.findViewById<TextView>(R.id.text).text = CelestiaString("Distance", "")
+
+        distanceEditText = view.findViewById(R.id.distance_text_view)
+
+        distanceUnitEditText = view.findViewById(R.id.unit_text_view)
+        val unitAdapter = object: ArrayAdapter<String>(requireActivity(), android.R.layout.simple_dropdown_item_1line) {
+            override fun getCount(): Int {
+                return distanceUnits.size
+            }
+
+            override fun getItem(position: Int): String {
+                return  CelestiaString(distanceUnits[position].name, "")
+            }
+        }
+        distanceUnitEditText.setAdapter(unitAdapter)
+
+        val goToButton = view.findViewById<Button>(R.id.go_to_button)
+        goToButton.text = CelestiaString("Go", "")
+
+        val weakSelf = WeakReference(this)
+        goToButton.setOnClickListener {
+            val self = weakSelf.get() ?: return@setOnClickListener
+            self.listener?.onGoToObject(self.goToData)
+        }
+
+        distanceEditText.addTextChangedListener { newText ->
+            val self = weakSelf.get() ?: return@addTextChangedListener
+            val result = newText?.toString()?.toDoubleOrNull() ?: return@addTextChangedListener
+            self.goToData.distance = result
+        }
+
+        longitudeEditText.addTextChangedListener { newText ->
+            val self = weakSelf.get() ?: return@addTextChangedListener
+            val result = newText?.toString()?.toFloatOrNull() ?: return@addTextChangedListener
+            self.goToData.longitude = result
+        }
+
+        latitudeEditText.addTextChangedListener { newText ->
+            val self = weakSelf.get() ?: return@addTextChangedListener
+            val result = newText?.toString()?.toFloatOrNull() ?: return@addTextChangedListener
+            self.goToData.latitude = result
+        }
+
+        objectNameEditText.addTextChangedListener { newText ->
+            val self = weakSelf.get() ?: return@addTextChangedListener
+            val result = newText?.toString() ?: return@addTextChangedListener
+            self.goToData.objectName = result
+        }
+
+        distanceUnitEditText.setOnItemClickListener { _, _, position, _ ->
+            val self = weakSelf.get() ?: return@setOnItemClickListener
+            self.goToData.distanceUnit = distanceUnits[position]
+        }
+        reload()
         return view
+    }
+
+    private fun reload() {
+        objectNameEditText.setText(goToData.objectName)
+        distanceUnitEditText.setText(CelestiaString(goToData.distanceUnit.name, ""))
+        longitudeEditText.setText(String.format("%.2f", goToData.longitude))
+        latitudeEditText.setText(String.format("%.2f", goToData.latitude))
+        distanceEditText.setText(String.format("%.2f", goToData.distance))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -97,75 +178,15 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         listener = null
     }
 
-    fun createAdapter(): GoToInputRecyclerViewAdapter {
-        val weakSelf = WeakReference(this)
-        return GoToInputRecyclerViewAdapter(longitude = goToData.longitude, latitude = goToData.latitude, distance = goToData.distance, unit = goToData.distanceUnit, objectName = goToData.objectName, chooseFloatValueCallback = {
-                type, value ->
-            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
-            val ac = self.activity ?: return@GoToInputRecyclerViewAdapter
-            ac.showTextInput("", String.format("%.2f", value)) { newValue ->
-                val floatValue = newValue.toFloatOrNull() ?: return@showTextInput
-                when (type) {
-                    GoToFloatValueType.Longitude -> {
-                        self.goToData.longitude = floatValue
-                        self.adapter.longitude = floatValue
-                    }
-                    GoToFloatValueType.Latitude -> {
-                        self.goToData.latitude = floatValue
-                        self.adapter.latitude = floatValue
-                    }
-                }
-                self.adapter.reload()
-                self.adapter.notifyDataSetChanged()
-            }
-        }, chooseDoubleValueCallback = {
-                type, value ->
-            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
-            val ac = self.activity ?: return@GoToInputRecyclerViewAdapter
-            ac.showTextInput("", String.format("%.2f", value)) { newValue ->
-                val doubleValue = newValue.toDoubleOrNull() ?: return@showTextInput
-                when (type) {
-                    GoToDoubleValueType.Distance -> {
-                        self.goToData.distance = doubleValue
-                        self.adapter.distance = doubleValue
-                    }
-                }
-                self.adapter.reload()
-                self.adapter.notifyDataSetChanged()
-            }
-        }, chooseObjectCallback = {
-            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
-            self.listener?.onEditGoToObject(self.goToData)
-        }, chooseUnitCallback = {
-            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
-            val ac = self.activity ?: return@GoToInputRecyclerViewAdapter
-            ac.showOptions("", distanceUnits.map { value -> CelestiaString(value.name, "") }.toTypedArray(),) { newIndex ->
-                val unit = distanceUnits[newIndex]
-                self.adapter.unit = unit
-                self.goToData.distanceUnit = unit
-                self.adapter.reload()
-                self.adapter.notifyDataSetChanged()
-            }
-        }, proceedCallback = {
-            val self = weakSelf.get() ?: return@GoToInputRecyclerViewAdapter
-            self.listener?.onGoToObject(goToData)
-        })
-    }
-
     fun updateObjectName(name: String) {
         goToData.objectName = name
-        adapter.objectName = name
-        adapter.reload()
-        adapter.notifyDataSetChanged()
     }
 
     interface Listener {
         fun onGoToObject(goToData: GoToData)
-        fun onEditGoToObject(goToData: GoToData)
     }
 
     companion object {
-        private const val TAG = "GoToInput"
         private const val ARG_DATA = "data"
 
         private val distanceUnits = listOf(

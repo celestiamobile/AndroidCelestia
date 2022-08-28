@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ fragment_event_finder_input.xml
+  ~
+  ~ Copyright (C) 2001-2022, Celestia Development Team
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License
+  ~ as published by the Free Software Foundation; either version 2
+  ~ of the License, or (at your option) any later version.
+  -->
+
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    style="@style/Background">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <include layout="@layout/common_text_list_item"
+            android:id="@+id/start_time_cell"/>
+        <include layout="@layout/common_text_list_item"
+            android:id="@+id/end_time_cell"/>
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/list_spacing_short"/>
+        <include layout="@layout/layout_separator"
+            android:layout_marginStart="@dimen/partial_separator_inset_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/list_spacing_short"/>
+        <include layout="@layout/common_text_list_item"
+            android:id="@+id/object_name_cell"/>
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/list_spacing_short"/>
+        <Button
+            android:id="@+id/find_button"
+            style="@style/Button"
+            android:layout_marginTop="@dimen/common_page_medium_gap_vertical"
+            android:layout_marginHorizontal="@dimen/common_page_medium_margin_horizontal"
+            android:layout_marginBottom="@dimen/common_page_medium_margin_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

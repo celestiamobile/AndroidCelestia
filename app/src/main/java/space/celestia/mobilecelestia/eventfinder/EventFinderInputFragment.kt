@@ -13,72 +13,64 @@ package space.celestia.mobilecelestia.eventfinder
 
 import android.content.Context
 import android.os.Bundle
-import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import android.widget.Button
+import android.widget.TextView
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.*
 import java.lang.ref.WeakReference
+import java.text.DateFormat
 import java.util.*
 
 class EventFinderInputFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
-    private val adapter by lazy { createAdapter() }
+    private var startTime = Date(Date().time - DEFAULT_SEARCHING_INTERVAL)
+    private var endTime = Date()
+    private var objectName = AppCore.getLocalizedString("Earth", "celestia-data")
+
+    private val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
+
+    private lateinit var startTimeTextView: TextView
+    private lateinit var endTimeTextView: TextView
+    private lateinit var objectNameTextView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
+        val view = inflater.inflate(R.layout.fragment_event_finder_input, container, false)
 
-        val recView = view.findViewById<RecyclerView>(R.id.list)
-        recView.layoutManager = LinearLayoutManager(context)
+        val startTimeCell = view.findViewById<View>(R.id.start_time_cell)
+        startTimeCell.findViewById<TextView>(R.id.title).text = CelestiaString("Start Time", "")
+        startTimeTextView = startTimeCell.findViewById(R.id.detail)
+        startTimeTextView.visibility = View.VISIBLE
 
-        if (savedInstanceState != null) {
-            val objectName = savedInstanceState.getString(OBJECT_TAG)
-            val startDate = savedInstanceState.getSerializable(START_TIME_TAG) as? Date
-            val endDate = savedInstanceState.getSerializable(END_TIME_TAG) as? Date
+        val endTimeCell = view.findViewById<View>(R.id.end_time_cell)
+        endTimeCell.findViewById<TextView>(R.id.title).text = CelestiaString("End Time", "")
+        endTimeTextView = endTimeCell.findViewById(R.id.detail)
+        endTimeTextView.visibility = View.VISIBLE
 
-            if (objectName != null)
-                adapter.objectName = objectName
-            if (startDate != null)
-                adapter.startDate = startDate
-            if (endDate != null)
-                adapter.endDate = endDate
-            adapter.reload()
-        }
+        val objectNameCell = view.findViewById<View>(R.id.object_name_cell)
+        objectNameCell.findViewById<TextView>(R.id.title).text = CelestiaString("Object", "")
+        objectNameTextView = objectNameCell.findViewById(R.id.detail)
+        objectNameTextView.visibility = View.VISIBLE
 
-        recView.adapter = adapter
-        return view
-    }
+        val findButton = view.findViewById<Button>(R.id.find_button)
+        findButton.text = CelestiaString("Find", "")
+        objectNameCell.isClickable = true
+        startTimeCell.isClickable = true
+        endTimeCell.isClickable = true
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        title = CelestiaString("Eclipse Finder", "")
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(START_TIME_TAG, adapter.startDate)
-        outState.putSerializable(END_TIME_TAG, adapter.startDate)
-        outState.putString(OBJECT_TAG, adapter.objectName)
-
-        super.onSaveInstanceState(outState)
-    }
-
-    private fun createAdapter(): EventFinderInputRecyclerViewAdapter {
         val weakSelf = WeakReference(this)
-        return EventFinderInputRecyclerViewAdapter({ isStartTime ->
-            val self = weakSelf.get() ?: return@EventFinderInputRecyclerViewAdapter
-            val ac = self.activity ?: return@EventFinderInputRecyclerViewAdapter
-            val format =
-                DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss")
+        startTimeCell.setOnClickListener {
+            val self = weakSelf.get() ?: return@setOnClickListener
+            val ac = self.activity ?: return@setOnClickListener
+            val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss")
             ac.showDateInput(
                 CelestiaString(
                     "Please enter the time in \"%s\" format.",
@@ -89,13 +81,33 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
                     ac.showAlert(CelestiaString("Unrecognized time string.", ""))
                     return@showDateInput
                 }
-                if (isStartTime) self.adapter.startDate = date else self.adapter.endDate = date
-                self.adapter.reload()
-                self.adapter.notifyDataSetChanged()
+                self.startTime = date
+                self.reload()
             }
-        }, { current ->
-            val self = weakSelf.get() ?: return@EventFinderInputRecyclerViewAdapter
-            val ac = self.activity ?: return@EventFinderInputRecyclerViewAdapter
+        }
+
+        endTimeCell.setOnClickListener {
+            val self = weakSelf.get() ?: return@setOnClickListener
+            val ac = self.activity ?: return@setOnClickListener
+            val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss")
+            ac.showDateInput(
+                CelestiaString(
+                    "Please enter the time in \"%s\" format.",
+                    ""
+                ).format(format), format
+            ) { date ->
+                if (date == null) {
+                    ac.showAlert(CelestiaString("Unrecognized time string.", ""))
+                    return@showDateInput
+                }
+                self.endTime = date
+                self.reload()
+            }
+        }
+
+        objectNameCell.setOnClickListener {
+            val self = weakSelf.get() ?: return@setOnClickListener
+            val ac = self.activity ?: return@setOnClickListener
             val objects = listOf(
                 AppCore.getLocalizedString("Earth", "celestia-data"),
                 AppCore.getLocalizedString("Jupiter", "celestia-data")
@@ -109,25 +121,56 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
                     // User choose other, show text input for the object name
                     ac.showTextInput(
                         CelestiaString("Please enter an object name.", ""),
-                        current
+                        self.objectName
                     ) { objectName ->
-                        self.adapter.objectName = objectName
-                        self.adapter.reload()
-                        self.adapter.notifyDataSetChanged()
+                        self.objectName = objectName
+                        self.reload()
                     }
                     return@showOptions
                 }
-                self.adapter.objectName = objects[index]
-                self.adapter.reload()
-                self.adapter.notifyDataSetChanged()
+                self.objectName = objects[index]
+                self.reload()
             }
-        }, {
-            val self = weakSelf.get() ?: return@EventFinderInputRecyclerViewAdapter
-            val startDate = self.adapter.startDate
-            val endDate = self.adapter.endDate
-            val objectName = self.adapter.objectName
-            self.listener?.onSearchForEvent(objectName, startDate, endDate)
-        })
+        }
+
+        findButton.setOnClickListener {
+            val self = weakSelf.get() ?: return@setOnClickListener
+
+            self.listener?.onSearchForEvent(objectName, startTime, endTime)
+        }
+
+        reload()
+        return view
+    }
+
+    private fun reload() {
+        startTimeTextView.text = formatter.format(startTime)
+        endTimeTextView.text = formatter.format(endTime)
+        objectNameTextView.text = objectName
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (savedInstanceState != null) {
+            startTime = savedInstanceState.getSerializable(START_TIME_TAG) as? Date ?: startTime
+            endTime = savedInstanceState.getSerializable(END_TIME_TAG) as? Date ?: endTime
+            objectName = savedInstanceState.getString(OBJECT_TAG, objectName)
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = CelestiaString("Eclipse Finder", "")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable(START_TIME_TAG, startTime)
+        outState.putSerializable(END_TIME_TAG, endTime)
+        outState.putString(OBJECT_TAG, objectName)
+
+        super.onSaveInstanceState(outState)
     }
 
     override fun onAttach(context: Context) {
@@ -149,11 +192,11 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
     }
 
     companion object {
-        private const val TAG = "EventFinderInput"
-
         private const val START_TIME_TAG = "start_time"
         private const val END_TIME_TAG = "end_time"
         private const val OBJECT_TAG = "object"
+
+        private const val DEFAULT_SEARCHING_INTERVAL: Long = 365L * 24 * 60 * 60 * 1000
 
         @JvmStatic
         fun newInstance() =

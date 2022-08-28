@@ -62,9 +62,6 @@ fun Activity.showDateInput(title: String, format: String, handler: (Date?) -> Un
     val editText = customView.findViewById<EditText>(R.id.input)
     editText.hint = formatter.format(Date())
     editText.inputType = InputType.TYPE_CLASS_TEXT
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        editText.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
-    }
     builder.setView(customView)
 
     builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->
