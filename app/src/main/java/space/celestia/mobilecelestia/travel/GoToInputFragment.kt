@@ -17,7 +17,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,9 +26,10 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getSerializableValue
-import space.celestia.mobilecelestia.utils.showOptions
 import java.io.Serializable
 import java.lang.ref.WeakReference
+import java.text.NumberFormat
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -47,6 +47,8 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     private lateinit var longitudeEditText: EditText
     private lateinit var latitudeEditText: EditText
     private lateinit var objectNameEditText: AutoCompleteTextView
+
+    private lateinit var numberFormat: NumberFormat
 
     @Inject
     lateinit var appCore: AppCore
@@ -70,6 +72,9 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_go_to, container, false)
+
+        numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
+        numberFormat.maximumFractionDigits = 2
 
         val objectHeaderContainer = view.findViewById<View>(R.id.object_name_section_header)
         objectHeaderContainer.findViewById<TextView>(R.id.text).text = CelestiaString("Object", "")
@@ -114,21 +119,24 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         }
 
         distanceEditText.addTextChangedListener { newText ->
+            val text = newText?.toString() ?: return@addTextChangedListener
             val self = weakSelf.get() ?: return@addTextChangedListener
-            val result = newText?.toString()?.toDoubleOrNull() ?: return@addTextChangedListener
+            val result = convertToDoubleOrNull(text) ?: return@addTextChangedListener
             self.goToData.distance = result
         }
 
         longitudeEditText.addTextChangedListener { newText ->
+            val text = newText?.toString() ?: return@addTextChangedListener
             val self = weakSelf.get() ?: return@addTextChangedListener
-            val result = newText?.toString()?.toFloatOrNull() ?: return@addTextChangedListener
-            self.goToData.longitude = result
+            val result = convertToDoubleOrNull(text) ?: return@addTextChangedListener
+            self.goToData.longitude = result.toFloat()
         }
 
         latitudeEditText.addTextChangedListener { newText ->
+            val text = newText?.toString() ?: return@addTextChangedListener
             val self = weakSelf.get() ?: return@addTextChangedListener
-            val result = newText?.toString()?.toFloatOrNull() ?: return@addTextChangedListener
-            self.goToData.latitude = result
+            val result = convertToDoubleOrNull(text) ?: return@addTextChangedListener
+            self.goToData.latitude = result.toFloat()
         }
 
         objectNameEditText.addTextChangedListener { newText ->
@@ -148,9 +156,9 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     private fun reload() {
         objectNameEditText.setText(goToData.objectName)
         distanceUnitEditText.setText(CelestiaString(goToData.distanceUnit.name, ""))
-        longitudeEditText.setText(String.format("%.2f", goToData.longitude))
-        latitudeEditText.setText(String.format("%.2f", goToData.latitude))
-        distanceEditText.setText(String.format("%.2f", goToData.distance))
+        longitudeEditText.setText(numberFormat.format(goToData.longitude))
+        latitudeEditText.setText(numberFormat.format(goToData.latitude))
+        distanceEditText.setText(numberFormat.format(goToData.distance))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -172,6 +180,16 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         } else {
             throw RuntimeException("$context must implement GoToInputFragment.Listener")
         }
+    }
+
+    private fun convertToDoubleOrNull(string: String): Double? {
+        try {
+            val value = numberFormat.parse(string)?.toDouble()
+            if (value != null)
+                return value
+        } catch(ignored: Throwable) {}
+        // Try again with default decimal separator
+        return string.toDoubleOrNull()
     }
 
     override fun onDetach() {
