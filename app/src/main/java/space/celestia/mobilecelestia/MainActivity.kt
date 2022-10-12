@@ -27,6 +27,8 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -61,7 +63,10 @@ import org.json.JSONObject
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
-import space.celestia.mobilecelestia.common.*
+import space.celestia.mobilecelestia.common.EdgeInsets
+import space.celestia.mobilecelestia.common.Poppable
+import space.celestia.mobilecelestia.common.RoundedCorners
+import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
@@ -359,17 +364,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         updateConfiguration(newConfig, ViewCompat.getRootWindowInsets(rootView))
     }
 
-    override fun onBackPressed() {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is Poppable && frag.canPop()) {
-            frag.popLast()
-        } else if (canPopBottomSheetFragment()) {
-            popBottomSheetFragment()
-        } else {
-            hideOverlay(true)
-        }
-    }
-
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
@@ -444,7 +438,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
         when (newState) {
             AppStatusReporter.State.FINISHED -> {
-                celestiaLoadingFinished()
+                celestiaLoadingFinishedAsync()
             }
             AppStatusReporter.State.LOADING_SUCCESS -> {
                 celestiaLoadingSucceeded()
@@ -464,19 +458,37 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun celestiaLoadingFinished() {
+    private fun celestiaLoadingFinishedAsync() {
         lifecycleScope.launch {
-            supportFragmentManager.findFragmentById(R.id.loading_fragment_container)?.let {
-                supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
-            }
-            findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
-
-            resourceManager.addonDirectory = addonPaths.firstOrNull()
-
-            readyForInteraction = true
-
-            openURLOrScriptOrGreeting()
+            celestiaLoadingFinished()
         }
+    }
+
+    private fun celestiaLoadingFinished() {
+        supportFragmentManager.findFragmentById(R.id.loading_fragment_container)?.let {
+            supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
+        }
+        findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+
+        val weakSelf = WeakReference(this)
+        onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val self = weakSelf.get() ?: return
+                val frag = self.supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+                if (frag is Poppable && frag.canPop()) {
+                    frag.popLast()
+                } else if (self.canPopBottomSheetFragment()) {
+                    self.popBottomSheetFragment()
+                } else {
+                    self.hideOverlay(true)
+                }
+            }
+        })
+
+        resourceManager.addonDirectory = addonPaths.firstOrNull()
+        readyForInteraction = true
+
+        openURLOrScriptOrGreeting()
     }
 
     private fun celestiaLoadingFailed() {
@@ -1940,8 +1952,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "34"
-        // 34: 1.5.13-Dev
+        private const val CURRENT_DATA_VERSION = "35"
+        // 35: 1.5.13-Dev
         // 33: 1.5.11 Localization update, data update (commit 9b7df828cbd7205119d378fa864aabd8f3272456)
         // 32: 1.5.7 Localization update, data update (commit 7f816ccd97eeaa5d3f1364a3f17cf378946b708e)
         // 31: 1.5.5 Localization update, data update (commit 9e7a8ee18a875ae8fc202439952256a5a2378a0b)
@@ -1977,7 +1989,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
         private const val MENU_VISIBLE_TAG = "menu_visible"
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
-        private const val GO_TO_DATA_TAG = "go_to"
 
         private const val ARG_COMMIT_IDS = "commit-ids"
         private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
