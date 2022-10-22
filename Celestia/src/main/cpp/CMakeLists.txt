@@ -428,6 +428,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/libepoxy
         ${THIRD_PARTY_INCLUDE_DIR}/json
         ${THIRD_PARTY_INCLUDE_DIR}/freetype/freetype2
+        ${THIRD_PARTY_INCLUDE_DIR}/meshoptimizer
         ${GAME_SDK_INCLUDE_DIR}
 )
 
@@ -455,6 +456,9 @@ set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/$
 add_library(freetype STATIC IMPORTED)
 set_target_properties(freetype PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libfreetype.a)
 
+add_library(meshoptimizer STATIC IMPORTED)
+set_target_properties(meshoptimizer PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libmeshoptimizer.a)
+
 add_library(gamesdk STATIC IMPORTED)
 set_target_properties(gamesdk PROPERTIES IMPORTED_LOCATION ${GAME_SDK_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libswappy_static.a)
 
@@ -478,6 +482,7 @@ target_link_libraries(
         lua
         libpng
         cspice
+        meshoptimizer
         EGL
         android
         gamesdk
