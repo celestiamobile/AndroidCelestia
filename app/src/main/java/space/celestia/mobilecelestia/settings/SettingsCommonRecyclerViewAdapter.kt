@@ -19,7 +19,7 @@ import android.widget.TextView
 import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.slider.Slider
-import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.materialswitch.MaterialSwitch
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
 import java.lang.ref.WeakReference
@@ -174,7 +174,7 @@ class SettingsCommonRecyclerViewAdapter(
     inner class SwitchViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView
             get() = itemView.findViewById(R.id.title)
-        val switch: SwitchMaterial
+        val switch: MaterialSwitch
             get() = itemView.findViewById(R.id.accessory)
 
         fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {

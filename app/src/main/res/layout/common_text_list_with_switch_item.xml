@@ -27,7 +27,7 @@
         android:layout_marginVertical="@dimen/list_item_medium_margin_vertical"
         style="@style/PrimaryListItemLabel"/>
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/accessory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
