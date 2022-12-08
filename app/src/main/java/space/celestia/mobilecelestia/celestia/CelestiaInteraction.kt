@@ -19,6 +19,7 @@ import android.graphics.RectF
 import android.os.Build
 import android.util.Log
 import android.view.*
+import androidx.core.view.GestureDetectorCompat
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import kotlin.math.abs
@@ -61,7 +62,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private val scaleGestureDetector = ScaleGestureDetector(context, this)
-    private val gestureDetector = GestureDetector(context, this)
+    private val gestureDetector = GestureDetectorCompat(context, this)
 
     var isReady = false
     var zoomMode: ZoomMode? = null
