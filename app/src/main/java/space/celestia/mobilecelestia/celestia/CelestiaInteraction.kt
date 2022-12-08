@@ -178,7 +178,12 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         }
 
         // First test if scaling is in progress
-        scaleGestureDetector.onTouchEvent(event)
+        try {
+            // Listeners in Android T SDK do not have optional parameters, might
+            // cause NullPointerException, ignore it
+            scaleGestureDetector.onTouchEvent(event)
+        } catch (ignored: Throwable) {}
+
         if (isScaling) {
             if (event.actionMasked == MotionEvent.ACTION_UP) {
                 // Only mark scaling as ended when last finger is lifted
@@ -197,7 +202,14 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         }
 
         // Handle scroll and tap
-        if (gestureDetector.onTouchEvent(event)) {
+        try {
+            // Listeners in Android T SDK do not have optional parameters, might
+            // cause NullPointerException, ignore it
+            if (gestureDetector.onTouchEvent(event)) {
+                completion()
+                return true
+            }
+        } catch(ignored: Throwable) {
             completion()
             return true
         }
