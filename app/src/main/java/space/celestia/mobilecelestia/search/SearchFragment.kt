@@ -11,23 +11,21 @@
 
 package space.celestia.mobilecelestia.search
 
-import android.app.Activity
 import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import androidx.appcompat.widget.SearchView
-import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.search.SearchBar
+import com.google.android.material.search.SearchView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,24 +36,23 @@ import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
-fun SearchView.textChanges(): Flow<Pair<String, Boolean>> {
+fun EditText.textChanges(): Flow<String> {
     return callbackFlow {
-        val listener = object : SearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String?): Boolean {
-                trySend(Pair(newText ?: "", false))
-                return true
-            }
+        val listener = object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                trySend(Pair(query ?: "", true))
-                return true
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+            override fun afterTextChanged(p0: Editable?) {
+                trySend(p0?.toString() ?: "")
             }
         }
-        setOnQueryTextListener(listener)
-        awaitClose { setOnQueryTextListener(null) }
+        addTextChangedListener(listener)
+        awaitClose { removeTextChangedListener(listener) }
     }
 }
 
@@ -65,6 +62,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
     private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
 
     private lateinit var searchView: SearchView
+    private lateinit var searchBar: SearchBar
     private lateinit var listView: RecyclerView
 
     private var searchKey: String = ""
@@ -89,7 +87,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
         val view = inflater.inflate(R.layout.fragment_search_item_list, container, false)
 
         searchView = view.findViewById(R.id.search_view)
-        searchView.setQuery(searchKey, false)
+        searchBar = view.findViewById(R.id.search_bar)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             searchView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         }
@@ -100,22 +98,21 @@ class SearchFragment : NavigationFragment.SubFragment() {
         listView.layoutManager = LinearLayoutManager(context)
         listView.adapter = listAdapter
 
-        listView.clipToPadding = false
-        listView.fitsSystemWindows = true
+        // layout_behavior and layout_anchor do not work well together, so we cannot do edge to edge here...
+        // listView.clipToPadding = false
+        // listView.fitsSystemWindows = true
+
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ViewCompat.setBackground(
-            searchView.findViewById(R.id.search_plate),
-            ColorDrawable(Color.TRANSPARENT)
-        )
-        searchView.findViewById<EditText>(R.id.search_src_text).hint = ""
-        searchView.imeOptions =
+        searchBar.setText(searchKey)
+        searchView.setText(searchKey)
+        searchView.editText.hint = ""
+        searchView.editText.imeOptions =
             EditorInfo.IME_ACTION_SEARCH or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
-        searchView.setIconifiedByDefault(false)
 
         setupSearchSearchView()
     }
@@ -123,18 +120,12 @@ class SearchFragment : NavigationFragment.SubFragment() {
     @FlowPreview
     @ExperimentalCoroutinesApi
     private fun setupSearchSearchView() {
-        searchView.setOnQueryTextFocusChangeListener { v, hasFocus ->
-            if (hasFocus) {
-                (v as? SearchView)?.isIconified = false
-            }
-        }
-        searchView.textChanges()
+        searchView.editText.textChanges()
             .distinctUntilChanged()
             .debounce(300)
-            .mapLatest {
-                val key = it.first
+            .mapLatest { key ->
                 val result = if (key.isEmpty()) listOf<String>() else appCore.simulation.completionForText(key, SEARCH_RESULT_LIMIT)
-                Triple(key, result, it.second)
+                Pair(key, result)
             }
             .onEach {
                 withContext(Dispatchers.Main) {
@@ -142,21 +133,29 @@ class SearchFragment : NavigationFragment.SubFragment() {
                     searchResults = it.second
                     listAdapter.updateSearchResults(searchResults)
                     listAdapter.notifyDataSetChanged()
-
-                    if (!it.third) return@withContext
-
-                    // Submit, clear focus
-                    activity?.hideKeyboard()
-                    searchView.clearFocus()
-                    setupSearchSearchView()
-
-                    if (searchKey.isNotEmpty() && searchResults.isEmpty()) {
-                        listener?.onSearchItemSubmit(searchKey)
-                    }
                 }
             }
             .flowOn(Dispatchers.IO)
             .launchIn(lifecycleScope)
+
+        val weakSelf = WeakReference(this)
+        searchView.addTransitionListener { searchView, previousState, newState ->
+            val self = weakSelf.get() ?: return@addTransitionListener
+            if (newState == SearchView.TransitionState.HIDING || newState == SearchView.TransitionState.HIDDEN) {
+                self.searchBar.text = self.searchView.text
+            }
+        }
+        searchView.editText.setOnEditorActionListener { textView, actionId, keyEvent ->
+            val self = weakSelf.get() ?: return@setOnEditorActionListener false
+            val searchKey = self.searchView.text
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val searchText = searchKey?.toString()
+                if (searchText != null && searchText.isNotEmpty() && searchResults.isEmpty()) {
+                    listener?.onSearchItemSubmit(searchText)
+                }
+            }
+            return@setOnEditorActionListener false
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -193,8 +192,4 @@ class SearchFragment : NavigationFragment.SubFragment() {
         @JvmStatic
         fun newInstance() = SearchFragment()
     }
-}
-
-fun Activity.hideKeyboard() {
-    (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
 }

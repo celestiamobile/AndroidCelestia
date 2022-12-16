@@ -165,6 +165,8 @@
     <style name="AppBar" parent="Widget.Material3.AppBarLayout"/>
 
     <style name="Toolbar" parent="Widget.Material3.Toolbar"/>
+    <style name="SearchBar" parent="Widget.Material3.SearchBar"/>
+    <style name="SearchView" parent="Widget.Material3.SearchView"/>
 
     <style name="BottomNav" parent="Widget.Material3.BottomNavigationView">
         <item name="android:minHeight">@dimen/bottom_navigation_view_min_height</item>

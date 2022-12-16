@@ -13,6 +13,7 @@ package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -24,6 +25,7 @@ import android.util.LayoutDirection
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -74,7 +76,6 @@ import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.resource.*
 import space.celestia.mobilecelestia.resource.model.*
 import space.celestia.mobilecelestia.search.SearchFragment
-import space.celestia.mobilecelestia.search.hideKeyboard
 import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
@@ -1113,8 +1114,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSearchItemSelected(text: String) {
-        hideKeyboard()
-
         val selection = appCore.simulation.findObject(text)
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
@@ -1746,6 +1745,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    private fun  hideKeyboard() {
+        (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
     private fun showInfo(selection: Selection) {
         showBottomSheetFragment(InfoFragment.newInstance(selection))
     }
@@ -1971,8 +1974,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "37"
-        // 37: 1.5.17 (Dev)
+        private const val CURRENT_DATA_VERSION = "38"
+        // 38: 1.5.17 (Dev)
         // 36: 1.5.14 (Dev) Localization update, data update (commit bc8208e4474aee9a1096c6479a1e7f298aa98d02)
         // 35: 1.5.13 Localization update, data update (commit 2e8cc4a4086aa1b5225d426213c6d65f011ce5d4)
         // 33: 1.5.11 Localization update, data update (commit 9b7df828cbd7205119d378fa864aabd8f3272456)
