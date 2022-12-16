@@ -16,13 +16,14 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.view.*
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.appbar.AppBarLayout
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.getParcelableArrayListValue
 import space.celestia.mobilecelestia.utils.getParcelableValue
 
-abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMenuItemClickListener {
+abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClickListener {
     interface NavigationBarItem: Parcelable
 
     class BarButtonItem(val id: Int, val title: String?, val icon: Int? = null, val enabled: Boolean = true, val checked: Boolean? = null): NavigationBarItem {
@@ -150,7 +151,7 @@ abstract class NavigationFragment: InsetAwareFragment(), Poppable, Toolbar.OnMen
         }
     }
 
-    abstract class SubFragment: InsetAwareFragment() {
+    abstract class SubFragment: Fragment() {
         var title: String
             get() = innerTitle
             set(value) {
