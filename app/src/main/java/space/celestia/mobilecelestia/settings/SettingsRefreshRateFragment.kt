@@ -21,9 +21,9 @@ import android.view.ViewGroup
 import androidx.core.hardware.display.DisplayManagerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
-import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class SettingsRefreshRateFragment : SettingsBaseFragment() {
@@ -45,6 +45,8 @@ class SettingsRefreshRateFragment : SettingsBaseFragment() {
                 val refreshRateParam = availableRefreshRates()
                 listAdapter.update(refreshRateParam?.first, refreshRateParam?.second, MainActivity.customFrameRateOption)
                 adapter = listAdapter
+                clipToPadding = false
+                fitsSystemWindows = true
             }
         }
         return view

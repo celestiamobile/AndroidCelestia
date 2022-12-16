@@ -15,7 +15,7 @@ import android.os.Bundle
 import space.celestia.mobilecelestia.common.NavigationFragment
 
 class BrowserNavigationFragment : NavigationFragment() {
-    private var path: String = ""
+    private var path = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

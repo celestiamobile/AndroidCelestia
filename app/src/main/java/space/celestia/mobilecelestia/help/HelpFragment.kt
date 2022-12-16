@@ -13,7 +13,6 @@ package space.celestia.mobilecelestia.help
 
 import android.content.Context
 import android.os.Bundle
-import android.util.LayoutDirection
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +21,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.InsetAwareFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class HelpAction {
@@ -50,8 +48,7 @@ private val staticHelpActionItems: List<ActionItem> by lazy {
     )
 }
 
-class HelpFragment : InsetAwareFragment() {
-
+class HelpFragment : Fragment() {
     private var listener: Listener? = null
 
     override fun onCreateView(

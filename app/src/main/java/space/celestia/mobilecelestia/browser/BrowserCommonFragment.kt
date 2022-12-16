@@ -18,12 +18,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import space.celestia.celestia.BrowserItem
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.celestia.BrowserItem
 
 class BrowserCommonFragment : NavigationFragment.SubFragment() {
-
     private var listener: Listener? = null
     private var browserItem: BrowserItem? = null
 
@@ -48,6 +47,8 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
                 adapter = BrowserCommonRecyclerViewAdapter(browserItem!!, listener)
+                clipToPadding = false
+                fitsSystemWindows = true
             }
         }
         return view
@@ -78,8 +79,8 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
     }
 
     companion object {
-        const val ARG_PATH = "path"
-        const val ARG_ROOT = "root"
+        private const val ARG_PATH = "path"
+        private const val ARG_ROOT = "root"
 
         @JvmStatic
         fun newInstance(path: String, rootPath: String? = null) =

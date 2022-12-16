@@ -97,6 +97,11 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             WindowInsetsCompat.CONSUMED
         }
 
+        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.webview_container)) { _, _ ->
+            // Consume the insets since we have content beneath it
+            WindowInsetsCompat.CONSUMED
+        }
+
         statusButton = view.findViewById(R.id.status_button)
         statusButton.setOnClickListener {
             onProgressViewClick()

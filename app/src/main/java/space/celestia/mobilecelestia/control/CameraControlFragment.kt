@@ -39,6 +39,8 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
                 adapter = CameraControlItemRecyclerViewAdapter(listener)
+                clipToPadding = false
+                fitsSystemWindows = true
             }
         }
         return view

@@ -39,6 +39,8 @@ class SettingsLanguageFragment : SettingsBaseFragment() {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
                 adapter = listAdapter
+                clipToPadding = false
+                fitsSystemWindows = true
             }
         }
         return view

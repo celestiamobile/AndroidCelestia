@@ -16,30 +16,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".search.SearchFragment"
+    android:fitsSystemWindows="true"
     style="@style/Background">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
         style="@style/AppBar">
 
-        <LinearLayout
-            android:gravity="center"
+        <FrameLayout
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             style="@style/Toolbar">
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/search_view"
+                android:layout_gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
-        </LinearLayout>
+        </FrameLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/fragment_general_grouped_list"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <include layout="@layout/fragment_general_grouped_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -35,6 +35,8 @@ class SettingsItemFragment : SettingsBaseFragment() {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
                 adapter = SettingsItemRecyclerViewAdapter(listener)
+                clipToPadding = false
+                fitsSystemWindows = true
             }
         }
         return view

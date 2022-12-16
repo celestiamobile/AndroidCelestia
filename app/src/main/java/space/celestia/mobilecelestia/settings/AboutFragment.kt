@@ -39,6 +39,8 @@ class AboutFragment : NavigationFragment.SubFragment() {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
                 adapter = AboutRecyclerViewAdapter(createAboutItems(), listener)
+                clipToPadding = false
+                fitsSystemWindows = true
             }
         }
         return view

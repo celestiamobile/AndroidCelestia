@@ -18,9 +18,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import space.celestia.celestia.EclipseFinder
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.celestia.EclipseFinder
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class EventFinderResultFragment : NavigationFragment.SubFragment() {
@@ -38,6 +38,8 @@ class EventFinderResultFragment : NavigationFragment.SubFragment() {
             listener?.onEclipseChosen(eclipse)
         }, eclipses)
         recView.adapter = adapter
+        recView.clipToPadding = false
+        recView.fitsSystemWindows = true
         return view
     }
 

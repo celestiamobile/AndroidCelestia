@@ -45,6 +45,8 @@ class SettingsCommonFragment : SettingsBaseFragment() {
             it.layoutManager = LinearLayoutManager(context)
             adapter = SettingsCommonRecyclerViewAdapter(item!!, listener, dataSource)
             it.adapter = adapter
+            it.clipToPadding = false
+            it.fitsSystemWindows = true
         }
         return view
     }

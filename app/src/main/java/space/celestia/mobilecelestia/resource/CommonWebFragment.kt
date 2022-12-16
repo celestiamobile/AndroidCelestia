@@ -16,7 +16,10 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
@@ -167,7 +170,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 val wv = view ?: return
                 weakSelf.get()?.initialLoadFinished = true
                 loadingIndicator.isVisible = false
-                navigationContainer.visibility = if (wv.canGoBack() || wv.canGoForward()) View.VISIBLE else View.GONE
+                navigationContainer.isVisible = wv.canGoBack() || wv.canGoForward()
                 forwardButton.isEnabled = wv.canGoForward()
                 backwardButton.isEnabled = wv.canGoBack()
             }
@@ -240,6 +243,12 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                     self.title = title ?: ""
                 }
             }
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(navigationContainer) { container, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            container.updatePadding(bottom = insets.bottom)
+            WindowInsetsCompat.CONSUMED
         }
 
         this.webView = webView
@@ -348,7 +357,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         private const val ARG_INITIAL_LOAD_FINISHED = "initial_load_finished"
         private const val ARG_SHOW_FALLBACK = "show_fallback_container"
 
-        fun newInstance(uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File? = null) = CommonWebFragment.create({ CommonWebFragment() }, uri, matchingQueryKeys, contextDirectory, true )
+        fun newInstance(uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File? = null) = CommonWebFragment.create({ CommonWebFragment() }, uri, matchingQueryKeys, contextDirectory, true)
         fun newInstance(uri: Uri) = CommonWebFragment.create({ CommonWebFragment() }, uri, listOf(), null, false)
 
         fun <T: Fragment> create(fragmentCreater: () -> T, uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File?, filterURL: Boolean): T {

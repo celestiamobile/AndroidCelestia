@@ -6,6 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -73,6 +76,8 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment(), InstalledAdd
             adapter.update(installedAddons)
             adapter.notifyDataSetChanged()
         }
+        recyclerView.clipToPadding = false
+        recyclerView.fitsSystemWindows = true
         return view
     }
 

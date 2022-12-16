@@ -14,6 +14,8 @@ package space.celestia.mobilecelestia.browser
 import android.os.Bundle
 import android.view.*
 import android.widget.LinearLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -115,6 +117,12 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         loadingIndicator = view.findViewById(R.id.loading_indicator)
         browserContainer = view.findViewById(R.id.browser_container)
         navigation = view.findViewById(R.id.navigation)
+
+        ViewCompat.setOnApplyWindowInsetsListener(browserContainer) { _, _ ->
+            // Consume insets because we have a bottom bar now
+            WindowInsetsCompat.CONSUMED
+        }
+
         return view
     }
 

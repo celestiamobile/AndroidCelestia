@@ -99,6 +99,9 @@ class SearchFragment : NavigationFragment.SubFragment() {
         listView = view.findViewById(R.id.list)
         listView.layoutManager = LinearLayoutManager(context)
         listView.adapter = listAdapter
+
+        listView.clipToPadding = false
+        listView.fitsSystemWindows = true
         return view
     }
 

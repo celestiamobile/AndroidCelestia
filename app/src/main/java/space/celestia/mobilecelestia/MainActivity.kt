@@ -267,6 +267,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnTouchListener false
         }
 
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.menu_overlay)) { _, insets ->
+            // TODO: the suggested replacement for the deprecated methods does not work
+            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(if (isRTL) insets.systemWindowInsetLeft else 0 , insets.systemWindowInsetTop, if (isRTL) 0 else insets.systemWindowInsetRight, insets.systemWindowInsetBottom))
+            return@setOnApplyWindowInsetsListener builder.build()
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.bottom_sheet_overlay)) { _, insets ->
             // TODO: the suggested replacement for the deprecated methods does not work
             val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0, 0, 0, insets.systemWindowInsetBottom))

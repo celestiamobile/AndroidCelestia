@@ -40,6 +40,8 @@ class SettingsDataLocationFragment : SettingsBaseFragment() {
                 layoutManager = LinearLayoutManager(context)
                 listAdapter.update(customConfig, customDataDir)
                 adapter = listAdapter
+                clipToPadding = false
+                fitsSystemWindows = true
             }
         }
         return view

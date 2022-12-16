@@ -13,22 +13,18 @@ package space.celestia.mobilecelestia.toolbar
 
 import android.content.Context
 import android.os.Bundle
-import android.util.LayoutDirection
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.common.InsetAwareFragment
-import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getSerializableValue
 import java.io.Serializable
 import java.util.*
-import kotlin.collections.ArrayList
 
 enum class ToolbarAction : Serializable {
     Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Download, Paperplane, Speedometer, NewsArchive;
@@ -73,8 +69,7 @@ enum class ToolbarAction : Serializable {
     }
 }
 
-class ToolbarFragment : InsetAwareFragment() {
-
+class ToolbarFragment: Fragment() {
     private var existingActions: List<List<ToolbarAction>> = ArrayList()
     private var listener: Listener? = null
 
@@ -100,26 +95,12 @@ class ToolbarFragment : InsetAwareFragment() {
         allItems.addAll(ToolbarAction.persistentAction)
         val model = allItems.map { it.map { inner -> ToolbarActionItem(inner, resources.getIdentifier(inner.imageName, "drawable", requireActivity().packageName)) } }
 
-        // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
-                layoutManager = LinearLayoutManager(context)
-                adapter = ToolbarRecyclerViewAdapter(model, listener)
-            }
+        val listView = view.findViewById<RecyclerView>(R.id.list)
+        with(listView) {
+            layoutManager = LinearLayoutManager(context)
+            adapter = ToolbarRecyclerViewAdapter(model, listener)
         }
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        applyPadding(view, currentSafeInsets)
-    }
-
-    override fun onInsetChanged(view: View, newInsets: EdgeInsets, roundedCorners: RoundedCorners) {
-        super.onInsetChanged(view, newInsets, roundedCorners)
-
-        applyPadding(view, newInsets)
     }
 
     override fun onAttach(context: Context) {
@@ -129,14 +110,6 @@ class ToolbarFragment : InsetAwareFragment() {
         } else {
             throw RuntimeException("$context must implement ToolbarFragment.Listener")
         }
-    }
-
-    private fun applyPadding(view: View, insets: EdgeInsets) {
-        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        if (isRTL)
-            view.setPadding(insets.left, insets.top, 0, insets.bottom)
-        else
-            view.setPadding(0, insets.top, insets.right, insets.bottom)
     }
 
     override fun onDetach() {
@@ -149,7 +122,6 @@ class ToolbarFragment : InsetAwareFragment() {
     }
 
     companion object {
-
         const val ARG_ACTION_WRAPPER = "action-wrapper"
 
         @JvmStatic

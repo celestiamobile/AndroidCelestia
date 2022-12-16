@@ -51,6 +51,8 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
                 layoutManager = LinearLayoutManager(context)
                 adapter = listAdapter
                 itemHelper.attachToRecyclerView(this)
+                clipToPadding = false
+                fitsSystemWindows = true
             }
         }
         return view

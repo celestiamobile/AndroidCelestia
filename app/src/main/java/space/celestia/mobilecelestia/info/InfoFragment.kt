@@ -20,6 +20,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -62,7 +65,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
 
         arguments?.let {
             selection = Selection(it.getLong(ARG_OBJECT_POINTER), it.getInt(ARG_OBJECT_TYPE))
-            embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION)
+            embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION, false)
         }
     }
 
@@ -71,12 +74,14 @@ class InfoFragment : NavigationFragment.SubFragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_info_list, container, false)
+
         recyclerView = view.findViewById(R.id.list)
         titleLabel = view.findViewById(R.id.title)
         contentLabel = view.findViewById(R.id.content)
         linkView = view.findViewById(R.id.link_preview)
         titleLabel.text = appCore.simulation.universe.getNameForSelection(selection)
         contentLabel.text = appCore.getOverviewForSelection(selection)
+
         reload(true)
         return view
     }
@@ -227,6 +232,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
         const val ARG_OBJECT_POINTER = "object"
         const val ARG_OBJECT_TYPE = "type"
         const val ARG_EMBEDDED_IN_NAVIGATION = "embedded-in-navigation"
+        const val ARG_HAS_BOTTOM_BAR = "has-bottom-bar"
 
         @JvmStatic
         fun newInstance(selection: Selection, embeddedInNavigation: Boolean = false) =
