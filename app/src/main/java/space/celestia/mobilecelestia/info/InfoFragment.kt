@@ -232,7 +232,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
         const val ARG_OBJECT_POINTER = "object"
         const val ARG_OBJECT_TYPE = "type"
         const val ARG_EMBEDDED_IN_NAVIGATION = "embedded-in-navigation"
-        const val ARG_HAS_BOTTOM_BAR = "has-bottom-bar"
 
         @JvmStatic
         fun newInstance(selection: Selection, embeddedInNavigation: Boolean = false) =
