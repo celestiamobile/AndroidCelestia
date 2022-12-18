@@ -16,6 +16,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -99,6 +102,13 @@ class ToolbarFragment: Fragment() {
         with(listView) {
             layoutManager = LinearLayoutManager(context)
             adapter = ToolbarRecyclerViewAdapter(model, listener)
+        }
+
+        // Container framelayout already has applied the horizontal insets, stop passing the horizontal insets
+        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.list_container)) { _, insets ->
+            // TODO: the suggested replacement for the deprecated methods does not work
+            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0 , insets.systemWindowInsetTop, 0, insets.systemWindowInsetBottom))
+            return@setOnApplyWindowInsetsListener builder.build()
         }
         return view
     }

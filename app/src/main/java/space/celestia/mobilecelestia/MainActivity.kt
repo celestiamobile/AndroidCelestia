@@ -377,13 +377,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun updateConfiguration(configuration: Configuration, windowInsets: WindowInsetsCompat?) {
-        val density = resources.displayMetrics.density
         val isRTL = configuration.layoutDirection == LayoutDirection.RTL
 
         val safeInsets = EdgeInsets(
             EdgeInsets(windowInsets),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RoundedCorners(windowInsets) else RoundedCorners(0, 0, 0, 0),
-            resources.configuration
+            configuration
         )
         val toolbarContainer = findViewById<View>(R.id.toolbar_overlay)
         val menuWidthGuideLine = findViewById<Guideline>(R.id.menu_width_guideline)
@@ -391,7 +390,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val safeInsetStart = if (isRTL) safeInsets.right else safeInsets.left
         val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
 
-        menuWidthGuideLine.setGuidelineEnd((220 * density).toInt() + safeInsetEnd)
+        menuWidthGuideLine.setGuidelineEnd(resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd)
 
         val toolbarParams = toolbarContainer.layoutParams as FrameLayout.LayoutParams
         toolbarParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
