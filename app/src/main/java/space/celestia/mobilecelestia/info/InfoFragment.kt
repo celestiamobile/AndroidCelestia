@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -60,6 +61,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
     @Inject
     lateinit var appCore: AppCore
 
+    private lateinit var objectName: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -79,11 +82,22 @@ class InfoFragment : NavigationFragment.SubFragment() {
         titleLabel = view.findViewById(R.id.title)
         contentLabel = view.findViewById(R.id.content)
         linkView = view.findViewById(R.id.link_preview)
-        titleLabel.text = appCore.simulation.universe.getNameForSelection(selection)
+        objectName = appCore.simulation.universe.getNameForSelection(selection)
+        if (embeddedInNavigation)
+            titleLabel.isVisible = false
+        else
+            titleLabel.text = objectName
         contentLabel.text = appCore.getOverviewForSelection(selection)
 
         reload(true)
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        if (embeddedInNavigation)
+            title = objectName
     }
 
     override fun onAttach(context: Context) {

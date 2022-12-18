@@ -25,24 +25,11 @@
             android:clipToPadding="false"
             android:paddingTop="@dimen/common_page_medium_margin_vertical"
             android:layout_height="0dp">
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/common_page_medium_gap_vertical"
-                    style="@style/HeadlineLabel"/>
-
-                <TextView
-                    android:id="@+id/description"
-                    style="@style/BodyLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/description"
+                style="@style/BodyLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </androidx.core.widget.NestedScrollView>
 
         <Space

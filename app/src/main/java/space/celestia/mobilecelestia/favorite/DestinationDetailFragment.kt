@@ -44,11 +44,9 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_destination_detail, container, false)
-        val title = view.findViewById<TextView>(R.id.title)
         val content = view.findViewById<TextView>(R.id.description)
         val button = view.findViewById<Button>(R.id.action_button)
 
-        title.text = item?.name ?: ""
         content.text = item?.description ?: ""
 
         button.setOnClickListener { this.onButtonClick() }
@@ -62,6 +60,12 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
         }
 
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        title = item?.name ?: ""
     }
 
     private fun onButtonClick() {
