@@ -14,6 +14,7 @@ package space.celestia.mobilecelestia.browser
 import android.os.Bundle
 import android.view.*
 import android.widget.LinearLayout
+import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -118,9 +119,11 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         browserContainer = view.findViewById(R.id.browser_container)
         navigation = view.findViewById(R.id.navigation)
 
-        ViewCompat.setOnApplyWindowInsetsListener(browserContainer) { _, _ ->
-            // Consume insets because we have a bottom bar now
-            WindowInsetsCompat.CONSUMED
+        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.navigation_container)) { _, insets ->
+            // Consume bottom insets because we have a bottom bar now
+            // TODO: the suggested replacement for the deprecated methods does not work
+            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(insets.systemWindowInsetLeft , insets.systemWindowInsetTop, insets.systemWindowInsetRight, 0))
+            return@setOnApplyWindowInsetsListener builder.build()
         }
 
         return view
