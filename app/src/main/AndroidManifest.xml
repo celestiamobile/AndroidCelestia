@@ -31,7 +31,8 @@
         android:hasFragileUserData="true"
         android:theme="@style/AppTheme"
         android:resizeableActivity="true"
-        tools:targetApi="s">
+        android:localeConfig="@xml/locales_config"
+        tools:targetApi="tiramisu">
 
         <meta-data android:name="WindowManagerPreference:FreeformWindowSize"
             android:value="[phone|tablet|maximize]" />
@@ -40,7 +41,7 @@
 
         <activity
             android:name="space.celestia.mobilecelestia.MainActivity"
-            android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
+            android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode|locale"
             android:screenOrientation="fullSensor"
             android:launchMode="singleInstance"
             android:exported="true"
@@ -124,6 +125,15 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
     </application>
 
     <queries>

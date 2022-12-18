@@ -31,10 +31,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.Insets
+import androidx.core.os.LocaleListCompat
 import androidx.core.view.*
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
@@ -208,6 +210,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     CrashHandler.setupNativeCrashesListener(path)
                 }
             }
+        }
+
+        // One time migration of language to system per app language support
+        val language = preferenceManager[PreferenceManager.PredefinedKey.Language]
+        if (language != null) {
+            // Clear the stored language first
+            preferenceManager[PreferenceManager.PredefinedKey.Language] = null
+            AppCompatDelegate.setApplicationLocales(
+                LocaleListCompat.forLanguageTags(
+                    language.replace("_", "-")
+                )
+            )
         }
 
         if (preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
@@ -566,8 +580,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             availableLanguageCodes = languageCodes.sorted()
         }
 
-        language = preferenceManager[PreferenceManager.PredefinedKey.Language]
-            ?: getString(R.string.celestia_language)
+        language = getString(R.string.celestia_language)
 
         enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
         enableHiDPI =
@@ -1438,7 +1451,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSetOverrideLanguage(language: String?) {
-        preferenceManager[PreferenceManager.PredefinedKey.Language] = language
+        if (language == null) {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+        } else {
+            AppCompatDelegate.setApplicationLocales(
+                LocaleListCompat.forLanguageTags(
+                    language.uppercase(
+                        Locale.US
+                    ).replace("_", "-")
+                )
+            )
+        }
         reloadSettings()
     }
 
@@ -1447,7 +1470,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun currentOverrideLanguage(): String? {
-        return preferenceManager[PreferenceManager.PredefinedKey.Language]
+        val overrideLocale = AppCompatDelegate.getApplicationLocales()
+        if (overrideLocale.isEmpty)
+            return null
+
+        // If set from system picker it is possible that the override locale
+        // is not exactly the one supported by Celestia, we check a full
+        // match with language_region first and then language only
+        val locale = Locale.forLanguageTag(overrideLocale.toLanguageTags())
+        if (!locale.country.isEmpty()) {
+            val potential = "${locale.language}_${locale.country}"
+            if (availableLanguageCodes.contains(potential))
+                return potential
+        }
+        if (availableLanguageCodes.contains(locale.language))
+            return locale.language
+        return null
     }
 
     override fun availableLanguages(): List<String> {
