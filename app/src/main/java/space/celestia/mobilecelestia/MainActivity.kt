@@ -22,6 +22,7 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.util.LayoutDirection
 import android.util.Log
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -37,10 +38,13 @@ import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.Insets
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -146,6 +150,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private lateinit var appStatusReporter: AppStatusReporter
 
+    private lateinit var drawerLayout: DrawerLayout
+
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface AppStatusInterface {
@@ -197,6 +203,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val savedState = if (currentState == AppStatusReporter.State.NONE) null else savedInstanceState
 
         super.onCreate(savedState)
+
+        drawerLayout = findViewById(R.id.drawer_container)
+        // Avoid opening by swipe, drawer will always closed by now
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
         Log.d(TAG, "Creating MainActivity")
 
@@ -250,13 +260,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener insets
         }
 
-        findViewById<View>(R.id.menu_overlay).setOnTouchListener { _, e ->
-            if (e.actionMasked == MotionEvent.ACTION_UP) {
-                hideOverlay(true)
-            }
-            return@setOnTouchListener true
-        }
-
         findViewById<View>(R.id.close_button).setOnClickListener {
             hideOverlay(true)
         }
@@ -268,7 +271,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.menu_overlay)) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(drawerLayout) { _, insets ->
             // TODO: the suggested replacement for the deprecated methods does not work
             val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(if (isRTL) insets.systemWindowInsetLeft else 0 , insets.systemWindowInsetTop, if (isRTL) 0 else insets.systemWindowInsetRight, insets.systemWindowInsetBottom))
             return@setOnApplyWindowInsetsListener builder.build()
@@ -310,8 +313,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
 
-            findViewById<View>(R.id.menu_overlay).visibility = if (menuVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.menu_container).visibility = if (menuVisible) View.VISIBLE else View.GONE
+            if (menuVisible) {
+                // Try to open the drawer, need to post delay since it might have been closed just now
+                drawerLayout.postDelayed({
+                    drawerLayout.openDrawer(GravityCompat.END, false)
+                }, 0)
+            }
 
             findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.bottom_sheet_card).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
@@ -349,7 +356,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(MENU_VISIBLE_TAG, findViewById<View>(R.id.menu_container).visibility == View.VISIBLE)
+        outState.putBoolean(MENU_VISIBLE_TAG, drawerLayout.isDrawerOpen(GravityCompat.END))
         outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
         outState.putIntegerArrayList(ARG_COMMIT_IDS, bottomSheetCommitIds)
@@ -385,18 +392,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             configuration
         )
         val toolbarContainer = findViewById<View>(R.id.toolbar_overlay)
-        val menuWidthGuideLine = findViewById<Guideline>(R.id.menu_width_guideline)
 
         val safeInsetStart = if (isRTL) safeInsets.right else safeInsets.left
         val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
-
-        menuWidthGuideLine.setGuidelineEnd(resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd)
 
         val toolbarParams = toolbarContainer.layoutParams as FrameLayout.LayoutParams
         toolbarParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
         toolbarParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
         toolbarParams.topMargin = safeInsets.top
         toolbarParams.bottomMargin = safeInsets.bottom
+
+        val drawerParams = findViewById<View>(R.id.drawer).layoutParams
+        drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
 
         val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
         bottomSheetContainer.edgeInsets = safeInsets
@@ -475,6 +482,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
         }
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+        if (supportFragmentManager.findFragmentById(R.id.drawer) == null) {
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.drawer, ToolbarFragment.newInstance(listOf()))
+                .commitAllowingStateLoss()
+        }
 
         val weakSelf = WeakReference(this)
         onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
@@ -909,7 +922,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbar() {
-        showMenuFragment(ToolbarFragment.newInstance(listOf()))
+        val ref = WeakReference(this)
+        hideOverlay(true) {
+            val drawerLayout = ref.get()?.drawerLayout ?: return@hideOverlay
+            drawerLayout.openDrawer(GravityCompat.END, true)
+        }
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
@@ -1569,14 +1586,30 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun hideMenu(animated: Boolean, completion: (() -> Unit)? = null) {
-        hideView(animated, R.id.menu_container, true) {
-            findViewById<View>(R.id.menu_overlay).visibility = View.INVISIBLE
-            val fragment = supportFragmentManager.findFragmentById(R.id.menu_container)
-            if (fragment != null)
-                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
+        if (!drawerLayout.isDrawerOpen(GravityCompat.END)) {
             if (completion != null)
                 completion()
+            return
         }
+
+        val weakSelf = WeakReference(this)
+
+        val listener = object: DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerOpened(drawerView: View) {}
+
+            override fun onDrawerClosed(drawerView: View) {
+                if (completion != null)
+                    completion()
+                val self = weakSelf.get() ?: return
+                self.drawerLayout.removeDrawerListener(this)
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {}
+        }
+
+        drawerLayout.addDrawerListener(listener)
+        drawerLayout.closeDrawer(GravityCompat.END, animated)
     }
 
     private fun hideToolbar(animated: Boolean, completion: (() -> Unit)? = null) {
@@ -1902,24 +1935,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Utilities
-    private fun showMenuFragment(fragment: Fragment) {
-        val ref = WeakReference(fragment)
-        hideOverlay(true) {
-            ref.get()?.let {
-                showMenuFragmentDirect(it)
-            }
-        }
-    }
-
-    private fun showMenuFragmentDirect(fragment: Fragment) {
-        findViewById<View>(R.id.menu_overlay).visibility = View.VISIBLE
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.menu_container, fragment)
-            .commitAllowingStateLoss()
-        showView(true, R.id.menu_container, true)
-    }
-
     private fun showBottomSheetFragment(fragment: Fragment) {
         val ref = WeakReference(fragment)
         hideOverlay(true) {
