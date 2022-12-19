@@ -24,8 +24,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class HelpAction {
-    RunDemo,
-    ShowDestinations;
+    RunDemo;
 }
 
 private val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
@@ -44,7 +43,6 @@ private val staticHelpURLItems: List<URLItem> by lazy { listOf(
 private val staticHelpActionItems: List<ActionItem> by lazy {
     listOf(
         ActionItem(CelestiaString("Run Demo", ""), HelpAction.RunDemo),
-        ActionItem(CelestiaString("Show Destinations", ""), HelpAction.ShowDestinations)
     )
 }
 

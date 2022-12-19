@@ -1208,9 +1208,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             HelpAction.RunDemo -> {
                 renderer.enqueueTask { appCore.charEnter(CelestiaAction.RunDemo.value) }
             }
-            HelpAction.ShowDestinations -> {
-                showDestinations()
-            }
         }
     }
 
@@ -1810,11 +1807,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         updateCurrentScripts(scripts)
         updateCurrentDestinations(appCore.destinations)
         showBottomSheetFragment(FavoriteFragment.newInstance(FavoriteRoot()))
-    }
-
-    private fun showDestinations() {
-        updateCurrentDestinations(appCore.destinations)
-        showBottomSheetFragment(FavoriteFragment.newInstance(FavoriteTypeItem(FavoriteType.Destination)))
     }
 
     private fun showSettings() {

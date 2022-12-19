@@ -41,6 +41,8 @@ interface FavoriteBaseItem : RecyclerViewItem, Serializable {
 
     val supportedItemActions: List<FavoriteItemAction>
         get() = listOf()
+
+    val hasFullPageRepresentation: Boolean
 }
 
 interface MutableFavoriteBaseItem : FavoriteBaseItem {
@@ -72,6 +74,8 @@ class FavoriteRoot : FavoriteBaseItem {
         get() = CelestiaString("Favorites", "")
     override val isLeaf: Boolean
         get() = false
+    override val hasFullPageRepresentation: Boolean
+        get() = false
 }
 
 class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
@@ -97,6 +101,8 @@ class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
     }
     override val isLeaf: Boolean
         get() = false
+    override val hasFullPageRepresentation: Boolean
+        get() = false
 }
 
 class FavoriteScriptItem(val script: Script) : FavoriteBaseItem {
@@ -106,6 +112,8 @@ class FavoriteScriptItem(val script: Script) : FavoriteBaseItem {
         get() = script.title
     override val isLeaf: Boolean
         get() = true
+    override val hasFullPageRepresentation: Boolean
+        get() = false
 }
 
 class FavoriteDestinationItem(val destination: Destination): FavoriteBaseItem {
@@ -114,6 +122,8 @@ class FavoriteDestinationItem(val destination: Destination): FavoriteBaseItem {
     override val title: String
         get() = destination.name
     override val isLeaf: Boolean
+        get() = true
+    override val hasFullPageRepresentation: Boolean
         get() = true
 }
 
@@ -125,6 +135,8 @@ open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBas
         get() = bookmark.isLeaf
     override val supportedItemActions: List<FavoriteItemAction>
         get() = listOf(FavoriteItemAction.Delete, FavoriteItemAction.Rename, FavoriteItemAction.Share)
+    override val hasFullPageRepresentation: Boolean
+        get() = false
 
     override fun insert(newItem: FavoriteBaseItem, index: Int) {
         if (newItem !is FavoriteBookmarkItem)
@@ -210,7 +222,7 @@ class FavoriteItemRecyclerViewAdapter(
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (holder is BaseTextItemHolder && item is FavoriteBaseItem) {
             holder.title.text = item.title
-            holder.accessory.visibility = if (item.isLeaf) View.GONE else View.VISIBLE
+            holder.accessory.visibility = if (item.isLeaf && !item.hasFullPageRepresentation) View.GONE else View.VISIBLE
             if (holder is CommonReorderableTextViewHolder) {
                 // Can reorder
                 holder.dragView.setOnLongClickListener {
