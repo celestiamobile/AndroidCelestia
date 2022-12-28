@@ -34,6 +34,7 @@ import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.*
 import java.io.File
+import java.lang.ref.WeakReference
 import java.util.*
 import javax.inject.Inject
 
@@ -46,9 +47,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     private lateinit var language: String
 
-    private var _item: ResourceItem? = null
-    private val item: ResourceItem
-    get() = requireNotNull(_item)
+    private lateinit var item: ResourceItem
     private lateinit var lastUpdateDate: Date
     private lateinit var statusButton: Button
     private lateinit var goToButton: Button
@@ -56,12 +55,17 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     private var currentState: ResourceItemState = ResourceItemState.None
 
     private var listener: Listener? = null
+    var updateListener: UpdateListener? = null
 
     interface Listener {
         fun objectExistsWithName(name: String): Boolean
         fun onGoToObject(name: String)
         fun onShareAddon(name: String, id: String)
         fun onRunScript(file: File)
+    }
+
+    interface UpdateListener {
+        fun onResourceItemUpdated(resourceItem: ResourceItem, updateDate: Date)
     }
 
     enum class ResourceItemState {
@@ -72,16 +76,14 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onCreate(savedInstanceState)
 
         resourceManager.addListener(this)
-        if (_item ==  null) {
-            if (savedInstanceState != null) {
-                _item = savedInstanceState.getSerializableValue(ARG_ITEM, ResourceItem::class.java)
-                lastUpdateDate = savedInstanceState.getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
-            } else {
-                _item = requireArguments().getSerializableValue(ARG_ITEM, ResourceItem::class.java)
-                lastUpdateDate = requireArguments().getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
-            }
-            language = requireArguments().getString(ARG_LANG, "en")
+        if (savedInstanceState != null) {
+            item = savedInstanceState.getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
+            lastUpdateDate = savedInstanceState.getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
+        } else {
+            item = requireArguments().getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
+            lastUpdateDate = requireArguments().getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
         }
+        language = requireArguments().getString(ARG_LANG, "en")
     }
 
     override fun onCreateView(
@@ -119,6 +121,9 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        title = item.name
+        rightNavigationBarItems = listOf(NavigationFragment.BarButtonItem(SHARE_BAR_BUTTON_ID, null, R.drawable.ic_share))
+
         if (savedInstanceState == null) {
             val uri = URLHelper.buildInAppAddonURI(item.id, language)
             replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item.id)), R.id.webview_container)
@@ -127,12 +132,19 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         if (Date().time - lastUpdateDate.time > UPDATE_INTERVAL_MILLISECONDS) {
             // Fetch the latest item, this is needed as user might come
             // here from Installed where the URL might be incorrect
+            val weakSelf = WeakReference(this)
+            val resourceAPI = this.resourceAPI
+            val language = this.language
+            val itemID = item.id
             lifecycleScope.launch {
                 try {
-                    val result = resourceAPI.item(language, item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    _item = result
-                    lastUpdateDate = Date()
-                    updateUI()
+                    val result = resourceAPI.item(language, itemID).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                    val self = weakSelf.get() ?: return@launch
+                    self.item = result
+                    self.lastUpdateDate = Date()
+                    self.updateListener?.onResourceItemUpdated(self.item, self.lastUpdateDate)
+                    self.title = self.item.name
+                    self.updateUI()
                 } catch (ignored: Throwable) {}
             }
         }
@@ -164,6 +176,15 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onDestroy()
     }
 
+    override fun menuItemClicked(groupId: Int, id: Int): Boolean {
+        when (id) {
+            SHARE_BAR_BUTTON_ID -> {
+                listener?.onShareAddon(item.name, item.id)
+            } else -> {}
+        }
+        return true
+    }
+
     private fun onProgressViewClick() {
         val activity = this.activity ?: return
 
@@ -175,7 +196,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                 var success = false
                 try {
                     success = dm.uninstall(item.id)
-                } catch (e: Exception) {}
+                } catch (_: Exception) {}
                 if (success) {
                     currentState = ResourceItemState.None
                 } else {
@@ -283,6 +304,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         private const val ARG_LANG = "lang"
         private const val ARG_UPDATED_DATE = "date"
         private const val UPDATE_INTERVAL_MILLISECONDS = 1800000L
+        private const val SHARE_BAR_BUTTON_ID = 4214
 
         @JvmStatic
         fun newInstance(item: ResourceItem, language: String, lastUpdateDate: Date) =

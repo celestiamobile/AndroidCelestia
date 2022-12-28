@@ -26,7 +26,7 @@ class URLHelper {
                 .appendQueryParameter("lang", language)
                 .appendQueryParameter("platform", "android")
                 .appendQueryParameter("theme", "dark")
-                .appendQueryParameter("titleVisibility", "visible")
+                .appendQueryParameter("titleVisibility", "collapsed")
                 .build()
         }
     }
