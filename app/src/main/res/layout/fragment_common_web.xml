@@ -42,8 +42,7 @@
             android:id="@+id/bottom_safe_area"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            style="@style/Container"/>
+            android:layout_alignParentBottom="true"/>
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/loading_indicator"
             android:layout_width="wrap_content"

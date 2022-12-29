@@ -119,6 +119,8 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
         val weakSelf = WeakReference(this)
 
+        val bottomSafeArea = view.findViewById<FrameLayout>(R.id.bottom_safe_area)
+
         val defaultUri = uri
         val shouldFilterURL = filterURL
         val queryKeys = matchingQueryKeys
@@ -222,6 +224,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                     replace(fragment, R.id.fallback)
                     fallbackContainer.isVisible = true
                     webView?.isVisible = false
+                    bottomSafeArea.isVisible = false
                     loadingIndicator.isVisible = false
                     weakSelf.get()?.showFallbackContainer = true
                 }
@@ -238,7 +241,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             }
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.bottom_safe_area)) { container, windowInsets ->
+        ViewCompat.setOnApplyWindowInsetsListener(bottomSafeArea) { container, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             container.updatePadding(bottom = insets.bottom)
             WindowInsetsCompat.CONSUMED
@@ -252,6 +255,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             if (showFallbackContainer) {
                 fallbackContainer.isVisible = true
                 webView.isVisible = false
+                bottomSafeArea.isVisible = false
                 loadingIndicator.isVisible = false
             } else if (initialLoadFinished) {
                 loadingIndicator.isVisible = false
