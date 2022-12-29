@@ -48,6 +48,7 @@ class GoToSuggestionAdapter(context: Context, textViewResourceId: Int, private v
             }
 
             override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                @Suppress("UNCHECKED_CAST")
                 resultList = results?.values as? List<String> ?: listOf()
                 if (resultList.size > 0) {
                     notifyDataSetChanged()

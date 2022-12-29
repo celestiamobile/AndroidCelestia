@@ -17,9 +17,9 @@ import kotlin.math.max
 
 class EdgeInsets(val left: Int = 0, val top: Int = 0, val right: Int = 0, val bottom: Int = 0) {
     constructor(insets: WindowInsetsCompat?) : this(
-        insets?.systemWindowInsetLeft ?: 0,
-        insets?.systemWindowInsetTop ?: 0,
-        insets?.systemWindowInsetRight ?: 0,
+        insets?.stableInsetLeft ?: 0,
+        insets?.stableInsetTop ?: 0,
+        insets?.stableInsetRight ?: 0,
         insets?.stableInsetBottom ?: 0)
 
     constructor(edgeInsets: EdgeInsets, roundedCorners: RoundedCorners, configuration: Configuration) : this(
