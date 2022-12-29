@@ -12,9 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
-import android.widget.Button
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -103,9 +101,6 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
     private fun configureWebView(view: View, savedInstanceState: Bundle?) {
         val loadingIndicator = view.findViewById<CircularProgressIndicator>(R.id.loading_indicator)
-        val forwardButton = view.findViewById<Button>(R.id.forward_button)
-        val backwardButton = view.findViewById<Button>(R.id.backward_button)
-        val navigationContainer = view.findViewById<LinearLayout>(R.id.webview_navigation_container)
         val fallbackContainer = view.findViewById<FrameLayout>(R.id.fallback)
 
         val webView = view.findViewById<WebView>(R.id.webview)
@@ -168,11 +163,10 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
             override fun onPageCommitVisible(view: WebView?, url: String?) {
                 val wv = view ?: return
+                val self = weakSelf.get() ?: return
                 weakSelf.get()?.initialLoadFinished = true
                 loadingIndicator.isVisible = false
-                navigationContainer.isVisible = wv.canGoBack() || wv.canGoForward()
-                forwardButton.isEnabled = wv.canGoForward()
-                backwardButton.isEnabled = wv.canGoBack()
+                self.leftNavigationBarItem  = if (wv.canGoBack()) NavigationFragment.BarButtonItem(MENU_ITEM_BACK_BUTTON, null, R.drawable.ic_action_arrow_back) else null
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -228,7 +222,6 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                     replace(fragment, R.id.fallback)
                     fallbackContainer.isVisible = true
                     webView?.isVisible = false
-                    navigationContainer.isVisible = false
                     loadingIndicator.isVisible = false
                     weakSelf.get()?.showFallbackContainer = true
                 }
@@ -245,7 +238,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             }
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(navigationContainer) { container, windowInsets ->
+        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.bottom_safe_area)) { container, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             container.updatePadding(bottom = insets.bottom)
             WindowInsetsCompat.CONSUMED
@@ -253,30 +246,30 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
         this.webView = webView
 
-        forwardButton.setOnClickListener {
-            weakSelf.get()?.webView?.goForward()
-        }
-
-        backwardButton.setOnClickListener {
-            weakSelf.get()?.webView?.goBack()
-        }
-
         val savedState = webViewState ?: savedInstanceState
         if (savedState != null) {
             webView.restoreState(savedState)
             if (showFallbackContainer) {
                 fallbackContainer.isVisible = true
                 webView.isVisible = false
-                navigationContainer.isVisible = false
                 loadingIndicator.isVisible = false
             } else if (initialLoadFinished) {
                 loadingIndicator.isVisible = false
-                navigationContainer.isVisible = webView.canGoBack() || webView.canGoForward()
-                forwardButton.isEnabled = webView.canGoForward()
-                backwardButton.isEnabled = webView.canGoBack()
             }
         } else {
             webView.loadUrl(uri.toString())
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val savedState = webViewState ?: savedInstanceState
+        val wv = webView
+        if (savedState != null && wv != null) {
+            leftNavigationBarItem = if (wv.canGoBack()) NavigationFragment.BarButtonItem(MENU_ITEM_BACK_BUTTON, null, R.drawable.ic_action_arrow_back) else null
+        } else {
+            leftNavigationBarItem = null
         }
     }
 
@@ -341,6 +334,15 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         listener?.onRunDemo()
     }
 
+    override fun menuItemClicked(groupId: Int, id: Int): Boolean {
+        when (id) {
+            MENU_ITEM_BACK_BUTTON -> {
+                goBack()
+            }
+        }
+        return true
+    }
+
     fun canGoBack(): Boolean {
         return webView?.canGoBack() ?: false
     }
@@ -356,6 +358,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         private const val ARG_FILTER_URL = "filter_url"
         private const val ARG_INITIAL_LOAD_FINISHED = "initial_load_finished"
         private const val ARG_SHOW_FALLBACK = "show_fallback_container"
+        private const val MENU_ITEM_BACK_BUTTON = 12425
 
         fun newInstance(uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File? = null) = CommonWebFragment.create({ CommonWebFragment() }, uri, matchingQueryKeys, contextDirectory, true)
         fun newInstance(uri: Uri) = CommonWebFragment.create({ CommonWebFragment() }, uri, listOf(), null, false)
