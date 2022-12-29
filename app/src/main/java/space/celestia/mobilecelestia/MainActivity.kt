@@ -30,6 +30,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
@@ -383,16 +384,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RoundedCorners(windowInsets) else RoundedCorners(0, 0, 0, 0),
             configuration
         )
-        val toolbarContainer = findViewById<View>(R.id.toolbar_overlay)
 
         val safeInsetStart = if (isRTL) safeInsets.right else safeInsets.left
         val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
 
-        val toolbarParams = toolbarContainer.layoutParams as FrameLayout.LayoutParams
-        toolbarParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
-        toolbarParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
-        toolbarParams.topMargin = safeInsets.top
-        toolbarParams.bottomMargin = safeInsets.bottom
+        val toolbarSafeAreaParams = findViewById<FrameLayout>(R.id.toolbar_safe_area).layoutParams as ConstraintLayout.LayoutParams
+        toolbarSafeAreaParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
+        toolbarSafeAreaParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
+        toolbarSafeAreaParams.topMargin = safeInsets.top
+        toolbarSafeAreaParams.bottomMargin = safeInsets.bottom
 
         val drawerParams = findViewById<View>(R.id.drawer).layoutParams
         drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd

@@ -43,6 +43,11 @@
             android:visibility="invisible"
             style="@style/Container">
 
+            <FrameLayout
+                android:id="@+id/toolbar_safe_area"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/bottom_end_guideline"
                 android:layout_width="wrap_content"
@@ -59,8 +64,8 @@
                 android:visibility="invisible"
                 app:layout_constrainedWidth="true"
                 app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/toolbar_safe_area"
+                app:layout_constraintStart_toStartOf="@id/toolbar_safe_area"
                 app:layout_constraintEnd_toEndOf="@id/bottom_end_guideline"
                 android:clickable="true"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
