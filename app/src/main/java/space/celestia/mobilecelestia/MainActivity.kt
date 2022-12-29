@@ -916,9 +916,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbar() {
-        val ref = WeakReference(this)
+        val weakSelf = WeakReference(this)
         hideOverlay(true) {
-            val drawerLayout = ref.get()?.drawerLayout ?: return@hideOverlay
+            val drawerLayout = weakSelf.get()?.drawerLayout ?: return@hideOverlay
             drawerLayout.openDrawer(GravityCompat.END, true)
         }
     }
@@ -1922,8 +1922,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     // Utilities
     private fun showBottomSheetFragment(fragment: Fragment) {
+        val weakSelf = WeakReference(this)
         hideOverlay(true) {
-            showBottomSheetFragmentDirect(fragment)
+            weakSelf.get()?.showBottomSheetFragmentDirect(fragment)
         }
     }
 
@@ -1938,8 +1939,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbarFragment(fragment: Fragment) {
+        val weakSelf = WeakReference(this)
         hideOverlay(true) {
-            showToolbarFragmentDirect(fragment)
+            weakSelf.get()?.showToolbarFragmentDirect(fragment)
         }
     }
 
