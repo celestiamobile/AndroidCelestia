@@ -1165,7 +1165,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .setType("text/plain")
             .setChooserTitle(title)
             .setText(url)
-            .intent
+            .createChooserIntent()
         val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
         if (ai != null && ai.exported)
             startActivity(intent)
@@ -1864,7 +1864,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val intent = ShareCompat.IntentBuilder(this)
             .setType(mimeType)
             .setStream(uri)
-            .intent
+            .createChooserIntent()
         val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
         if (ai != null && ai.exported)
             startActivity(intent)
