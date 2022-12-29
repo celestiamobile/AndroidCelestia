@@ -12,18 +12,15 @@
 package space.celestia.mobilecelestia.common
 
 import android.content.res.Configuration
-import androidx.core.view.DisplayCutoutCompat
 import androidx.core.view.WindowInsetsCompat
 import kotlin.math.max
 
 class EdgeInsets(val left: Int = 0, val top: Int = 0, val right: Int = 0, val bottom: Int = 0) {
-    constructor(insets: WindowInsetsCompat?) : this(insets?.displayCutout)
-
-    constructor(cutout: DisplayCutoutCompat?) : this(
-        cutout?.safeInsetLeft ?: 0,
-        cutout?.safeInsetTop ?: 0,
-        cutout?.safeInsetRight ?: 0,
-        cutout?.safeInsetBottom ?: 0)
+    constructor(insets: WindowInsetsCompat?) : this(
+        insets?.systemWindowInsetLeft ?: 0,
+        insets?.systemWindowInsetTop ?: 0,
+        insets?.systemWindowInsetRight ?: 0,
+        insets?.stableInsetBottom ?: 0)
 
     constructor(edgeInsets: EdgeInsets, roundedCorners: RoundedCorners, configuration: Configuration) : this(
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) edgeInsets.left else max(edgeInsets.left, max(roundedCorners.topLeft, roundedCorners.bottomLeft)),

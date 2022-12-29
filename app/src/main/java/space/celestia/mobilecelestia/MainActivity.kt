@@ -400,6 +400,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
         bottomSheetContainer.edgeInsets = safeInsets
         bottomSheetContainer.postInvalidate()
+
+        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)
     }
 
     private fun loadExternalConfig(savedInstanceState: Bundle?) {
@@ -1920,11 +1922,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     // Utilities
     private fun showBottomSheetFragment(fragment: Fragment) {
-        val ref = WeakReference(fragment)
         hideOverlay(true) {
-            ref.get()?.let {
-                showBottomSheetFragmentDirect(it)
-            }
+            showBottomSheetFragmentDirect(fragment)
         }
     }
 
@@ -1939,11 +1938,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showToolbarFragment(fragment: Fragment) {
-        val ref = WeakReference(fragment)
         hideOverlay(true) {
-            ref.get()?.let {
-                showToolbarFragmentDirect(it)
-            }
+            showToolbarFragmentDirect(fragment)
         }
     }
 

@@ -24,6 +24,7 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -31,8 +32,6 @@ import space.celestia.celestia.*
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.common.InsetAwareFragment
-import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -42,7 +41,7 @@ import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
 @AndroidEntryPoint
-class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler {
     private var activity: Activity? = null
 
     @Inject
@@ -72,7 +71,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     private var browserItems: ArrayList<BrowserItem> = arrayListOf()
     private var density: Float = 1f
     private var previousDensity: Float = 0f
-    private var savedInsets: EdgeInsets? = null
+    private var savedInsets = EdgeInsets()
     private var hasSetRenderer: Boolean = false
 
     private var isControlViewVisible = true
@@ -216,18 +215,6 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
     override fun celestiaLoadingProgress(status: String) {}
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        handleInsetsChanged(view, currentSafeInsets, currentRoundedCorners)
-    }
-
-    override fun onInsetChanged(view: View, newInsets: EdgeInsets, roundedCorners: RoundedCorners) {
-        super.onInsetChanged(view, newInsets, roundedCorners)
-
-        handleInsetsChanged(view, newInsets, roundedCorners)
-    }
-
     fun updateFrameRateOption(newFrameRateOption: Int) {
         frameRateOption = newFrameRateOption
         renderer.enqueueTask {
@@ -235,14 +222,12 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         }
     }
 
-    private fun handleInsetsChanged(view: View, newInsets: EdgeInsets, roundedCorners: RoundedCorners) {
-        val safeInsets = EdgeInsets(newInsets, roundedCorners, resources.configuration)
-        if (!loadSuccess) {
-            savedInsets = safeInsets
-            return
-        }
+    fun handleInsetsChanged(newInsets: EdgeInsets) {
+        savedInsets = newInsets
+        val thisView = view ?: return
+        if (!loadSuccess) { return }
 
-        val insets = safeInsets.scaleBy(scaleFactor)
+        val insets = savedInsets.scaleBy(scaleFactor)
         renderer.enqueueTask {
             appCore.setSafeAreaInsets(insets)
         }
@@ -250,7 +235,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
         val safeInsetEnd = if (ltr) newInsets.right else newInsets.left
 
-        val controlView = view.findViewById<FrameLayout>(currentControlViewID) ?: return
+        val controlView = thisView.findViewById<FrameLayout>(currentControlViewID) ?: return
         val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
         if (params != null) {
             params.marginEnd = resources.getDimensionPixelOffset(R.dimen.control_view_container_margin_end) + safeInsetEnd
@@ -348,11 +333,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
         appCore.setDPI((96 * density * scaleFactor).toInt())
         appCore.setPickTolerance(10f * density * scaleFactor)
 
-        val insets = savedInsets
-        if (insets != null) {
-            appCore.setSafeAreaInsets(insets.scaleBy(scaleFactor))
-            savedInsets = null
-        }
+        appCore.setSafeAreaInsets(savedInsets.scaleBy(scaleFactor))
 
         appCore.clearFonts()
 
@@ -381,8 +362,6 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
     }
 
     private fun setupInteractions() {
-        val thisView = view ?: return
-
         glView.isReady = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             glView.isContextClickable = true
@@ -400,7 +379,7 @@ class CelestiaFragment: InsetAwareFragment(), SurfaceHolder.Callback, CelestiaCo
 
         Log.d(TAG, "Ready to display")
 
-        handleInsetsChanged(thisView, currentSafeInsets, currentRoundedCorners)
+        handleInsetsChanged(savedInsets)
     }
 
     override fun onCreateContextMenu(
