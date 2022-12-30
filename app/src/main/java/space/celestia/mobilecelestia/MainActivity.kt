@@ -1656,12 +1656,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun showView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
         val view = findViewById<View>(viewID)
         view.visibility = View.VISIBLE
+        val parent = view.parent as? View ?: return
 
         val destination: Float = if (horizontal) {
             val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-            (if (ltr) view.width else -view.width).toFloat()
+            (if (ltr) (parent.width - view.left) else -(view.right)).toFloat()
         } else {
-            view.height.toFloat()
+            (parent.height - view.top).toFloat()
         }
 
         val executionBlock = {
@@ -1689,7 +1690,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun hideView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
         val view = findViewById<View>(viewID)
-
         val parent = view.parent as? View ?: return
 
         val destination: Float = if (horizontal) {
