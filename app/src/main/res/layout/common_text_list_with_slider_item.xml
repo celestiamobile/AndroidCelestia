@@ -34,6 +34,6 @@
         android:id="@+id/slider"
         android:layout_marginBottom="@dimen/list_item_medium_margin_vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/list_item_slider_margin_horizontal"/>
 </LinearLayout>

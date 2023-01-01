@@ -115,12 +115,10 @@ public class Renderer implements AutoCloseable {
     }
 
     private void flushTasks() {
-        ArrayList<Callback> taskCopy = new ArrayList<>();
+        ArrayList<Callback> taskCopy;
         synchronized (taskLock) {
             if (tasks.isEmpty()) return;
-            for (Callback task : tasks) {
-                taskCopy.add(task);
-            }
+            taskCopy = new ArrayList<>(tasks);
             tasks = new ArrayList<>();
         }
         for (Callback task : taskCopy) {
