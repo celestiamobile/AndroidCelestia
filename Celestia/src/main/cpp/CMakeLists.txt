@@ -173,6 +173,13 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_SRC_DIR}/celrender/linerenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/linerenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/vertexobject.cpp
+        ${CELESTIA_SRC_DIR}/celrender/vertexobject.h
+        )
+
+list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/asterism.cpp
         ${CELESTIA_SRC_DIR}/celengine/asterism.h
         ${CELESTIA_SRC_DIR}/celengine/asterismrenderer.cpp
@@ -324,8 +331,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/value.cpp
         ${CELESTIA_SRC_DIR}/celengine/value.h
         ${CELESTIA_SRC_DIR}/celengine/vecgl.h
-        ${CELESTIA_SRC_DIR}/celengine/vertexobject.cpp
-        ${CELESTIA_SRC_DIR}/celengine/vertexobject.h
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.cpp
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.h
         ${CELESTIA_SRC_DIR}/celengine/virtualtex.cpp
