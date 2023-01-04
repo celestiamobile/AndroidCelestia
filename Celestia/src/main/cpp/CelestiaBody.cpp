@@ -100,3 +100,41 @@ Java_space_celestia_celestia_Body_c_1getAlternateSurfaceNames(JNIEnv *env,
         env->CallBooleanMethod(arrayObject, alaMethodID, env->NewStringUTF(altSurface.c_str()));
     return arrayObject;
 }
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_celestia_Body_c_1getTimeline(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = (Body *)pointer;
+    return (jlong)body->getTimeline();
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_Timeline_c_1getPhaseCount(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto timeline = (Timeline *)pointer;
+    return (jint)timeline->phaseCount();
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_celestia_Timeline_c_1getPhase(JNIEnv *env, jclass clazz, jint index,
+                                                  jlong pointer) {
+    auto timeline = (Timeline *)pointer;
+    return (jlong)timeline->getPhase((unsigned int)index).get();
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Timeline_00024Phase_c_1getStartTime(JNIEnv *env, jclass clazz,
+                                                                 jlong pointer) {
+    auto phase = (TimelinePhase *)pointer;
+    return (jdouble)phase->startTime();
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Timeline_00024Phase_c_1getEndTime(JNIEnv *env, jclass clazz,
+                                                               jlong pointer) {
+    auto phase = (TimelinePhase *)pointer;
+    return (jdouble)phase->endTime();
+}

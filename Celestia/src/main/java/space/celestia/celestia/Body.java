@@ -83,6 +83,11 @@ public class Body extends AstroObject {
         return results;
     }
 
+    public @NonNull
+    Timeline getTimeline() {
+        return new Timeline(c_getTimeline(pointer));
+    }
+
     // C functions
     private static native int c_getType(long pointer);
     private static native String c_getName(long pointer);
@@ -97,4 +102,6 @@ public class Body extends AstroObject {
     private static native long c_getRotationModelAtTime(long pointer, double julianDay);
     private static native long c_getPlanetarySystem(long pointer);
     private static native List<String> c_getAlternateSurfaceNames(long pointer);
+
+    private static native long c_getTimeline(long pointer);
 }

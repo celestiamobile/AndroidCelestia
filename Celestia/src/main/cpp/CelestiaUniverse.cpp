@@ -10,6 +10,7 @@
  */
 
 #include "CelestiaSelection.h"
+#include <celengine/body.h>
 #include <celengine/universe.h>
 #include <celutil/gettext.h>
 

@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 #include <celestia/celestiacore.h>
+#include <celengine/body.h>
 #include <celengine/glsupport.h>
 #include <celestia/helper.h>
 #include <celutil/fsutils.h>
