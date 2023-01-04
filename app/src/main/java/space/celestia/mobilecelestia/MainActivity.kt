@@ -55,6 +55,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import space.celestia.celestia.*
+import space.celestia.celestia.Timeline.Phase
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.common.*
@@ -118,7 +119,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
-    CommonWebFragment.Listener {
+    CommonWebFragment.Listener,
+    TimelineControlFragment.Listener {
 
     private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
     private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
@@ -293,12 +295,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (savedState != null) {
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
+            val fullToolbarVisible = savedState.getBoolean(FULL_TOOLBAR_VISIBLE_TAG, false)
             val menuVisible = savedState.getBoolean(MENU_VISIBLE_TAG, false)
             val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
             bottomSheetCommitIds = savedState.getIntegerArrayList(ARG_COMMIT_IDS) ?: arrayListOf()
 
-            findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.toolbar_overlay).isVisible = toolbarVisible || fullToolbarVisible
+            findViewById<View>(R.id.toolbar_container).isVisible = toolbarVisible
+            findViewById<View>(R.id.full_toolbar_container).isVisible = fullToolbarVisible
 
             if (menuVisible) {
                 // Try to open the drawer, need to post delay since it might have been closed just now
@@ -346,6 +350,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         outState.putBoolean(MENU_VISIBLE_TAG, drawerLayout.isDrawerOpen(GravityCompat.END))
         outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
+        outState.putBoolean(FULL_TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.full_toolbar_container).visibility == View.VISIBLE)
         outState.putIntegerArrayList(ARG_COMMIT_IDS, bottomSheetCommitIds)
         super.onSaveInstanceState(outState)
     }
@@ -1042,6 +1047,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     }
                 }
             }
+            is TimelineItem -> {
+                val timeline = item.body?.timeline ?: return
+                val phases = arrayListOf<Phase>()
+                for (i in 0 until timeline.phaseCount) {
+                    phases.add(timeline.getPhase(i))
+                }
+                if (phases.isEmpty()) return
+                val startTime = phases[0].startTime
+                val endTime = phases[phases.size - 1].endTime
+                if (startTime.isInfinite() || endTime.isInfinite()) return
+                val ticks = arrayListOf<Double>()
+                if (phases.size > 1) {
+                    for (i in 1 until phases.size) {
+                        ticks.add(phases[i].startTime)
+                    }
+                }
+                showToolbarFragment(TimelineControlFragment.newInstance(startTime, endTime, ticks.toDoubleArray()), true)
+            }
             else -> {
             }
         }
@@ -1165,6 +1188,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBottomControlHide() {
+        hideOverlay(true)
+    }
+
+    override fun onTimelineControlHide() {
         hideOverlay(true)
     }
 
@@ -1591,12 +1618,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun hideToolbar(animated: Boolean, completion: (() -> Unit)? = null) {
         hideView(animated, R.id.toolbar_container, false) {
-            findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
-            val fragment = supportFragmentManager.findFragmentById(R.id.toolbar_container)
-            if (fragment != null)
-                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
-            if (completion != null)
-                completion()
+            hideView(animated, R.id.full_toolbar_container, false) {
+                findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
+                val fragment = supportFragmentManager.findFragmentById(R.id.toolbar_container)
+                if (fragment != null)
+                    supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
+                if (completion != null)
+                    completion()
+            }
         }
     }
 
@@ -1736,7 +1765,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 CelestiaAction.Reverse
             )
         }
-        showToolbarFragment(BottomControlFragment.newInstance(actions.map { InstantAction(it) }))
+        showToolbarFragment(BottomControlFragment.newInstance(actions.map { InstantAction(it) }), false)
     }
 
     private fun showScriptControl() {
@@ -1745,7 +1774,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 listOf(
                     CelestiaAction.PlayPause,
                     CelestiaAction.CancelScript
-                ).map { InstantAction(it) }))
+                ).map { InstantAction(it) }), false)
     }
 
     private fun showSpeedControl() {
@@ -1774,7 +1803,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             )
         )
         showToolbarFragment(
-            BottomControlFragment.newInstance(actions)
+            BottomControlFragment.newInstance(actions),
+            false
         )
     }
 
@@ -1916,20 +1946,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showView(true, R.id.bottom_sheet_card, false)
     }
 
-    private fun showToolbarFragment(fragment: Fragment) {
+    private fun showToolbarFragment(fragment: Fragment, full: Boolean) {
         val weakSelf = WeakReference(this)
         hideOverlay(true) {
-            weakSelf.get()?.showToolbarFragmentDirect(fragment)
+            weakSelf.get()?.showToolbarFragmentDirect(fragment, full)
         }
     }
 
-    private fun showToolbarFragmentDirect(fragment: Fragment) {
+    private fun showToolbarFragmentDirect(fragment: Fragment, full: Boolean) {
         findViewById<View>(R.id.toolbar_overlay).visibility = View.VISIBLE
+        val containerID = if (full) R.id.full_toolbar_container else R.id.toolbar_container
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.toolbar_container, fragment)
+            .add(containerID, fragment)
             .commitAllowingStateLoss()
-        showView(true, R.id.toolbar_container, false)
+        showView(true, containerID, false)
     }
 
     companion object {
@@ -1969,6 +2000,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"
 
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
+        private const val FULL_TOOLBAR_VISIBLE_TAG = "full_toolbar_visible"
         private const val MENU_VISIBLE_TAG = "menu_visible"
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 

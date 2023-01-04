@@ -11,6 +11,7 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -32,6 +33,7 @@
 
     <com.google.android.material.slider.Slider
         android:id="@+id/slider"
+        app:trackHeight="40dp"
         android:layout_marginBottom="@dimen/list_item_medium_margin_vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

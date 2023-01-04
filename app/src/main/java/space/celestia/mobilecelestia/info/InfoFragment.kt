@@ -176,6 +176,12 @@ class InfoFragment : NavigationFragment.SubFragment() {
             otherActions.add(AlternateSurfacesItem())
         otherActions.add(SubsystemActionItem())
         otherActions.add(MarkItem())
+        val timeline = selection.body?.timeline
+        if (timeline != null && timeline.phaseCount > 0) {
+            if (!timeline.getPhase(0).startTime.isInfinite() && !timeline.getPhase(timeline.phaseCount - 1).endTime.isInfinite()) {
+                otherActions.add(TimelineItem())
+            }
+        }
         actions.addAll(otherActions)
         recyclerView.adapter = InfoRecyclerViewAdapter(actions, selection, listener)
         while (recyclerView.itemDecorationCount > 0) {

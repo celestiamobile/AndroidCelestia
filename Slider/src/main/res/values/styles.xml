@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="Widget.Celestia.Slider" parent="android:Widget">
+    <item name="trackColorForeground">@color/m3_slider_active_track_color</item>
+    <item name="trackColorBackground">@color/m3_slider_inactive_track_color</item>
+    <item name="tickLength">@dimen/celestia_slider_tick_length</item>
+    <item name="android:background">?attr/controlBackground</item>
+  </style>
+</resources>

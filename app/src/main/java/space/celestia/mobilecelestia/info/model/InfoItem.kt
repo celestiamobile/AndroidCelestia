@@ -108,3 +108,7 @@ class MarkItem : InfoActionItem {
     override val title: String
         get() = CelestiaString("Mark", "")
 }
+class TimelineItem : InfoActionItem {
+    override val title: String
+        get() = CelestiaString("Timeline", "")
+}

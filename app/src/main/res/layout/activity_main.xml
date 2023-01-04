@@ -68,6 +68,20 @@
                 app:layout_constraintStart_toStartOf="@id/toolbar_safe_area"
                 app:layout_constraintEnd_toEndOf="@id/bottom_end_guideline"
                 android:clickable="true"/>
+
+            <FrameLayout
+                android:id="@+id/full_toolbar_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/common_page_medium_margin_vertical"
+                android:layout_marginHorizontal="@dimen/common_page_medium_margin_horizontal"
+                android:visibility="invisible"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintBottom_toBottomOf="@id/toolbar_safe_area"
+                app:layout_constraintStart_toStartOf="@id/toolbar_safe_area"
+                app:layout_constraintEnd_toEndOf="@id/toolbar_safe_area"
+                android:clickable="true"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <space.celestia.mobilecelestia.common.SheetLayout

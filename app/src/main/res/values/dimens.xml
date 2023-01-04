@@ -97,4 +97,7 @@
 
     <dimen name="list_spacing_short">8dp</dimen>
     <dimen name="list_spacing_tall">28dp</dimen>
+
+    <dimen name="timeline_slider_track_height">40dp</dimen>
+    <dimen name="timeline_slider_margin_horizontal">8dp</dimen>
 </resources>

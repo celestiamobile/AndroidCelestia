@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <declare-styleable name="TimelineSlider">
+    <attr name="android:value" />
+    <attr name="android:valueFrom" />
+    <attr name="android:valueTo" />
+    <attr name="android:enabled"/>
+    <attr name="tickLength" format="dimension" />
+    <attr name="trackColorForeground" format="color" />
+    <attr name="trackColorBackground" format="color" />
+  </declare-styleable>
+</resources>
