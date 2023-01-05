@@ -27,10 +27,13 @@ import androidx.core.view.MenuCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
@@ -50,6 +53,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     lateinit var appStatusReporter: AppStatusReporter
     @Inject
     lateinit var renderer: Renderer
+    @Inject
+    lateinit var executor: CelestiaExecutor
 
     // MARK: GL View
     private lateinit var glView: CelestiaView
@@ -217,7 +222,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     fun updateFrameRateOption(newFrameRateOption: Int) {
         frameRateOption = newFrameRateOption
-        renderer.enqueueTask {
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             renderer.setFrameRateOption(newFrameRateOption)
         }
     }
@@ -228,7 +233,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         if (!loadSuccess) { return }
 
         val insets = savedInsets.scaleBy(scaleFactor)
-        renderer.enqueueTask {
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             appCore.setSafeAreaInsets(insets)
         }
 
@@ -249,7 +254,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         registerForContextMenu(view)
 
-        val interaction = CelestiaInteraction(activity, appCore, renderer, interactionMode)
+        val interaction = CelestiaInteraction(activity, appCore, executor, interactionMode)
         glView = view
         viewInteraction = interaction
 
@@ -351,14 +356,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         previousDensity = density
     }
 
-    private fun loadingFinished() {
-        if (!haveSurface) return
-        renderer.enqueueTask {
-            updateContentScale()
-            lifecycleScope.launch {
-                setupInteractions()
-            }
-        }
+    private fun loadingFinished() = lifecycleScope.launch {
+        if (!haveSurface) return@launch
+        withContext(executor.asCoroutineDispatcher()) { updateContentScale() }
+        setupInteractions()
     }
 
     private fun setupInteractions() {
@@ -448,7 +449,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val actions = CelestiaAction.allActions
         if (item.groupId == GROUP_ACTION) {
             if (item.itemId >= 0 && item.itemId < actions.size) {
-                renderer.enqueueTask {
+                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                     appCore.simulation.selection = selection
                     appCore.charEnter(actions[item.itemId].value)
                 }
@@ -456,7 +457,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         } else if (item.groupId == GROUP_ALT_SURFACE) {
             val body = selection.body
             if (body != null) {
-                renderer.enqueueTask {
+                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                     val alternateSurfaces = body.alternateSurfaceNames
                     if (item.itemId == 0) {
                         appCore.simulation.activeObserver.displayedSurface = ""
@@ -466,7 +467,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
                 }
             }
         } else if (item.groupId == GROUP_MARK) {
-            renderer.enqueueTask {
+            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                 if (item.itemId == availableMarkers.size) {
                     appCore.simulation.universe.unmark(selection)
                 } else {
@@ -478,7 +479,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             if (item.itemId >= 0 && item.itemId < browserItems.size) {
                 val ent = browserItems[item.itemId].`object`
                 if (ent != null) {
-                    renderer.enqueueTask {
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                         val newSelection = Selection(ent)
                         appCore.simulation.selection = newSelection
                         appCore.charEnter(CelestiaAction.GoTo.value)
@@ -599,7 +600,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         zoomTimer?.cancel()
         zoomTimer = fixedRateTimer("zoom", false, 0, 100) {
-            renderer.enqueueTask {
+            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                 viewInteraction.callZoom()
             }
         }

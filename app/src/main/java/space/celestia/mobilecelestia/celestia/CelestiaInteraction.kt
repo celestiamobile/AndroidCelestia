@@ -21,10 +21,10 @@ import android.util.Log
 import android.view.*
 import androidx.core.view.GestureDetectorCompat
 import space.celestia.celestia.AppCore
-import space.celestia.celestia.Renderer
+import space.celestia.mobilecelestia.common.CelestiaExecutor
 import kotlin.math.abs
 
-class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer, interactionMode: InteractionMode): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -83,7 +83,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     private var lastMouseButton = AppCore.MOUSE_BUTTON_LEFT
 
     fun setInteractionMode(interactionMode: InteractionMode) {
-        renderer.enqueueTask {
+        executor.execute {
             internalInteractionMode = interactionMode
         }
     }
@@ -119,7 +119,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             return true
         } else if (event.source == InputDevice.SOURCE_MOUSE && event.action == MotionEvent.ACTION_SCROLL) {
             val y = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
-            renderer.enqueueTask {
+            executor.execute {
                 appCore.mouseWheel(-y * scaleFactor, event.keyModifier())
             }
             return true
@@ -258,7 +258,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
         Log.d(TAG, "Pinch with deltaY: $deltaY")
 
-        renderer.enqueueTask {
+        executor.execute {
             callZoom(deltaY)
         }
 
@@ -276,7 +276,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         }
 
         val point = PointF(e.x, e.y).scaleBy(scaleFactor)
-        renderer.enqueueTask {
+        executor.execute {
             appCore.mouseButtonDown(button, point, 0)
             appCore.mouseButtonUp(button, point, 0)
         }
@@ -315,13 +315,13 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         val newPoint = PointF(event2.x, event2.y).scaleBy(scaleFactor)
 
         if (!isScrolling) {
-            renderer.enqueueTask {
+            executor.execute {
                 lastMouseButton = button
                 appCore.mouseButtonDown(button, originalPoint, event2.keyModifier())
                 appCore.mouseMove(button, offset, event2.keyModifier())
             }
         } else {
-            renderer.enqueueTask {
+            executor.execute {
                 appCore.mouseMove(button, offset, event2.keyModifier())
             }
         }
@@ -337,7 +337,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         // Bring up the context menu
         val point = PointF(e.x, e.y).scaleBy(scaleFactor)
         val button = AppCore.MOUSE_BUTTON_RIGHT
-        renderer.enqueueTask {
+        executor.execute {
             appCore.mouseButtonDown(button, point, 0)
             appCore.mouseButtonUp(button, point, 0)
         }
@@ -355,12 +355,12 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         if (event.source and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) {
             val key = event.keyCode
             if (event.action == KeyEvent.ACTION_UP) {
-                renderer.enqueueTask {
+                executor.execute {
                     appCore.joystickButtonUp(key)
                 }
                 return true
             } else if (event.action == KeyEvent.ACTION_DOWN) {
-                renderer.enqueueTask {
+                executor.execute {
                     appCore.joystickButtonDown(key)
                 }
                 return true
@@ -389,7 +389,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             KeyEvent.KEYCODE_DEL -> input = 8
         }
 
-        renderer.enqueueTask {
+        executor.execute {
             appCore.keyDown(input, keyCode, event.keyModifier())
         }
         return true
@@ -397,7 +397,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
     private fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         if (!isReady) return false
-        renderer.enqueueTask {
+        executor.execute {
             appCore.keyUp(event.unicodeChar, keyCode, 0)
         }
         return true
@@ -407,7 +407,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         Log.d(TAG, "stop scrolling")
         val lp = lastPoint!!
 
-        renderer.enqueueTask {
+        executor.execute {
             appCore.mouseButtonUp(lastMouseButton, lp, 0)
         }
         lastPoint = null
@@ -466,7 +466,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
         }
 
-        renderer.enqueueTask {
+        executor.execute {
             appCore.joystickAxis(AppCore.JOYSTICK_AXIS_X, x)
             appCore.joystickAxis(AppCore.JOYSTICK_AXIS_Y, -y)
         }

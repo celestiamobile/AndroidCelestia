@@ -8,6 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
+import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.AppStatusReporter
@@ -42,6 +43,12 @@ object AppModule {
     @Provides
     fun provideRenderer(): Renderer {
         return Renderer()
+    }
+
+    @Singleton
+    @Provides
+    fun provideExecutor(renderer: Renderer): CelestiaExecutor {
+        return CelestiaExecutor(renderer)
     }
 
     @Singleton

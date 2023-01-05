@@ -52,18 +52,12 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
-import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.common.Poppable
-import space.celestia.mobilecelestia.common.RoundedCorners
-import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
@@ -135,11 +129,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @Inject
     lateinit var appCore: AppCore
     @Inject
-    lateinit var renderer: Renderer
-    @Inject
     lateinit var resourceAPI: ResourceAPIService
     @Inject
     lateinit var resourceManager: ResourceManager
+    @Inject
+    lateinit var executor: CelestiaExecutor
 
     private lateinit var appStatusReporter: AppStatusReporter
 
@@ -457,12 +451,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun celestiaLoadingSucceeded() {
-        renderer.enqueueTask {
-            readSettings()
-
-            appStatusReporter.updateState(AppStatusReporter.State.FINISHED)
-        }
+    private fun celestiaLoadingSucceeded() = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+        readSettings()
+        appStatusReporter.updateState(AppStatusReporter.State.FINISHED)
     }
 
     private fun celestiaLoadingFinishedAsync() {
@@ -682,14 +673,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             openURLOrScriptOrGreeting()
     }
 
-    private fun openCelestiaURL(uri: String) {
+    private fun openCelestiaURL(uri: String) = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
         val isURL = uri.startsWith("cel://")
-        renderer.enqueueTask {
-            if (isURL) {
-                appCore.goToURL(uri)
-            } else {
-                appCore.runScript(uri)
-            }
+        if (isURL) {
+            appCore.goToURL(uri)
+        } else {
+            appCore.runScript(uri)
         }
     }
 
@@ -960,7 +949,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             ToolbarAction.Home -> {
                 hideOverlay {
-                    renderer.enqueueTask {
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                         appCore.charEnter(CelestiaAction.Home.value)
                     }
                 }
@@ -1005,13 +994,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onInfoActionSelected(action: InfoActionItem, item: Selection) {
         when (action) {
             is InfoNormalActionItem -> {
-                renderer.enqueueTask {
+                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                     appCore.simulation.selection = item
                     appCore.charEnter(action.item.value)
                 }
             }
             is InfoSelectActionItem -> {
-                renderer.enqueueTask {
+                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                     appCore.simulation.selection = item
                 }
             }
@@ -1105,7 +1094,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onRunDemo() {
-        renderer.enqueueTask { appCore.charEnter(CelestiaAction.RunDemo.value) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+            appCore.charEnter(CelestiaAction.RunDemo.value)
+        }
     }
 
     override fun onSearchItemSelected(text: String) {
@@ -1125,15 +1116,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onInstantActionSelected(item: CelestiaAction) {
-        renderer.enqueueTask { appCore.charEnter(item.value) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.charEnter(item.value) }
     }
 
     override fun onContinuousActionUp(item: CelestiaContinuosAction) {
-        renderer.enqueueTask { appCore.keyUp(item.value) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyUp(item.value) }
     }
 
     override fun onContinuousActionDown(item: CelestiaContinuosAction) {
-        renderer.enqueueTask { appCore.keyDown(item.value) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyDown(item.value) }
     }
 
     override fun objectExistsWithName(name: String): Boolean {
@@ -1148,7 +1139,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             showAlert(CelestiaString("Object not found", ""))
             return
         }
-        renderer.enqueueTask {
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             appCore.simulation.selection = sel
             appCore.charEnter(CelestiaAction.GoTo.value)
         }
@@ -1192,21 +1183,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onCameraActionClicked(action: CameraControlAction) {
-        renderer.enqueueTask { appCore.simulation.reverseObserverOrientation() }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.reverseObserverOrientation() }
     }
 
     override fun onCameraActionStepperTouchDown(action: CameraControlAction) {
-        renderer.enqueueTask { appCore.keyDown(action.value) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyDown(action.value) }
     }
 
     override fun onCameraActionStepperTouchUp(action: CameraControlAction) {
-        renderer.enqueueTask { appCore.keyUp(action.value) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyUp(action.value) }
     }
 
     override fun onHelpActionSelected(action: HelpAction) {
         when (action) {
             HelpAction.RunDemo -> {
-                renderer.enqueueTask { appCore.charEnter(CelestiaAction.RunDemo.value) }
+                lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.charEnter(CelestiaAction.RunDemo.value) }
             }
         }
     }
@@ -1275,7 +1266,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onGoToDestination(destination: Destination) {
-        renderer.enqueueTask { appCore.simulation.goTo(destination) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.goTo(destination) }
     }
 
     override fun deleteFavoriteItem(index: Int) {
@@ -1306,7 +1297,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onCommonSettingActionItemSelected(action: Int) {
-        renderer.enqueueTask { appCore.charEnter(action) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.charEnter(action) }
     }
 
     override fun onCommonSettingUnknownAction(id: String) {
@@ -1325,40 +1316,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
-    private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
-        renderer.enqueueTask {
-            appCore.setBooleanValueForField(field, value)
-            lifecycleScope.launch {
-                if (!volatile)
-                    settingManager[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
-                if (reloadSettings)
-                    reloadSettings()
-            }
-        }
+    private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
+        withContext(executor.asCoroutineDispatcher()) { appCore.setBooleanValueForField(field, value) }
+        if (!volatile)
+            settingManager[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
+        if (reloadSettings)
+            reloadSettings()
     }
 
-    private fun applyIntValue(value: Int, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
-        renderer.enqueueTask {
-            appCore.setIntValueForField(field, value)
-            lifecycleScope.launch {
-                if (!volatile)
-                    settingManager[PreferenceManager.CustomKey(field)] = value.toString()
-                if (reloadSettings)
-                    reloadSettings()
-            }
-        }
+    private fun applyIntValue(value: Int, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
+        withContext(executor.asCoroutineDispatcher()) { appCore.setIntValueForField(field, value) }
+        if (!volatile)
+            settingManager[PreferenceManager.CustomKey(field)] = value.toString()
+        if (reloadSettings)
+            reloadSettings()
     }
 
-    private fun applyDoubleValue(value: Double, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) {
-        renderer.enqueueTask {
-            appCore.setDoubleValueForField(field, value)
-            lifecycleScope.launch {
-                if (!volatile)
-                    settingManager[PreferenceManager.CustomKey(field)] = value.toString()
-                if (reloadSettings)
-                    reloadSettings()
-            }
-        }
+    private fun applyDoubleValue(value: Double, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
+        withContext(executor.asCoroutineDispatcher()) { appCore.setDoubleValueForField(field, value) }
+        if (!volatile)
+            settingManager[PreferenceManager.CustomKey(field)] = value.toString()
+        if (reloadSettings)
+            reloadSettings()
     }
 
     override fun onCommonSettingPreferenceSwitchStateChanged(
@@ -1393,21 +1372,31 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onCurrentTimeActionRequested(action: CurrentTimeAction) {
-        when (action) {
-            CurrentTimeAction.SetToCurrentTime -> {
-                renderer.enqueueTask { appCore.charEnter(CelestiaAction.CurrentTime.value) }
-                reloadSettings()
-            }
-            CurrentTimeAction.PickDate -> {
-                val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(),"yyyyMMddHHmmss")
-                showDateInput(CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format) { date ->
-                    if (date == null) {
-                        showAlert(CelestiaString("Unrecognized time string.", ""))
-                        return@showDateInput
-                    }
-                    renderer.enqueueTask {
-                        appCore.simulation.time = date.julianDay
+        lifecycleScope.launch {
+            when (action) {
+                CurrentTimeAction.SetToCurrentTime -> {
+                    withContext(executor.asCoroutineDispatcher()) { appCore.charEnter(CelestiaAction.CurrentTime.value) }
+                    reloadSettings()
+                }
+                CurrentTimeAction.PickDate -> {
+                    val format = android.text.format.DateFormat.getBestDateTimePattern(
+                        Locale.getDefault(),
+                        "yyyyMMddHHmmss"
+                    )
+                    showDateInput(
+                        CelestiaString(
+                            "Please enter the time in \"%s\" format.",
+                            ""
+                        ).format(format), format
+                    ) { date ->
+                        if (date == null) {
+                            showAlert(CelestiaString("Unrecognized time string.", ""))
+                            return@showDateInput
+                        }
                         lifecycleScope.launch {
+                            withContext(executor.asCoroutineDispatcher()) {
+                                appCore.simulation.time = date.julianDay
+                            }
                             reloadSettings()
                         }
                     }
@@ -1494,7 +1483,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onEclipseChosen(eclipse: EclipseFinder.Eclipse) {
-        renderer.enqueueTask {
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             appCore.simulation.goToEclipse(eclipse)
         }
     }
@@ -1523,12 +1512,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun celestiaFragmentDidRequestObjectInfo() {
-        renderer.enqueueTask {
-            val selection = appCore.simulation.selection
+        lifecycleScope.launch {
+            val selection =
+                withContext(executor.asCoroutineDispatcher()) { appCore.simulation.selection }
             if (!selection.isEmpty) {
-                lifecycleScope.launch {
-                    showInfo(selection)
-                }
+                showInfo(selection)
             }
         }
     }
@@ -1829,33 +1817,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun shareURL() {
-        renderer.enqueueTask {
-            val url = appCore.currentURL
-            val name = appCore.simulation.universe.getNameForSelection(appCore.simulation.selection)
-            lifecycleScope.launch {
-                shareURLDirect(name, url)
-            }
-        }
+    private fun shareURL() = lifecycleScope.launch {
+        val urlAndName = withContext(executor.asCoroutineDispatcher()) { Pair(appCore.currentURL, appCore.simulation.universe.getNameForSelection(appCore.simulation.selection)) }
+        shareURLDirect(urlAndName.first, urlAndName.second)
     }
 
-    private fun shareImage() {
+    private fun shareImage() = lifecycleScope.launch {
         val directory = File(cacheDir, "screenshots")
         if (!directory.exists())
             directory.mkdir()
 
         val file = File(directory, "${UUID.randomUUID()}.png")
-        renderer.enqueueTask {
+        val success = withContext(executor.asCoroutineDispatcher()) {
             appCore.draw()
-            if (appCore.saveScreenshot(file.absolutePath, AppCore.IMAGE_TYPE_PNG)) {
-                lifecycleScope.launch {
-                    shareFile(file, "image/png")
-                }
-            } else {
-                lifecycleScope.launch {
-                    showToast(CelestiaString("Unable to generate image.", ""), Toast.LENGTH_SHORT)
-                }
-            }
+            return@withContext appCore.saveScreenshot(file.absolutePath, AppCore.IMAGE_TYPE_PNG)
+        }
+        if (success) {
+            shareFile(file, "image/png")
+        } else {
+            showToast(CelestiaString("Unable to generate image.", ""), Toast.LENGTH_SHORT)
         }
     }
 
@@ -1913,8 +1893,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             goToData.distance,
             goToData.distanceUnit
         )
-        renderer.enqueueTask {
-            appCore.simulation.goToLocation(location)
+        lifecycleScope.launch {
+            withContext(executor.asCoroutineDispatcher()) { appCore.simulation.goToLocation(location) }
         }
     }
 

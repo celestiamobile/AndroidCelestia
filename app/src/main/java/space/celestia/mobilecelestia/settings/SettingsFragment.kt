@@ -14,12 +14,13 @@ package space.celestia.mobilecelestia.settings
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.celestia.CelestiaView
-import space.celestia.mobilecelestia.common.NavigationFragment
+import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
-import space.celestia.celestia.Renderer
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.CelestiaExecutor
+import space.celestia.mobilecelestia.common.NavigationFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -27,7 +28,7 @@ class SettingsFragment : NavigationFragment() {
     @Inject
     lateinit var appCore: AppCore
     @Inject
-    lateinit var renderer: Renderer
+    lateinit var executor: CelestiaExecutor
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return SettingsItemFragment.newInstance()
@@ -42,11 +43,9 @@ class SettingsFragment : NavigationFragment() {
                 pushFragment(SettingsCurrentTimeFragment.newInstance())
             }
             is SettingsRenderInfoItem -> {
-                renderer.enqueueTask {
-                    val renderInfo = appCore.renderInfo
-                    lifecycleScope.launch {
-                        pushFragment(SimpleTextFragment.newInstance(item.name, renderInfo))
-                    }
+                lifecycleScope.launch {
+                    val renderInfo = withContext(executor.asCoroutineDispatcher()) { appCore.renderInfo }
+                    pushFragment(SimpleTextFragment.newInstance(item.name, renderInfo))
                 }
             }
             is SettingsRefreshRateItem -> {

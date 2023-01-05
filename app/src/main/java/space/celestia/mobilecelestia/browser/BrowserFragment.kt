@@ -23,12 +23,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.BrowserItem
-import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.info.InfoFragment
@@ -53,7 +55,7 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
     @Inject
     lateinit var appCore: AppCore
     @Inject
-    lateinit var renderer: Renderer
+    lateinit var executor: CelestiaExecutor
 
     class Tab(private val type: Type): Serializable {
         enum class Type: Serializable {
@@ -195,24 +197,22 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         navigationFragment.popLast()
     }
 
-    private fun loadRootBrowserItems() {
+    private fun loadRootBrowserItems() = lifecycleScope.launch {
         browserContainer.visibility = View.GONE
         loadingIndicator.visibility = View.VISIBLE
-        renderer.enqueueTask {
+        val browserTabs = arrayListOf(Tab(Tab.Type.Star), Tab(Tab.Type.DSO))
+        withContext(executor.asCoroutineDispatcher()) {
             val sim = appCore.simulation
             sim.createStaticBrowserItems()
             sim.createDynamicBrowserItems()
-            val browserTabs = arrayListOf(Tab(Tab.Type.Star), Tab(Tab.Type.DSO))
             val solRoot = sim.universe.solBrowserRoot()
             if (solRoot != null) {
                 browserTabs.add(0, Tab(Tab.Type.SolarSystem))
             }
-            lifecycleScope.launch {
-                tabs = browserTabs
-                rootItemsLoaded()
-                showTab(selectedItemIndex)
-            }
         }
+        tabs = browserTabs
+        rootItemsLoaded()
+        showTab(selectedItemIndex)
     }
 
     companion object {
