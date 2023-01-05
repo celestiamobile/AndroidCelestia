@@ -1105,9 +1105,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onRunDemo() {
-        renderer.enqueueTask {
-            renderer.enqueueTask { appCore.charEnter(CelestiaAction.RunDemo.value) }
-        }
+        renderer.enqueueTask { appCore.charEnter(CelestiaAction.RunDemo.value) }
     }
 
     override fun onSearchItemSelected(text: String) {
