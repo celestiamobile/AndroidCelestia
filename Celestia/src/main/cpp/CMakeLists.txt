@@ -414,6 +414,7 @@ add_definitions(-DENABLE_NLS)
 add_definitions(-DUSE_SPICE)
 add_definitions(-DGL_ES)
 add_definitions(-DUSE_MINIAUDIO)
+add_definitions(-DCELX)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DEIGEN_NO_DEBUG)

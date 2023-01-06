@@ -10,7 +10,11 @@
  */
 
 #define HAVE_BYTESWAP_H
-#define CELX
-#define HAVE_STD_FILESYSTEM
 #define HAVE_CHARCONV
+//#define HAVE_FLOAT_CHARCONV
+#define HAVE_STD_FILESYSTEM
+//#define HAVE_WORDEXP
 //#define HAVE_MESHOPTIMIZER
+#define HAVE_SINCOS
+//#define HAVE_APPLE_SINCOS
+//#define WORDS_BIGENDIAN
