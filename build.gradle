@@ -15,7 +15,7 @@ buildscript {
     ext.kotlin_version = '1.8.0'
     ext.core_ktx_version = '1.9.0'
     ext.core_appcompat_version = '1.6.0'
-    ext.material_version = '1.7.0'
+    ext.material_version = '1.8.0'
     ext.kotlinx_coroutines_version = '1.6.4'
     ext.hilt_version = '2.44.2'
     ext.lifecycle_version = '2.5.1'
@@ -26,7 +26,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath 'com.android.tools.build:gradle:7.4.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
     }
@@ -39,7 +39,7 @@ allprojects {
                 targetSdkVersion  : 33,
                 compileSdkVersion : 33,
                 ndkVersion        : "25.1.8937393",
-                buildToolsVersion : "33.0.0",
+                buildToolsVersion : "33.0.1",
                 cmakeVersion      : "3.22.1"
         ]
     }

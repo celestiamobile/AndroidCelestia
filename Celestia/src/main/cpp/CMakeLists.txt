@@ -54,6 +54,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/fsutils.h
         ${CELESTIA_SRC_DIR}/celutil/greek.cpp
         ${CELESTIA_SRC_DIR}/celutil/greek.h
+        ${CELESTIA_SRC_DIR}/celutil/indexlist.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
         ${CELESTIA_SRC_DIR}/celutil/reshandle.h
@@ -142,6 +143,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celephem/customorbit.h
         ${CELESTIA_SRC_DIR}/celephem/customrotation.cpp
         ${CELESTIA_SRC_DIR}/celephem/customrotation.h
+        ${CELESTIA_SRC_DIR}/celephem/customorbittype.h
         ${CELESTIA_SRC_DIR}/celephem/jpleph.cpp
         ${CELESTIA_SRC_DIR}/celephem/jpleph.h
         ${CELESTIA_SRC_DIR}/celephem/nutation.cpp
@@ -173,6 +175,12 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_SRC_DIR}/celrender/atmosphererenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/atmosphererenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/cometrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/cometrenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/eclipticlinerenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/eclipticlinerenderer.h
         ${CELESTIA_SRC_DIR}/celrender/linerenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/linerenderer.h
         ${CELESTIA_SRC_DIR}/celrender/vertexobject.cpp
