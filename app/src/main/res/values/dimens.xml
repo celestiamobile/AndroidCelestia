@@ -11,7 +11,7 @@
   -->
 
 <resources>
-    <dimen name="default_separator_height">0.5dp</dimen>
+    <dimen name="default_separator_height">1px</dimen>
     <dimen name="partial_separator_inset_start">32dp</dimen>
     <dimen name="full_separator_inset_start">0dp</dimen>
 
