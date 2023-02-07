@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="322"
+    android:versionCode="323"
     android:versionName="1.5.17">
 
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
