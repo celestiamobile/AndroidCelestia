@@ -1066,7 +1066,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onRunScript(file: File) {
-        requestRunScript(file.absolutePath)
+        openCelestiaURL(file.absolutePath)
     }
 
     override fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
