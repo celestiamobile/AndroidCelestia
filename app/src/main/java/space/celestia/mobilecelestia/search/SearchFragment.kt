@@ -139,13 +139,13 @@ class SearchFragment : NavigationFragment.SubFragment() {
             .launchIn(lifecycleScope)
 
         val weakSelf = WeakReference(this)
-        searchView.addTransitionListener { searchView, previousState, newState ->
+        searchView.addTransitionListener { _, _, newState ->
             val self = weakSelf.get() ?: return@addTransitionListener
             if (newState == SearchView.TransitionState.HIDING || newState == SearchView.TransitionState.HIDDEN) {
                 self.searchBar.text = self.searchView.text
             }
         }
-        searchView.editText.setOnEditorActionListener { textView, actionId, keyEvent ->
+        searchView.editText.setOnEditorActionListener { _, actionId, _ ->
             val self = weakSelf.get() ?: return@setOnEditorActionListener false
             val searchKey = self.searchView.text
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
