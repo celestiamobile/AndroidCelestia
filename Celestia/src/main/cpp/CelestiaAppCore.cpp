@@ -1085,3 +1085,20 @@ Java_space_celestia_celestia_AppCore_c_1getLanguage(JNIEnv *env, jclass clazz) {
         return env->NewStringUTF("en");
     return env->NewStringUTF(lang);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setScriptSystemAccessPolicy(JNIEnv *env, jclass clazz,
+                                                                    jlong pointer,
+                                                                    jint script_system_access_policy) {
+    auto core = (CelestiaCore *)pointer;
+    core->setScriptSystemAccessPolicy((CelestiaCore::ScriptSystemAccessPolicy)script_system_access_policy);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_AppCore_c_1getScriptSystemAccessPolicy(JNIEnv *env, jclass clazz,
+                                                                    jlong pointer) {
+    auto core = (CelestiaCore *)pointer;
+    return (jint)core->getScriptSystemAccessPolicy();
+}

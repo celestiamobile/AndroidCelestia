@@ -81,5 +81,6 @@
     "ShowHorizonGrid": 0,
     "ShowGalacticGrid": 0,
     "MeasurementSystem": 0,
-    "TemperatureScale": 0
+    "TemperatureScale": 0,
+    "ScriptSystemAccessPolicy": 0
 }

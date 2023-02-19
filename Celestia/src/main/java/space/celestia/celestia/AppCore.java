@@ -730,6 +730,12 @@ public class AppCore {
     public int getTemperatureScale() { return c_getTemperatureScale(pointer); }
     private static native void c_setTemperatureScale(long pointer, int temperatureScale);
     private static native int c_getTemperatureScale(long pointer);
+
+    public void setScriptSystemAccessPolicy(int scriptSystemAccessPolicy) { c_setScriptSystemAccessPolicy(pointer, scriptSystemAccessPolicy); }
+    public int getScriptSystemAccessPolicy() { return c_getScriptSystemAccessPolicy(pointer); }
+    private static native void c_setScriptSystemAccessPolicy(long pointer, int scriptSystemAccessPolicy);
+    private static native int c_getScriptSystemAccessPolicy(long pointer);
+
     public void setTimeZone(int timeZone) { c_setTimeZone(pointer, timeZone); }
     public int getTimeZone() { return c_getTimeZone(pointer); }
     private static native void c_setTimeZone(long pointer, int TimeZone);

@@ -97,6 +97,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     HudDetail("Info Display"),
     MeasurementSystem("Measure Units"),
     TemperatureScale("Temperature Scale"),
+    ScriptSystemAccessPolicy("Script System Access Policy"),
     // Double values
     FaintestVisible("Faintest Stars"),
     AmbientLightLevel("Ambient Light"),
@@ -188,6 +189,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 HudDetail,
                 MeasurementSystem,
                 TemperatureScale,
+                ScriptSystemAccessPolicy,
             )
 
         val allDoubleCases: List<SettingsKey>
@@ -490,7 +492,21 @@ private val staticRendererItems: List<SettingsItem> = listOf(
 )
 
 private val staticAdvancedItems: List<SettingsItem> = listOf(
-    SettingsDataLocationItem()
+    SettingsDataLocationItem(),
+    SettingsCommonItem(
+        CelestiaString("Security", ""),
+        listOf(
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsKeyedSelectionItem(SettingsKey.ScriptSystemAccessPolicy, CelestiaString("Ask", ""), 0),
+                    SettingsKeyedSelectionItem(SettingsKey.ScriptSystemAccessPolicy, CelestiaString("Allow", ""), 1),
+                    SettingsKeyedSelectionItem(SettingsKey.ScriptSystemAccessPolicy, CelestiaString("Deny", ""), 2)
+                ),
+                header = CelestiaString(SettingsKey.ScriptSystemAccessPolicy.displayName, ""),
+                footer = CelestiaString("This policy decides whether Lua scripts have access to the files on the system or not.", "")
+            )
+        )
+    ),
 )
 
 class SettingsRenderInfoItem : SettingsItem, Serializable {
