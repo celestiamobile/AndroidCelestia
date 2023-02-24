@@ -44,12 +44,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/common_page_medium_gap_vertical"
+                    android:textIsSelectable="true"
                     style="@style/HeadlineLabel"/>
                 <TextView
                     android:id="@+id/content"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/common_page_medium_gap_vertical"
+                    android:textIsSelectable="true"
                     style="@style/BodyLabel"/>
                 <space.celestia.ui.linkpreview.LPLinkView
                     android:visibility="gone"
