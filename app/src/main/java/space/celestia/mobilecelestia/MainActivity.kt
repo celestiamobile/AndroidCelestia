@@ -91,6 +91,8 @@ import javax.inject.Inject
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
@@ -263,7 +265,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         findViewById<View>(R.id.close_button).setOnClickListener {
-            hideOverlay(true)
+            lifecycleScope.launch {
+                hideOverlay(true)
+            }
         }
 
         findViewById<View>(R.id.interaction_filter).setOnTouchListener { _, _ ->
@@ -499,7 +503,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 } else if (self.canPopBottomSheetFragment()) {
                     self.popBottomSheetFragment()
                 } else {
-                    self.hideOverlay(true)
+                    self.lifecycleScope.launch {
+                        self.hideOverlay(true)
+                    }
                 }
             }
         })
@@ -722,7 +728,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val guide = guideToOpen
         val lang = AppCore.getLanguage()
         if (guide != null) {
-            showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(guide, lang), listOf("guide")))
+            lifecycleScope.launch {
+                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(guide, lang), listOf("guide")))
+            }
             cleanup()
             return
         }
@@ -918,12 +926,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showError(error)
     }
 
-    private fun showToolbar() {
-        val weakSelf = WeakReference(this)
-        hideOverlay(true) {
-            val drawerLayout = weakSelf.get()?.drawerLayout ?: return@hideOverlay
-            drawerLayout.openDrawer(GravityCompat.END, true)
-        }
+    private fun showToolbar() = lifecycleScope.launch {
+        hideOverlay(true)
+        drawerLayout.openDrawer(GravityCompat.END, true)
     }
 
     override fun onToolbarActionSelected(action: ToolbarAction) {
@@ -957,13 +962,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSettings()
             }
             ToolbarAction.Share -> {
-                hideOverlay {
+                lifecycleScope.launch {
+                    hideOverlay(true)
                     showShare()
                 }
             }
             ToolbarAction.Home -> {
-                hideOverlay {
-                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                lifecycleScope.launch {
+                    hideOverlay(true)
+                    withContext(executor.asCoroutineDispatcher()) {
                         appCore.charEnter(CelestiaAction.Home.value)
                     }
                 }
@@ -986,7 +993,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ToolbarAction.NewsArchive -> {
                 val baseURL = "https://celestia.mobi/news"
                 val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
-                hideOverlay {
+                lifecycleScope.launch {
+                    hideOverlay(true)
                     openURL(uri.toString())
                 }
             }
@@ -999,7 +1007,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     .appendQueryParameter("theme", "dark")
                     .appendQueryParameter("api", "1")
                     .build()
-                showBottomSheetFragment(CommonWebNavigationFragment.newInstance(uri))
+                lifecycleScope.launch {
+                    showBottomSheetFragment(CommonWebNavigationFragment.newInstance(uri))
+                }
             }
         }
     }
@@ -1031,7 +1041,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     entry,
                     appCore.simulation.universe
                 )
-                showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
+                lifecycleScope.launch {
+                    showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
+                }
             }
             is AlternateSurfacesItem -> {
                 val alternateSurfaces = item.body?.alternateSurfaceNames ?: return
@@ -1177,7 +1189,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onBottomControlHide() {
-        hideOverlay(true)
+        lifecycleScope.launch {
+            hideOverlay(true)
+        }
     }
 
     override fun onBrowserItemSelected(item: BrowserUIItem) {
@@ -1588,22 +1602,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun hideOverlay(animated: Boolean = false, completion: (() -> Unit)? = null) {
-        hideMenu(animated) {
-            hideToolbar(animated) {
-                hideBottomSheet(animated) {
-                    if (completion != null)
-                        completion()
-                }
-            }
-        }
+    private suspend fun hideOverlay(animated: Boolean) {
+        hideMenu(animated)
+        hideToolbar(animated)
+        hideBottomSheet(animated)
     }
 
-    private fun hideMenu(animated: Boolean, completion: (() -> Unit)? = null) {
+    private suspend fun hideMenu(animated: Boolean): Unit = suspendCoroutine { cont ->
         if (!drawerLayout.isDrawerOpen(GravityCompat.END)) {
-            if (completion != null)
-                completion()
-            return
+            cont.resume(Unit)
+            return@suspendCoroutine
         }
 
         val weakSelf = WeakReference(this)
@@ -1613,8 +1621,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             override fun onDrawerOpened(drawerView: View) {}
 
             override fun onDrawerClosed(drawerView: View) {
-                if (completion != null)
-                    completion()
+                cont.resume(Unit)
                 val self = weakSelf.get() ?: return
                 self.drawerLayout.removeDrawerListener(this)
             }
@@ -1626,28 +1633,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         drawerLayout.closeDrawer(GravityCompat.END, animated)
     }
 
-    private fun hideToolbar(animated: Boolean, completion: (() -> Unit)? = null) {
-        hideView(animated, R.id.toolbar_container, false) {
-            findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
-            val fragment = supportFragmentManager.findFragmentById(R.id.toolbar_container)
-            if (fragment != null)
-                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
-            if (completion != null)
-                completion()
-        }
+    private suspend fun hideToolbar(animated: Boolean) {
+        hideView(animated, R.id.toolbar_container, false)
+        findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
+        val fragment = supportFragmentManager.findFragmentById(R.id.toolbar_container)
+        if (fragment != null)
+            supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
     }
 
-    private fun hideBottomSheet(animated: Boolean, completion: (() -> Unit)? = null) {
-        hideView(animated, R.id.bottom_sheet_card, false) {
-            findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
-            val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-            if (fragment != null) {
-                supportFragmentManager.beginTransaction().hide(fragment).remove(fragment)
-                    .commitAllowingStateLoss()
-                bottomSheetCommitIds = arrayListOf()
-            }
-            if (completion != null)
-                completion()
+    private suspend fun hideBottomSheet(animated: Boolean) {
+        hideView(animated, R.id.bottom_sheet_card, false)
+        findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
+        val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+        if (fragment != null) {
+            supportFragmentManager.beginTransaction().hide(fragment).remove(fragment)
+                .commitAllowingStateLoss()
+            bottomSheetCommitIds = arrayListOf()
         }
     }
 
@@ -1676,10 +1677,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         bottomSheetCommitIds.removeLast()
     }
 
-    private fun showView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
+    private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean): Unit = suspendCoroutine { cont ->
         val view = findViewById<View>(viewID)
         view.visibility = View.VISIBLE
-        val parent = view.parent as? View ?: return
+        val parent = view.parent as? View
+        if (parent == null) {
+            cont.resume(Unit)
+            return@suspendCoroutine
+        }
 
         val destination: Float = if (horizontal) {
             val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
@@ -1689,7 +1694,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         val executionBlock = {
-            completion()
+            cont.resume(Unit)
         }
 
         if (!animated) {
@@ -1711,9 +1716,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun hideView(animated: Boolean, viewID: Int, horizontal: Boolean, completion: () -> Unit = {}) {
+    private suspend fun hideView(animated: Boolean, viewID: Int, horizontal: Boolean): Unit = suspendCoroutine { cont ->
         val view = findViewById<View>(viewID)
-        val parent = view.parent as? View ?: return
+        val parent = view.parent as? View
+        if (parent == null) {
+            cont.resume(Unit)
+            return@suspendCoroutine
+        }
 
         val destination: Float = if (horizontal) {
             val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
@@ -1724,7 +1733,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val executionBlock = {
             view.visibility = View.INVISIBLE
-            completion()
+            cont.resume(Unit)
         }
 
         if (view.visibility != View.VISIBLE || !animated) {
@@ -1749,19 +1758,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
-    private fun showInfo(selection: Selection) {
+    private fun showInfo(selection: Selection) = lifecycleScope.launch {
         showBottomSheetFragment(InfoFragment.newInstance(selection))
     }
 
-    private fun showSearch() {
+    private fun showSearch() = lifecycleScope.launch {
         showBottomSheetFragment(SearchFragment.newInstance())
     }
 
-    private fun showBrowser() {
+    private fun showBrowser() = lifecycleScope.launch {
         showBottomSheetFragment(BrowserFragment.newInstance())
     }
 
-    private fun showTimeControl() {
+    private fun showTimeControl() = lifecycleScope.launch {
         val actions: List<CelestiaAction> = if (resources.configuration.layoutDirection == LayoutDirection.RTL) {
             listOf(
                 CelestiaAction.Faster,
@@ -1780,7 +1789,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showToolbarFragment(BottomControlFragment.newInstance(actions.map { InstantAction(it) }))
     }
 
-    private fun showScriptControl() {
+    private fun showScriptControl() = lifecycleScope.launch {
         showToolbarFragment(
             BottomControlFragment.newInstance(
                 listOf(
@@ -1789,7 +1798,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 ).map { InstantAction(it) }))
     }
 
-    private fun showSpeedControl() {
+    private fun showSpeedControl() = lifecycleScope.launch {
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
         val actions: ArrayList<BottomControlAction> = if (isRTL) arrayListOf(
             ContinuousAction(CelestiaContinuosAction.TravelFaster),
@@ -1819,15 +1828,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         )
     }
 
-    private fun showCameraControl() {
+    private fun showCameraControl() = lifecycleScope.launch {
         showBottomSheetFragment(CameraControlContainerFragment.newInstance())
     }
 
-    private fun showHelp() {
+    private fun showHelp() = lifecycleScope.launch {
         showBottomSheetFragment(NewHelpFragment.newInstance(AppCore.getLanguage()))
     }
 
-    private fun showFavorite() {
+    private fun showFavorite() = lifecycleScope.launch {
         readFavorites()
         val scripts = Script.getScriptsInDirectory("scripts", true)
         for (extraScriptPath in extraScriptPaths) {
@@ -1838,7 +1847,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(FavoriteFragment.newInstance(FavoriteRoot()))
     }
 
-    private fun showSettings() {
+    private fun showSettings() = lifecycleScope.launch {
         showBottomSheetFragment(SettingsFragment.newInstance())
     }
 
@@ -1893,12 +1902,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             showUnsupportedAction()
     }
 
-    private fun showEventFinder() {
+    private fun showEventFinder() = lifecycleScope.launch {
         showBottomSheetFragment(EventFinderContainerFragment.newInstance())
     }
 
     // Resource
-    private fun showInstalledAddons() {
+    private fun showInstalledAddons() = lifecycleScope.launch {
         showBottomSheetFragment(ResourceFragment.newInstance(AppCore.getLanguage()))
     }
 
@@ -1909,7 +1918,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun showGoTo(data: GoToInputFragment.GoToData? = null) {
+    private fun showGoTo(data: GoToInputFragment.GoToData? = null) = lifecycleScope.launch {
         val inputData = data ?: GoToInputFragment.GoToData(
             AppCore.getLocalizedString("Earth", "celestia-data"),
             0.0f,
@@ -1940,14 +1949,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     // Utilities
-    private fun showBottomSheetFragment(fragment: Fragment) {
-        val weakSelf = WeakReference(this)
-        hideOverlay(true) {
-            weakSelf.get()?.showBottomSheetFragmentDirect(fragment)
-        }
+    private suspend fun showBottomSheetFragment(fragment: Fragment) {
+        hideOverlay(true)
+        showBottomSheetFragmentDirect(fragment)
     }
 
-    private fun showBottomSheetFragmentDirect(fragment: Fragment) {
+    private suspend fun showBottomSheetFragmentDirect(fragment: Fragment) {
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
         val id = supportFragmentManager
             .beginTransaction()
@@ -1957,14 +1964,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showView(true, R.id.bottom_sheet_card, false)
     }
 
-    private fun showToolbarFragment(fragment: Fragment) {
-        val weakSelf = WeakReference(this)
-        hideOverlay(true) {
-            weakSelf.get()?.showToolbarFragmentDirect(fragment)
-        }
+    private suspend fun showToolbarFragment(fragment: Fragment) {
+        hideOverlay(true)
+        showToolbarFragmentDirect(fragment)
     }
 
-    private fun showToolbarFragmentDirect(fragment: Fragment) {
+    private suspend fun showToolbarFragmentDirect(fragment: Fragment) {
         findViewById<View>(R.id.toolbar_overlay).visibility = View.VISIBLE
         supportFragmentManager
             .beginTransaction()
