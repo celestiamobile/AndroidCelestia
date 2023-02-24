@@ -13,6 +13,8 @@ package space.celestia.mobilecelestia.utils
 
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.favorite.BookmarkNode
+import java.text.DateFormat
+import java.util.*
 
 val AppCore.currentBookmark: BookmarkNode?
     get() {
@@ -40,7 +42,7 @@ fun AppCore.getOverviewForSelection(selection: Selection): String {
 }
 
 private fun AppCore.getOverviewForBody(body: Body): String {
-    var str = ""
+    val lines = arrayListOf<String>()
 
     val radius = body.radius
     val radiusString: String
@@ -60,11 +62,11 @@ private fun AppCore.getOverviewForBody(body: Body): String {
         }
     }
 
-    str += if (body.isEllipsoid) {
+    lines.add(if (body.isEllipsoid) {
         CelestiaString("Equatorial radius: %s", "").format(radiusString)
     } else {
         CelestiaString("Size: %s", "").format(radiusString)
-    }
+    })
 
     val time = simulation.time
     val orbit = body.getOrbitAtTime(time)
@@ -92,29 +94,41 @@ private fun AppCore.getOverviewForBody(body: Body): String {
         } else {
             unitTemplate = CelestiaString("%.2f days", "")
         }
-        str += "\n"
-        str += CelestiaString("Sidereal rotation period: %s", "").format(CelestiaString(unitTemplate, "").format(rotPeriod))
+        lines.add(CelestiaString("Sidereal rotation period: %s", "").format(CelestiaString(unitTemplate, "").format(rotPeriod)))
 
         if (dayLength != 0.0) {
-            str += "\n"
-            str += CelestiaString("Length of day: %s", "").format(CelestiaString(unitTemplate, "").format(dayLength))
-        }
-
-        if (body.hasRings()) {
-            str += "\n"
-            str += CelestiaString("Has rings", "")
-        }
-
-        if (body.hasAtmosphere()) {
-            str += "\n"
-            str += CelestiaString("Has atmosphere", "")
+            lines.add(CelestiaString("Length of day: %s", "").format(CelestiaString(unitTemplate, "").format(dayLength)))
         }
     }
-    return str
+
+    if (body.hasRings()) {
+        lines.add(CelestiaString("Has rings", ""))
+    }
+
+    if (body.hasAtmosphere()) {
+        lines.add(CelestiaString("Has atmosphere", ""))
+    }
+
+    val timeline = body.timeline
+    if (timeline.phaseCount > 0) {
+        val startTime = timeline.getPhase(0).startTime
+        val endTime = timeline.getPhase(timeline.phaseCount - 1).endTime
+        val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
+        if (!startTime.isInfinite()) {
+            lines.add(CelestiaString("Start time: %s", "").format(formatter.format(Utils.createDateFromJulianDay(startTime))))
+        }
+        if (!endTime.isInfinite()) {
+            lines.add(CelestiaString("End time: %s", "").format(formatter.format(Utils.createDateFromJulianDay(endTime))))
+        }
+    }
+
+    return lines.joinToString(separator = "\n")
 }
 
 private fun AppCore.getOverviewForStar(star: Star): String {
-    var str = ""
+    val lines = arrayListOf<String>()
+
+    lines.add(CelestiaString("Spectral type: %s", "").format(star.spectralType))
 
     val time = simulation.time
     val celPos = star.getPositionAtTime(time).use{ it.offsetFrom(UniversalCoord.getZero()) }
@@ -122,39 +136,37 @@ private fun AppCore.getOverviewForStar(star: Star): String {
     val sph = Utils.rectToSpherical(eqPos)
 
     val hms = DMS(sph.x)
-    str += CelestiaString("RA: %dh %dm %.2fs", "").format(hms.hours, hms.minutes, hms.seconds)
+    lines.add(CelestiaString("RA: %dh %dm %.2fs", "").format(hms.hours, hms.minutes, hms.seconds))
 
-    str += "\n"
     val dms = DMS(sph.y)
-    str += CelestiaString("DEC: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
+    lines.add(CelestiaString("DEC: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds))
 
-    return str
+    return lines.joinToString(separator = "\n")
 }
 
 private fun getOverviewForDSO(dso: DSO): String {
-    var str = ""
+    val lines = arrayListOf<String>()
+
+    lines.add(dso.description)
 
     val celPos = dso.position
     val eqPos = Utils.eclipticToEquatorial(Utils.celToJ2000Ecliptic(celPos))
     var sph = Utils.rectToSpherical(eqPos)
 
     val hms = DMS(sph.x)
-    str += CelestiaString("RA: %dh %dm %.2fs", "").format(hms.hours, hms.minutes, hms.seconds)
+    lines.add(CelestiaString("RA: %dh %dm %.2fs", "").format(hms.hours, hms.minutes, hms.seconds))
 
-    str += "\n"
     var dms = DMS(sph.y)
-    str += CelestiaString("DEC: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
+    lines.add(CelestiaString("DEC: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds))
 
     val galPos = Utils.equatorialToGalactic(eqPos)
     sph = Utils.rectToSpherical(galPos)
 
-    str += "\n"
     dms = DMS(sph.x)
-    str += CelestiaString("L: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
+    lines.add(CelestiaString("L: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds))
 
-    str += "\n"
     dms = DMS(sph.y)
-    str += CelestiaString("B: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds)
+    lines.add(CelestiaString("B: %d° %d′ %.2f″", "").format(dms.hours, dms.minutes, dms.seconds))
 
-    return str
+    return lines.joinToString(separator = "\n")
 }

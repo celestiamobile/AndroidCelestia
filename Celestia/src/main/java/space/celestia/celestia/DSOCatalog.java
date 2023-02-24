@@ -30,6 +30,10 @@ public class DSOCatalog {
     }
 
     public DSO getDSO(int index) {
+        long dsoPtr = c_getDSO(pointer, index);
+        if (c_isDSOGalaxy(dsoPtr)) {
+            return new Galaxy(dsoPtr);
+        }
         return new DSO(c_getDSO(pointer, index));
     }
 
@@ -37,4 +41,5 @@ public class DSOCatalog {
     private static native String c_getDSOName(long ptr, long pointer);
     private static native int c_getCount(long ptr);
     private static native long c_getDSO(long ptr, int index);
+    static native boolean c_isDSOGalaxy(long ptr);
 }

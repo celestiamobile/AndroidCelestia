@@ -35,8 +35,12 @@ public class DSO extends AstroObject {
     @NonNull
     public Vector getPosition() { return c_getPosition(pointer); }
 
+    @NonNull
+    public String getDescription() { return c_getDescription(pointer); }
+
     // C functions
     private static native String c_getWebInfoURL(long pointer);
     private static native String c_getType(long pointer);
     private static native Vector c_getPosition(long pointer);
+    private static native String c_getDescription(long pointer);
 }

@@ -26,3 +26,10 @@ Java_space_celestia_celestia_Star_c_1getPositionAtTime(JNIEnv *env, jclass clazz
     auto star = (Star *)pointer;
     return (jlong)new UniversalCoord(star->getPosition(julian_day));
 }
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_celestia_Star_c_1getSpectralType(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto star = reinterpret_cast<Star *>(pointer);
+    return env->NewStringUTF(star->getSpectralType());
+}

@@ -32,7 +32,12 @@ public class Star extends AstroObject {
         return new UniversalCoord(c_getPositionAtTime(pointer, julianDay));
     }
 
+    public String getSpectralType() {
+        return c_getSpectralType(pointer);
+    }
+
     // C functions
     private static native String c_getWebInfoURL(long pointer);
     private static native long c_getPositionAtTime(long pointer, double julianDay);
+    private static native String c_getSpectralType(long pointer);
 }

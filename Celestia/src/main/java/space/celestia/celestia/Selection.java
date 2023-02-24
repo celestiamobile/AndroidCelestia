@@ -34,7 +34,11 @@ public class Selection {
                 object = new Body(objectPointer);
                 break;
             case SELECTION_TYPE_DEEP_SKY:
-                object = new DSO(objectPointer);
+                if (DSOCatalog.c_isDSOGalaxy(objectPointer)) {
+                    object = new Galaxy(objectPointer);
+                } else {
+                    object = new DSO(objectPointer);
+                }
                 break;
             case SELECTION_TYPE_LOCATION:
                 object = new Location(objectPointer);

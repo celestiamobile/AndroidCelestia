@@ -23,7 +23,7 @@ extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_DSOCatalog_c_1getCount(JNIEnv *env, jclass clazz, jlong ptr) {
     auto d = (DSODatabase *)ptr;
-    return d->size();
+    return static_cast<jint>(d->size());
 }
 
 extern "C"
@@ -31,4 +31,11 @@ JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_DSOCatalog_c_1getDSO(JNIEnv *env, jclass clazz, jlong ptr, jint index) {
     auto d = (DSODatabase *)ptr;
     return (jlong)d->getDSO(index);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_DSOCatalog_c_1isDSOGalaxy(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto d = reinterpret_cast<DeepSkyObject *>(ptr);
+    return !strcmp(d->getObjTypeName(), "galaxy") ? JNI_TRUE : JNI_FALSE;
 }
