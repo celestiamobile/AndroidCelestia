@@ -60,10 +60,13 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import space.celestia.celestia.*
+import space.celestia.celestia.Observer
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.control.*
+import space.celestia.mobilecelestia.di.AppSettings
+import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
@@ -124,10 +127,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
-    CommonWebFragment.Listener {
+    CommonWebFragment.Listener,
+    ObserverModeFragment.Listener {
 
-    private val preferenceManager by lazy { PreferenceManager(this, "celestia") }
-    private val settingManager by lazy { PreferenceManager(this, "celestia_setting") }
+    @AppSettings
+    @Inject
+    lateinit var appSettings: PreferenceManager
+
+    @CoreSettings
+    @Inject
+    lateinit var coreSettings: PreferenceManager
+
     private val legacyCelestiaParentPath by lazy { this.filesDir.absolutePath }
     private val celestiaParentPath by lazy { this.noBackupFilesDir.absolutePath }
     private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
@@ -187,7 +197,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var bottomSheetCommitIds = arrayListOf<Int>()
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
         appStatusReporter = factory.getAppStatusReporter()
@@ -217,10 +226,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         // One time migration of language to system per app language support
-        val language = preferenceManager[PreferenceManager.PredefinedKey.Language]
+        val language = appSettings[PreferenceManager.PredefinedKey.Language]
         if (language != null) {
             // Clear the stored language first
-            preferenceManager[PreferenceManager.PredefinedKey.Language] = null
+            appSettings[PreferenceManager.PredefinedKey.Language] = null
             AppCompatDelegate.setApplicationLocales(
                 LocaleListCompat.forLanguageTags(
                     language.replace("_", "-")
@@ -228,7 +237,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             )
         }
 
-        if (preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
+        if (appSettings[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
             val builder = MaterialAlertDialogBuilder(this)
             builder.setCancelable(false)
             builder.setTitle(R.string.privacy_policy_alert_title)
@@ -239,7 +248,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 exitProcess(0)
             }
             builder.setPositiveButton(R.string.privacy_policy_alert_accept_button_title) { _, _ ->
-                preferenceManager[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] = "true"
+                appSettings[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] = "true"
             }
             builder.setNegativeButton(R.string.privacy_policy_alert_decline_button_title) { dialog, _ ->
                 dialog.cancel()
@@ -271,6 +280,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
+        @Suppress("ClickableViewAccessibility")
         findViewById<View>(R.id.interaction_filter).setOnTouchListener { _, _ ->
             if (interactionBlocked) { return@setOnTouchListener true }
             // Pass through
@@ -540,7 +550,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun copyAssetIfNeeded() {
         appStatusReporter.updateStatus(CelestiaString("Copying data…", ""))
-        if (preferenceManager[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
+        if (appSettings[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
             // When version name does not match, copy the asset again
             copyAssetsAndRemoveOldAssets()
         }
@@ -575,10 +585,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         )
 
         // Read custom paths here
-        customConfigFilePath = preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath]
-        customDataDirPath = preferenceManager[PreferenceManager.PredefinedKey.DataDirPath]
+        customConfigFilePath = appSettings[PreferenceManager.PredefinedKey.ConfigFilePath]
+        customDataDirPath = appSettings[PreferenceManager.PredefinedKey.DataDirPath]
         customFrameRateOption =
-            preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull()
+            appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull()
                 ?: Renderer.FRAME_60FPS
 
         val localeDirectory = File("${celestiaDataDirPath}/locale")
@@ -591,9 +601,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         language = getString(R.string.celestia_language)
 
-        enableMultisample = preferenceManager[PreferenceManager.PredefinedKey.MSAA] == "true"
+        enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true"
         enableHiDPI =
-            preferenceManager[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
+            appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -712,8 +722,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             addonToOpen = null
         }
 
-        if (preferenceManager[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
-            preferenceManager[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
+        if (appSettings[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
+            appSettings[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
             showHelp()
             cleanup()
             return
@@ -752,7 +762,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch {
             try {
                 val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
-                if (preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
+                if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
                 showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(result.id, lang), listOf("guide")))
             } catch (ignored: Throwable) {}
@@ -770,7 +780,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } catch (ignored: Exception) {}
         AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_DATA_FOLDER_NAME, celestiaParentPath)
         AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_FONT_FOLDER_NAME, celestiaParentPath)
-        preferenceManager[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
+        appSettings[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
     }
 
     private fun readSettings() {
@@ -805,7 +815,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         fun getCustomInt(key: String): Int? {
-            val value = settingManager[PreferenceManager.CustomKey(key)] ?: return null
+            val value = coreSettings[PreferenceManager.CustomKey(key)] ?: return null
             return try {
                 value.toInt()
             } catch (exp: NumberFormatException) {
@@ -823,7 +833,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         fun getCustomDouble(key: String): Double? {
-            val value = settingManager[PreferenceManager.CustomKey(key)] ?: return null
+            val value = coreSettings[PreferenceManager.CustomKey(key)] ?: return null
             return try {
                 value.toDouble()
             } catch (exp: NumberFormatException) {
@@ -1109,7 +1119,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onReceivedACK(id: String) {
         if (id == latestNewsID) {
-            preferenceManager[PreferenceManager.PredefinedKey.LastNewsID] = id
+            appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
         }
     }
 
@@ -1220,6 +1230,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onCameraActionStepperTouchUp(action: CameraControlAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyUp(action.value) }
+    }
+
+    override fun onCameraControlObserverModeClicked() {
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet) as? CameraControlContainerFragment ?: return
+        frag.pushFragment(ObserverModeFragment.newInstance())
+    }
+
+    override fun onObserverModeLearnMoreClicked() {
+        openURL("https://celestia.mobi/help/flight-mode")
     }
 
     override fun onHelpActionSelected(action: HelpAction) {
@@ -1338,7 +1357,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onRefreshRateChanged(frameRateOption: Int) {
-        preferenceManager[PreferenceManager.PredefinedKey.FrameRateOption] = frameRateOption.toString()
+        appSettings[PreferenceManager.PredefinedKey.FrameRateOption] = frameRateOption.toString()
         customFrameRateOption = frameRateOption
         reloadSettings()
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
@@ -1347,7 +1366,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
         withContext(executor.asCoroutineDispatcher()) { appCore.setBooleanValueForField(field, value) }
         if (!volatile)
-            settingManager[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
+            coreSettings[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
         if (reloadSettings)
             reloadSettings()
     }
@@ -1355,7 +1374,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun applyIntValue(value: Int, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
         withContext(executor.asCoroutineDispatcher()) { appCore.setIntValueForField(field, value) }
         if (!volatile)
-            settingManager[PreferenceManager.CustomKey(field)] = value.toString()
+            coreSettings[PreferenceManager.CustomKey(field)] = value.toString()
         if (reloadSettings)
             reloadSettings()
     }
@@ -1363,7 +1382,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun applyDoubleValue(value: Double, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
         withContext(executor.asCoroutineDispatcher()) { appCore.setDoubleValueForField(field, value) }
         if (!volatile)
-            settingManager[PreferenceManager.CustomKey(field)] = value.toString()
+            coreSettings[PreferenceManager.CustomKey(field)] = value.toString()
         if (reloadSettings)
             reloadSettings()
     }
@@ -1372,7 +1391,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         key: PreferenceManager.PredefinedKey,
         value: Boolean
     ) {
-        preferenceManager[key] = if (value) "true" else "false"
+        appSettings[key] = if (value) "true" else "false"
     }
 
     override fun onCommonSettingSelectionChanged(field: String, selected: Int) {
@@ -1380,7 +1399,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean? {
-        return when (preferenceManager[key]) {
+        return when (appSettings[key]) {
             "true" -> true
             "false" -> false
             else -> null
@@ -1542,12 +1561,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun setDataDirectoryPath(path: String?) {
-        preferenceManager[PreferenceManager.PredefinedKey.DataDirPath] = path
+        appSettings[PreferenceManager.PredefinedKey.DataDirPath] = path
         customDataDirPath = path
     }
 
     private fun setConfigFilePath(path: String?) {
-        preferenceManager[PreferenceManager.PredefinedKey.ConfigFilePath] = path
+        appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] = path
         customConfigFilePath = path
     }
 

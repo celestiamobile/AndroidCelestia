@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-#include "CelestiaJNI.h"
+#include "CelestiaSelection.h"
 #include <celengine/observer.h>
 
 extern "C"
@@ -29,4 +29,13 @@ Java_space_celestia_celestia_Observer_c_1setDisplayedSurface(JNIEnv *env,
     const char *str = env->GetStringUTFChars(displayed_surface, nullptr);
     ((Observer *)ptr)->setDisplayedSurface(str);
     env->ReleaseStringUTFChars(displayed_surface, str);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_Observer_c_1setFrame(JNIEnv *env, jclass clazz, jlong ptr,
+                                                  jint coordinate_system, jobject reference,
+                                                  jobject target) {
+    auto observer = reinterpret_cast<Observer *>(ptr);
+    observer->setFrame(static_cast<ObserverFrame::CoordinateSystem>(coordinate_system), javaSelectionAsSelection(env, reference), javaSelectionAsSelection(env, target));
 }

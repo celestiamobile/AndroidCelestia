@@ -14,6 +14,12 @@ package space.celestia.celestia;
 import androidx.annotation.NonNull;
 
 public class Observer {
+    public static final int COORDINATE_SYSTEM_UNIVERSAL = 0;
+    public static final int COORDINATE_SYSTEM_ECLIPTICAL = 1;
+    public static final int COORDINATE_SYSTEM_BODY_FIXED = 3;
+    public static final int COORDINATE_SYSTEM_PHASE_LOCK = 5;
+    public static final int COORDINATE_SYSTEM_CHASE = 6;
+
     private final long pointer;
 
     protected Observer(long ptr) {
@@ -29,6 +35,11 @@ public class Observer {
         c_setDisplayedSurface(pointer, displayedSurface);
     }
 
+    public void setFrame(int coordinateSystem, @NonNull Selection reference, @NonNull Selection target) {
+        c_setFrame(pointer, coordinateSystem, reference, target);
+    }
+
     private static native String c_getDisplayedSurface(long ptr);
     private static native void c_setDisplayedSurface(long ptr, String displayedSurface);
+    private static native void c_setFrame(long ptr, int coordinateSystem, Selection reference, Selection target);
 }
