@@ -21,6 +21,18 @@ android {
     buildToolsVersion constants.buildToolsVersion
     ndkVersion constants.ndkVersion
 
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.3"
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
     defaultConfig {
         applicationId "space.celestia.mobilecelestia"
         minSdkVersion constants.minSdkVersion
@@ -119,6 +131,9 @@ dependencies {
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
+
+    implementation "androidx.compose.material3:material3:1.0.1"
+    implementation "com.google.accompanist:accompanist-themeadapter-material3:0.28.0"
 
     testImplementation "junit:junit:4.13.2"
     androidTestImplementation "androidx.test.ext:junit:1.1.5"

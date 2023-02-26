@@ -17,17 +17,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.widget.addTextChangedListener
-import com.google.android.material.textfield.TextInputLayout
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.dimensionResource
+import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.control.Header
+import space.celestia.mobilecelestia.control.ObjectNameAutoComplete
+import space.celestia.mobilecelestia.control.OptionSelect
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getSerializableValue
 import java.io.Serializable
-import java.lang.ref.WeakReference
 import java.text.NumberFormat
 import java.util.*
 import javax.inject.Inject
@@ -42,12 +53,6 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         get() = requireNotNull(_goToData)
     private var _goToData: GoToData? = null
 
-    private lateinit var distanceUnitEditText: AutoCompleteTextView
-    private lateinit var distanceEditText: EditText
-    private lateinit var longitudeEditText: EditText
-    private lateinit var latitudeEditText: EditText
-    private lateinit var objectNameEditText: AutoCompleteTextView
-
     private lateinit var numberFormat: NumberFormat
 
     @Inject
@@ -57,12 +62,8 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         if (_goToData == null) {
-            if (savedInstanceState != null) {
-                _goToData = savedInstanceState.getSerializableValue(ARG_DATA, GoToData::class.java)
-            } else {
-                arguments?.let {
-                    _goToData = it.getSerializableValue(ARG_DATA, GoToData::class.java)
-                }
+            arguments?.let {
+                _goToData = it.getSerializableValue(ARG_DATA, GoToData::class.java)
             }
         }
     }
@@ -70,107 +71,96 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_go_to, container, false)
-
+    ): View {
         numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
         numberFormat.maximumFractionDigits = 2
 
-        val objectHeaderContainer = view.findViewById<View>(R.id.object_name_section_header)
-        objectHeaderContainer.findViewById<TextView>(R.id.text).text = CelestiaString("Object", "")
-
-        objectNameEditText = view.findViewById(R.id.object_name_text_view)
-        val adapter = GoToSuggestionAdapter(requireActivity(), android.R.layout.simple_dropdown_item_1line, appCore)
-        objectNameEditText.threshold = 1
-        objectNameEditText.setAdapter(adapter)
-
-        val coordinateHeaderContainer = view.findViewById<View>(R.id.coordinate_section_header)
-        coordinateHeaderContainer.findViewById<TextView>(R.id.text).text = CelestiaString("Coordinates", "")
-        longitudeEditText = view.findViewById(R.id.longitude_text_view)
-        view.findViewById<TextInputLayout>(R.id.longitude_text_container).hint = CelestiaString("Longitude", "")
-
-        latitudeEditText = view.findViewById(R.id.latitude_text_view)
-        view.findViewById<TextInputLayout>(R.id.latitude_text_container).hint = CelestiaString("Latitude", "")
-
-        val distanceHeaderContainer = view.findViewById<View>(R.id.distance_section_header)
-        distanceHeaderContainer.findViewById<TextView>(R.id.text).text = CelestiaString("Distance", "")
-
-        distanceEditText = view.findViewById(R.id.distance_text_view)
-
-        distanceUnitEditText = view.findViewById(R.id.unit_text_view)
-        val unitAdapter = object: ArrayAdapter<String>(requireActivity(), android.R.layout.simple_dropdown_item_1line) {
-            override fun getCount(): Int {
-                return distanceUnits.size
-            }
-
-            override fun getItem(position: Int): String {
-                return  CelestiaString(distanceUnits[position].name, "")
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen(goToData)
+                }
             }
         }
-        distanceUnitEditText.setAdapter(unitAdapter)
-
-        val goToButton = view.findViewById<Button>(R.id.go_to_button)
-        goToButton.text = CelestiaString("Go", "")
-
-        val weakSelf = WeakReference(this)
-        goToButton.setOnClickListener {
-            val self = weakSelf.get() ?: return@setOnClickListener
-            self.listener?.onGoToObject(self.goToData)
-        }
-
-        distanceEditText.addTextChangedListener { newText ->
-            val text = newText?.toString() ?: return@addTextChangedListener
-            val self = weakSelf.get() ?: return@addTextChangedListener
-            val result = convertToDoubleOrNull(text) ?: return@addTextChangedListener
-            self.goToData.distance = result
-        }
-
-        longitudeEditText.addTextChangedListener { newText ->
-            val text = newText?.toString() ?: return@addTextChangedListener
-            val self = weakSelf.get() ?: return@addTextChangedListener
-            val result = convertToDoubleOrNull(text) ?: return@addTextChangedListener
-            self.goToData.longitude = result.toFloat()
-        }
-
-        latitudeEditText.addTextChangedListener { newText ->
-            val text = newText?.toString() ?: return@addTextChangedListener
-            val self = weakSelf.get() ?: return@addTextChangedListener
-            val result = convertToDoubleOrNull(text) ?: return@addTextChangedListener
-            self.goToData.latitude = result.toFloat()
-        }
-
-        objectNameEditText.addTextChangedListener { newText ->
-            val self = weakSelf.get() ?: return@addTextChangedListener
-            val result = newText?.toString() ?: return@addTextChangedListener
-            self.goToData.objectName = result
-        }
-
-        distanceUnitEditText.setOnItemClickListener { _, _, position, _ ->
-            val self = weakSelf.get() ?: return@setOnItemClickListener
-            self.goToData.distanceUnit = distanceUnits[position]
-        }
-        reload()
-        return view
     }
 
-    private fun reload() {
-        objectNameEditText.setText(goToData.objectName)
-        distanceUnitEditText.setText(CelestiaString(goToData.distanceUnit.name, ""))
-        longitudeEditText.setText(numberFormat.format(goToData.longitude))
-        latitudeEditText.setText(numberFormat.format(goToData.latitude))
-        distanceEditText.setText(numberFormat.format(goToData.distance))
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MainScreen(initialData: GoToData) {
+        var objectName by remember {
+            mutableStateOf(initialData.objectName)
+        }
+        var longitudeString by rememberSaveable {
+            mutableStateOf(numberFormat.format(initialData.longitude))
+        }
+        var latitudeString by rememberSaveable {
+            mutableStateOf(numberFormat.format(initialData.latitude))
+        }
+        var distanceString by rememberSaveable {
+            mutableStateOf(numberFormat.format(initialData.distance))
+        }
+        var distanceUnit by rememberSaveable {
+            mutableStateOf(initialData.distanceUnit)
+        }
+        val textViewModifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
+                vertical = dimensionResource(id = R.dimen.list_item_small_margin_vertical),
+            )
+        Column(modifier = Modifier
+            .verticalScroll(state = rememberScrollState(), enabled = true)
+            .systemBarsPadding()) {
+            Header(text = CelestiaString("Object", ""))
+            ObjectNameAutoComplete(appCore = appCore, name = objectName, modifier = textViewModifier) {
+                objectName = it
+            }
+            Header(text = CelestiaString("Coordinates", ""))
+            Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+                OutlinedTextField(value = longitudeString, label = { Text(text = CelestiaString("Longitude", "")) }, onValueChange = {
+                    longitudeString = it
+                }, modifier = Modifier.weight(1.0f))
+                OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "")) }, onValueChange = {
+                    latitudeString = it
+                }, modifier = Modifier.weight(1.0f))
+            }
+            Header(text = CelestiaString("Distance", ""))
+            Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+                OutlinedTextField(value = distanceString, onValueChange = {
+                    distanceString = it
+                }, modifier = Modifier.weight(1.0f))
+                OptionSelect(options = distanceUnits.map { CelestiaString(it.name, "") }, selectedIndex = distanceUnits.indexOf(distanceUnit) , selectionChange = {
+                    distanceUnit = distanceUnits[it]
+                })
+            }
+            FilledTonalButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
+                        top = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
+                        end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
+                        bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical)
+                    ),
+                onClick = {
+                    val longitude = convertToDoubleOrNull(longitudeString) ?: return@FilledTonalButton
+                    val latitude = convertToDoubleOrNull(latitudeString) ?: return@FilledTonalButton
+                    val distance = convertToDoubleOrNull(distanceString) ?: return@FilledTonalButton
+                    listener?.onGoToObject(GoToData(objectName, longitude = longitude.toFloat(), latitude = latitude.toFloat(), distance = distance, distanceUnit = distanceUnit))
+                }
+            ) {
+                Text(text = CelestiaString("Go", ""))
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         title = CelestiaString("Go to Object", "")
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(ARG_DATA, goToData)
-
-        super.onSaveInstanceState(outState)
     }
 
     override fun onAttach(context: Context) {
@@ -195,10 +185,6 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
-    }
-
-    fun updateObjectName(name: String) {
-        goToData.objectName = name
     }
 
     interface Listener {
