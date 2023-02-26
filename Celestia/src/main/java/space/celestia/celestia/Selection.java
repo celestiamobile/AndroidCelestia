@@ -24,6 +24,11 @@ public class Selection {
     final public @Nullable AstroObject object;
     final public int type;
 
+    public Selection() {
+        object = null;
+        type = SELECTION_TYPE_NIL;
+    }
+
     public Selection(long objectPointer, int type) {
         switch (type)
         {
