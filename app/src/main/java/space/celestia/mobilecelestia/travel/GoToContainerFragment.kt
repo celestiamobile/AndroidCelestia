@@ -43,11 +43,6 @@ class GoToContainerFragment : NavigationFragment() {
         return GoToInputFragment.newInstance(goToData)
     }
 
-    fun updateObjectName(name: String) {
-        goToData.objectName = name
-        (top as? GoToInputFragment)?.updateObjectName(name)
-    }
-
     companion object {
         private const val ARG_DATA = "data"
 

@@ -45,6 +45,7 @@
             android:screenOrientation="fullSensor"
             android:launchMode="singleInstance"
             android:exported="true"
+            android:windowSoftInputMode="adjustPan"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
