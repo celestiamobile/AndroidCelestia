@@ -26,9 +26,9 @@ enum class CelestiaControlAction {
 
 interface CelestiaControlButton
 
-class CelestiaToggleButton(val image: Int, val offAction: CelestiaControlAction, val onAction: CelestiaControlAction, val currentState: Boolean): CelestiaControlButton
-class CelestiaTapButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton
-class CelestiaPressButton(val image: Int, val action: CelestiaControlAction): CelestiaControlButton
+class CelestiaToggleButton(val image: Int, val offAction: CelestiaControlAction, val onAction: CelestiaControlAction, val contentDescription: String, val currentState: Boolean): CelestiaControlButton
+class CelestiaTapButton(val image: Int, val action: CelestiaControlAction, val contentDescription: String): CelestiaControlButton
+class CelestiaPressButton(val image: Int, val action: CelestiaControlAction, val contentDescription: String): CelestiaControlButton
 
 class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs)  {
     var buttons: List<CelestiaControlButton> = listOf()
@@ -61,10 +61,12 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
             when (item) {
                 is CelestiaTapButton -> {
                     button.setImageResource(item.image)
+                    button.contentDescription = item.contentDescription
                     button.setOnClickListener { listener?.didTapAction(item.action) }
                 }
                 is CelestiaPressButton -> {
                     button.setImageResource(item.image)
+                    button.contentDescription = item.contentDescription
                     button.setOnTouchListener { view, event ->
                         when (event.actionMasked) {
                             MotionEvent.ACTION_DOWN -> {
@@ -79,6 +81,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
                 }
                 is CelestiaToggleButton -> {
                     button.isSelected = item.currentState
+                    button.contentDescription = item.contentDescription
                     button.setImageResource(item.image)
                     button.setOnClickListener { btn ->
                         btn.isSelected = !btn.isSelected

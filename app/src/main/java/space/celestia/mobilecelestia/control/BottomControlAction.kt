@@ -14,10 +14,12 @@ package space.celestia.mobilecelestia.control
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
 interface BottomControlAction: Serializable {
     val imageID: Int?
+    val contentDescription: String?
 }
 
 class InstantAction(val action: CelestiaAction): Serializable, BottomControlAction {
@@ -48,6 +50,34 @@ class InstantAction(val action: CelestiaAction): Serializable, BottomControlActi
                 null
             }
         }
+
+    override val contentDescription: String?
+        get() = when (action) {
+            CelestiaAction.Faster -> {
+                CelestiaString("Faster", "")
+            }
+            CelestiaAction.Slower -> {
+                CelestiaString("Slower", "")
+            }
+            CelestiaAction.PlayPause -> {
+                CelestiaString("Resume or Pause", "")
+            }
+            CelestiaAction.CancelScript -> {
+                CelestiaString("Stop", "")
+            }
+            CelestiaAction.Reverse -> {
+                CelestiaString("Reverse", "")
+            }
+            CelestiaAction.ReverseSpeed -> {
+                CelestiaString("Reverse", "")
+            }
+            CelestiaAction.Stop -> {
+                CelestiaString("Stop", "")
+            }
+            else -> {
+                null
+            }
+        }
 }
 
 class ContinuousAction(val action: CelestiaContinuosAction): Serializable, BottomControlAction {
@@ -63,11 +93,24 @@ class ContinuousAction(val action: CelestiaContinuosAction): Serializable, Botto
                 null
             }
         }
+
+    override val contentDescription: String?
+        get() = when (action) {
+            CelestiaContinuosAction.TravelFaster -> {
+                CelestiaString("Faster", "")
+            }
+            CelestiaContinuosAction.TravelSlower -> {
+                CelestiaString("Slower", "")
+            }
+            else -> {
+                null
+            }
+        }
 }
 
 class GroupActionItem(val title: String, val action: CelestiaContinuosAction): Serializable
 
-class GroupAction(val actions: List<GroupActionItem>): Serializable, BottomControlAction {
+class GroupAction(override val contentDescription: String, val actions: List<GroupActionItem>): Serializable, BottomControlAction {
     override val imageID: Int
         get() = R.drawable.common_other
 }

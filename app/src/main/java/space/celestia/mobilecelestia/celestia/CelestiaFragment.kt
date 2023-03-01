@@ -91,6 +91,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var loadSuccess = false
     private var haveSurface = false
     private var interactionMode = CelestiaInteraction.InteractionMode.Object
+    private lateinit var controlView: CelestiaControlView
 
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
@@ -142,18 +143,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         appStatusReporter.register(this)
 
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
-        val controlView = view.findViewById<CelestiaControlView>(R.id.control_view)
-
-        val items = listOf(
-            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, interactionMode == CelestiaInteraction.InteractionMode.Camera),
-            CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn),
-            CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut),
-            CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info),
-            CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu),
-            CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide)
-        )
-
-        controlView.buttons = items
+        controlView = view.findViewById<CelestiaControlView>(R.id.control_view)
         controlView.listener = this
 
         if (!hasSetRenderer) {
@@ -363,11 +353,23 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     private fun setupInteractions() {
+        // Set up control buttons
+        val items = listOf(
+            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", ""), interactionMode == CelestiaInteraction.InteractionMode.Camera),
+            CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
+            CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
+            CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "")),
+            CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "")),
+            CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", ""))
+        )
+        controlView.buttons = items
+
         glView.isReady = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             glView.isContextClickable = true
         }
         viewInteraction.isReady = true
+        @Suppress("ClickableViewAccessibility")
         glView.setOnTouchListener { v, event ->
             showControlViewIfNeeded()
             viewInteraction.onTouch(v, event)
