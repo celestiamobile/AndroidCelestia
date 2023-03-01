@@ -1574,6 +1574,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun celestiaFragmentCanAcceptKeyEvents(): Boolean {
+        // check drawer
+        if (drawerLayout.isDrawerOpen(GravityCompat.END))
+            return false
+        // check bottom sheet
+        if (findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
+            return false
+        return true
+    }
+
     override fun provideFallbackConfigFilePath(): String {
         return defaultConfigFilePath
     }
