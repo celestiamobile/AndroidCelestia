@@ -53,6 +53,7 @@ class BottomControlRecyclerViewAdapter(
 
         val item = values[position]
         holder.imageButton.setImageResource(item.imageID ?: 0)
+        holder.imageButton.contentDescription = item.contentDescription
         if (item is InstantAction) {
             holder.imageButton.setOnClickListener {
                 listener?.onInstantActionSelected(item.action)

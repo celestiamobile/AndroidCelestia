@@ -32,8 +32,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.AppCompatImageButton
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
@@ -486,6 +487,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
         }
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+        findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
         if (supportFragmentManager.findFragmentById(R.id.drawer) == null) {
             supportFragmentManager
                 .beginTransaction()
@@ -1812,7 +1814,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 InstantAction(CelestiaAction.Stop),
                 InstantAction(CelestiaAction.ReverseSpeed),
                 GroupAction(
-                    listOf(
+                    contentDescription = CelestiaString("Speed Presets", ""),
+                    actions = listOf(
                         GroupActionItem(CelestiaString("1 km/s", ""), CelestiaContinuosAction.F2),
                         GroupActionItem(CelestiaString("1000 km/s", ""), CelestiaContinuosAction.F3),
                         GroupActionItem(CelestiaString("c (lightspeed)", ""), CelestiaContinuosAction.F4),
