@@ -18,3 +18,5 @@
 #define HAVE_SINCOS
 //#define HAVE_APPLE_SINCOS
 //#define WORDS_BIGENDIAN
+
+#define VERSION "1.7.0"

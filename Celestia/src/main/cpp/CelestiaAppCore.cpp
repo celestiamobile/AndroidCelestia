@@ -209,7 +209,7 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
     const float DEFAULT_AMBIENT_LIGHT_LEVEL = 0.1f;
     const float DEFAULT_VISUAL_MAGNITUDE = 8.0f;
     const Renderer::StarStyle DEFAULT_STAR_STYLE = Renderer::FuzzyPointStars;
-    const ColorTableType DEFAULT_STARS_COLOR = ColorTable_Blackbody_D65;
+    const ColorTableType DEFAULT_STARS_COLOR = ColorTableType::Blackbody_D65;
     const unsigned int DEFAULT_TEXTURE_RESOLUTION = medres;
 
     core->getRenderer()->setRenderFlags(Renderer::DefaultRenderFlags);
