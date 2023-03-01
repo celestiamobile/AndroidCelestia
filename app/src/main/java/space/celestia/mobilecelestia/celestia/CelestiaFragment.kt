@@ -377,9 +377,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             viewInteraction.onTouch(v, event)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            glView.defaultFocusHighlightEnabled = false
             glView.isFocusable = true
             glView.isFocusableInTouchMode = true
-            glView.isFocusedByDefault = true
             glView.requestFocus()
         }
         glView.setOnKeyListener(viewInteraction)

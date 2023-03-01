@@ -1192,7 +1192,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onBottomControlHide() {
         lifecycleScope.launch {
-            hideOverlay(true)
+            hideToolbar(true)
         }
     }
 
@@ -1616,7 +1616,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private suspend fun hideOverlay(animated: Boolean) {
         hideMenu(animated)
-        hideToolbar(animated)
         hideBottomSheet(animated)
     }
 
@@ -1646,7 +1645,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private suspend fun hideToolbar(animated: Boolean) {
-        hideView(animated, R.id.toolbar_container, false)
+        hideViewAlpha(animated, R.id.toolbar_container)
         findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
         val fragment = supportFragmentManager.findFragmentById(R.id.toolbar_container)
         if (fragment != null)
@@ -1689,14 +1688,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         bottomSheetCommitIds.removeLast()
     }
 
-    private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean): Unit = suspendCoroutine { cont ->
+    private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean) {
         val view = findViewById<View>(viewID)
         view.visibility = View.VISIBLE
-        val parent = view.parent as? View
-        if (parent == null) {
-            cont.resume(Unit)
-            return@suspendCoroutine
-        }
+        val parent = view.parent as? View ?: return
 
         val destination: Float = if (horizontal) {
             val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
@@ -1704,16 +1699,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } else {
             (parent.height - view.top).toFloat()
         }
+        showView(animated, view, ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", destination, 0f))
+    }
 
+    private suspend fun showViewAlpha(animated: Boolean, viewID: Int) {
+        val view = findViewById<View>(viewID)
+        view.visibility = View.VISIBLE
+        view.alpha = 0.0f
+
+        showView(animated, view, ObjectAnimator.ofFloat(view, "alpha", 1.0f))
+    }
+
+    private suspend fun showView(animated: Boolean, view: View, showAnimator: ObjectAnimator): Unit = suspendCoroutine { cont ->
         val executionBlock = {
             cont.resume(Unit)
         }
-
         if (!animated) {
             executionBlock()
         } else {
-            val showAnimator = ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", destination, 0f)
-
             showAnimator.duration = 200
             showAnimator.addListener(onStart = {
                 interactionBlocked = true
@@ -1728,13 +1731,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private suspend fun hideView(animated: Boolean, viewID: Int, horizontal: Boolean): Unit = suspendCoroutine { cont ->
+    private suspend fun hideView(animated: Boolean, viewID: Int, horizontal: Boolean) {
         val view = findViewById<View>(viewID)
-        val parent = view.parent as? View
-        if (parent == null) {
-            cont.resume(Unit)
-            return@suspendCoroutine
-        }
+        val parent = view.parent as? View ?: return
 
         val destination: Float = if (horizontal) {
             val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
@@ -1742,7 +1741,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } else {
             (parent.height - view.top).toFloat()
         }
+        hideView(animated, view, ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", 0f, destination))
+    }
 
+    private suspend fun hideViewAlpha(animated: Boolean, viewID: Int) {
+        val view = findViewById<View>(viewID)
+        hideView(animated, view, ObjectAnimator.ofFloat(view, "alpha", 0.0f))
+    }
+
+    private suspend fun hideView(animated: Boolean, view: View, hideAnimator: ObjectAnimator): Unit = suspendCoroutine { cont ->
         val executionBlock = {
             view.visibility = View.INVISIBLE
             cont.resume(Unit)
@@ -1751,7 +1758,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (view.visibility != View.VISIBLE || !animated) {
             executionBlock()
         } else {
-            val hideAnimator = ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", 0f, destination)
             hideAnimator.duration = 200
             hideAnimator.addListener(onStart = {
                 interactionBlocked = true
@@ -1979,6 +1985,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private suspend fun showToolbarFragment(fragment: Fragment) {
         hideOverlay(true)
+        hideToolbar(true)
         showToolbarFragmentDirect(fragment)
     }
 
@@ -1988,7 +1995,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .beginTransaction()
             .add(R.id.toolbar_container, fragment)
             .commitAllowingStateLoss()
-        showView(true, R.id.toolbar_container, false)
+        showViewAlpha(true, R.id.toolbar_container)
     }
 
     companion object {
