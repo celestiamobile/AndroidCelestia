@@ -24,7 +24,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import kotlin.math.abs
 
-class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode, private val canAcceptKeyEvents: () -> Boolean): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -107,6 +107,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
         if (event.source and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK
             && event.action == MotionEvent.ACTION_MOVE) {
+            if (!canAcceptKeyEvents()) return false
             // Process the movements starting from the
             // earliest historical position in the batch
             (0 until event.historySize).forEach { i ->
@@ -351,6 +352,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     override fun onKey(v: View?, keyCode: Int, event: KeyEvent?): Boolean {
         if (v == null || event == null) return false
         if (!isReady) return false
+        if (!canAcceptKeyEvents()) return false
 
         if (event.source and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) {
             val key = event.keyCode
@@ -376,7 +378,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (!isReady) return false
+        if (!canAcceptKeyEvents()) return false
 
         var input = event.unicodeChar
         if ((event.metaState and KeyEvent.META_CTRL_ON) != 0) {
@@ -396,7 +398,6 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        if (!isReady) return false
         executor.execute {
             appCore.keyUp(event.unicodeChar, keyCode, 0)
         }

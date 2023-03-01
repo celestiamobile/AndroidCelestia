@@ -39,6 +39,7 @@ import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.showToast
+import java.lang.ref.WeakReference
 import java.util.*
 import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
@@ -99,6 +100,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         fun provideFallbackConfigFilePath(): String
         fun provideFallbackDataDirectoryPath(): String
         fun celestiaFragmentLoadingFromFallback()
+        fun celestiaFragmentCanAcceptKeyEvents(): Boolean
     }
 
     private var listener: Listener? = null
@@ -244,16 +246,16 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         registerForContextMenu(view)
 
-        val interaction = CelestiaInteraction(activity, appCore, executor, interactionMode)
+        val weakSelf = WeakReference(this)
+        val interaction = CelestiaInteraction(activity, appCore, executor, interactionMode) {
+            val self = weakSelf.get() ?: return@CelestiaInteraction false
+            return@CelestiaInteraction listener?.celestiaFragmentCanAcceptKeyEvents() ?: false
+        }
         glView = view
         viewInteraction = interaction
 
         interaction.scaleFactor = scaleFactor
         interaction.density = density
-        view.isFocusable = true
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            view.defaultFocusHighlightEnabled = false
-        }
         renderer.startConditionally(activity, enableMultisample)
         container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         view.holder?.addCallback(this)
@@ -373,6 +375,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         glView.setOnTouchListener { v, event ->
             showControlViewIfNeeded()
             viewInteraction.onTouch(v, event)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            glView.isFocusable = true
+            glView.isFocusableInTouchMode = true
+            glView.isFocusedByDefault = true
+            glView.requestFocus()
         }
         glView.setOnKeyListener(viewInteraction)
         glView.setOnGenericMotionListener(viewInteraction)
