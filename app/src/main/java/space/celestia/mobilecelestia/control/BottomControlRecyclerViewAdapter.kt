@@ -45,6 +45,7 @@ class BottomControlRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (position == values.size) {
             holder.imageButton.setImageResource(R.drawable.bottom_control_hide)
+            holder.imageButton.contentDescription = CelestiaString("Close", "")
             holder.imageButton.setOnClickListener {
                 listener?.onBottomControlHide()
             }
