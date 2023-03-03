@@ -32,6 +32,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.control.Header
 import space.celestia.mobilecelestia.control.ObjectNameAutoComplete
@@ -54,6 +55,9 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     private var _goToData: GoToData? = null
 
     private lateinit var numberFormat: NumberFormat
+
+    @Inject
+    lateinit var executor: CelestiaExecutor
 
     @Inject
     lateinit var appCore: AppCore
@@ -115,23 +119,25 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Header(text = CelestiaString("Object", ""))
-            ObjectNameAutoComplete(appCore = appCore, name = objectName, modifier = textViewModifier) {
+            ObjectNameAutoComplete(executor = executor, core = appCore, name = objectName, modifier = textViewModifier) {
                 objectName = it
             }
             Header(text = CelestiaString("Coordinates", ""))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+                val currentLongitudeValue = convertToDoubleOrNull(longitudeString)
+                val currentLatitudeValue = convertToDoubleOrNull(latitudeString)
                 OutlinedTextField(value = longitudeString, label = { Text(text = CelestiaString("Longitude", "")) }, onValueChange = {
                     longitudeString = it
-                }, modifier = Modifier.weight(1.0f))
+                }, isError = currentLongitudeValue == null || currentLongitudeValue < -180.0 || currentLongitudeValue > 180.0, modifier = Modifier.weight(1.0f))
                 OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "")) }, onValueChange = {
                     latitudeString = it
-                }, modifier = Modifier.weight(1.0f))
+                }, isError = currentLatitudeValue == null || currentLatitudeValue < -90.0 || currentLatitudeValue > 90.0, modifier = Modifier.weight(1.0f))
             }
             Header(text = CelestiaString("Distance", ""))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
                 OutlinedTextField(value = distanceString, onValueChange = {
                     distanceString = it
-                }, modifier = Modifier.weight(1.0f))
+                }, isError = convertToDoubleOrNull(distanceString) == null, modifier = Modifier.weight(1.0f))
                 OptionSelect(options = distanceUnits.map { CelestiaString(it.name, "") }, selectedIndex = distanceUnits.indexOf(distanceUnit) , selectionChange = {
                     distanceUnit = distanceUnits[it]
                 })

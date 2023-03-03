@@ -27,14 +27,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -70,6 +68,9 @@ class SearchFragment : NavigationFragment.SubFragment() {
 
     @Inject
     lateinit var appCore: AppCore
+
+    @Inject
+    lateinit var executor: CelestiaExecutor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,7 +125,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
             .distinctUntilChanged()
             .debounce(300)
             .mapLatest { key ->
-                val result = if (key.isEmpty()) listOf<String>() else appCore.simulation.completionForText(key, SEARCH_RESULT_LIMIT)
+                val result = if (key.isEmpty()) listOf<String>() else withContext(executor.asCoroutineDispatcher()) { appCore.simulation.completionForText(key, SEARCH_RESULT_LIMIT) }
                 Pair(key, result)
             }
             .onEach {
