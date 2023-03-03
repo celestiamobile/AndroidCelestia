@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<space.celestia.ui.linkpreview.LPLinkView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/link_preview"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:titleTextColor="?attr/colorOnBackground"
+    app:footnoteTextColor="@color/material_on_background_emphasis_medium"
+    android:layout_marginBottom="@dimen/common_page_medium_gap_vertical"
+    style="@style/LinkCard"/>
