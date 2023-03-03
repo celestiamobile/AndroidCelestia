@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -108,13 +109,17 @@ class InfoFragment : NavigationFragment.SubFragment() {
             item(span = { GridItemSpan(2) }) {
                 Column {
                     if (!embeddedInNavigation) {
-                        Text(text = objectName, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.headlineSmall, modifier = rowModifier.padding(bottom = dimensionResource(
+                        SelectionContainer {
+                            Text(text = objectName, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.headlineSmall, modifier = rowModifier.padding(bottom = dimensionResource(
+                                id = R.dimen.common_page_medium_gap_vertical
+                            )))
+                        }
+                    }
+                    SelectionContainer {
+                        Text(text = overview, color = colorResource(id = R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyLarge, modifier = rowModifier.padding(bottom = dimensionResource(
                             id = R.dimen.common_page_medium_gap_vertical
                         )))
                     }
-                    Text(text = overview, color = colorResource(id = R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyLarge, modifier = rowModifier.padding(bottom = dimensionResource(
-                        id = R.dimen.common_page_medium_gap_vertical
-                    )))
                     val url = selection.webInfoURL
                     if (hasWebInfo && url != null) {
                         LinkPreview(url = URL(url), modifier = rowModifier.padding(bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), loadResult = { loadResult ->
