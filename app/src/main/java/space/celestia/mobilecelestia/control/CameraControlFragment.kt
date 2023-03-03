@@ -1,7 +1,7 @@
 /*
  * CameraControlFragment.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2001-2023, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,10 +16,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.dimensionResource
+import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.Footer
+import space.celestia.mobilecelestia.compose.Stepper
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class CameraControlAction(val value: Int) {
@@ -32,18 +44,55 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
-
-        if (view is RecyclerView) {
-            with(view) {
-                layoutManager = LinearLayoutManager(context)
-                adapter = CameraControlItemRecyclerViewAdapter(listener)
-                clipToPadding = false
-                fitsSystemWindows = true
+    ): View {
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen()
+                }
             }
         }
-        return view
+    }
+
+    @Composable
+    private fun StepperRow(name: String, minusAction: CameraControlAction, plusAction: CameraControlAction, modifier: Modifier = Modifier) {
+        Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(text = name)
+            Stepper(touchDown = { minus ->
+                listener?.onCameraActionStepperTouchDown(if (minus) minusAction else plusAction)
+            }, touchUp = { minus ->
+                listener?.onCameraActionStepperTouchUp(if (minus) minusAction else plusAction)
+            })
+        }
+    }
+
+    @Composable
+    private fun MainScreen() {
+        val internalViewModifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
+                vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
+            )
+        Column(modifier = Modifier
+            .verticalScroll(state = rememberScrollState(), enabled = true)
+            .systemBarsPadding()) {
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+            StepperRow(name = CelestiaString("Pitch", ""), minusAction = CameraControlAction.Pitch0, plusAction = CameraControlAction.Pitch1, modifier = internalViewModifier)
+            StepperRow(name = CelestiaString("Yaw", ""), minusAction = CameraControlAction.Yaw0, plusAction = CameraControlAction.Yaw1, modifier = internalViewModifier)
+            StepperRow(name = CelestiaString("Roll", ""), minusAction = CameraControlAction.Roll0, plusAction = CameraControlAction.Roll1, modifier = internalViewModifier)
+            Footer(text = CelestiaString("Long press on stepper to change orientation.", ""))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+            FilledTonalButton(modifier = internalViewModifier, onClick = {
+                listener?.onCameraActionClicked(CameraControlAction.Reverse)
+            }) {
+                Text(text = CelestiaString("Reverse Direction", ""))
+            }
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

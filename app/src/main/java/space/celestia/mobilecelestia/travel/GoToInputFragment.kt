@@ -109,7 +109,7 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             .fillMaxWidth()
             .padding(
                 horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
-                vertical = dimensionResource(id = R.dimen.list_item_small_margin_vertical),
+                vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
             )
         Column(modifier = Modifier
             .verticalScroll(state = rememberScrollState(), enabled = true)
