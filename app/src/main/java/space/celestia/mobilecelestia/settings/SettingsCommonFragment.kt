@@ -88,10 +88,12 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean)
         fun onCommonSettingUnknownAction(id: String)
         fun onCommonSettingSelectionChanged(field: String, selected: Int)
+        fun onCommonSettingSelectionRequested(key: PreferenceManager.PredefinedKey, options: List<Pair<Int, String>>)
     }
 
     interface DataSource {
         fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean?
+        fun commonSettingPreferenceSelectionState(key: PreferenceManager.PredefinedKey): Int?
         fun commonSettingSwitchState(field: String): Boolean
         fun commonSettingSliderValue(field: String): Double
         fun commonSettingSelectionValue(field: String): Int

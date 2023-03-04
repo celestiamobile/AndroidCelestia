@@ -35,9 +35,11 @@ import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
+import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.showToast
 import java.lang.ref.WeakReference
 import java.util.*
@@ -56,6 +58,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     lateinit var renderer: Renderer
     @Inject
     lateinit var executor: CelestiaExecutor
+    @AppSettings
+    @Inject
+    lateinit var appSettings: PreferenceManager
 
     // MARK: GL View
     private lateinit var glView: CelestiaView
@@ -247,10 +252,13 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         registerForContextMenu(view)
 
         val weakSelf = WeakReference(this)
-        val interaction = CelestiaInteraction(activity, appCore, executor, interactionMode) {
+        val interaction = CelestiaInteraction(activity, appCore, executor, interactionMode, appSettings, canAcceptKeyEvents = {
             val self = weakSelf.get() ?: return@CelestiaInteraction false
             return@CelestiaInteraction self.listener?.celestiaFragmentCanAcceptKeyEvents() ?: false
-        }
+        }, showMenu = {
+            val self = weakSelf.get() ?: return@CelestiaInteraction
+            self.listener?.celestiaFragmentDidRequestActionMenu()
+        })
         glView = view
         viewInteraction = interaction
 

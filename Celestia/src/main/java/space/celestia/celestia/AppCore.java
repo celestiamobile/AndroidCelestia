@@ -97,6 +97,14 @@ public class AppCore {
         c_resize(pointer, w, h);
     }
 
+    public int getWidth() {
+        return c_getWidth(pointer);
+    }
+
+    public int getHeight() {
+        return c_getHeight(pointer);
+    }
+
     public void setContextMenuHandler(@Nullable ContextMenuHandler handler) {
         contextMenuHandler = handler;
     }
@@ -248,6 +256,8 @@ public class AppCore {
     private static native void c_draw(long ptr);
     private static native void c_tick(long ptr);
     private static native void c_resize(long ptr, int w, int h);
+    private static native int c_getWidth(long ptr);
+    private static native int c_getHeight(long ptr);
     private static native void c_setSafeAreaInsets(long ptr, int left, int top, int right, int bottom);
     private static native void c_setDPI(long ptr, int dpi);
     private static native long c_getSimulation(long ptr);
