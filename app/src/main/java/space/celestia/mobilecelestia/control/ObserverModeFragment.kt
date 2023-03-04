@@ -81,9 +81,6 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
             OptionSelect(options = coordinateSystems.map { it.second }, selectedIndex = selectedCoordinateIndex, selectionChange = {
                 selectedCoordinateIndex = it
             }, modifier = internalViewModifier)
-            FooterLink(text = CelestiaString("Learn more…", ""), {
-                listener?.onObserverModeLearnMoreClicked()
-            })
 
             if (selectedCoordinateSystem != Observer.COORDINATE_SYSTEM_UNIVERSAL) {
                 Header(text = CelestiaString("Reference Object", ""))
@@ -93,13 +90,19 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             }
 
-            if (selectedCoordinateSystem == Observer.COORDINATE_SYSTEM_PHASE_LOCK || selectedCoordinateIndex == Observer.COORDINATE_SYSTEM_CHASE) {
+            if (selectedCoordinateSystem == Observer.COORDINATE_SYSTEM_PHASE_LOCK) {
                 Header(text = CelestiaString("Target Object", ""))
                 ObjectNameAutoComplete(executor = executor, core = appCore, name = targetObjectName, inputUpdated = {
                     targetObjectName = it
                 }, modifier = internalViewModifier)
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             }
+
+            val infoText = CelestiaString("Flight mode decides how you move around in Celestia. Learn more…", "")
+            val infoLinkText = CelestiaString("Learn more…", "")
+            FooterLink(text = infoText, linkText = infoLinkText, link = "https://celestia.mobi/help/flight-mode?lang=${AppCore.getLanguage()}", action = { link ->
+                listener?.onObserverModeLearnMoreClicked(link)
+            })
 
             FilledTonalButton(modifier = internalViewModifier, onClick = {
                 applyObserverMode(referenceObjectName = referenceObjectName, targetObjectName = targetObjectName, coordinateSystem = selectedCoordinateSystem)
@@ -137,7 +140,7 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
     }
 
     interface Listener {
-        fun onObserverModeLearnMoreClicked()
+        fun onObserverModeLearnMoreClicked(link: String)
     }
 
     companion object {

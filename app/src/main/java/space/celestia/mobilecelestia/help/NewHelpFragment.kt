@@ -13,7 +13,7 @@ class NewHelpFragment: CommonWebFragment() {
 
     companion object {
         fun newInstance(language: String): NewHelpFragment {
-            return create( { NewHelpFragment() }, URLHelper.buildInAppGuideURI("823FB82E-F660-BE54-F3E4-681F5BFD365D", language, false), listOf("guide"), null, true)
+            return create( { NewHelpFragment() }, URLHelper.buildInAppGuideShortURI("/help/welcome", language, false), listOf("guide"), null, true)
         }
     }
 }

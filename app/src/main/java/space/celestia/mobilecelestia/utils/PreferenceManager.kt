@@ -33,7 +33,22 @@ class PreferenceManager(context: Context, name: String) {
         FrameRateOption,
         Language,
         PrivacyPolicyAccepted,
-        LastNewsID;
+        LastNewsID,
+        ControllerRemapA,
+        ControllerRemapB,
+        ControllerRemapX,
+        ControllerRemapY,
+        ControllerRemapLT,
+        ControllerRemapLB,
+        ControllerRemapRT,
+        ControllerRemapRB,
+        ControllerRemapDpadLeft,
+        ControllerRemapDpadUp,
+        ControllerRemapDpadRight,
+        ControllerRemapDpadDown,
+        ControllerInvertX,
+        ControllerInvertY,
+        ;
 
         override val valueString: String
             get() = toString()

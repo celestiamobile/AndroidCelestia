@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.settings
 
+import space.celestia.mobilecelestia.celestia.CelestiaInteraction
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -205,6 +206,24 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
         get() = toString()
 }
 
+private val gameControllerRemapOptions = listOf(
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE, CelestiaString("None", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER, CelestiaString("Travel Faster", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER, CelestiaString("Travel Slower", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_STOP_SPEED, CelestiaString("Stop", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_REVERSE_SPEED, CelestiaString("Reverse Travel Direction", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_REVERSE_ORIENTATION, CelestiaString("Reverse Observer Orientation", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_TAP_CENTER, CelestiaString("Tap Center", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_GO_TO, CelestiaString("Go to Object", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ESC, CelestiaString("Esc", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP, CelestiaString("Pitch Up", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN, CelestiaString("Pitch Down", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_YAW_LEFT, CelestiaString("Yaw Left", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_YAW_RIGHT, CelestiaString("Yaw Right", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT, CelestiaString("Roll Left", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT, CelestiaString("Roll Right", "")),
+)
+
 interface SettingsItem : RecyclerViewItem {
     val name: String
 }
@@ -272,6 +291,19 @@ class SettingsKeyedSelectionItem(
         get() = displayName
 
     constructor(key: SettingsKey, displayName: String, index: Int) : this(key.valueString, displayName, index)
+
+    override val clickable: Boolean
+        get() = true
+}
+
+class SettingsPreferenceSelectionItem(
+    val key: PreferenceManager.PredefinedKey,
+    private val displayName: String,
+    val options: List<Pair<Int, String>>,
+    val defaultSelection: Int
+) : SettingsItem, Serializable {
+    override val name: String
+        get() = displayName
 
     override val clickable: Boolean
         get() = true
@@ -492,6 +524,35 @@ private val staticRendererItems: List<SettingsItem> = listOf(
 )
 
 private val staticAdvancedItems: List<SettingsItem> = listOf(
+    SettingsCommonItem(
+        CelestiaString("Game Controller", ""),
+        listOf(
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapA, displayName = CelestiaString("A / X", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapB, displayName = CelestiaString("B / Circle", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapX, displayName = CelestiaString("X / Square", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapY, displayName = CelestiaString("Y / Triangle", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadUp, displayName = CelestiaString("D-pad Up", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadDown, displayName = CelestiaString("D-pad Down", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadLeft, displayName = CelestiaString("D-pad Left", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadRight, displayName = CelestiaString("D-pad Right", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLB, displayName = CelestiaString("LB / L1", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLT, displayName = CelestiaString("LT / L2", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRB, displayName = CelestiaString("RB / R1", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRT, displayName = CelestiaString("RT / R2", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT),
+                ),
+                header = CelestiaString("Buttons", ""),
+            ),
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertX, rawDisplayName = "Invert Horizontally", false),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertY, rawDisplayName = "Invert Vertically", false),
+                ),
+                header = CelestiaString("Thumbsticks", ""),
+            )
+        )
+    ),
     SettingsDataLocationItem(),
     SettingsCommonItem(
         CelestiaString("Security", ""),

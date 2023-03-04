@@ -1103,3 +1103,21 @@ Java_space_celestia_celestia_AppCore_c_1getScriptSystemAccessPolicy(JNIEnv *env,
     auto core = (CelestiaCore *)pointer;
     return (jint)core->getScriptSystemAccessPolicy();
 }
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_AppCore_c_1getWidth(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto [width, _] = core->getWindowDimension();
+    return static_cast<jint>(width);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_AppCore_c_1getHeight(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto [_, height] = core->getWindowDimension();
+    return static_cast<jint>(height);
+}
+

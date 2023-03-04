@@ -1237,8 +1237,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         frag.pushFragment(ObserverModeFragment.newInstance())
     }
 
-    override fun onObserverModeLearnMoreClicked() {
-        openURL("https://celestia.mobi/help/flight-mode")
+    override fun onObserverModeLearnMoreClicked(link: String) {
+        openURL(link)
     }
 
     override fun onHelpActionSelected(action: HelpAction) {
@@ -1356,6 +1356,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         applyBooleanValue(value, field, true, volatile)
     }
 
+    override fun onCommonSettingSelectionRequested(
+        key: PreferenceManager.PredefinedKey,
+        options: List<Pair<Int, String>>
+    ) {
+        showOptions("", options = options.map { it.second }.toTypedArray()) {
+            appSettings[key] = it.toString()
+            reloadSettings()
+        }
+    }
+
     override fun onRefreshRateChanged(frameRateOption: Int) {
         appSettings[PreferenceManager.PredefinedKey.FrameRateOption] = frameRateOption.toString()
         customFrameRateOption = frameRateOption
@@ -1404,6 +1414,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             "false" -> false
             else -> null
         }
+    }
+
+    override fun commonSettingPreferenceSelectionState(key: PreferenceManager.PredefinedKey): Int? {
+        return appSettings[key]?.toIntOrNull()
     }
 
     override fun commonSettingSliderValue(field: String): Double {
