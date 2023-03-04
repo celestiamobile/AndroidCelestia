@@ -172,6 +172,7 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_AppCore_c_1initGL(JNIEnv *env, jclass clazz) {
     celestia::gl::init();
+    celestia::gl::disableGeomShaders();
     return JNI_TRUE;
 }
 

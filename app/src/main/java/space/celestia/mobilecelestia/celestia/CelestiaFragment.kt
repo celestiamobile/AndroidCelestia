@@ -249,7 +249,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val weakSelf = WeakReference(this)
         val interaction = CelestiaInteraction(activity, appCore, executor, interactionMode) {
             val self = weakSelf.get() ?: return@CelestiaInteraction false
-            return@CelestiaInteraction listener?.celestiaFragmentCanAcceptKeyEvents() ?: false
+            return@CelestiaInteraction self.listener?.celestiaFragmentCanAcceptKeyEvents() ?: false
         }
         glView = view
         viewInteraction = interaction
