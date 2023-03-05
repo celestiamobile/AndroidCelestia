@@ -38,8 +38,6 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
-        ${CELESTIA_SRC_DIR}/celutil/bigfix.cpp
-        ${CELESTIA_SRC_DIR}/celutil/bigfix.h
         ${CELESTIA_SRC_DIR}/celutil/binaryread.h
         ${CELESTIA_SRC_DIR}/celutil/binarywrite.h
         ${CELESTIA_SRC_DIR}/celutil/blockarray.h
@@ -57,6 +55,9 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/indexlist.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
+        ${CELESTIA_SRC_DIR}/celutil/r128.h
+        ${CELESTIA_SRC_DIR}/celutil/r128util.cpp
+        ${CELESTIA_SRC_DIR}/celutil/r128util.h
         ${CELESTIA_SRC_DIR}/celutil/reshandle.h
         ${CELESTIA_SRC_DIR}/celutil/resmanager.h
         ${CELESTIA_SRC_DIR}/celutil/stringutils.h

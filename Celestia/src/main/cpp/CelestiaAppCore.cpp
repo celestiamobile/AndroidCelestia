@@ -701,7 +701,6 @@ RENDERMETHODS(EclipticGrid)
 RENDERMETHODS(HorizonGrid)
 RENDERMETHODS(GalacticGrid)
 RENDERMETHODS(Ecliptic)
-RENDERMETHODS(TintedIllumination)
 
 #define LABELMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer) { \

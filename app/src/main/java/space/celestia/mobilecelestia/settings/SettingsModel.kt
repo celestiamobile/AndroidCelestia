@@ -87,7 +87,6 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowOtherLabels("Other"),
     ShowMarkers("Show Markers"),
     ShowEcliptic("Ecliptic Line"),
-    ShowTintedIllumination("Tinted Illumination"),
     ShowAutoMag("Auto Mag"),
     ShowSmoothLines("Smooth Lines"),
     // Int values
@@ -148,7 +147,6 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 ShowHorizonGrid,
                 ShowGalacticGrid,
                 ShowEcliptic,
-                ShowTintedIllumination,
                 ShowAutoMag,
                 ShowSmoothLines,
                 ShowDiagrams,
@@ -504,7 +502,6 @@ private val staticRendererItems: List<SettingsItem> = listOf(
     SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(
         SettingsCommonItem.Section(listOf(
             SettingsSwitchItem(SettingsKey.ShowSmoothLines, SettingsSwitchItem.Representation.Switch),
-            SettingsSwitchItem(SettingsKey.ShowTintedIllumination, SettingsSwitchItem.Representation.Switch),
         )),
         SettingsCommonItem.Section(listOf(
             SettingsSwitchItem(SettingsKey.ShowAutoMag, SettingsSwitchItem.Representation.Switch),

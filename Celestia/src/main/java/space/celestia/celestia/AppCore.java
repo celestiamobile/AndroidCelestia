@@ -498,10 +498,6 @@ public class AppCore {
     public void setShowEcliptic(boolean showEcliptic) { c_setShowEcliptic(pointer, showEcliptic); }
     private static native void c_setShowEcliptic(long pointer, boolean showEcliptic);
     private native boolean c_getShowEcliptic(long pointer);
-    public boolean getShowTintedIllumination() { return c_getShowTintedIllumination(pointer); }
-    public void setShowTintedIllumination(boolean showTintedIllumination) { c_setShowTintedIllumination(pointer, showTintedIllumination); }
-    private static native void c_setShowTintedIllumination(long pointer, boolean showTintedIllumination);
-    private native boolean c_getShowTintedIllumination(long pointer);
 
     public boolean getShowStarLabels() { return c_getShowStarLabels(pointer); }
     public void setShowStarLabels(boolean showStarLabels) { c_setShowStarLabels(pointer, showStarLabels); }
