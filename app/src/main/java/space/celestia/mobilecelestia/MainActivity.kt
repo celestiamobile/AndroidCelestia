@@ -1360,9 +1360,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         key: PreferenceManager.PredefinedKey,
         options: List<Pair<Int, String>>
     ) {
-        showOptions("", options = options.map { it.second }.toTypedArray()) {
-            appSettings[key] = it.toString()
+        showOptions("", options = options.map { it.second }.toTypedArray()) { index ->
+            appSettings[key] = options[index].first.toString()
             reloadSettings()
+        }
+    }
+
+    override fun onCommonSettingSelectionRequested(key: String, options: List<Pair<Int, String>>) {
+        showOptions("", options = options.map { it.second }.toTypedArray()) { index ->
+            applyIntValue(options[index].first, key, true)
         }
     }
 

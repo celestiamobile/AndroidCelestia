@@ -89,6 +89,7 @@ class SettingsCommonFragment : SettingsBaseFragment() {
         fun onCommonSettingUnknownAction(id: String)
         fun onCommonSettingSelectionChanged(field: String, selected: Int)
         fun onCommonSettingSelectionRequested(key: PreferenceManager.PredefinedKey, options: List<Pair<Int, String>>)
+        fun onCommonSettingSelectionRequested(key: String, options: List<Pair<Int, String>>)
     }
 
     interface DataSource {

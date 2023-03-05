@@ -58,6 +58,9 @@ class SettingsCommonRecyclerViewAdapter(
         if (item is SettingsPreferenceSelectionItem)
             return ITEM_PREF_SELECTION
 
+        if (item is SettingsSelectionSingleItem)
+            return ITEM_SINGLE_SELECTION
+
         return super.itemViewType(item)
     }
 
@@ -72,6 +75,8 @@ class SettingsCommonRecyclerViewAdapter(
         } else if (item is SettingsKeyedSelectionItem) {
             listener?.onCommonSettingSelectionChanged(item.key, item.index)
         } else if (item is SettingsPreferenceSelectionItem) {
+            listener?.onCommonSettingSelectionRequested(item.key, item.options)
+        } else if (item is SettingsSelectionSingleItem) {
             listener?.onCommonSettingSelectionRequested(item.key, item.options)
         }
     }
@@ -110,6 +115,12 @@ class SettingsCommonRecyclerViewAdapter(
                     holder.detail.text = item.options.firstOrNull { it.first == selected }?.second ?: ""
                     holder.detail.visibility = View.VISIBLE
                 }
+                is SettingsSelectionSingleItem -> {
+                    val selected = dataSource?.commonSettingSelectionValue(item.key) ?: item.defaultSelection
+                    holder.title.text = item.name
+                    holder.detail.text = item.options.firstOrNull { it.first == selected }?.second ?: ""
+                    holder.detail.visibility = View.VISIBLE
+                }
             }
             return
         }
@@ -136,7 +147,7 @@ class SettingsCommonRecyclerViewAdapter(
             val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_slider_item, parent,false)
             return SliderViewHolder(view)
         }
-        if (viewType == ITEM_ACTION || viewType == ITEM_UNKNOWN_TEXT || viewType == ITEM_PREF_SELECTION) {
+        if (viewType == ITEM_ACTION || viewType == ITEM_UNKNOWN_TEXT || viewType == ITEM_PREF_SELECTION || viewType == ITEM_SINGLE_SELECTION) {
             return CommonTextViewHolder(parent)
         }
         if (viewType == ITEM_PREF_SWITCH || viewType == ITEM_SWITCH) {
@@ -224,6 +235,7 @@ class SettingsCommonRecyclerViewAdapter(
         const val ITEM_SWITCH           = 3
         const val ITEM_CHECKMARK        = 4
         const val ITEM_UNKNOWN_TEXT     = 5
-        const val ITEM_PREF_SELECTION   =6
+        const val ITEM_PREF_SELECTION   = 6
+        const val ITEM_SINGLE_SELECTION = 7
     }
 }

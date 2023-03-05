@@ -908,6 +908,35 @@ Java_space_celestia_celestia_AppCore_c_1getStarStyle(JNIEnv *env, jclass clazz, 
     return core->getRenderer()->getStarStyle();
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setStarColors(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setStarColorTable(GetStarColorTable(static_cast<ColorTableType>(value)));
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_AppCore_c_1getStarColors(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return static_cast<jint>(core->getRenderer()->getStarColorTable()->type());
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setTintSaturation(JNIEnv *env, jclass clazz, jlong pointer,
+                                                          jfloat tint_saturation) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setTintSaturation(tint_saturation);
+}
+
+extern "C"
+JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_AppCore_c_1getTintSaturation(JNIEnv *env, jclass clazz,
+                                                          jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getRenderer()->getTintSaturation();
+}
+
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_AppCore_c_1getRenderInfo(JNIEnv *env, jclass clazz, jlong ptr) {
@@ -1119,4 +1148,3 @@ Java_space_celestia_celestia_AppCore_c_1getHeight(JNIEnv *env, jclass clazz, jlo
     auto [_, height] = core->getWindowDimension();
     return static_cast<jint>(height);
 }
-

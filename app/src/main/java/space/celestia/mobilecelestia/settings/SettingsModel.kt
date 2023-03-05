@@ -98,11 +98,13 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     MeasurementSystem("Measure Units"),
     TemperatureScale("Temperature Scale"),
     ScriptSystemAccessPolicy("Script System Access Policy"),
+    StarColors("Star Colors"),
     // Double values
     FaintestVisible("Faintest Stars"),
     AmbientLightLevel("Ambient Light"),
     GalaxyBrightness("Galaxy Brightness"),
-    MinimumFeatureSize("Minimum Labeled Feature Size");
+    MinimumFeatureSize("Minimum Labeled Feature Size"),
+    TintSaturation("Tinted Illumination Saturation");
 
     val displayName: String
         get() = CelestiaString(rawDisplayName, "")
@@ -189,6 +191,7 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 MeasurementSystem,
                 TemperatureScale,
                 ScriptSystemAccessPolicy,
+                StarColors,
             )
 
         val allDoubleCases: List<SettingsKey>
@@ -196,7 +199,8 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 FaintestVisible,
                 AmbientLightLevel,
                 GalaxyBrightness,
-                MinimumFeatureSize
+                MinimumFeatureSize,
+                TintSaturation,
             )
     }
 
@@ -302,6 +306,21 @@ class SettingsPreferenceSelectionItem(
 ) : SettingsItem, Serializable {
     override val name: String
         get() = displayName
+
+    override val clickable: Boolean
+        get() = true
+}
+
+class SettingsSelectionSingleItem(
+    val key: String,
+    private val displayName: String,
+    val options: List<Pair<Int, String>>,
+    val defaultSelection: Int
+) : SettingsItem, Serializable {
+    override val name: String
+        get() = displayName
+
+    constructor(key: SettingsKey, displayName: String, options: List<Pair<Int, String>>, defaultSelection: Int) : this(key.valueString, displayName, options, defaultSelection)
 
     override val clickable: Boolean
         get() = true
@@ -491,12 +510,23 @@ private val staticRendererItems: List<SettingsItem> = listOf(
             SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("High", ""), 2)
         )
     ),
-    SettingsCommonItem.create(
+    SettingsCommonItem(
         CelestiaString(SettingsKey.StarStyle.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Fuzzy Points", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Points", ""), 1),
-            SettingsKeyedSelectionItem(SettingsKey.StarStyle, CelestiaString("Scaled Discs", ""), 2)
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsSelectionSingleItem(key = SettingsKey.StarStyle, options = listOf(
+                        Pair(0, CelestiaString("Fuzzy Points", "")),
+                        Pair(1, CelestiaString("Points", "")),
+                        Pair(2, CelestiaString("Scaled Discs", "")),
+                    ), displayName = SettingsKey.StarStyle.displayName, defaultSelection = 0),
+                    SettingsSelectionSingleItem(key = SettingsKey.StarColors, options = listOf(
+                        Pair(0, CelestiaString("Classic Colors", "")),
+                        Pair(1, CelestiaString("Blackbody D65", "")),
+                    ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 1),
+                    SettingsSliderItem(SettingsKey.TintSaturation, 0.0, 1.0),
+                ), footer = CelestiaString("Tinted illumination saturation setting is only effective with Blackbody D65 star colors.", "")
+            )
         )
     ),
     SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(

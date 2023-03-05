@@ -81,5 +81,7 @@
     "ShowGalacticGrid": 0,
     "MeasurementSystem": 0,
     "TemperatureScale": 0,
-    "ScriptSystemAccessPolicy": 0
+    "ScriptSystemAccessPolicy": 0,
+    "StarColors": 1,
+    "TintSaturation": 0.5
 }

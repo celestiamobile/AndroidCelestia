@@ -724,6 +724,16 @@ public class AppCore {
     public int getStarStyle() { return c_getStarStyle(pointer); }
     private static native void c_setStarStyle(long pointer, int starStyle);
     private static native int c_getStarStyle(long pointer);
+
+    public void setStarColors(int starColors) { c_setStarColors(pointer, starColors);}
+    public int getStarColors() { return c_getStarColors(pointer); }
+    private static native void c_setStarColors(long pointer, int starColors);
+    private static native int c_getStarColors(long pointer);
+
+    public void setTintSaturation(double tintSaturation) { c_setTintSaturation(pointer, (float)tintSaturation);}
+    public double getTintSaturation() { return c_getTintSaturation(pointer); }
+    private static native void c_setTintSaturation(long pointer, float tintSaturation);
+    private static native float c_getTintSaturation(long pointer);
     public void setHudDetail(int hudDetail) { c_setHudDetail(pointer, hudDetail); }
     public int getHudDetail() { return c_getHudDetail(pointer); }
     private static native void c_setHudDetail(long pointer, int hudDetail);
