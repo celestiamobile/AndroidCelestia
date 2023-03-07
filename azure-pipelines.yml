@@ -17,7 +17,8 @@ trigger:
   branches:
     include:
     - releases/*
-    - master
+    - main
+    - develop
 
 pool:
   vmImage: 'macos-latest'

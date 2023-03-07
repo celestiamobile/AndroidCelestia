@@ -12,7 +12,6 @@ jobs:
   - checkout: CelestiaContent
     fetchDepth: 1
   - checkout: CelestiaLocalization
-    fetchDepth: 1
   - checkout: self
     submodules: true
 
@@ -33,6 +32,8 @@ jobs:
       cd Celestia
       git checkout origin/$(Build.SourceBranchName)
       git submodule update --init thirdparty/miniaudio
+      cd ../CelestiaLocalization
+      git checkout origin/$(Build.SourceBranchName)
     displayName: 'Checkout Branch'
     condition: ne( variables['Build.Reason'], 'PullRequest' )
 
@@ -40,6 +41,8 @@ jobs:
       cd Celestia
       git checkout origin/$(System.PullRequest.TargetBranch)
       git submodule update --init thirdparty/miniaudio
+      cd ../CelestiaLocalization
+      git checkout origin/$(System.PullRequest.TargetBranch)
     displayName: 'Checkout Branch (PR)'
     condition: eq( variables['Build.Reason'], 'PullRequest' )
 
