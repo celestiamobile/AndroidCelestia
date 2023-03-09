@@ -390,6 +390,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
         glView.setOnKeyListener(viewInteraction)
         glView.setOnGenericMotionListener(viewInteraction)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            glView.setOnCapturedPointerListener(viewInteraction)
+        }
         appCore.setContextMenuHandler(this)
         appCore.setFatalErrorHandler(this)
         registerForContextMenu(glView)
