@@ -37,17 +37,14 @@ import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
-import space.celestia.mobilecelestia.utils.AppStatusReporter
-import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.mobilecelestia.utils.showToast
+import space.celestia.mobilecelestia.utils.*
 import java.lang.ref.WeakReference
 import java.util.*
 import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
 @AndroidEntryPoint
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler {
     private var activity: Activity? = null
 
     @Inject
@@ -168,6 +165,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     override fun onDestroyView() {
         appStatusReporter.unregister(this)
         appCore.setContextMenuHandler(null)
+        appCore.setFatalErrorHandler(null)
 
         super.onDestroyView()
     }
@@ -393,6 +391,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         glView.setOnKeyListener(viewInteraction)
         glView.setOnGenericMotionListener(viewInteraction)
         appCore.setContextMenuHandler(this)
+        appCore.setFatalErrorHandler(this)
         registerForContextMenu(glView)
         loadSuccess = true
 
@@ -641,6 +640,13 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         // Show context menu on main thread
         lifecycleScope.launch {
             glView.showContextMenu(x / scaleFactor, y / scaleFactor)
+        }
+    }
+
+    override fun fatalError(message: String) {
+        lifecycleScope.launch {
+            val activity = this@CelestiaFragment.activity ?: return@launch
+            activity.showAlert(message)
         }
     }
 

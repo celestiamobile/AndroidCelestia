@@ -51,10 +51,14 @@ public class AppCore {
         void requestContextMenu(float x, float y, @NonNull Selection selection);
     }
 
+    public interface FatalErrorHandler {
+        void fatalError(@NonNull String message);
+    }
     private final long pointer;
     private boolean initialized;
     private Simulation simulation;
     private ContextMenuHandler contextMenuHandler;
+    private FatalErrorHandler fatalErrorHandler;
 
     public boolean isInitialized() {
         return initialized;
@@ -66,6 +70,7 @@ public class AppCore {
         this.simulation = null;
         this.contextMenuHandler = null;
         c_setContextMenuHandler(pointer);
+        c_setFatalErrorHandler(pointer);
     }
 
     public boolean startRenderer() {
@@ -109,9 +114,18 @@ public class AppCore {
         contextMenuHandler = handler;
     }
 
+    public void setFatalErrorHandler(@Nullable FatalErrorHandler handler) {
+        fatalErrorHandler = handler;
+    }
+
     private void onRequestContextMenu(float x, float y, Selection selection) {
         if (contextMenuHandler != null)
             contextMenuHandler.requestContextMenu(x, y, selection);
+    }
+
+    private void onFatalError(String message) {
+        if (fatalErrorHandler != null)
+            fatalErrorHandler.fatalError(message);
     }
 
     public void setSafeAreaInsets(int left, int top, int right, int bottom) {
@@ -248,6 +262,7 @@ public class AppCore {
 
     // C function
     private native void c_setContextMenuHandler(long ptr);
+    private native void c_setFatalErrorHandler(long ptr);
     private static native long c_init();
     private static native boolean c_startRenderer(long ptr);
     private static native boolean c_startSimulation(long ptr, String configFileName, String[] extraDirectories, ProgressWatcher watcher);

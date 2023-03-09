@@ -168,6 +168,23 @@ private:
     jmethodID method;
 };
 
+class AppCoreFatalErrorHandler: public CelestiaCore::Alerter
+{
+public:
+    AppCoreFatalErrorHandler(jobject object, jmethodID method) : CelestiaCore::Alerter(), object(object), method(method) {};
+
+    void fatalError(const std::string &message) override
+    {
+        auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+        if (!env) return;
+        env->CallVoidMethod(object, method, env->NewStringUTF(message.c_str()));
+    }
+
+private:
+    jobject object;
+    jmethodID method;
+};
+
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_AppCore_c_1initGL(JNIEnv *env, jclass clazz) {
@@ -193,6 +210,18 @@ Java_space_celestia_celestia_AppCore_c_1setContextMenuHandler(JNIEnv *env, jobje
                                                "(FFLspace/celestia/celestia/Selection;)V");
     // TODO: where to delete the global reference?
     core->setContextMenuHandler(new AppCoreContextMenuHandler(env->NewGlobalRef(thiz), contextMenuCallback));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setFatalErrorHandler(JNIEnv *env, jobject thiz, jlong ptr) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    static jmethodID fatalErrorCallback = nullptr;
+    if (!fatalErrorCallback)
+        fatalErrorCallback = env->GetMethodID(env->GetObjectClass(thiz), "onFatalError",
+                                               "(Ljava/lang/String;)V");
+    // TODO: where to delete the global reference?
+    core->setAlerter(new AppCoreFatalErrorHandler(env->NewGlobalRef(thiz), fatalErrorCallback));
 }
 
 extern "C"
