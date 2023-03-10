@@ -50,7 +50,7 @@ dependencies {
     implementation "androidx.core:core-ktx:$core_ktx_version"
     implementation "androidx.appcompat:appcompat:$core_appcompat_version"
     implementation "com.google.android.material:material:$material_version"
-    implementation "org.jsoup:jsoup:1.15.3"
+    implementation "org.jsoup:jsoup:1.15.4"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
 }

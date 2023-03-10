@@ -46,7 +46,7 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, loadResult: (Boolean) -
     }
     val lifeCycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifeCycleOwner) {
-        val observer = LifecycleEventObserver { source, event ->
+        val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_DESTROY) {
                 metadata?.image?.recycle()
                 metadata = null

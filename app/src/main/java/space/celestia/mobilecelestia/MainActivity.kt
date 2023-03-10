@@ -12,7 +12,6 @@
 package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -60,7 +59,6 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import space.celestia.celestia.*
-import space.celestia.celestia.Observer
 import space.celestia.mobilecelestia.browser.*
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.common.*
@@ -1749,7 +1747,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showView(animated, view, ObjectAnimator.ofFloat(view, "alpha", 1.0f))
     }
 
-    private suspend fun showView(animated: Boolean, view: View, showAnimator: ObjectAnimator): Unit = suspendCoroutine { cont ->
+    private suspend fun showView(animated: Boolean, @Suppress("UNUSED_PARAMETER") view: View, showAnimator: ObjectAnimator): Unit = suspendCoroutine { cont ->
         val executionBlock = {
             cont.resume(Unit)
         }

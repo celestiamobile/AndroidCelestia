@@ -42,7 +42,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                cppFlags ""
+                arguments "-DANDROID_STL=c++_shared"
             }
         }
     }
@@ -118,7 +118,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
     implementation "com.squareup.okhttp3:okhttp:4.10.0"
 
-    implementation "net.lingala.zip4j:zip4j:2.11.4"
+    implementation "net.lingala.zip4j:zip4j:2.11.5"
 
     implementation "androidx.webkit:webkit:1.6.0"
 

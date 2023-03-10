@@ -23,6 +23,12 @@ android {
         targetSdkVersion constants.targetSdkVersion
 
         consumerProguardFiles "consumer-rules.pro"
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
     }
 
     buildTypes {
@@ -34,6 +40,10 @@ android {
                 abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
             }
         }
+    }
+
+    buildFeatures {
+        prefab true
     }
 
     externalNativeBuild {
@@ -52,4 +62,5 @@ android {
 
 dependencies {
     implementation "androidx.annotation:annotation:1.6.0"
+    implementation "androidx.games:games-frame-pacing:2.0.0"
 }

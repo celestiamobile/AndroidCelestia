@@ -413,9 +413,6 @@ list(APPEND CELESTIA_SOURCES
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/dependency/android")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
 set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
-set(GAME_SDK_DIR "${CMAKE_SOURCE_DIR}/gamesdk")
-set(GAME_SDK_INCLUDE_DIR "${GAME_SDK_DIR}/include")
-set(GAME_SDK_LIB_DIR "${GAME_SDK_DIR}/libs")
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -444,7 +441,6 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/json
         ${THIRD_PARTY_INCLUDE_DIR}/freetype/freetype2
         ${THIRD_PARTY_INCLUDE_DIR}/meshoptimizer
-        ${GAME_SDK_INCLUDE_DIR}
 )
 
 add_library(cspice STATIC IMPORTED)
@@ -474,8 +470,7 @@ set_target_properties(freetype PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DI
 add_library(meshoptimizer STATIC IMPORTED)
 set_target_properties(meshoptimizer PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libmeshoptimizer.a)
 
-add_library(gamesdk STATIC IMPORTED)
-set_target_properties(gamesdk PROPERTIES IMPORTED_LOCATION ${GAME_SDK_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libswappy_static.a)
+find_package(games-frame-pacing REQUIRED CONFIG)
 
 add_library(
         celestia
@@ -500,5 +495,5 @@ target_link_libraries(
         meshoptimizer
         EGL
         android
-        gamesdk
+        games-frame-pacing::swappy_static
         ${log-lib} )
