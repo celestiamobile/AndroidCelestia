@@ -27,7 +27,7 @@ import space.celestia.mobilecelestia.utils.PreferenceManager
 import kotlin.math.abs
 
 @SuppressLint("NewApi")
-class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode, private val appSettings: PreferenceManager, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnCapturedPointerListener {
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode, private val appSettings: PreferenceManager, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnCapturedPointerListener, View.OnHoverListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -87,6 +87,8 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     private var currentPressedMouseButton = 0
     private var scrollingMouseButton = AppCore.MOUSE_BUTTON_LEFT
     private var capturedPoint: PointF? = null
+    private var lastMousePoint: PointF? = null
+    private var isHoveredOn = false
 
     fun setInteractionMode(interactionMode: InteractionMode) {
         executor.execute {
@@ -107,53 +109,88 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         }
     }
 
-    // For BUTTON_RELEASE event
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun isButtonReleased(event: MotionEvent): Boolean {
-        return when (currentPressedMouseButton) {
-            AppCore.MOUSE_BUTTON_LEFT -> {
-                event.actionButton == MotionEvent.BUTTON_PRIMARY
-            }
-            AppCore.MOUSE_BUTTON_RIGHT -> {
-                event.actionButton == MotionEvent.BUTTON_SECONDARY
-            }
-            AppCore.MOUSE_BUTTON_MIDDLE -> {
-                event.actionButton == MotionEvent.BUTTON_TERTIARY
-            }
-            else -> { false }
+    override fun onHover(v: View?, event: MotionEvent?): Boolean {
+        if (v == null || event == null) return false
+        if (event.actionMasked == MotionEvent.ACTION_HOVER_MOVE || event.actionMasked == MotionEvent.ACTION_HOVER_ENTER) {
+            isHoveredOn = true
+        } else if (event.actionMasked == MotionEvent.ACTION_HOVER_EXIT) {
+            isHoveredOn = false
         }
+        return true
     }
 
-    // For BUTTON_PRESS event
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun pressedButton(event: MotionEvent): Int {
-        return when (event.actionButton) {
-            MotionEvent.BUTTON_PRIMARY -> {
-                AppCore.MOUSE_BUTTON_LEFT
+    // For BUTTON_RELEASE event
+    private fun isButtonReleased(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_POINTER_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+            return when (currentPressedMouseButton) {
+                AppCore.MOUSE_BUTTON_LEFT -> {
+                    !event.isButtonPressed(MotionEvent.BUTTON_PRIMARY)
+                }
+                AppCore.MOUSE_BUTTON_RIGHT -> {
+                    !event.isButtonPressed(MotionEvent.BUTTON_SECONDARY)
+                }
+                AppCore.MOUSE_BUTTON_MIDDLE -> {
+                    !event.isButtonPressed(MotionEvent.BUTTON_TERTIARY)
+                }
+                else -> { false }
             }
-            MotionEvent.BUTTON_SECONDARY -> {
-                AppCore.MOUSE_BUTTON_RIGHT
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && event.actionMasked == MotionEvent.ACTION_BUTTON_RELEASE) {
+            return when (currentPressedMouseButton) {
+                AppCore.MOUSE_BUTTON_LEFT -> {
+                    event.actionButton == MotionEvent.BUTTON_PRIMARY
+                }
+                AppCore.MOUSE_BUTTON_RIGHT -> {
+                    event.actionButton == MotionEvent.BUTTON_SECONDARY
+                }
+                AppCore.MOUSE_BUTTON_MIDDLE -> {
+                    event.actionButton == MotionEvent.BUTTON_TERTIARY
+                }
+                else -> { false }
             }
-            MotionEvent.BUTTON_TERTIARY -> {
-                AppCore.MOUSE_BUTTON_MIDDLE
-            }
-            else -> { 0 }
         }
+        return false
+    }
+
+    private fun pressedButton(event: MotionEvent): Int {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN || event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
+            if (event.isButtonPressed(MotionEvent.BUTTON_PRIMARY)) {
+                return AppCore.MOUSE_BUTTON_LEFT
+            } else if (event.isButtonPressed(MotionEvent.BUTTON_SECONDARY)) {
+                return AppCore.MOUSE_BUTTON_RIGHT
+            } else if (event.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
+                return AppCore.MOUSE_BUTTON_MIDDLE
+            }
+            return 0
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS) {
+            return when (event.actionButton) {
+                MotionEvent.BUTTON_PRIMARY -> {
+                    AppCore.MOUSE_BUTTON_LEFT
+                }
+                MotionEvent.BUTTON_SECONDARY -> {
+                    AppCore.MOUSE_BUTTON_RIGHT
+                }
+                MotionEvent.BUTTON_TERTIARY -> {
+                    AppCore.MOUSE_BUTTON_MIDDLE
+                }
+                else -> { 0 }
+            }
+        }
+        return 0
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCapturedPointer(view: View?, event: MotionEvent?): Boolean {
         val e = event ?: return true
         val v = view ?: return true
-        if (event.action == MotionEvent.ACTION_BUTTON_PRESS) {
+        if (event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS) {
             handleMouseButtonPress(v, e, true)
             return true
-        } else if (event.action == MotionEvent.ACTION_BUTTON_RELEASE) {
+        } else if (event.actionMasked == MotionEvent.ACTION_BUTTON_RELEASE) {
             handleMouseButtonRelease(v, e, true)
             return true
         }
 
-        if (event.action == MotionEvent.ACTION_MOVE && currentPressedMouseButton != 0) {
+        if (event.actionMasked == MotionEvent.ACTION_MOVE && currentPressedMouseButton != 0) {
             val point = PointF(event.x, event.y).scaleBy(scaleFactor)
             val current = currentPressedMouseButton
             val modifier = event.keyModifier()
@@ -164,8 +201,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         return true
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun handleMouseButtonPress(view: View, event: MotionEvent, captured: Boolean) {
+    private fun handleMouseButtonPress(view: View, event: MotionEvent, captured: Boolean): Boolean {
         val newButton = pressedButton(event)
         if (newButton != 0 && newButton != currentPressedMouseButton) {
             val modifier = event.keyModifier()
@@ -177,15 +213,17 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
                     appCore.mouseButtonUp(current, point, modifier)
                 appCore.mouseButtonDown(newButton, point, modifier)
             }
-            if (!captured) {
+            lastMousePoint = point
+            if (!captured && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS) {
                 this.capturedPoint = point
                 view.requestPointerCapture()
             }
+            return true
         }
+        return false
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun handleMouseButtonRelease(view: View, event: MotionEvent, captured: Boolean) {
+    private fun handleMouseButtonRelease(view: View, event: MotionEvent, captured: Boolean): Boolean {
         if (isButtonReleased(event)) {
             val modifier = event.keyModifier()
             val current = currentPressedMouseButton
@@ -194,11 +232,14 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             executor.execute {
                 appCore.mouseButtonUp(current, point, modifier)
             }
-            this.capturedPoint = null
-            if (captured) {
+            lastMousePoint = null
+            if (captured && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && event.actionMasked == MotionEvent.ACTION_BUTTON_RELEASE) {
+                capturedPoint = null
                 view.releasePointerCapture()
             }
+            return true
         }
+        return false
     }
 
     override fun onGenericMotion(v: View?, event: MotionEvent?): Boolean {
@@ -206,7 +247,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         if (!isReady) { return true }
 
         if (event.source and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK
-            && event.action == MotionEvent.ACTION_MOVE) {
+            && event.actionMasked == MotionEvent.ACTION_MOVE) {
             if (!canAcceptKeyEvents()) return false
             // Process the movements starting from the
             // earliest historical position in the batch
@@ -232,20 +273,20 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             }
 
             return true
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && event.source == InputDevice.SOURCE_MOUSE) {
-            if (event.action == MotionEvent.ACTION_SCROLL) {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (event.source and InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
+            if (isHoveredOn && event.actionMasked == MotionEvent.ACTION_SCROLL) {
                 val y = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
                 executor.execute {
                     appCore.mouseWheel(-y * scaleFactor, event.keyModifier())
                 }
                 return true
-            } else if (event.action == MotionEvent.ACTION_BUTTON_PRESS) {
+            }/* else if (event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS) {
                 handleMouseButtonPress(v, event, false)
                 return true
-            } else if (event.action == MotionEvent.ACTION_BUTTON_RELEASE) {
+            } else if (event.actionMasked == MotionEvent.ACTION_BUTTON_RELEASE) {
                 handleMouseButtonRelease(v, event, false)
                 return true
-            }
+            }*/
         }
         return false
     }
@@ -255,9 +296,34 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         if (event == null || v == null) { return true }
         if (!isReady) { return true }
 
+        if ((event.source and InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
+            // Try to handle mouse logic but falls through if not handled
+            var handled = false
+            if (event.actionMasked == MotionEvent.ACTION_DOWN || event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
+                handled = handleMouseButtonPress(v, event, false)
+            } else if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_POINTER_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+                handled = handleMouseButtonRelease(v, event, false)
+            } else if (event.actionMasked == MotionEvent.ACTION_MOVE && currentPressedMouseButton != 0) {
+                val lastPoint = lastMousePoint
+                if (lastPoint != null) {
+                    val current = PointF(event.x, event.y)
+                    val offset = PointF(current.x - lastPoint.x, current.y - lastPoint.y).scaleBy(scaleFactor)
+                    val button = currentPressedMouseButton
+                    val modifier = event.keyModifier()
+                    lastMousePoint = current
+                    executor.execute {
+                        appCore.mouseMove(button, offset, modifier)
+                    }
+                    handled = true
+                }
+            }
+            if (handled)
+                return true
+        }
+
         if (!canInteract) {
             // Enable interaction back when last finger is lifted
-            if (event.actionMasked == MotionEvent.ACTION_UP)
+            if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL)
                 canInteract = true
             return true
         }
@@ -298,7 +364,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         } catch (ignored: Throwable) {}
 
         if (isScaling) {
-            if (event.actionMasked == MotionEvent.ACTION_UP) {
+            if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
                 // Only mark scaling as ended when last finger is lifted
                 isScaling = false
                 canScroll = true
@@ -323,7 +389,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             return true
         }
 
-        if (event.actionMasked == MotionEvent.ACTION_UP && isScrolling) {
+        if ((event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) && isScrolling) {
             // Last finger is lifted while scrolling
             Log.d(TAG, "on scroll end")
 
@@ -376,11 +442,10 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     override fun onSingleTapUp(e: MotionEvent): Boolean {
         Log.d(TAG, "on single tap up")
 
-        val button = internalInteractionMode.button
         val point = PointF(e.x, e.y).scaleBy(scaleFactor)
         executor.execute {
-            appCore.mouseButtonDown(button, point, 0)
-            appCore.mouseButtonUp(button, point, 0)
+            appCore.mouseButtonDown(AppCore.MOUSE_BUTTON_LEFT, point, 0)
+            appCore.mouseButtonUp(AppCore.MOUSE_BUTTON_LEFT, point, 0)
         }
 
         return true
@@ -430,8 +495,6 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     override fun onShowPress(e: MotionEvent) {}
 
     override fun onLongPress(e: MotionEvent) {
-        if (e.source == InputDevice.SOURCE_MOUSE) return // Mouse long press detected, ignore
-
         // Bring up the context menu
         val point = PointF(e.x, e.y).scaleBy(scaleFactor)
         val button = AppCore.MOUSE_BUTTON_RIGHT
