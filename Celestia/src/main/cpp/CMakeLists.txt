@@ -326,6 +326,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/surface.h
         ${CELESTIA_SRC_DIR}/celengine/texmanager.cpp
         ${CELESTIA_SRC_DIR}/celengine/texmanager.h
+        ${CELESTIA_SRC_DIR}/celengine/textlayout.cpp
+        ${CELESTIA_SRC_DIR}/celengine/textlayout.h
         ${CELESTIA_SRC_DIR}/celengine/texture.cpp
         ${CELESTIA_SRC_DIR}/celengine/texture.h
         ${CELESTIA_SRC_DIR}/celengine/timeline.cpp
