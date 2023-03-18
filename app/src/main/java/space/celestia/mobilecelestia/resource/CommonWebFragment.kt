@@ -110,6 +110,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         val webSettings = webView.settings
         @SuppressLint("SetJavaScriptEnabled")
         webSettings.javaScriptEnabled = true
+        webSettings.domStorageEnabled = true
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
