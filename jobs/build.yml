@@ -53,6 +53,10 @@ jobs:
     condition: eq( variables['outputFormat'], 'aab' )
 
   - script: |
+      rm -rf AndroidCelestia/Celestia/src/main/cpp/dependency/.git
+    displayName: 'Remove Unneeded Files'
+
+  - script: |
       sed -i '' 's/APPCENTER-APP-ID/d1108985-aa25-4fb5-9269-31a70a87d28e/g' app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
       echo "New Content:"
       cat app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
