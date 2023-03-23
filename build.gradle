@@ -18,7 +18,8 @@ buildscript {
     ext.material_version = '1.8.0'
     ext.kotlinx_coroutines_version = '1.6.4'
     ext.hilt_version = '2.45'
-    ext.lifecycle_version = '2.6.0'
+    ext.lifecycle_version = '2.6.1'
+    ext.compose_version = '1.4.0'
 
     repositories {
         google()

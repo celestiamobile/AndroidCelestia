@@ -26,7 +26,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.4.4"
     }
 
     kotlinOptions {
@@ -106,11 +106,11 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$core_appcompat_version"
     implementation "androidx.core:core-ktx:$core_ktx_version"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-    implementation "androidx.recyclerview:recyclerview:1.2.1"
+    implementation "androidx.recyclerview:recyclerview:1.3.0"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
-    implementation "androidx.fragment:fragment-ktx:1.5.5"
+    implementation "androidx.fragment:fragment-ktx:1.5.6"
 
     implementation "com.google.android.material:material:$material_version"
     implementation "com.google.code.gson:gson:2.10.1"
@@ -120,7 +120,7 @@ dependencies {
 
     implementation "net.lingala.zip4j:zip4j:2.11.5"
 
-    implementation "androidx.webkit:webkit:1.6.0"
+    implementation "androidx.webkit:webkit:1.6.1"
 
     implementation project(path: ':LinkPreview')
     implementation project(path: ':Celestia')
@@ -132,8 +132,12 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
 
+    implementation "androidx.compose.animation:animation:$compose_version"
+    implementation "androidx.compose.foundation:foundation:$compose_version"
+    implementation "androidx.compose.runtime:runtime:$compose_version"
+    implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material3:material3:1.0.1"
-    implementation "com.google.accompanist:accompanist-themeadapter-material3:0.28.0"
+    implementation "com.google.accompanist:accompanist-themeadapter-material3:0.30.0"
 
     testImplementation "junit:junit:4.13.2"
     androidTestImplementation "androidx.test.ext:junit:1.1.5"
