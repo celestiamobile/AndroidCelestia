@@ -24,10 +24,10 @@ import androidx.core.view.GestureDetectorCompat
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.utils.PreferenceManager
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 
-@SuppressLint("NewApi")
-class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode, private val appSettings: PreferenceManager, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnCapturedPointerListener, View.OnHoverListener {
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode, private val appSettings: PreferenceManager, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnHoverListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -66,6 +66,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
     private val scaleGestureDetector = ScaleGestureDetector(context, this)
     private val gestureDetector = GestureDetectorCompat(context, this)
+    var pointerCaptureListener: Any? = null
 
     var isReady = false
     var zoomMode: ZoomMode? = null
@@ -89,6 +90,31 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     private var capturedPoint: PointF? = null
     private var lastMousePoint: PointF? = null
     private var isHoveredOn = false
+
+    init {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val weakSelf = WeakReference(this)
+            pointerCaptureListener = PointerCaptureListener(
+                handleMouseButtonPress = { view, event ->
+                    weakSelf.get()?.handleMouseButtonPress(view, event, true)
+                },
+                handleMouseButtonRelease = { view, event ->
+                    weakSelf.get()?.handleMouseButtonRelease(view, event, true)
+                },
+                handleMouseButtonMove = { view, event ->
+                    val self = weakSelf.get() ?: return@PointerCaptureListener
+                    if (self.currentPressedMouseButton != 0) {
+                        val point = PointF(event.x, event.y).scaleBy(self.scaleFactor)
+                        val current = self.currentPressedMouseButton
+                        val modifier = event.keyModifier()
+                        self.executor.execute {
+                            self.appCore.mouseMove(current, point, modifier)
+                        }
+                    }
+                }
+            )
+        }
+    }
 
     fun setInteractionMode(interactionMode: InteractionMode) {
         executor.execute {
@@ -179,26 +205,21 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onCapturedPointer(view: View?, event: MotionEvent?): Boolean {
-        val e = event ?: return true
-        val v = view ?: return true
-        if (event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS) {
-            handleMouseButtonPress(v, e, true)
-            return true
-        } else if (event.actionMasked == MotionEvent.ACTION_BUTTON_RELEASE) {
-            handleMouseButtonRelease(v, e, true)
-            return true
-        }
-
-        if (event.actionMasked == MotionEvent.ACTION_MOVE && currentPressedMouseButton != 0) {
-            val point = PointF(event.x, event.y).scaleBy(scaleFactor)
-            val current = currentPressedMouseButton
-            val modifier = event.keyModifier()
-            executor.execute {
-                appCore.mouseMove(current, point, modifier)
+    class PointerCaptureListener(private val handleMouseButtonPress: (view: View, event: MotionEvent) -> Unit, private val handleMouseButtonRelease: (view: View, event: MotionEvent) -> Unit, private val handleMouseButtonMove: (view: View, event: MotionEvent) -> Unit): View.OnCapturedPointerListener {
+        override fun onCapturedPointer(view: View?, event: MotionEvent?): Boolean {
+            val e = event ?: return true
+            val v = view ?: return true
+            if (event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS) {
+                handleMouseButtonPress(v, e)
+                return true
+            } else if (event.actionMasked == MotionEvent.ACTION_BUTTON_RELEASE) {
+                handleMouseButtonRelease(v, e)
+                return true
+            } else if (event.actionMasked == MotionEvent.ACTION_MOVE) {
+                handleMouseButtonMove(v, e)
             }
+            return true
         }
-        return true
     }
 
     private fun handleMouseButtonPress(view: View, event: MotionEvent, captured: Boolean): Boolean {
