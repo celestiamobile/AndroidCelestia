@@ -11,15 +11,14 @@
 
 package space.celestia.mobilecelestia.settings
 
-import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.slider.Slider
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.slider.Slider
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
 import java.lang.ref.WeakReference
@@ -52,9 +51,6 @@ class SettingsCommonRecyclerViewAdapter(
         if (item is SettingsSwitchItem)
             return if (item.representation == SettingsSwitchItem.Representation.Switch) ITEM_SWITCH else ITEM_CHECKMARK
 
-        if (item is SettingsKeyedSelectionItem)
-            return ITEM_CHECKMARK
-
         if (item is SettingsPreferenceSelectionItem)
             return ITEM_PREF_SELECTION
 
@@ -72,11 +68,7 @@ class SettingsCommonRecyclerViewAdapter(
         else if (item is SettingsSwitchItem && item.representation == SettingsSwitchItem.Representation.Checkmark) {
             val on = dataSource?.commonSettingSwitchState(item.key) ?: false
             listener?.onCommonSettingSwitchStateChanged(item.key, !on, item.volatile)
-        } else if (item is SettingsKeyedSelectionItem) {
-            listener?.onCommonSettingSelectionChanged(item.key, item.index)
         } else if (item is SettingsPreferenceSelectionItem) {
-            listener?.onCommonSettingSelectionRequested(item.key, item.options)
-        } else if (item is SettingsSelectionSingleItem) {
             listener?.onCommonSettingSelectionRequested(item.key, item.options)
         }
     }
@@ -91,6 +83,14 @@ class SettingsCommonRecyclerViewAdapter(
             }
             return
         }
+        if (holder is RadioButtonViewHolder && item is SettingsSelectionSingleItem) {
+            val selected = dataSource?.commonSettingSelectionValue(item.key) ?: item.defaultSelection
+            holder.configure(text = item.name, showTitle = item.showTitle, options = item.options.map { it.second }, checkedIndex = item.options.indexOfFirst { it.first == selected }) { newIndex ->
+                val self = weakSelf.get() ?: return@configure
+                self.listener?.onCommonSettingSelectionChanged(item.key, item.options[newIndex].first)
+            }
+            return
+        }
         if (holder is CommonTextViewHolder) {
             when (item) {
                 is SettingsActionItem -> {
@@ -99,24 +99,8 @@ class SettingsCommonRecyclerViewAdapter(
                 is SettingsUnknownTextItem -> {
                     holder.title.text = item.name
                 }
-                is SettingsSwitchItem -> {
-                    val on = dataSource?.commonSettingSwitchState(item.key) ?: false
-                    holder.title.text = item.name
-                    holder.accessory.visibility = if (on) View.VISIBLE else View.GONE
-                }
-                is SettingsKeyedSelectionItem -> {
-                    val selected = dataSource?.commonSettingSelectionValue(item.key) == item.index
-                    holder.title.text = item.name
-                    holder.accessory.visibility = if (selected) View.VISIBLE else View.GONE
-                }
                 is SettingsPreferenceSelectionItem -> {
                     val selected = dataSource?.commonSettingPreferenceSelectionState(item.key) ?: item.defaultSelection
-                    holder.title.text = item.name
-                    holder.detail.text = item.options.firstOrNull { it.first == selected }?.second ?: ""
-                    holder.detail.visibility = View.VISIBLE
-                }
-                is SettingsSelectionSingleItem -> {
-                    val selected = dataSource?.commonSettingSelectionValue(item.key) ?: item.defaultSelection
                     holder.title.text = item.name
                     holder.detail.text = item.options.firstOrNull { it.first == selected }?.second ?: ""
                     holder.detail.visibility = View.VISIBLE
@@ -139,6 +123,14 @@ class SettingsCommonRecyclerViewAdapter(
             }
             return
         }
+        if (holder is CheckboxViewHolder && item is SettingsSwitchItem) {
+            val on = dataSource?.commonSettingSwitchState(item.key) ?: false
+            holder.configure(item.name, on) { newValue ->
+                val self = weakSelf.get() ?: return@configure
+                self.listener?.onCommonSettingSwitchStateChanged(item.key, newValue, item.volatile)
+            }
+            return
+        }
         super.bindVH(holder, item)
     }
 
@@ -147,7 +139,11 @@ class SettingsCommonRecyclerViewAdapter(
             val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_slider_item, parent,false)
             return SliderViewHolder(view)
         }
-        if (viewType == ITEM_ACTION || viewType == ITEM_UNKNOWN_TEXT || viewType == ITEM_PREF_SELECTION || viewType == ITEM_SINGLE_SELECTION) {
+        if (viewType == ITEM_SINGLE_SELECTION) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_radio_button_item, parent,false)
+            return RadioButtonViewHolder(view)
+        }
+        if (viewType == ITEM_ACTION || viewType == ITEM_UNKNOWN_TEXT || viewType == ITEM_PREF_SELECTION) {
             return CommonTextViewHolder(parent)
         }
         if (viewType == ITEM_PREF_SWITCH || viewType == ITEM_SWITCH) {
@@ -155,10 +151,8 @@ class SettingsCommonRecyclerViewAdapter(
             return SwitchViewHolder(view)
         }
         if (viewType == ITEM_CHECKMARK) {
-            val holder = CommonTextViewHolder(parent)
-            holder.accessory.setImageResource(R.drawable.ic_check)
-            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(parent.context.getPrimaryColor()))
-            return holder
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_checkbox_item, parent,false)
+            return CheckboxViewHolder(view)
         }
         return super.createVH(parent, viewType)
     }
@@ -200,9 +194,24 @@ class SettingsCommonRecyclerViewAdapter(
             get() = itemView.findViewById(R.id.accessory)
 
         fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
+            switch.setOnCheckedChangeListener(null)
             title.text = text
             switch.isChecked = isChecked
             switch.setOnCheckedChangeListener { _, checked ->
+                stateChangeCallback(checked)
+            }
+        }
+    }
+
+    inner class CheckboxViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val checkbox: MaterialCheckBox
+            get() = itemView.findViewById(R.id.checkbox)
+
+        fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
+            checkbox.clearOnCheckedStateChangedListeners()
+            checkbox.text = text
+            checkbox.isChecked = isChecked
+            checkbox.setOnCheckedChangeListener { _, checked ->
                 stateChangeCallback(checked)
             }
         }

@@ -281,21 +281,7 @@ class SettingsSwitchItem(
     constructor(key: SettingsKey, representation: Representation = Representation.Checkmark) : this(key.valueString, key.displayName, false, representation)
 
     override val clickable: Boolean
-        get() = representation == Representation.Checkmark
-}
-
-class SettingsKeyedSelectionItem(
-    val key: String,
-    private val displayName: String,
-    val index: Int
-) : SettingsItem, Serializable {
-    override val name: String
-        get() = displayName
-
-    constructor(key: SettingsKey, displayName: String, index: Int) : this(key.valueString, displayName, index)
-
-    override val clickable: Boolean
-        get() = true
+        get() = false
 }
 
 class SettingsPreferenceSelectionItem(
@@ -315,15 +301,16 @@ class SettingsSelectionSingleItem(
     val key: String,
     private val displayName: String,
     val options: List<Pair<Int, String>>,
-    val defaultSelection: Int
+    val defaultSelection: Int,
+    val showTitle: Boolean = true
 ) : SettingsItem, Serializable {
     override val name: String
         get() = displayName
 
-    constructor(key: SettingsKey, displayName: String, options: List<Pair<Int, String>>, defaultSelection: Int) : this(key.valueString, displayName, options, defaultSelection)
+    constructor(key: SettingsKey, displayName: String, options: List<Pair<Int, String>>, defaultSelection: Int, showTitle: Boolean = true) : this(key.valueString, displayName, options, defaultSelection, showTitle)
 
     override val clickable: Boolean
-        get() = true
+        get() = false
 }
 
 private val staticDisplayItems: List<SettingsItem> = listOf(
@@ -448,44 +435,45 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.TimeZone.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.TimeZone, CelestiaString("Local Time", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.TimeZone, CelestiaString("UTC", ""), 1)
+            SettingsSelectionSingleItem(key = SettingsKey.TimeZone, options = listOf(
+                Pair(0, CelestiaString("Local Time", "")),
+                Pair(1, CelestiaString("UTC", "")),
+            ), displayName = SettingsKey.TimeZone.displayName, defaultSelection = 0, showTitle = false)
         )
     ),
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.DateFormat.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.DateFormat, CelestiaString("Default", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.DateFormat, CelestiaString("YYYY MMM DD HH:MM:SS TZ", ""), 1),
-            SettingsKeyedSelectionItem(SettingsKey.DateFormat, CelestiaString("UTC Offset", ""), 2)
+            SettingsSelectionSingleItem(key = SettingsKey.DateFormat, options = listOf(
+                Pair(0, CelestiaString("Default", "")),
+                Pair(1, CelestiaString("YYYY MMM DD HH:MM:SS TZ", "")),
+                Pair(2, CelestiaString("UTC Offset", "")),
+            ), displayName = SettingsKey.DateFormat.displayName, defaultSelection = 1, showTitle = false)
         )
     ),
     SettingsCurrentTimeItem(),
-    SettingsCommonItem(
+    SettingsCommonItem.create(
         CelestiaString(SettingsKey.MeasurementSystem.displayName, ""),
         listOf(
-            SettingsCommonItem.Section(
-                listOf(
-                    SettingsKeyedSelectionItem(SettingsKey.MeasurementSystem, CelestiaString("Metric", ""), 0),
-                    SettingsKeyedSelectionItem(SettingsKey.MeasurementSystem, CelestiaString("Imperial", ""), 1)
-                )
-            ),
-            SettingsCommonItem.Section(
-                listOf(
-                    SettingsKeyedSelectionItem(SettingsKey.TemperatureScale, CelestiaString("Kelvin", ""), 0),
-                    SettingsKeyedSelectionItem(SettingsKey.TemperatureScale, CelestiaString("Celsius", ""), 1),
-                    SettingsKeyedSelectionItem(SettingsKey.TemperatureScale, CelestiaString("Fahrenheit", ""), 2)
-                ),
-                header = CelestiaString(SettingsKey.TemperatureScale.displayName, ""),
-            )
+            SettingsSelectionSingleItem(key = SettingsKey.MeasurementSystem, options = listOf(
+                Pair(0, CelestiaString("Metric", "")),
+                Pair(1, CelestiaString("Imperial", "")),
+            ), displayName = SettingsKey.MeasurementSystem.displayName, defaultSelection = 0, showTitle = false),
+            SettingsSelectionSingleItem(key = SettingsKey.TemperatureScale, options = listOf(
+                Pair(0, CelestiaString("Kelvin", "")),
+                Pair(1, CelestiaString("Celsius", "")),
+                Pair(2, CelestiaString("Fahrenheit", "")),
+            ), displayName = SettingsKey.TemperatureScale.displayName, defaultSelection = 0, showTitle = true)
         )
     ),
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.HudDetail.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("None", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("Terse", ""), 1),
-            SettingsKeyedSelectionItem(SettingsKey.HudDetail, CelestiaString("Verbose", ""), 2)
+            SettingsSelectionSingleItem(key = SettingsKey.HudDetail, options = listOf(
+                Pair(0, CelestiaString("None", "")),
+                Pair(1, CelestiaString("Terse", "")),
+                Pair(2, CelestiaString("Verbose", "")),
+            ), displayName = SettingsKey.HudDetail.displayName, defaultSelection = 1, showTitle = false),
         )
     ),
     SettingsLanguageItem(),
@@ -505,9 +493,11 @@ private val staticRendererItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
         CelestiaString(SettingsKey.Resolution.displayName, ""),
         listOf(
-            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("Low", ""), 0),
-            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("Medium", ""), 1),
-            SettingsKeyedSelectionItem(SettingsKey.Resolution, CelestiaString("High", ""), 2)
+            SettingsSelectionSingleItem(key = SettingsKey.Resolution, options = listOf(
+                Pair(0, CelestiaString("Low", "")),
+                Pair(1, CelestiaString("Medium", "")),
+                Pair(2, CelestiaString("High", "")),
+            ), displayName = SettingsKey.Resolution.displayName, defaultSelection = 1, showTitle = false)
         )
     ),
     SettingsCommonItem(
@@ -586,11 +576,12 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         listOf(
             SettingsCommonItem.Section(
                 listOf(
-                    SettingsKeyedSelectionItem(SettingsKey.ScriptSystemAccessPolicy, CelestiaString("Ask", ""), 0),
-                    SettingsKeyedSelectionItem(SettingsKey.ScriptSystemAccessPolicy, CelestiaString("Allow", ""), 1),
-                    SettingsKeyedSelectionItem(SettingsKey.ScriptSystemAccessPolicy, CelestiaString("Deny", ""), 2)
+                    SettingsSelectionSingleItem(key = SettingsKey.ScriptSystemAccessPolicy, options = listOf(
+                        Pair(0, CelestiaString("Ask", "")),
+                        Pair(1, CelestiaString("Allow", "")),
+                        Pair(2, CelestiaString("Deny", "")),
+                    ), displayName = SettingsKey.ScriptSystemAccessPolicy.displayName, defaultSelection = 0, showTitle = true)
                 ),
-                header = CelestiaString(SettingsKey.ScriptSystemAccessPolicy.displayName, ""),
                 footer = CelestiaString("This policy decides whether Lua scripts have access to the files on the system or not.", "")
             )
         )

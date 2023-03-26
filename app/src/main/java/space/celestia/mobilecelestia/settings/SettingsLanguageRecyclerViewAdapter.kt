@@ -11,21 +11,15 @@
 
 package space.celestia.mobilecelestia.settings
 
-import android.content.res.ColorStateList
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.utils.CelestiaString
+import java.lang.ref.WeakReference
 import java.util.*
-import kotlin.collections.ArrayList
-
-interface LanguageItem : RecyclerViewItem {
-    val title: String
-    val subtitle: String?
-}
 
 private fun getLocale(locale: String): Locale {
     val components = locale.split("_")
@@ -52,29 +46,24 @@ private fun getLocalizedLanguageName(locale: String): String {
     return loc2.getDisplayName(loc2)
 }
 
-class SpecificLanguageItem(val language: String) : LanguageItem {
-    override val title: String
-        get() = getLocalizedLanguageName(language)
-
-    override val subtitle: String?
-        get() = null
+class LanguageRadioItem(val languages: List<String>, val selected: String?) : RecyclerViewItem {
+    override val clickable: Boolean
+        get() = false
 }
 
-class CurrentLanguageItem(private val current: String?) : LanguageItem {
-    override val title: String
+class CurrentLanguageItem(private val current: String?) : RecyclerViewItem {
+    val title: String
         get() = CelestiaString("Current Language", "")
-    override val subtitle: String?
+    val subtitle: String?
         get() = current
 
     override val clickable: Boolean
         get() = false
 }
 
-class ResetLanguageItem : LanguageItem {
-    override val title: String
+class ResetLanguageItem : RecyclerViewItem {
+    val title: String
         get() = CelestiaString("Reset to Default", "")
-    override val subtitle: String?
-        get() = null
 }
 
 class SettingsLanguageRecyclerViewAdapter(
@@ -89,41 +78,53 @@ class SettingsLanguageRecyclerViewAdapter(
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is ResetLanguageItem) {
             listener?.onSetOverrideLanguage(null)
-        } else if (item is SpecificLanguageItem) {
-            listener?.onSetOverrideLanguage(item.language)
         }
     }
 
     override fun itemViewType(item: RecyclerViewItem): Int {
-        if (item is SpecificLanguageItem)
-            return LANG_ITEM
-        if (item is LanguageItem)
-            return SETTING_ITEM
+        if (item is LanguageRadioItem)
+            return LANG_SELECTION_ITEM
+        if (item is CurrentLanguageItem)
+            return CURRENT_ITEM
+        if (item is ResetLanguageItem)
+            return ACTION_ITEM
         return super.itemViewType(item)
     }
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewType == SETTING_ITEM)
-            return CommonTextViewHolder(parent)
-        if (viewType == LANG_ITEM) {
+        if (viewType == ACTION_ITEM) {
             val holder = CommonTextViewHolder(parent)
-            holder.accessory.setImageResource(R.drawable.ic_check)
-            ImageViewCompat.setImageTintList(holder.accessory, ColorStateList.valueOf(parent.context.getPrimaryColor()))
+            holder.title.setTextColor(parent.context.getPrimaryColor())
             return holder
+        }
+        if (viewType == CURRENT_ITEM) {
+            val holder = CommonTextViewHolder(parent)
+            holder.detail.visibility = View.VISIBLE
+            return holder
+        }
+        if (viewType == LANG_SELECTION_ITEM) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_radio_button_item, parent,false)
+            return RadioButtonViewHolder(view)
         }
         return super.createVH(parent, viewType)
     }
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
-        if (item is SpecificLanguageItem && holder is CommonTextViewHolder) {
+        if (item is ResetLanguageItem && holder is CommonTextViewHolder) {
             holder.title.text = item.title
-            holder.accessory.visibility = if (dataSource?.currentOverrideLanguage() == item.language) View.VISIBLE else View.GONE
             return
         }
-        if (item is LanguageItem && holder is CommonTextViewHolder) {
+        if (item is CurrentLanguageItem && holder is CommonTextViewHolder) {
             holder.title.text = item.title
-            holder.detail.visibility = if (item.subtitle != null) View.VISIBLE else View.GONE
             holder.detail.text = item.subtitle
+            return
+        }
+        if (item is LanguageRadioItem && holder is RadioButtonViewHolder) {
+            val weakSelf = WeakReference(this)
+            holder.configure(text = "", showTitle = false, options = item.languages.map { getLocalizedLanguageName(it) }, checkedIndex = item.languages.indexOfFirst { it == item.selected }) { newIndex ->
+                val self = weakSelf.get() ?: return@configure
+                self.listener?.onSetOverrideLanguage(item.languages[newIndex])
+            }
             return
         }
         super.bindVH(holder, item)
@@ -134,13 +135,14 @@ class SettingsLanguageRecyclerViewAdapter(
         val currentLang = dataSource?.currentLanguage() ?: "en"
         sections.add(CommonSectionV2((listOf(CurrentLanguageItem(getLocalizedLanguageName(currentLang))))))
         val languages = dataSource?.availableLanguages() ?: listOf()
-        sections.add(CommonSectionV2(languages.map { SpecificLanguageItem(it) }))
+        sections.add(CommonSectionV2(listOf(LanguageRadioItem(languages, dataSource?.currentOverrideLanguage()))))
         sections.add(CommonSectionV2(listOf(ResetLanguageItem()), footer =  CelestiaString("Configuration will take effect after a restart.", "")))
         updateSectionsWithHeader(sections)
     }
 
     private companion object {
-        const val SETTING_ITEM = 0
-        const val LANG_ITEM    = 1
+        const val ACTION_ITEM = 0
+        const val CURRENT_ITEM    = 1
+        const val LANG_SELECTION_ITEM   = 2
     }
 }
