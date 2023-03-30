@@ -208,11 +208,11 @@ class SettingsCommonRecyclerViewAdapter(
             get() = itemView.findViewById(R.id.checkbox)
 
         fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
-            checkbox.clearOnCheckedStateChangedListeners()
+            checkbox.setOnCheckedChangeListener(null)
             checkbox.text = text
-            checkbox.checkedState = if (isChecked) MaterialCheckBox.STATE_CHECKED else MaterialCheckBox.STATE_UNCHECKED
-            checkbox.addOnCheckedStateChangedListener { _, checked ->
-                stateChangeCallback(checked == MaterialCheckBox.STATE_CHECKED)
+            checkbox.isChecked = isChecked
+            checkbox.setOnCheckedChangeListener { _, checked ->
+                stateChangeCallback(checked)
             }
         }
     }
