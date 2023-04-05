@@ -38,6 +38,7 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_SRC_DIR}/celutil/arrayvector.h
         ${CELESTIA_SRC_DIR}/celutil/binaryread.h
         ${CELESTIA_SRC_DIR}/celutil/binarywrite.h
         ${CELESTIA_SRC_DIR}/celutil/blockarray.h
@@ -46,6 +47,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/color.h
         ${CELESTIA_SRC_DIR}/celutil/filetype.cpp
         ${CELESTIA_SRC_DIR}/celutil/filetype.h
+        ${CELESTIA_SRC_DIR}/celutil/flag.h
         ${CELESTIA_SRC_DIR}/celutil/formatnum.cpp
         ${CELESTIA_SRC_DIR}/celutil/formatnum.h
         ${CELESTIA_SRC_DIR}/celutil/fsutils.cpp
@@ -53,6 +55,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/greek.cpp
         ${CELESTIA_SRC_DIR}/celutil/greek.h
         ${CELESTIA_SRC_DIR}/celutil/indexlist.h
+        ${CELESTIA_SRC_DIR}/celutil/intrusiveptr.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
         ${CELESTIA_SRC_DIR}/celutil/r128.h
@@ -176,8 +179,12 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_SRC_DIR}/celrender/asterismrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/asterismrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/atmosphererenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/atmosphererenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/boundariesrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/boundariesrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/cometrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/cometrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/eclipticlinerenderer.cpp
@@ -191,8 +198,6 @@ list(APPEND CELESTIA_SOURCES
 list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/asterism.cpp
         ${CELESTIA_SRC_DIR}/celengine/asterism.h
-        ${CELESTIA_SRC_DIR}/celengine/asterismrenderer.cpp
-        ${CELESTIA_SRC_DIR}/celengine/asterismrenderer.h
         ${CELESTIA_SRC_DIR}/celengine/astro.cpp
         ${CELESTIA_SRC_DIR}/celengine/astro.h
         ${CELESTIA_SRC_DIR}/celengine/astroobj.h
@@ -204,8 +209,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/body.h
         ${CELESTIA_SRC_DIR}/celengine/boundaries.cpp
         ${CELESTIA_SRC_DIR}/celengine/boundaries.h
-        ${CELESTIA_SRC_DIR}/celengine/boundariesrenderer.cpp
-        ${CELESTIA_SRC_DIR}/celengine/boundariesrenderer.h
         ${CELESTIA_SRC_DIR}/celengine/category.cpp
         ${CELESTIA_SRC_DIR}/celengine/category.h
         ${CELESTIA_SRC_DIR}/celengine/console.cpp
@@ -341,7 +344,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/universe.h
         ${CELESTIA_SRC_DIR}/celengine/value.cpp
         ${CELESTIA_SRC_DIR}/celengine/value.h
-        ${CELESTIA_SRC_DIR}/celengine/vecgl.h
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.cpp
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.h
         ${CELESTIA_SRC_DIR}/celengine/virtualtex.cpp
@@ -380,6 +382,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celmath/ray.h
         ${CELESTIA_SRC_DIR}/celmath/solve.h
         ${CELESTIA_SRC_DIR}/celmath/sphere.h
+        ${CELESTIA_SRC_DIR}/celmath/vecgl.h
         )
 
 
