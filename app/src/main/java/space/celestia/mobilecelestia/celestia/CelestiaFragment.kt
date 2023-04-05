@@ -17,6 +17,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.LayoutDirection
 import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
@@ -356,7 +357,11 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     private fun loadingFinished() = lifecycleScope.launch {
         if (!haveSurface) return@launch
-        withContext(executor.asCoroutineDispatcher()) { updateContentScale() }
+        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        withContext(executor.asCoroutineDispatcher()) {
+            updateContentScale()
+            appCore.layoutDirection = if (isRTL) AppCore.LAYOUT_DIRECTION_RTL else AppCore.LAYOUT_DIRECTION_LTR
+        }
         setupInteractions()
     }
 
@@ -397,8 +402,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             }
         }
         glView.setOnHoverListener(viewInteraction)
-        appCore.setContextMenuHandler(this)
-        appCore.setFatalErrorHandler(this)
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+            appCore.setContextMenuHandler(this@CelestiaFragment)
+            appCore.setFatalErrorHandler(this@CelestiaFragment)
+        }
         registerForContextMenu(glView)
         loadSuccess = true
 

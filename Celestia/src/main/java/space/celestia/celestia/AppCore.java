@@ -37,6 +37,9 @@ public class AppCore {
     public static final int MEASUREMENT_SYSTEM_METRIC   = 0;
     public static final int MEASUREMENT_SYSTEM_IMPERIAL = 1;
 
+    public static final int LAYOUT_DIRECTION_LTR   = 0;
+    public static final int LAYOUT_DIRECTION_RTL   = 1;
+
     public static final int RENDER_FONT_STYLE_NORMAL    = 0;
     public static final int RENDER_FONT_STYLE_LARGE     = 1;
 
@@ -766,6 +769,12 @@ public class AppCore {
     public int getScriptSystemAccessPolicy() { return c_getScriptSystemAccessPolicy(pointer); }
     private static native void c_setScriptSystemAccessPolicy(long pointer, int scriptSystemAccessPolicy);
     private static native int c_getScriptSystemAccessPolicy(long pointer);
+
+    public void setLayoutDirection(int layoutDirection) { c_setLayoutDirection(pointer, layoutDirection); }
+    public int getLayoutDirection() { return c_getLayoutDirection(pointer); }
+
+    private static native int c_getLayoutDirection(long ptr);
+    private static native void c_setLayoutDirection(long ptr, int layoutDirection);
 
     public void setTimeZone(int timeZone) { c_setTimeZone(pointer, timeZone); }
     public int getTimeZone() { return c_getTimeZone(pointer); }

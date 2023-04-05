@@ -73,6 +73,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/tokenizer.h
         ${CELESTIA_SRC_DIR}/celutil/tzutil.cpp
         ${CELESTIA_SRC_DIR}/celutil/tzutil.h
+        ${CELESTIA_SRC_DIR}/celutil/unicode.cpp
+        ${CELESTIA_SRC_DIR}/celutil/unicode.h
         ${CELESTIA_SRC_DIR}/celutil/utf8.cpp
         ${CELESTIA_SRC_DIR}/celutil/utf8.h
         ${CELESTIA_SRC_DIR}/celutil/watcher.h
@@ -426,6 +428,7 @@ add_definitions(-DUSE_SPICE)
 add_definitions(-DGL_ES)
 add_definitions(-DUSE_MINIAUDIO)
 add_definitions(-DCELX)
+add_definitions(-DUSE_ICU)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DEIGEN_NO_DEBUG)
@@ -446,6 +449,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/json
         ${THIRD_PARTY_INCLUDE_DIR}/freetype/freetype2
         ${THIRD_PARTY_INCLUDE_DIR}/meshoptimizer
+        ${THIRD_PARTY_INCLUDE_DIR}/icu
 )
 
 add_library(cspice STATIC IMPORTED)
@@ -475,6 +479,15 @@ set_target_properties(freetype PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DI
 add_library(meshoptimizer STATIC IMPORTED)
 set_target_properties(meshoptimizer PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libmeshoptimizer.a)
 
+add_library(icuuc STATIC IMPORTED)
+set_target_properties(icuuc PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libicuuc.a)
+
+add_library(icudata STATIC IMPORTED)
+set_target_properties(icudata PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libicudata.a)
+
+add_library(icui18n STATIC IMPORTED)
+set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libicui18n.a)
+
 find_package(games-frame-pacing REQUIRED CONFIG)
 
 add_library(
@@ -498,6 +511,9 @@ target_link_libraries(
         libpng
         cspice
         meshoptimizer
+        icuuc
+        icudata
+        icui18n
         EGL
         android
         games-frame-pacing::swappy_static

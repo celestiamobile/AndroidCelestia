@@ -1177,3 +1177,18 @@ Java_space_celestia_celestia_AppCore_c_1getHeight(JNIEnv *env, jclass clazz, jlo
     auto [_, height] = core->getWindowDimension();
     return static_cast<jint>(height);
 }
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_AppCore_c_1getLayoutDirection(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    return static_cast<jint>(core->getLayoutDirection());
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setLayoutDirection(JNIEnv *env, jclass clazz, jlong ptr,
+                                                           jint layout_direction) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    core->setLayoutDirection((CelestiaCore::LayoutDirection)layout_direction);
+}
