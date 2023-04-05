@@ -136,6 +136,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
                 actions.add(InfoWebActionItem())
             if (hasAltSurface)
                 actions.add(AlternateSurfacesItem())
+            actions.add(SubsystemActionItem())
+            actions.add(MarkItem())
 
             val count = actions.size
             items(actions.mapIndexed { index, infoActionItem -> Pair(index, infoActionItem) }) { item ->
