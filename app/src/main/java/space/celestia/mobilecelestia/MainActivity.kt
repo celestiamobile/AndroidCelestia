@@ -194,6 +194,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var latestNewsID: String? = null
 
     private var bottomSheetCommitIds = arrayListOf<Int>()
+    private var initialURLCheckPerformed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
@@ -303,6 +304,27 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
+        if (savedState != null) {
+            val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
+            val menuVisible = savedState.getBoolean(MENU_VISIBLE_TAG, false)
+            val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
+            bottomSheetCommitIds = savedState.getIntegerArrayList(ARG_COMMIT_IDS) ?: arrayListOf()
+            initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
+
+            findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+
+            if (menuVisible) {
+                // Try to open the drawer, need to post delay since it might have been closed just now
+                drawerLayout.postDelayed({
+                    drawerLayout.openDrawer(GravityCompat.END, false)
+                }, 0)
+            }
+
+            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.bottom_sheet_card).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+        }
+
         when (currentState) {
             AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
                 loadExternalConfig(savedState)
@@ -317,26 +339,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 celestiaLoadingFinished()
             }
             else -> {}
-        }
-
-        if (savedState != null) {
-            val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
-            val menuVisible = savedState.getBoolean(MENU_VISIBLE_TAG, false)
-            val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
-            bottomSheetCommitIds = savedState.getIntegerArrayList(ARG_COMMIT_IDS) ?: arrayListOf()
-
-            findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-
-            if (menuVisible) {
-                // Try to open the drawer, need to post delay since it might have been closed just now
-                drawerLayout.postDelayed({
-                    drawerLayout.openDrawer(GravityCompat.END, false)
-                }, 0)
-            }
-
-            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.bottom_sheet_card).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
         }
 
         val weakSelf = WeakReference(this)
@@ -375,6 +377,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
         outState.putIntegerArrayList(ARG_COMMIT_IDS, bottomSheetCommitIds)
+        outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
         super.onSaveInstanceState(outState)
     }
 
@@ -523,7 +526,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         resourceManager.addonDirectory = addonPaths.firstOrNull()
         readyForInteraction = true
 
-        openURLOrScriptOrGreeting()
+        if (!initialURLCheckPerformed) {
+            initialURLCheckPerformed = true
+            openURLOrScriptOrGreeting()
+        }
     }
 
     private fun celestiaLoadingFailed() {
@@ -2080,6 +2086,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         private const val ARG_COMMIT_IDS = "commit-ids"
         private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
+        private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 
         private const val TAG = "MainActivity"
 
