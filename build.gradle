@@ -13,7 +13,7 @@
 
 buildscript {
     ext.kotlin_version = '1.8.10'
-    ext.core_ktx_version = '1.9.0'
+    ext.core_ktx_version = '1.10.0'
     ext.core_appcompat_version = '1.6.1'
     ext.material_version = '1.8.0'
     ext.kotlinx_coroutines_version = '1.6.4'

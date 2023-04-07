@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.webkit.*
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -34,7 +35,6 @@ import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.commonHandler
-import space.celestia.mobilecelestia.utils.getParcelableValue
 import space.celestia.mobilecelestia.utils.getSerializableValue
 import java.io.File
 import java.lang.ref.WeakReference
@@ -72,7 +72,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        uri = requireArguments().getParcelableValue(ARG_URI, Uri::class.java)!!
+        uri = BundleCompat.getParcelable(requireArguments(), ARG_URI, Uri::class.java)!!
         matchingQueryKeys = requireArguments().getStringArrayList(ARG_MATCHING_QUERY_KEYS) ?: listOf()
         contextDirectory = requireArguments().getSerializableValue(ARG_CONTEXT_DIRECTORY, File::class.java)
         filterURL = requireArguments().getBoolean(ARG_FILTER_URL, true)

@@ -101,7 +101,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
                 handleMouseButtonRelease = { view, event ->
                     weakSelf.get()?.handleMouseButtonRelease(view, event, true)
                 },
-                handleMouseButtonMove = { view, event ->
+                handleMouseButtonMove = { _, event ->
                     val self = weakSelf.get() ?: return@PointerCaptureListener
                     if (self.currentPressedMouseButton != 0) {
                         val point = PointF(event.x, event.y).scaleBy(self.scaleFactor)

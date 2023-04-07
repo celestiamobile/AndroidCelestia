@@ -16,12 +16,11 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.view.*
 import androidx.appcompat.widget.Toolbar
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.appbar.AppBarLayout
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.utils.getParcelableArrayListValue
-import space.celestia.mobilecelestia.utils.getParcelableValue
 
 abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClickListener {
     interface NavigationBarItem: Parcelable
@@ -202,8 +201,8 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
 
             if (savedInstanceState != null) {
                 innerTitle = savedInstanceState.getString(ARG_TITLE, "")
-                innerLeftNavigationBarItem = savedInstanceState.getParcelableValue(ARG_LEFT_ITEM, BarButtonItem::class.java)
-                innerRightNavigationBarItems = savedInstanceState.getParcelableArrayListValue(ARG_RIGHT_ITEMS, BarButtonItem::class.java) ?: listOf()
+                innerLeftNavigationBarItem = BundleCompat.getParcelable(savedInstanceState, ARG_LEFT_ITEM, BarButtonItem::class.java)
+                innerRightNavigationBarItems = BundleCompat.getParcelableArrayList(savedInstanceState, ARG_RIGHT_ITEMS, BarButtonItem::class.java) ?: listOf()
                 innerShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
             }
         }
@@ -271,8 +270,8 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
             fragmentCreated = true
         } else {
             lastTitle = savedInstanceState.getString(ARG_TITLE, "")
-            lastRightItems = savedInstanceState.getParcelableArrayListValue(ARG_RIGHT_ITEMS, BarButtonItem::class.java) ?: listOf()
-            lastLeftItem = savedInstanceState.getParcelableValue(ARG_LEFT_ITEM, BarButtonItem::class.java)
+            lastRightItems = BundleCompat.getParcelableArrayList(savedInstanceState, ARG_RIGHT_ITEMS, BarButtonItem::class.java) ?: listOf()
+            lastLeftItem = BundleCompat.getParcelable(savedInstanceState, ARG_LEFT_ITEM, BarButtonItem::class.java)
             lastGoBack = savedInstanceState.getBoolean(ARG_BACK)
             lastShowNavigationBar = savedInstanceState.getBoolean(ARG_SHOW_BAR)
             commitIds = savedInstanceState.getIntegerArrayList(ARG_COMMIT_IDS) ?: arrayListOf()
