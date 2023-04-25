@@ -1925,7 +1925,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun shareURL() = lifecycleScope.launch {
         val urlAndName = withContext(executor.asCoroutineDispatcher()) { Pair(appCore.currentURL, appCore.simulation.universe.getNameForSelection(appCore.simulation.selection)) }
-        shareURLDirect(urlAndName.first, urlAndName.second)
+        shareURLDirect(urlAndName.second, urlAndName.first)
     }
 
     private fun shareImage() = lifecycleScope.launch {
