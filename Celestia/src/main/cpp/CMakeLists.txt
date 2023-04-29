@@ -191,10 +191,14 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celrender/cometrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/eclipticlinerenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/eclipticlinerenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/largestarrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/largestarrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/linerenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/linerenderer.h
-        ${CELESTIA_SRC_DIR}/celrender/vertexobject.cpp
-        ${CELESTIA_SRC_DIR}/celrender/vertexobject.h
+        ${CELESTIA_SRC_DIR}/celrender/gl/buffer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/gl/buffer.h
+        ${CELESTIA_SRC_DIR}/celrender/gl/vertexobject.cpp
+        ${CELESTIA_SRC_DIR}/celrender/gl/vertexobject.h
         )
 
 list(APPEND CELESTIA_SOURCES

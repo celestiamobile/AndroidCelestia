@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="370"
+    android:versionCode="380"
     android:versionName="1.5.22">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
