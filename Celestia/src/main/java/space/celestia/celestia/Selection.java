@@ -19,7 +19,6 @@ public class Selection {
     private final static int SELECTION_TYPE_BODY            = 2;
     private final static int SELECTION_TYPE_DEEP_SKY        = 3;
     private final static int SELECTION_TYPE_LOCATION        = 4;
-    private final static int SELECTION_TYPE_GENERIC         = 5;
 
     final public @Nullable AstroObject object;
     final public int type;
@@ -47,9 +46,6 @@ public class Selection {
                 break;
             case SELECTION_TYPE_LOCATION:
                 object = new Location(objectPointer);
-                break;
-            case SELECTION_TYPE_GENERIC:
-                object = new AstroObject(objectPointer);
                 break;
             case SELECTION_TYPE_NIL:
             default:
@@ -80,7 +76,7 @@ public class Selection {
         } else if (object instanceof DSO) {
             return SELECTION_TYPE_DEEP_SKY;
         } else {
-            return SELECTION_TYPE_GENERIC;
+            return SELECTION_TYPE_NIL;
         }
     }
 

@@ -11,6 +11,7 @@
 
 #include "CelestiaJNI.h"
 #include <celengine/star.h>
+#include <celengine/univcoord.h>
 
 extern "C"
 JNIEXPORT jstring JNICALL

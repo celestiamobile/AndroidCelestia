@@ -207,7 +207,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/astro.cpp
         ${CELESTIA_SRC_DIR}/celengine/astro.h
         ${CELESTIA_SRC_DIR}/celengine/astroobj.h
-        ${CELESTIA_SRC_DIR}/celengine/astroobj.cpp
         ${CELESTIA_SRC_DIR}/celengine/atmosphere.h
         ${CELESTIA_SRC_DIR}/celengine/axisarrow.cpp
         ${CELESTIA_SRC_DIR}/celengine/axisarrow.h

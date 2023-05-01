@@ -20,31 +20,48 @@ Selection javaSelectionAsSelection(JNIEnv *env, jobject javaSelection)
 {
     jint type = env->CallIntMethod(javaSelection, selectionGetObjectTypeMethodID);
     jlong pointer = env->CallLongMethod(javaSelection, selectionGetObjectPointerMethodID);
-    switch ((int)type)
+    switch (static_cast<SelectionType>(type))
     {
-        case Selection::Type_Body:
-            return Selection((Body *)pointer);
-        case Selection::Type_Star:
-            return Selection((Star *)pointer);
-        case Selection::Type_DeepSky:
-            return Selection((DeepSkyObject *)pointer);
-        case Selection::Type_Location:
-            return Selection((Location *)pointer);
-        case Selection::Type_Generic:
-            return Selection((AstroObject *)pointer);
-        case Selection::Type_Nil:
+        case SelectionType::Body:
+            return { reinterpret_cast<Body*>(pointer) };
+        case SelectionType::Star:
+            return { reinterpret_cast<Star*>(pointer) };
+        case SelectionType::DeepSky:
+            return { reinterpret_cast<DeepSkyObject*>(pointer) };
+        case SelectionType::Location:
+            return { reinterpret_cast<Location*>(pointer) };
+        case SelectionType::None:
         default:
-            return Selection();
+            return {};
     }
 }
 
 jobject selectionAsJavaSelection(JNIEnv *env, Selection const& sel)
 {
-    return env->NewObject(selectionClz, selectionInitMethodID, (jlong)sel.object(), (jint)sel.getType());
+    void *pointer = nullptr;
+    switch (sel.getType())
+    {
+        case SelectionType::Body:
+            pointer = sel.body();
+            break;
+        case SelectionType::Star:
+            pointer = sel.star();
+            break;
+        case SelectionType::DeepSky:
+            pointer = sel.deepsky();
+            break;
+        case SelectionType::Location:
+            pointer = sel.location();
+            break;
+        case SelectionType::None:
+        default:
+            break;
+    }
+    return env->NewObject(selectionClz, selectionInitMethodID, reinterpret_cast<jlong>(pointer), static_cast<jint>(sel.getType()));
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Selection_c_1getRadius(JNIEnv *env, jobject thiz) {
-    return (jdouble)javaSelectionAsSelection(env, thiz).radius();
+    return static_cast<jdouble>(javaSelectionAsSelection(env, thiz).radius());
 }
