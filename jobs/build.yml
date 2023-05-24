@@ -138,8 +138,8 @@ jobs:
 
   - script: |
       mkdir -p symbols
-      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cmake/release/obj/* symbols
-      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/Celestia/build/intermediates/cmake/release/obj/* symbols
+      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
+      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/Celestia/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
       cd symbols
       zip -vr symbols.zip * -x "*.DS_Store"
       appcenter crashes upload-symbols --breakpad symbols.zip --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
