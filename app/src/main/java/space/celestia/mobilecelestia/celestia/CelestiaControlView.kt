@@ -50,7 +50,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
         for (index in buttons.indices) {
             val item = buttons[index]
             val button = StandardImageButton(context)
-            button.setColorFilter(ContextCompat.getColor(context, R.color.material_on_background_emphasis_medium))
+            button.setColorFilter(ContextCompat.getColor(context, com.google.android.material.R.color.material_on_background_emphasis_medium))
 
             val size = resources.getDimensionPixelSize(R.dimen.control_view_icon_size)
             val params = LayoutParams(size, size)

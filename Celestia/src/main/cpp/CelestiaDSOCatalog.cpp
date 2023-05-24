@@ -37,5 +37,5 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_DSOCatalog_c_1isDSOGalaxy(JNIEnv *env, jclass clazz, jlong ptr) {
     auto d = reinterpret_cast<DeepSkyObject *>(ptr);
-    return !strcmp(d->getObjTypeName(), "galaxy") ? JNI_TRUE : JNI_FALSE;
+    return d->getObjType() == DeepSkyObjectType::Galaxy ? JNI_TRUE : JNI_FALSE;
 }

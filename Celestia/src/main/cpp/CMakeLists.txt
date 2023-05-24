@@ -191,10 +191,19 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celrender/cometrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/eclipticlinerenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/eclipticlinerenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/galaxyrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/galaxyrenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/globularrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/globularrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/largestarrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/largestarrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/linerenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/linerenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/nebularenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/nebularenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/rendererfwd.h
         ${CELESTIA_SRC_DIR}/celrender/gl/buffer.cpp
         ${CELESTIA_SRC_DIR}/celrender/gl/buffer.h
         ${CELESTIA_SRC_DIR}/celrender/gl/vertexobject.cpp
@@ -240,6 +249,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/frametree.h
         ${CELESTIA_SRC_DIR}/celengine/galaxy.cpp
         ${CELESTIA_SRC_DIR}/celengine/galaxy.h
+        ${CELESTIA_SRC_DIR}/celengine/galaxyform.cpp
+        ${CELESTIA_SRC_DIR}/celengine/galaxyform.h
         ${CELESTIA_SRC_DIR}/celengine/geometry.h
         ${CELESTIA_SRC_DIR}/celengine/glsupport.cpp
         ${CELESTIA_SRC_DIR}/celengine/glsupport.h

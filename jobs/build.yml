@@ -65,10 +65,10 @@ jobs:
 
   - task: JavaToolInstaller@0
     inputs:
-      versionSpec: '11'
+      versionSpec: '17'
       jdkArchitectureOption: 'x64'
       jdkSourceOption: 'PreInstalled'
-    displayName: 'Install Java 11'
+    displayName: 'Install Java 17'
 
   - task: Gradle@2
     inputs:

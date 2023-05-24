@@ -116,7 +116,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
                         }
                     }
                     SelectionContainer {
-                        Text(text = overview, color = colorResource(id = R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyLarge, modifier = rowModifier.padding(bottom = dimensionResource(
+                        Text(text = overview, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyLarge, modifier = rowModifier.padding(bottom = dimensionResource(
                             id = R.dimen.common_page_medium_gap_vertical
                         )))
                     }

@@ -24,7 +24,7 @@ fun Footer(text: String, modifier: Modifier = Modifier) {
         end = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
         bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
     )) {
-        Text(text = text, color = colorResource(id = R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.labelMedium)
+        Text(text = text, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.labelMedium)
     }
 }
 

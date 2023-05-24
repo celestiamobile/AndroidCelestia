@@ -26,7 +26,7 @@ fun TextRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: S
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_item_gap_vertical)))
                 Text(
                     text = secondaryText,
-                    color = colorResource(id = R.color.material_on_background_emphasis_medium),
+                    color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -34,7 +34,7 @@ fun TextRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: S
         if (accessoryResource != 0) {
             Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.list_item_gap_horizontal)))
             Image(painter = painterResource(id = accessoryResource), contentDescription = accessoryContentDescription, colorFilter = ColorFilter.tint(
-                colorResource(id = R.color.material_on_background_disabled)))
+                colorResource(id = com.google.android.material.R.color.material_on_background_disabled)))
         }
     }
 }
