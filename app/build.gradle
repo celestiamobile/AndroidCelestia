@@ -124,7 +124,7 @@ dependencies {
 
     implementation "net.lingala.zip4j:zip4j:2.11.5"
 
-    implementation "androidx.webkit:webkit:1.6.1"
+    implementation "androidx.webkit:webkit:1.7.0"
 
     implementation project(path: ':LinkPreview')
     implementation project(path: ':Celestia')

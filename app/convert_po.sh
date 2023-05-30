@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PATH="/usr/local/opt/gettext/bin:$PATH"
+export PATH="/opt/homebrew/bin:/usr/local/opt/gettext/bin:$PATH"
 
 cd `dirname $0`
 
