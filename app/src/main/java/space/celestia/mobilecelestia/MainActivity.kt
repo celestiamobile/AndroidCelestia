@@ -242,7 +242,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             builder.setTitle(R.string.privacy_policy_alert_title)
             builder.setMessage(R.string.privacy_policy_alert_detail)
             builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
-                openURL("https://celestia.mobi/privacy.html")
+                openURL("https://celestia.mobi/privacy")
                 finishAndRemoveTask()
                 exitProcess(0)
             }

@@ -78,9 +78,9 @@ class AboutFragment : NavigationFragment.SubFragment() {
         // Links
         array.add(
             listOf(
-                ActionItem(CelestiaString("Development", ""),"https://github.com/levinli303/Celestia/wiki/Development"),
+                ActionItem(CelestiaString("Development", ""),"https://celestia.mobi/help/development"),
                 ActionItem(CelestiaString("Third Party Dependencies", ""), "https://celestia.mobi/help/dependencies"),
-                ActionItem(CelestiaString("Privacy Policy and Service Agreement", ""), "https://celestia.mobi/privacy.html")
+                ActionItem(CelestiaString("Privacy Policy and Service Agreement", ""), "https://celestia.mobi/privacy")
             )
         )
 
