@@ -30,10 +30,10 @@ jobs:
 
   - script: |
       cd Celestia
-      git checkout origin/$(Build.SourceBranchName)
+      git checkout origin/$(Build.SourceBranchName)-develop
       git submodule update --init thirdparty/miniaudio
       cd ../CelestiaLocalization
-      git checkout origin/$(Build.SourceBranchName)
+      git checkout origin/develop
     displayName: 'Checkout Branch'
     condition: ne( variables['Build.Reason'], 'PullRequest' )
 
