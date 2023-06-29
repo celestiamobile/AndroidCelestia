@@ -87,7 +87,7 @@ class AboutFragment : NavigationFragment.SubFragment() {
         array.add(
             listOf(
                 ActionItem(CelestiaString("Official Website", ""), "https://celestia.mobi"),
-                ActionItem(CelestiaString("Support Forum", ""), "https://celestia.space/forum")
+                ActionItem(CelestiaString("About Celestia", ""), "https://celestia.mobi/about")
             )
         )
 
