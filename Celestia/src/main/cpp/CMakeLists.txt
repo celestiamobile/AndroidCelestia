@@ -241,6 +241,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/dsooctree.h
         ${CELESTIA_SRC_DIR}/celengine/dsorenderer.cpp
         ${CELESTIA_SRC_DIR}/celengine/dsorenderer.h
+        ${CELESTIA_SRC_DIR}/celengine/fisheyeprojectionmode.cpp
+        ${CELESTIA_SRC_DIR}/celengine/fisheyeprojectionmode.h
         ${CELESTIA_SRC_DIR}/celengine/frame.cpp
         ${CELESTIA_SRC_DIR}/celengine/frame.h
         ${CELESTIA_SRC_DIR}/celengine/framebuffer.cpp
@@ -297,12 +299,16 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/parseobject.h
         ${CELESTIA_SRC_DIR}/celengine/parser.cpp
         ${CELESTIA_SRC_DIR}/celengine/parser.h
+        ${CELESTIA_SRC_DIR}/celengine/perspectiveprojectionmode.cpp
+        ${CELESTIA_SRC_DIR}/celengine/perspectiveprojectionmode.h
         ${CELESTIA_SRC_DIR}/celengine/planetgrid.cpp
         ${CELESTIA_SRC_DIR}/celengine/planetgrid.h
         ${CELESTIA_SRC_DIR}/celengine/pointstarrenderer.cpp
         ${CELESTIA_SRC_DIR}/celengine/pointstarrenderer.h
         ${CELESTIA_SRC_DIR}/celengine/pointstarvertexbuffer.cpp
         ${CELESTIA_SRC_DIR}/celengine/pointstarvertexbuffer.h
+        ${CELESTIA_SRC_DIR}/celengine/projectionmode.cpp
+        ${CELESTIA_SRC_DIR}/celengine/projectionmode.h
         ${CELESTIA_SRC_DIR}/celengine/rectangle.h
         ${CELESTIA_SRC_DIR}/celengine/referencemark.h
         ${CELESTIA_SRC_DIR}/celengine/rendcontext.cpp
