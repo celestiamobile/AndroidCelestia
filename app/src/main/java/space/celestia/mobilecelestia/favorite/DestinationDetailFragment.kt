@@ -16,14 +16,29 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import com.google.accompanist.themeadapter.material3.Mdc3Theme
+import space.celestia.celestia.Destination
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.celestia.Destination
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getSerializableValue
 
@@ -38,27 +53,25 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
             item = it.getSerializableValue(ARG_ITEM, Destination::class.java)
         }
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_destination_detail, container, false)
-        val content = view.findViewById<TextView>(R.id.description)
-        val button = view.findViewById<Button>(R.id.action_button)
-
-        content.text = item?.description ?: ""
-
-        button.setOnClickListener { this.onButtonClick() }
-
-        button.text = CelestiaString("Go", "")
-
+    ): View {
+        val view = ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen()
+                }
+            }
+        }
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updatePadding(bottom = insets.bottom)
             WindowInsetsCompat.CONSUMED
         }
-
         return view
     }
 
@@ -66,6 +79,38 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         title = item?.name ?: ""
+    }
+
+    @Composable
+    fun MainScreen() {
+        val scroll = rememberScrollState(0)
+
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.padding(
+                start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
+                end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
+            )
+        ) {
+            SelectionContainer(modifier = Modifier.verticalScroll(scroll).weight(1.0f)
+                .fillMaxWidth()
+                .padding(
+                    top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),
+                )
+            ) {
+                Text(text = item?.description ?: "", color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyLarge)
+            }
+            FilledTonalButton(modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
+                    bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),
+                ), onClick = {
+                onButtonClick()
+            }) {
+                Text(text = CelestiaString("Go", ""))
+            }
+        }
     }
 
     private fun onButtonClick() {
