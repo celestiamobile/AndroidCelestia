@@ -100,6 +100,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
         fun celestiaFragmentDidRequestObjectInfo()
+        fun celestiaFragmentDidRequestObjectInfo(selection: Selection)
         fun provideFallbackConfigFilePath(): String
         fun provideFallbackDataDirectoryPath(): String
         fun celestiaFragmentLoadingFromFallback()
@@ -438,6 +439,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
 
         menu.setHeaderTitle(appCore.simulation.universe.getNameForSelection(selection))
+        menu.add(GROUP_GET_INFO, 0, Menu.NONE, CelestiaString("Get Info", ""))
 
         CelestiaAction.allActions.withIndex().forEach {
             menu.add(GROUP_ACTION, it.index, Menu.NONE, it.value.title)
@@ -517,6 +519,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
                     }
                 }
             }
+        } else if (item.groupId == GROUP_GET_INFO) {
+            listener?.celestiaFragmentDidRequestObjectInfo(selection)
         }
         return true
     }
@@ -681,6 +685,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         private const val GROUP_MARK = 4
         private const val GROUP_BROWSER_ITEM_GO = 6
         private const val GROUP_BROWSER_ITEM = 7
+        private const val GROUP_GET_INFO = 8
         private const val KEY_PREVIOUS_DENSITY = "density"
 
         val availableMarkers: List<String>
