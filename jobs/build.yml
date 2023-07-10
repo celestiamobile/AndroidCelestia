@@ -9,10 +9,13 @@ jobs:
 
   steps:
   - checkout: Celestia
+    fetchDepth: 0
   - checkout: CelestiaContent
     fetchDepth: 1
   - checkout: CelestiaLocalization
+    fetchDepth: 0
   - checkout: self
+    fetchDepth: 0
     submodules: true
 
   - script: |

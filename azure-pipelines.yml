@@ -3,7 +3,7 @@ resources:
   - repository: Celestia
     type: github
     endpoint: GithubAuth
-    name: levinli303/Celestia
+    name: celestiamobile/Celestia
   - repository: CelestiaContent
     type: github
     endpoint: GithubAuth
@@ -11,7 +11,7 @@ resources:
   - repository: CelestiaLocalization
     type: github
     endpoint: GithubAuth
-    name: levinli303/CelestiaLocalization
+    name: celestiamobile/CelestiaLocalization
 
 trigger:
   branches:
