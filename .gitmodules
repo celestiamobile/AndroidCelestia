@@ -1,3 +1,0 @@
-[submodule "app/src/main/cpp/dependency"]
-	path = Celestia/src/main/cpp/dependency
-	url = https://github.com/celestiamobile/CelestiaDependency.git
