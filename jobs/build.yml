@@ -2,7 +2,7 @@ jobs:
 - job: Build
   displayName: 'Build'
   pool:
-    vmImage: 'macos-latest'
+    vmImage: 'ubuntu-latest'
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
@@ -18,17 +18,19 @@ jobs:
     fetchDepth: 0
 
   - script: |
-      brew install gettext
+      sudo apt update
+      sudo apt install -y gettext
     displayName: 'Install Gettext'
 
+  - task: NodeTool@0
+    inputs:
+      versionSource: 'spec'
+      versionSpec: '14.9.0'
+    displayName: 'Install Node.js'
+
   - script: |
-      set -ex
-      NODE_VERSION="14.9.0"
-      curl "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}.pkg" > "$HOME/Downloads/node-installer.pkg"
-      sudo installer -store -pkg "$HOME/Downloads/node-installer.pkg" -target "/"
       npm install -g appcenter-cli
     displayName: 'Install AppCenter-CLI'
-    condition: eq( variables['outputFormat'], 'aab' )
 
   - script: |
       cd Celestia
@@ -50,6 +52,8 @@ jobs:
 
   - script: |
       cd AndroidCelestia
+      git config --global user.email "you@example.com"
+      git config --global user.name "Your Name"
       git cherry-pick origin/asset-pack-integration
     displayName: 'Cherry-Pick Asset Pack Integration'
     condition: eq( variables['outputFormat'], 'aab' )
@@ -69,7 +73,7 @@ jobs:
     displayName: 'Download Dependencies'
 
   - script: |
-      sed -i '' 's/APPCENTER-APP-ID/d1108985-aa25-4fb5-9269-31a70a87d28e/g' app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
+      sed -i 's/APPCENTER-APP-ID/d1108985-aa25-4fb5-9269-31a70a87d28e/g' app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
       echo "New Content:"
       cat app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
     workingDirectory: '$(System.DefaultWorkingDirectory)/AndroidCelestia'

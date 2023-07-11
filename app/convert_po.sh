@@ -42,7 +42,8 @@ create_values_folder()
 {
     for po in $1/*.po; do
         f=${po##*/};f=${f%.*}
-        VALUES_FOLDER=$CELESTIA_APP_RES_ROOT/values-${f/_/-r}
+        ANDROID_LOCALE=$(echo "$f" | sed 's/_/-r/')
+        VALUES_FOLDER=$CELESTIA_APP_RES_ROOT/values-$ANDROID_LOCALE
         mkdir -p $VALUES_FOLDER
         STRINGS_XML=$VALUES_FOLDER/strings.xml
         if [ ! -f $STRINGS_XML ];then
