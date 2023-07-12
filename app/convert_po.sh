@@ -22,7 +22,7 @@ convert_po()
         f=${po##*/};f=${f%.*}
         LANG_ROOT=$LOCALE_ROOT/$f/LC_MESSAGES
         mkdir -p $LANG_ROOT
-        if [ $po -nt $LANG_ROOT/$2.mo ];then
+        if [ ! -f $LANG_ROOT/$2.mo ] || [ $po -nt $LANG_ROOT/$2.mo ];then
             echo "Create $LANG_ROOT/$2.mo"
             msgmerge --quiet --output-file=$PROJECT_TEMP_DIR/$f.po --lang=$f --sort-output $po $POT
             msgfmt -o $LANG_ROOT/$2.mo $PROJECT_TEMP_DIR/$f.po
