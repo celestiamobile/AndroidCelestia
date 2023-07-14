@@ -563,29 +563,29 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun loadConfig() {
         availableInstalledFonts = mapOf(
             "ja" to Pair(
-                FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
-                FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
+                Pair("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
+                Pair("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
             ),
             "ko" to Pair(
-                FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
-                FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
+                Pair("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
+                Pair("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
             ),
             "zh_CN" to Pair(
-                FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
-                FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
+                Pair("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
+                Pair("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
             ),
             "zh_TW" to Pair(
-                FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
-                FontHelper.FontCompat("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
+                Pair("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
+                Pair("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
             ),
             "ar" to Pair(
-                FontHelper.FontCompat("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
-                FontHelper.FontCompat("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
+                Pair("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
+                Pair("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
             )
         )
         defaultInstalledFont = Pair(
-            FontHelper.FontCompat("$fontDirPath/NotoSans-Regular.ttf", 0),
-            FontHelper.FontCompat("$fontDirPath/NotoSans-Bold.ttf", 0)
+            Pair("$fontDirPath/NotoSans-Regular.ttf", 0),
+            Pair("$fontDirPath/NotoSans-Bold.ttf", 0)
         )
 
         // Read custom paths here
@@ -2105,8 +2105,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var enableMultisample = false
         private var enableHiDPI = false
 
-        var availableInstalledFonts: Map<String, Pair<FontHelper.FontCompat, FontHelper.FontCompat>> = mapOf()
-        var defaultInstalledFont: Pair<FontHelper.FontCompat, FontHelper.FontCompat>? = null
+        var availableInstalledFonts: Map<String, Pair<Pair<String, Int>, Pair<String, Int>>> = mapOf()
+        var defaultInstalledFont: Pair<Pair<String, Int>, Pair<String, Int>>? = null
 
         private var availableLanguageCodes: List<String> = listOf()
 

@@ -348,10 +348,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         if (preferredInstalledFont != null) {
             val font = preferredInstalledFont.first
             val boldFont = preferredInstalledFont.second
-            appCore.setFont(font.filePath, font.collectionIndex, 9)
-            appCore.setTitleFont(boldFont.filePath, boldFont.collectionIndex, 15)
-            appCore.setRendererFont(font.filePath, font.collectionIndex, 9, AppCore.RENDER_FONT_STYLE_NORMAL)
-            appCore.setRendererFont(boldFont.filePath, boldFont.collectionIndex, 15, AppCore.RENDER_FONT_STYLE_LARGE)
+            appCore.setFont(font.first, font.second, 9)
+            appCore.setTitleFont(boldFont.first, boldFont.second, 15)
+            appCore.setRendererFont(font.first, font.second, 9, AppCore.RENDER_FONT_STYLE_NORMAL)
+            appCore.setRendererFont(boldFont.first, boldFont.second, 15, AppCore.RENDER_FONT_STYLE_LARGE)
         }
         previousDensity = density
     }
