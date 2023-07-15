@@ -33,9 +33,16 @@
             style="@style/ImageOnTintedBackground"/>
     </FrameLayout>
 
-    <Space
+    <FrameLayout
         android:layout_width="@dimen/stepper_separator_width"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:background="?attr/colorSecondaryContainer">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:background="@color/colorSeparator"
+            android:layout_marginVertical="@dimen/stepper_separator_top_margin"
+            android:layout_height="match_parent"/>
+    </FrameLayout>
 
     <FrameLayout
         android:id="@+id/stepper_end"

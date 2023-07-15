@@ -11,6 +11,6 @@
   -->
 
 <resources>
-    <color name="colorSeparator">#99545458</color>
+    <color name="colorSeparator">#99545454</color>
     <color name="colorDimmingBackground">#99000000</color>
 </resources>

@@ -66,9 +66,10 @@
     <dimen name="bottom_control_container_height">64dp</dimen>
     <dimen name="bottom_control_container_corner_radius">8dp</dimen>
 
-    <dimen name="stepper_width">90dp</dimen>
-    <dimen name="stepper_height">28dp</dimen>
-    <dimen name="stepper_button_padding">4dp</dimen>
+    <dimen name="stepper_width">94dp</dimen>
+    <dimen name="stepper_height">32dp</dimen>
+    <dimen name="stepper_button_padding">5dp</dimen>
+    <dimen name="stepper_separator_top_margin">7dp</dimen>
     <dimen name="stepper_separator_width">1dp</dimen>
 
     <dimen name="sheet_handle_container_height">30dp</dimen>
@@ -93,7 +94,7 @@
     <dimen name="control_view_icon_size">40dp</dimen>
     <dimen name="control_view_icon_spacing">6dp</dimen>
 
-    <dimen name="stepper_corner_radius">4dp</dimen>
+    <dimen name="stepper_corner_radius">7dp</dimen>
 
     <dimen name="list_spacing_short">8dp</dimen>
     <dimen name="list_spacing_tall">28dp</dimen>
