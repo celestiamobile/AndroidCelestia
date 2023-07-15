@@ -28,10 +28,10 @@ class AppStatusReporter : ProgressWatcher {
     }
 
     val state: State
-        get() = synchronized(lock) { return state }
+        get() = synchronized(lock) { return _state }
 
     val status: String
-        get() = synchronized(lock) { return status }
+        get() = synchronized(lock) { return _status }
 
     interface Listener {
         fun celestiaLoadingProgress(status: String)

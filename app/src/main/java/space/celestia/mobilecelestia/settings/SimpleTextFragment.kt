@@ -15,12 +15,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.dimensionResource
+import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 
 class SimpleTextFragment : NavigationFragment.SubFragment() {
-
     private var textTitle: String? = null
     private var textDetail: String? = null
 
@@ -36,11 +47,33 @@ class SimpleTextFragment : NavigationFragment.SubFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_simple_text, container, false)
-        view.findViewById<TextView>(R.id.text).text = textDetail
-        return view
+    ): View {
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen()
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun MainScreen() {
+        val scroll = rememberScrollState(0)
+        SelectionContainer(modifier = Modifier.verticalScroll(scroll)
+            .fillMaxWidth()
+            .padding(
+                top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),
+                bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),
+                start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
+                end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
+            )
+        ) {
+            Text(text = textDetail ?: "", color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyMedium)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -50,7 +83,6 @@ class SimpleTextFragment : NavigationFragment.SubFragment() {
     }
 
     companion object {
-
         const val ARG_TITLE = "title"
         const val ARG_DETAIL = "detail"
 
