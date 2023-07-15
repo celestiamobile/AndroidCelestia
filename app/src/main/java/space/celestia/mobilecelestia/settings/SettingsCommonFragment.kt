@@ -19,10 +19,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.getSerializableValue
 
-class SettingsCommonFragment : SettingsBaseFragment() {
+class SettingsCommonFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
     private var item: SettingsCommonItem? = null
     private var listener: Listener? = null
     private var dataSource: DataSource? = null

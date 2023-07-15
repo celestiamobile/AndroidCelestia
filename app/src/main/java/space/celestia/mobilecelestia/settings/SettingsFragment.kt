@@ -24,7 +24,7 @@ import space.celestia.mobilecelestia.common.NavigationFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SettingsFragment : NavigationFragment() {
+class SettingsFragment : NavigationFragment(), SettingsBaseFragment {
     @Inject
     lateinit var appCore: AppCore
     @Inject
@@ -66,7 +66,7 @@ class SettingsFragment : NavigationFragment() {
         }
     }
 
-    fun reload() {
+    override fun reload() {
         val frag = childFragmentManager.findFragmentById(R.id.fragment_container)
         if (frag is SettingsBaseFragment)
             frag.reload()

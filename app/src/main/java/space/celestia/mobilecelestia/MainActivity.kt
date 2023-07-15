@@ -1167,6 +1167,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyDown(item.value) }
     }
 
+    override fun onCustomAction(type: CustomActionType) {
+        when (type) {
+            CustomActionType.ShowTimeSettings -> {
+                lifecycleScope.launch {
+                    showBottomSheetFragment(SettingsCurrentTimeNavigationFragment.newInstance())
+                }
+            }
+        }
+    }
+
     override fun objectExistsWithName(name: String): Boolean {
         return !appCore.simulation.findObject(name).isEmpty
     }
@@ -1653,9 +1663,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun reloadSettings() {
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is SettingsFragment) {
+        if (frag is SettingsBaseFragment)
             frag.reload()
-        }
     }
 
     private suspend fun hideOverlay(animated: Boolean) {
@@ -1833,12 +1842,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showTimeControl() = lifecycleScope.launch {
+        val timeSettingItem = CustomAction(type = CustomActionType.ShowTimeSettings, imageID = R.drawable.time_settings, contentDescription = CelestiaString("Settings", ""))
         val actions: List<CelestiaAction> = if (resources.configuration.layoutDirection == LayoutDirection.RTL) {
             listOf(
                 CelestiaAction.Faster,
                 CelestiaAction.PlayPause,
                 CelestiaAction.Slower,
-                CelestiaAction.Reverse
+                CelestiaAction.Reverse,
             )
         } else {
             listOf(
@@ -1848,7 +1858,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 CelestiaAction.Reverse
             )
         }
-        showToolbarFragment(BottomControlFragment.newInstance(actions.map { InstantAction(it) }))
+        showToolbarFragment(BottomControlFragment.newInstance(actions.map { InstantAction(it) } + timeSettingItem))
     }
 
     private fun showScriptControl() = lifecycleScope.launch {

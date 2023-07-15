@@ -55,6 +55,8 @@ class BottomControlRecyclerViewAdapter(
         val item = values[position]
         holder.imageButton.setImageResource(item.imageID ?: 0)
         holder.imageButton.contentDescription = item.contentDescription
+        holder.imageButton.setOnClickListener(null)
+        holder.imageButton.setOnTouchListener(null)
         if (item is InstantAction) {
             holder.imageButton.setOnClickListener {
                 listener?.onInstantActionSelected(item.action)
@@ -84,6 +86,10 @@ class BottomControlRecyclerViewAdapter(
                     return@setOnMenuItemClickListener true
                 }
                 popup.show()
+            }
+        } else if (item is CustomAction) {
+            holder.imageButton.setOnClickListener {
+                listener?.onCustomAction(item.type)
             }
         }
     }

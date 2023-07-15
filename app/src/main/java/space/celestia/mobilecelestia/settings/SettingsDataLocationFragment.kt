@@ -20,9 +20,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-class SettingsDataLocationFragment : SettingsBaseFragment() {
+class SettingsDataLocationFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
     private var listener: Listener? = null
 
     private val listAdapter by lazy { SettingsDataLocationRecyclerViewAdapter(listener) }

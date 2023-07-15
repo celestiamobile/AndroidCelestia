@@ -73,6 +73,7 @@ class BottomControlFragment : Fragment() {
         fun onInstantActionSelected(item: CelestiaAction)
         fun onContinuousActionDown(item: CelestiaContinuosAction)
         fun onContinuousActionUp(item: CelestiaContinuosAction)
+        fun onCustomAction(type: CustomActionType)
         fun onBottomControlHide()
     }
 

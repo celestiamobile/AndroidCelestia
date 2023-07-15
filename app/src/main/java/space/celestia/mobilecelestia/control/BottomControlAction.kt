@@ -110,6 +110,11 @@ class ContinuousAction(val action: CelestiaContinuosAction): Serializable, Botto
 
 class GroupActionItem(val title: String, val action: CelestiaContinuosAction): Serializable
 
+enum class CustomActionType: Serializable {
+    ShowTimeSettings
+}
+class CustomAction(val type: CustomActionType, override val imageID: Int?, override val contentDescription: String?): Serializable, BottomControlAction
+
 class GroupAction(override val contentDescription: String, val actions: List<GroupActionItem>): Serializable, BottomControlAction {
     override val imageID: Int
         get() = R.drawable.common_other

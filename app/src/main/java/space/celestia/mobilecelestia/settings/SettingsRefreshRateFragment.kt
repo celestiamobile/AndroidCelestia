@@ -24,9 +24,10 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-class SettingsRefreshRateFragment : SettingsBaseFragment() {
+class SettingsRefreshRateFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
     private var listener: Listener? = null
 
     private val listAdapter by lazy { SettingsRefreshRateRecyclerViewAdapter(listener) }

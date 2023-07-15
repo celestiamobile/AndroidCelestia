@@ -34,6 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Utils
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.text.DateFormat
@@ -42,7 +43,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SettingsCurrentTimeFragment : SettingsBaseFragment() {
+class SettingsCurrentTimeFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
     private val formatter by lazy { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault()) }
 
     private var listener: Listener? = null

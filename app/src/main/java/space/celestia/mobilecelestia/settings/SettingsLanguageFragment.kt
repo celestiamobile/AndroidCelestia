@@ -19,9 +19,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-class SettingsLanguageFragment : SettingsBaseFragment() {
+class SettingsLanguageFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
     private var listener: Listener? = null
     private var dataSource: DataSource? = null
 

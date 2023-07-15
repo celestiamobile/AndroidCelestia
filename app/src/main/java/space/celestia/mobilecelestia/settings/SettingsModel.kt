@@ -631,6 +631,6 @@ class SettingsCommonItem(override val name: String, val sections: List<Section>)
     }
 }
 
-open class SettingsBaseFragment: NavigationFragment.SubFragment() {
-    open fun reload() {}
+interface SettingsBaseFragment {
+    fun reload() {}
 }
