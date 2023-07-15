@@ -1442,37 +1442,34 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         return appCore.getBooleanValueForPield(field)
     }
 
-    override fun onCurrentTimeActionRequested(action: CurrentTimeAction) {
-        lifecycleScope.launch {
-            when (action) {
-                CurrentTimeAction.SetToCurrentTime -> {
-                    withContext(executor.asCoroutineDispatcher()) { appCore.charEnter(CelestiaAction.CurrentTime.value) }
-                    reloadSettings()
-                }
-                CurrentTimeAction.PickDate -> {
-                    val format = android.text.format.DateFormat.getBestDateTimePattern(
-                        Locale.getDefault(),
-                        "yyyyMMddHHmmss"
-                    )
-                    showDateInput(
-                        CelestiaString(
-                            "Please enter the time in \"%s\" format.",
-                            ""
-                        ).format(format), format
-                    ) { date ->
-                        if (date == null) {
-                            showAlert(CelestiaString("Unrecognized time string.", ""))
-                            return@showDateInput
-                        }
-                        lifecycleScope.launch {
-                            withContext(executor.asCoroutineDispatcher()) {
-                                appCore.simulation.time = date.julianDay
-                            }
-                            reloadSettings()
-                        }
-                    }
-                }
+    override fun onPickTime() {
+        val format = android.text.format.DateFormat.getBestDateTimePattern(
+            Locale.getDefault(),
+            "yyyyMMddHHmmss"
+        )
+        showDateInput(
+            CelestiaString(
+                "Please enter the time in \"%s\" format.",
+                ""
+            ).format(format), format
+        ) { date ->
+            if (date == null) {
+                showAlert(CelestiaString("Unrecognized time string.", ""))
+                return@showDateInput
             }
+            lifecycleScope.launch {
+                withContext(executor.asCoroutineDispatcher()) {
+                    appCore.simulation.time = date.julianDay
+                }
+                reloadSettings()
+            }
+        }
+    }
+
+    override fun onSyncWithCurrentTime() {
+        lifecycleScope.launch {
+            withContext(executor.asCoroutineDispatcher()) { appCore.charEnter(CelestiaAction.CurrentTime.value) }
+            reloadSettings()
         }
     }
 
