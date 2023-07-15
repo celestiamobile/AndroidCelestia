@@ -10,7 +10,4 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<resources>
-    <color name="colorSeparator">#99545454</color>
-    <color name="colorDimmingBackground">#99000000</color>
-</resources>
+<resources/>

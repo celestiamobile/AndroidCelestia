@@ -8,7 +8,7 @@
         android:id="@+id/separator_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/default_separator_height"
-        app:dividerColor="@color/colorSeparator"
+        app:dividerColor="?attr/colorOutlineVariant"
         app:dividerThickness="@dimen/default_separator_height"
         android:layout_gravity="center"/>
 </FrameLayout>

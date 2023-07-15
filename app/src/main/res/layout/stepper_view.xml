@@ -39,7 +39,7 @@
         android:background="?attr/colorSecondaryContainer">
         <FrameLayout
             android:layout_width="match_parent"
-            android:background="@color/colorSeparator"
+            android:background="?attr/colorOutline"
             android:layout_marginVertical="@dimen/stepper_separator_top_margin"
             android:layout_height="match_parent"/>
     </FrameLayout>
