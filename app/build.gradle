@@ -26,7 +26,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.8"
+        kotlinCompilerExtensionVersion = "1.5.0"
     }
 
     kotlinOptions {
@@ -129,7 +129,7 @@ dependencies {
     implementation project(path: ':LinkPreview')
     implementation project(path: ':Celestia')
 
-    def appCenterSdkVersion = '5.0.1'
+    def appCenterSdkVersion = '5.0.2'
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 

@@ -12,12 +12,12 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.8.22'
+    ext.kotlin_version = '1.9.0'
     ext.core_ktx_version = '1.10.1'
     ext.core_appcompat_version = '1.6.1'
     ext.material_version = '1.9.0'
     ext.kotlinx_coroutines_version = '1.7.1'
-    ext.hilt_version = '2.46.1'
+    ext.hilt_version = '2.47'
     ext.lifecycle_version = '2.6.1'
 
     repositories {
