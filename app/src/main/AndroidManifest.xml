@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="393"
+    android:versionCode="394"
     android:versionName="1.5.24">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
@@ -146,6 +146,13 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND_MULTIPLE" />
         </intent>
         <intent>
             <action android:name="android.intent.action.OPEN_DOCUMENT"/>
