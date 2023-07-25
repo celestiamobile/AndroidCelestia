@@ -268,6 +268,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         if (!isReady) { return true }
 
         if (event.source and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK
+            && event.device != null
             && event.actionMasked == MotionEvent.ACTION_MOVE) {
             if (!canAcceptKeyEvents()) return false
             // Process the movements starting from the
