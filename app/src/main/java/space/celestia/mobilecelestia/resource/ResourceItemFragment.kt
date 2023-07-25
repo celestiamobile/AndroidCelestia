@@ -75,7 +75,6 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        resourceManager.addListener(this)
         if (savedInstanceState != null) {
             item = savedInstanceState.getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
             lastUpdateDate = savedInstanceState.getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
@@ -114,6 +113,8 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         progressIndicator = view.findViewById(R.id.progress_indicator)
 
         updateUI()
+
+        resourceManager.addListener(this)
 
         return view
     }
@@ -170,10 +171,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         listener = null
     }
 
-    override fun onDestroy() {
+    override fun onDestroyView() {
         resourceManager.removeListener(this)
 
-        super.onDestroy()
+        super.onDestroyView()
     }
 
     override fun menuItemClicked(groupId: Int, id: Int): Boolean {
