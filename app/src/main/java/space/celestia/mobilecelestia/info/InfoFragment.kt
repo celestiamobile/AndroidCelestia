@@ -40,6 +40,7 @@ import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.LinkPreview
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.utils.getOverviewForSelection
+import java.net.MalformedURLException
 import java.net.URL
 import javax.inject.Inject
 
@@ -119,9 +120,13 @@ class InfoFragment : NavigationFragment.SubFragment() {
                             id = R.dimen.common_page_medium_gap_vertical
                         )))
                     }
-                    val url = selection.webInfoURL
+                    val urlString = selection.webInfoURL
+                    var url: URL? = null
+                    try {
+                        url = URL(urlString)
+                    } catch (ignored: MalformedURLException) {}
                     if (hasWebInfo && url != null) {
-                        LinkPreview(url = URL(url), modifier = rowModifier.padding(bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), loadResult = { loadResult ->
+                        LinkPreview(url = url, modifier = rowModifier.padding(bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), loadResult = { loadResult ->
                             isWebInfoLoaded = loadResult
                         }, onClick = { finalURL ->
                             listener?.onInfoLinkMetaDataClicked(finalURL)
