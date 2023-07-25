@@ -27,9 +27,13 @@ object FileUtils {
     @Throws(IOException::class)
     fun writeTextToFile(text: String, path: String) {
         val file = File(path)
+        writeTextToFile(text, file)
+    }
+
+    @Throws(IOException::class)
+    fun writeTextToFile(text: String, file: File) {
         if (!file.exists())
             file.createNewFile()
-
         file.bufferedWriter().use { it.write(text) }
     }
 

@@ -30,7 +30,7 @@ import java.io.Serializable
 import java.util.*
 
 enum class ToolbarAction : Serializable {
-    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Download, Paperplane, Speedometer, NewsArchive;
+    Setting, Share, Search, Time, Script, Camera, Browse, Help, Favorite, Home, Event, Exit, Addons, Download, Paperplane, Speedometer, NewsArchive, Feedback;
 
     val title: String
         get() {
@@ -48,6 +48,7 @@ enum class ToolbarAction : Serializable {
                 Paperplane -> "Go to Object"
                 Speedometer -> "Speed Control"
                 NewsArchive -> "News Archive"
+                Feedback -> "Send Feedback"
                 else -> this.toString()
             }
             return CelestiaString(orig, "")
@@ -66,7 +67,7 @@ enum class ToolbarAction : Serializable {
                 listOf(Camera, Time, Script, Speedometer),
                 listOf(Browse, Favorite, Event),
                 listOf(Addons, Download, NewsArchive),
-                listOf(Help),
+                listOf(Feedback, Help),
                 listOf(Exit)
             )
     }

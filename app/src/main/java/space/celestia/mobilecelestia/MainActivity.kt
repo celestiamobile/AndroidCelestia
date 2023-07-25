@@ -1027,6 +1027,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     showBottomSheetFragment(CommonWebNavigationFragment.newInstance(uri))
                 }
             }
+            ToolbarAction.Feedback -> {
+                lifecycleScope.launch {
+                    hideOverlay(true)
+                    showSendFeedback()
+                }
+            }
         }
     }
 
@@ -1833,6 +1839,95 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(InfoFragment.newInstance(selection))
     }
 
+    private fun showSendFeedback() {
+        showOptions(title = "", options = arrayOf(CelestiaString("Report a Bug", ""), CelestiaString("Suggest a Feature", ""))) {
+            if (it == 1) {
+                suggestFeature()
+            } else {
+                reportBug()
+            }
+        }
+    }
+
+    private fun suggestFeature() {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL_ADDRESS))
+            putExtra(Intent.EXTRA_SUBJECT, CelestiaString("Feature suggestion for Celestia", ""))
+            putExtra(Intent.EXTRA_TEXT, CelestiaString("Please describe the feature you want to see in Celestia.", ""))
+        }
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            reportBugSuggestFeatureFallback()
+        }
+    }
+
+    private fun reportBug() = lifecycleScope.launch {
+        val directory = File(cacheDir, "feedback")
+        if (!directory.exists())
+            directory.mkdir()
+
+        val parentDirectory = File(directory, "${UUID.randomUUID()}")
+        if (!parentDirectory.exists())
+            parentDirectory.mkdir()
+        val proposedScreenshotFile = File(parentDirectory, "screenshot.png")
+        val celestiaInfo = withContext(executor.asCoroutineDispatcher()) {
+            val renderInfo = appCore.renderInfo
+            val success = appCore.saveScreenshot(proposedScreenshotFile.absolutePath, AppCore.IMAGE_TYPE_PNG)
+            val url = appCore.currentURL
+            return@withContext Triple(renderInfo, url, success)
+        }
+        val screenshotFile = if (celestiaInfo.third) proposedScreenshotFile else null
+        val renderInfoFile = writeTextToFileWithName(celestiaInfo.first, parentDirectory, "renderinfo.txt")
+        val urlInfoFile = writeTextToFileWithName(celestiaInfo.second, parentDirectory, "urlinfo.txt")
+        val addons = resourceManager.installedResourcesAsync().map { "${it.name}/${it.id}" }.joinToString("\n")
+        val addonInfoFile = writeTextToFileWithName(addons, parentDirectory, "addoninfo.txt")
+        val systemInfo = "Application Version: ${versionName}(${versionCode})\n" +
+            "Operating System: Android\n" +
+            "Operating System Version: ${Build.VERSION.RELEASE}(${Build.VERSION.SDK_INT})\n" +
+            "Operating System Architecture: ${Build.SUPPORTED_ABIS.joinToString(",")}\n" +
+            "Device Model: ${Build.MODEL}\n" +
+            "Device Manufacturer: ${Build.MANUFACTURER}"
+        val systemInfoFile = writeTextToFileWithName(systemInfo, parentDirectory, "systeminfo.txt")
+        val uris = ArrayList(listOf(
+            screenshotFile,
+            renderInfoFile,
+            urlInfoFile,
+            addonInfoFile,
+            systemInfoFile
+        ).mapNotNull {
+            if (it != null) FileProvider.getUriForFile(this@MainActivity, FILE_PROVIDER_AUTHORITY, it) else null
+        })
+        val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+            type = "message/rfc822"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL_ADDRESS))
+            putExtra(Intent.EXTRA_SUBJECT, CelestiaString("Bug report for Celestia", ""))
+            putExtra(Intent.EXTRA_TEXT, CelestiaString("Please describe the issue and repro steps, if known.", ""))
+            if (!uris.isEmpty())
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+        }
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            reportBugSuggestFeatureFallback()
+        }
+    }
+
+    private fun reportBugSuggestFeatureFallback() {
+        openURL(FEEDBACK_GITHUB_LINK)
+    }
+
+    private fun writeTextToFileWithName(text: String, directory: File, fileName: String): File? {
+        val proposedFile = File(directory, fileName)
+        try {
+            FileUtils.writeTextToFile(text, proposedFile)
+            return proposedFile
+        } catch (ignored: Throwable) {
+            return null
+        }
+    }
+
     private fun showSearch() = lifecycleScope.launch {
         showBottomSheetFragment(SearchFragment.newInstance())
     }
@@ -1963,7 +2058,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun shareFile(file: File, mimeType: String) {
-        val uri = FileProvider.getUriForFile(this, "space.celestia.mobilecelestia.fileprovider", file)
+        val uri = FileProvider.getUriForFile(this, FILE_PROVIDER_AUTHORITY, file)
         val intent = ShareCompat.IntentBuilder(this)
             .setType(mimeType)
             .setStream(uri)
@@ -2100,6 +2195,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val ARG_COMMIT_IDS = "commit-ids"
         private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
+
+        private const val FILE_PROVIDER_AUTHORITY = "space.celestia.mobilecelestia.fileprovider"
+        private const val FEEDBACK_EMAIL_ADDRESS = "celestia.mobile@outlook.com"
+        private const val FEEDBACK_GITHUB_LINK = "https://celestia.mobi/feedback"
 
         private const val TAG = "MainActivity"
 

@@ -12,4 +12,5 @@
 
 <paths>
     <cache-path name="celestia_screenshots" path="screenshots/"/>
+    <cache-path name="celestia_feedback" path="feedback/"/>
 </paths>
