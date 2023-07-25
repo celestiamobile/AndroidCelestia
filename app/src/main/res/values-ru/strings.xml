@@ -12,7 +12,7 @@
 <resources>
     <string name="app_name">Celestia</string>
     <string name="celestia_language">ru</string>
-    <string name="privacy_policy_alert_title">Политика конфиденциальности и Договор об оказании услуг</string>
+    <string name="privacy_policy_alert_title">Политика конфиденциальности и условия пользования</string>
     <string name="privacy_policy_alert_detail">Пожалуйста, внимательно прочтите Политику конфиденциальности и Договор об оказании услуг.</string>
     <string name="privacy_policy_alert_show_policy_button_title">Показать</string>
     <string name="privacy_policy_alert_accept_button_title">Принимаю</string>
