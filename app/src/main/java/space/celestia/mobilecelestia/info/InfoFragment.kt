@@ -64,7 +64,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

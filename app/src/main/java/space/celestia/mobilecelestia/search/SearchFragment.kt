@@ -106,10 +106,12 @@ class SearchFragment : NavigationFragment.SubFragment() {
         return view
     }
 
+    @FlowPreview
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        searchBar.setText(searchKey)
+        searchBar.text = searchKey
         searchView.setText(searchKey)
         searchView.editText.hint = ""
         searchView.editText.imeOptions =
@@ -151,7 +153,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
             val searchKey = self.searchView.text
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val searchText = searchKey?.toString()
-                if (searchText != null && searchText.isNotEmpty() && searchResults.isEmpty()) {
+                if (!searchText.isNullOrEmpty() && searchResults.isEmpty()) {
                     listener?.onSearchItemSubmit(searchText)
                 }
             }

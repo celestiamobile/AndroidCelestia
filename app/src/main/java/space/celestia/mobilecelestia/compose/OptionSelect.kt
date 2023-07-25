@@ -11,7 +11,6 @@ import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import space.celestia.mobilecelestia.R
 
 @SuppressLint("InflateParams")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OptionSelect(options: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, selectionChange: (Int) -> Unit) {
     AndroidView(factory = { context ->

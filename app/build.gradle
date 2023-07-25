@@ -29,10 +29,6 @@ android {
         kotlinCompilerExtensionVersion = "1.5.0"
     }
 
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
     defaultConfig {
         applicationId "space.celestia.mobilecelestia"
         minSdkVersion constants.minSdkVersion

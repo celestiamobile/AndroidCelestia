@@ -91,7 +91,6 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MainScreen(initialData: GoToData) {
         var objectName by remember {
