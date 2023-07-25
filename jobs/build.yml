@@ -73,6 +73,12 @@ jobs:
     displayName: 'Download Dependencies'
 
   - script: |
+      cd AndroidCelestia
+      mv Celestia/src/main/cpp/dependency/android/include/breakpad app/src/main/cpp/crash/include
+      rsync -a --include '*/' --include 'libbreakpad_client.a' --exclude '*' Celestia/src/main/cpp/dependency/android/libs app/src/main/cpp/crash
+    displayName: 'Move Dependencies'
+
+  - script: |
       sed -i 's/APPCENTER-APP-ID/d1108985-aa25-4fb5-9269-31a70a87d28e/g' app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
       echo "New Content:"
       cat app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
