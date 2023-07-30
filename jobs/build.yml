@@ -170,7 +170,7 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      PathtoPublish: 'symbols'
+      PathtoPublish: 'symbols/symbols.zip'
       ArtifactName: '$(outputFormat)-symbols'
       publishLocation: 'Container'
     displayName: 'Publish Symbols'
