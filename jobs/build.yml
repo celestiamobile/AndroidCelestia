@@ -167,3 +167,10 @@ jobs:
       zip -vr symbols.zip * -x "*.DS_Store"
       appcenter crashes upload-symbols --breakpad symbols.zip --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
     displayName: 'Upload Symbols'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'symbols'
+      ArtifactName: '$(outputFormat)-symbols'
+      publishLocation: 'Container'
+    displayName: 'Publish Symbols'
