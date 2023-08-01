@@ -125,12 +125,12 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
                 val currentLongitudeValue = convertToDoubleOrNull(longitudeString)
                 val currentLatitudeValue = convertToDoubleOrNull(latitudeString)
-                OutlinedTextField(value = longitudeString, label = { Text(text = CelestiaString("Longitude", "")) }, onValueChange = {
-                    longitudeString = it
-                }, isError = currentLongitudeValue == null || currentLongitudeValue < -180.0 || currentLongitudeValue > 180.0, modifier = Modifier.weight(1.0f))
                 OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "")) }, onValueChange = {
                     latitudeString = it
                 }, isError = currentLatitudeValue == null || currentLatitudeValue < -90.0 || currentLatitudeValue > 90.0, modifier = Modifier.weight(1.0f))
+                OutlinedTextField(value = longitudeString, label = { Text(text = CelestiaString("Longitude", "")) }, onValueChange = {
+                    longitudeString = it
+                }, isError = currentLongitudeValue == null || currentLongitudeValue < -180.0 || currentLongitudeValue > 180.0, modifier = Modifier.weight(1.0f))
             }
             Header(text = CelestiaString("Distance", ""))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
