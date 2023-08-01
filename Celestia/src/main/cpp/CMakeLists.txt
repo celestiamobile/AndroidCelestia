@@ -458,7 +458,6 @@ endif()
 include_directories(
         ${CMAKE_SOURCE_DIR}
         ${CELESTIA_SRC_DIR}
-        ${CELESTIA_DIR}/thirdparty/miniaudio
         ${THIRD_PARTY_INCLUDE_DIR}
         ${THIRD_PARTY_INCLUDE_DIR}/cspice
         ${THIRD_PARTY_INCLUDE_DIR}/lua
@@ -470,6 +469,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/json
         ${THIRD_PARTY_INCLUDE_DIR}/freetype/freetype2
         ${THIRD_PARTY_INCLUDE_DIR}/meshoptimizer
+        ${THIRD_PARTY_INCLUDE_DIR}/miniaudio
         ${THIRD_PARTY_INCLUDE_DIR}/icu
 )
 
