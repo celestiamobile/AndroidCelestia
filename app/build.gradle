@@ -70,21 +70,21 @@ android {
         }
     }
 
-    task copyLocalizedFiles(type: Exec) {
+    tasks.register('copyLocalizedFiles', Exec) {
         println "Copying localized files"
         workingDir projectDir
         executable = '/bin/sh'
         args = ["copy_localized_files.sh"]
     }
 
-    task copyGeneralData(type: Exec) {
+    tasks.register('copyGeneralData', Exec) {
         println "Copying general data"
         workingDir projectDir
         executable = '/bin/sh'
         args = ["copy_general_data.sh"]
     }
 
-    task convertPO(type: Exec) {
+    tasks.register('convertPO', Exec) {
         println "Converting PO"
         workingDir projectDir
         executable = '/bin/sh'

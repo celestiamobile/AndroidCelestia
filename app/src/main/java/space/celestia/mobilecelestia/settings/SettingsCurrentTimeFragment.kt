@@ -38,6 +38,7 @@ import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.text.DateFormat
+import java.text.NumberFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -52,12 +53,21 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment(), SettingsBa
     lateinit var appCore: AppCore
 
     private var currentTime = mutableStateOf(Date())
+    private var currentJulianDay = mutableStateOf(0.0)
+
+    private lateinit var displayNumberFormat: NumberFormat
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        currentTime.value = Utils.createDateFromJulianDay(appCore.simulation.time)
+        displayNumberFormat = NumberFormat.getNumberInstance()
+        displayNumberFormat.isGroupingUsed = false
+        displayNumberFormat.maximumFractionDigits = 4
+
+        val time = appCore.simulation.time
+        currentTime.value = Utils.createDateFromJulianDay(time)
+        currentJulianDay.value = time
         return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
@@ -96,10 +106,13 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment(), SettingsBa
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-            TextRow(primaryText = CelestiaString("Select Time", ""), secondaryText = formatter.format(currentTime.value), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = {
+            TextRow(primaryText = CelestiaString("Select Time", ""), secondaryText = formatter.format(currentTime.value), modifier = Modifier.clickable(onClick = {
                 listener?.onPickTime()
             }))
-            TextRow(primaryText = CelestiaString("Set to Current Time", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = {
+            TextRow(primaryText = CelestiaString("Julian Day", ""), secondaryText = displayNumberFormat.format(currentJulianDay.value), modifier = Modifier.clickable {
+                listener?.onPickJulianDay()
+            })
+            TextRow(primaryText = CelestiaString("Set to Current Time", ""), modifier = Modifier.clickable(onClick = {
                 listener?.onSyncWithCurrentTime()
             }))
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
@@ -107,11 +120,14 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment(), SettingsBa
     }
 
     override fun reload() {
-        currentTime.value = Utils.createDateFromJulianDay(appCore.simulation.time)
+        val time = appCore.simulation.time
+        currentTime.value = Utils.createDateFromJulianDay(time)
+        currentJulianDay.value = time
     }
 
     interface Listener {
         fun onPickTime()
+        fun onPickJulianDay()
         fun onSyncWithCurrentTime()
     }
 

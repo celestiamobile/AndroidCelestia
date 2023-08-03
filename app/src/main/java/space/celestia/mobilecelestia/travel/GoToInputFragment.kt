@@ -39,6 +39,7 @@ import space.celestia.mobilecelestia.control.ObjectNameAutoComplete
 import space.celestia.mobilecelestia.control.OptionSelect
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.io.Serializable
 import java.text.NumberFormat
 import java.util.*
@@ -54,7 +55,8 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         get() = requireNotNull(_goToData)
     private var _goToData: GoToData? = null
 
-    private lateinit var numberFormat: NumberFormat
+    private lateinit var displayNumberFormat: NumberFormat
+    private lateinit var parseNumberFormat: NumberFormat
 
     @Inject
     lateinit var executor: CelestiaExecutor
@@ -76,8 +78,11 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
-        numberFormat.maximumFractionDigits = 2
+        displayNumberFormat = NumberFormat.getNumberInstance()
+        displayNumberFormat.maximumFractionDigits = 2
+        displayNumberFormat.isGroupingUsed = false
+        parseNumberFormat = NumberFormat.getNumberInstance()
+        parseNumberFormat.isGroupingUsed = false
 
         return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
@@ -97,13 +102,13 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             mutableStateOf(initialData.objectName)
         }
         var longitudeString by rememberSaveable {
-            mutableStateOf(numberFormat.format(initialData.longitude))
+            mutableStateOf(displayNumberFormat.format(initialData.longitude))
         }
         var latitudeString by rememberSaveable {
-            mutableStateOf(numberFormat.format(initialData.latitude))
+            mutableStateOf(displayNumberFormat.format(initialData.latitude))
         }
         var distanceString by rememberSaveable {
-            mutableStateOf(numberFormat.format(initialData.distance))
+            mutableStateOf(displayNumberFormat.format(initialData.distance))
         }
         var distanceUnit by rememberSaveable {
             mutableStateOf(initialData.distanceUnit)
@@ -114,6 +119,12 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                 horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
                 vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
             )
+        val currentLongitudeValue = longitudeString.toDoubleOrNull(parseNumberFormat)
+        val currentLatitudeValue = latitudeString.toDoubleOrNull(parseNumberFormat)
+        val currentDistanceValue = distanceString.toDoubleOrNull(parseNumberFormat)
+        val isLongitudeValid = currentLongitudeValue != null && currentLongitudeValue >= -180.0 && currentLongitudeValue <= 180.0
+        val isLatitudeValid = currentLatitudeValue != null && currentLatitudeValue >= -90.0 && currentLatitudeValue <= 90.0
+        val isDistanceValid = currentDistanceValue != null && currentDistanceValue >= 0.0
         Column(modifier = Modifier
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
@@ -123,25 +134,24 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             }
             Header(text = CelestiaString("Coordinates", ""))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
-                val currentLongitudeValue = convertToDoubleOrNull(longitudeString)
-                val currentLatitudeValue = convertToDoubleOrNull(latitudeString)
                 OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "")) }, onValueChange = {
                     latitudeString = it
-                }, isError = currentLatitudeValue == null || currentLatitudeValue < -90.0 || currentLatitudeValue > 90.0, modifier = Modifier.weight(1.0f))
+                }, isError = !isLatitudeValid, modifier = Modifier.weight(1.0f))
                 OutlinedTextField(value = longitudeString, label = { Text(text = CelestiaString("Longitude", "")) }, onValueChange = {
                     longitudeString = it
-                }, isError = currentLongitudeValue == null || currentLongitudeValue < -180.0 || currentLongitudeValue > 180.0, modifier = Modifier.weight(1.0f))
+                }, isError = !isLongitudeValid, modifier = Modifier.weight(1.0f))
             }
             Header(text = CelestiaString("Distance", ""))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
                 OutlinedTextField(value = distanceString, onValueChange = {
                     distanceString = it
-                }, isError = convertToDoubleOrNull(distanceString) == null, modifier = Modifier.weight(1.0f))
+                }, isError = !isDistanceValid, modifier = Modifier.weight(1.0f))
                 OptionSelect(options = distanceUnits.map { CelestiaString(it.name, "") }, selectedIndex = distanceUnits.indexOf(distanceUnit) , selectionChange = {
                     distanceUnit = distanceUnits[it]
                 })
             }
             FilledTonalButton(
+                enabled = isLatitudeValid && isLongitudeValid && isDistanceValid,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -151,9 +161,9 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                         bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical)
                     ),
                 onClick = {
-                    val longitude = convertToDoubleOrNull(longitudeString) ?: return@FilledTonalButton
-                    val latitude = convertToDoubleOrNull(latitudeString) ?: return@FilledTonalButton
-                    val distance = convertToDoubleOrNull(distanceString) ?: return@FilledTonalButton
+                    val longitude = currentLongitudeValue ?: return@FilledTonalButton
+                    val latitude = currentLatitudeValue ?: return@FilledTonalButton
+                    val distance = currentDistanceValue ?: return@FilledTonalButton
                     listener?.onGoToObject(GoToData(objectName, longitude = longitude.toFloat(), latitude = latitude.toFloat(), distance = distance, distanceUnit = distanceUnit))
                 }
             ) {
@@ -175,16 +185,6 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         } else {
             throw RuntimeException("$context must implement GoToInputFragment.Listener")
         }
-    }
-
-    private fun convertToDoubleOrNull(string: String): Double? {
-        try {
-            val value = numberFormat.parse(string)?.toDouble()
-            if (value != null)
-                return value
-        } catch(ignored: Throwable) {}
-        // Try again with default decimal separator
-        return string.toDoubleOrNull()
     }
 
     override fun onDetach() {

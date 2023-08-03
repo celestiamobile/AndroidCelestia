@@ -12,8 +12,19 @@
 package space.celestia.mobilecelestia.utils
 
 import space.celestia.celestia.AppCore
+import java.text.NumberFormat
 
 @Suppress("FunctionName")
 fun CelestiaString(key: String, @Suppress("UNUSED_PARAMETER") comment: String): String {
     return AppCore.getLocalizedString(key)
+}
+
+fun String.toDoubleOrNull(numberFormat: NumberFormat): Double? {
+    try {
+        val value = numberFormat.parse(this)?.toDouble()
+        if (value != null)
+            return value
+    } catch(ignored: Throwable) {}
+    // Try again with default decimal separator
+    return toDoubleOrNull()
 }

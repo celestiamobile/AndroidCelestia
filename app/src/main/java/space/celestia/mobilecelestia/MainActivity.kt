@@ -88,6 +88,7 @@ import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.URL
+import java.text.NumberFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.component1
@@ -1476,6 +1477,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             lifecycleScope.launch {
                 withContext(executor.asCoroutineDispatcher()) {
                     appCore.simulation.time = date.julianDay
+                }
+                reloadSettings()
+            }
+        }
+    }
+
+    override fun onPickJulianDay() {
+        val numberFormat = NumberFormat.getNumberInstance()
+        numberFormat.isGroupingUsed = false
+        showTextInput(title = CelestiaString("Please enter Julian day.", "")) { julianDayString ->
+            val value = julianDayString.toDoubleOrNull(numberFormat)
+            if (value == null) {
+                showAlert(CelestiaString("Invalid Julian day string.", ""))
+                return@showTextInput
+            }
+            lifecycleScope.launch {
+                withContext(executor.asCoroutineDispatcher()) {
+                    appCore.simulation.time = value
                 }
                 reloadSettings()
             }

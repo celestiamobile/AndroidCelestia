@@ -22,6 +22,7 @@ import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.lang.ref.WeakReference
+import java.text.NumberFormat
 
 class RefreshRateSelectionItem(val availableRefreshRates: List<Pair<Int, Int>>?, val maxRefreshRate: Int?, val selectedRateOption: Int) : RecyclerViewItem {
     override val clickable: Boolean
@@ -31,6 +32,7 @@ class RefreshRateSelectionItem(val availableRefreshRates: List<Pair<Int, Int>>?,
 class SettingsRefreshRateRecyclerViewAdapter(
     private val listener: SettingsRefreshRateFragment.Listener?
 ) : SeparatorHeaderRecyclerViewAdapter(listOf()) {
+    private val numberFormat by lazy { NumberFormat.getNumberInstance().apply { isGroupingUsed = true } }
     override fun itemViewType(item: RecyclerViewItem): Int {
         if (item is RefreshRateSelectionItem)
             return SELECTION_ITEM
@@ -48,10 +50,10 @@ class SettingsRefreshRateRecyclerViewAdapter(
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         if (item is RefreshRateSelectionItem && holder is RadioButtonViewHolder) {
             val refreshRates = item.availableRefreshRates ?: listOf()
-            val options = ArrayList(refreshRates.map { CelestiaString("%d FPS", "").format(it.second) })
+            val options = ArrayList(refreshRates.map { CelestiaString("%s FPS", "").format(numberFormat.format(it.second)) })
             val checkedIndex: Int
             if (item.maxRefreshRate != null) {
-                options.add(0, CelestiaString("Maximum (%d FPS)", "").format(item.maxRefreshRate))
+                options.add(0, CelestiaString("Maximum (%s FPS)", "").format(numberFormat.format(item.maxRefreshRate)))
                 if (item.selectedRateOption == Renderer.FRAME_MAX) {
                     checkedIndex = 0
                 } else {
