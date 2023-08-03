@@ -30,10 +30,12 @@ Java_space_celestia_celestia_StarBrowser_c_1getStars(JNIEnv *env, jclass clazz, 
         return env->NewObject(alClz, aliMethodID, 0);
 
     jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)stars->size());
-    for (int i = 0; i < stars->size(); i++) {
+    for (int i = 0; i < stars->size(); i++)
+     {
         Star *aStar = (Star *)(*stars)[i];
         jobject jstar = env->NewObject(csClz, csiMethodID, (jlong)aStar);
         env->CallBooleanMethod(arrayObject, alaMethodID, jstar);
+        env->DeleteLocalRef(jstar);
     }
 
     delete stars;

@@ -51,7 +51,9 @@ Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass
     for (auto result : results) {
         if (count > limit)
             break;
-        env->CallBooleanMethod(arrayObject, alaMethodID, env->NewStringUTF(result.c_str()));
+        jstring resultString = env->NewStringUTF(result.c_str());
+        env->CallBooleanMethod(arrayObject, alaMethodID, resultString);
+        env->DeleteLocalRef(resultString);
         count += 1;
     }
     return arrayObject;

@@ -140,6 +140,7 @@ public:
         const char *c_str = status.c_str();
         jstring str = env->NewStringUTF(c_str);
         env->CallVoidMethod(object, method, str);
+        env->DeleteLocalRef(str);
     }
 
 private:
@@ -177,7 +178,9 @@ public:
     {
         auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
         if (!env) return;
-        env->CallVoidMethod(object, method, env->NewStringUTF(message.c_str()));
+        jstring str = env->NewStringUTF(message.c_str());
+        env->CallVoidMethod(object, method, str);
+        env->DeleteLocalRef(str);
     }
 
 private:

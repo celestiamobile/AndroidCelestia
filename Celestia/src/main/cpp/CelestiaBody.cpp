@@ -97,7 +97,11 @@ Java_space_celestia_celestia_Body_c_1getAlternateSurfaceNames(JNIEnv *env,
 
     jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)altSurfaces->size());
     for (auto &altSurface : *altSurfaces)
-        env->CallBooleanMethod(arrayObject, alaMethodID, env->NewStringUTF(altSurface.c_str()));
+    {
+        jstring name = env->NewStringUTF(altSurface.c_str());
+        env->CallBooleanMethod(arrayObject, alaMethodID, name);
+        env->DeleteLocalRef(name);
+    }
     return arrayObject;
 }
 

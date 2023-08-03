@@ -72,7 +72,8 @@ Java_space_celestia_celestia_EclipseFinder_c_1search(JNIEnv *env, jclass clazz,
 
     using json = nlohmann::json;
     json j = json::array();
-    for (auto & result : results) {
+    for (const auto& result : results)
+    {
         json eclipse;
         eclipse["occulter"] = (jlong)result.occulter;
         eclipse["receiver"] = (jlong)result.receiver;

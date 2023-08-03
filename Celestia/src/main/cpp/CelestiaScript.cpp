@@ -24,12 +24,15 @@ Java_space_celestia_celestia_Script_c_1getScriptsInDirectory(JNIEnv *env,
 
     jobject arrayObj = env->NewObject(alClz, aliMethodID, (int)results->size());
 
-    for (const auto& result : *results) {
-        jobject jscript = env->NewObject(cscriptClz, cscriptiMethodID,
-                                         env->NewStringUTF(result.filename.c_str()),
-                                         env->NewStringUTF(result.title.c_str())
-        );
+    for (const auto& result : *results)
+    {
+        jstring filename = env->NewStringUTF(result.filename.c_str());
+        jstring title = env->NewStringUTF(result.title.c_str());
+        jobject jscript = env->NewObject(cscriptClz, cscriptiMethodID, filename, title);
         env->CallBooleanMethod(arrayObj, alaMethodID, jscript);
+        env->DeleteLocalRef(filename);
+        env->DeleteLocalRef(title);
+        env->DeleteLocalRef(jscript);
     }
 
     delete results;

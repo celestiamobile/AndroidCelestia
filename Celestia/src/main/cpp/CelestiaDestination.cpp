@@ -25,14 +25,21 @@ Java_space_celestia_celestia_AppCore_c_1getDestinations(JNIEnv *env,
     for (int i = 0; i < count; ++i)
     {
         Destination *destination = destionations->at(i);
+        jstring name = env->NewStringUTF(destination->name.c_str());
+        jstring target = env->NewStringUTF(destination->target.c_str());
+        jstring description = env->NewStringUTF(destination->description.c_str());
         jobject javaDestination = env->NewObject(
                 cdClz, cdInitMethodID,
-                env->NewStringUTF(destination->name.c_str()),
-                env->NewStringUTF(destination->target.c_str()),
-                destination->distance,
-                env->NewStringUTF(destination->description.c_str())
+                name,
+                target,
+                static_cast<jdouble>(destination->distance),
+                description
         );
         env->CallBooleanMethod(array, alaMethodID, javaDestination);
+        env->DeleteLocalRef(name);
+        env->DeleteLocalRef(target);
+        env->DeleteLocalRef(description);
+        env->DeleteLocalRef(javaDestination);
     }
     return array;
 }
