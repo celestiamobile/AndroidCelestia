@@ -513,9 +513,11 @@ private val staticRendererItems: List<SettingsItem> = listOf(
                     SettingsSelectionSingleItem(key = SettingsKey.StarColors, options = listOf(
                         Pair(0, CelestiaString("Classic Colors", "")),
                         Pair(1, CelestiaString("Blackbody D65", "")),
+                        Pair(2, CelestiaString("Blackbody (Solar Whitepoint)", "")),
+                        Pair(3, CelestiaString("Blackbody (Vega Whitepoint)", "")),
                     ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 1),
                     SettingsSliderItem(SettingsKey.TintSaturation, 0.0, 1.0),
-                ), footer = CelestiaString("Tinted illumination saturation setting is only effective with Blackbody D65 star colors.", "")
+                ), footer = CelestiaString("Tinted illumination saturation setting is only effective with Blackbody star colors.", "")
             )
         )
     ),

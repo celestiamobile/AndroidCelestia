@@ -251,7 +251,7 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
     core->getRenderer()->setAmbientLightLevel(DEFAULT_AMBIENT_LIGHT_LEVEL);
     core->getRenderer()->setStarStyle(DEFAULT_STAR_STYLE);
     core->getRenderer()->setResolution(DEFAULT_TEXTURE_RESOLUTION);
-    core->getRenderer()->setStarColorTable(GetStarColorTable(DEFAULT_STARS_COLOR));
+    core->getRenderer()->setStarColorTable(DEFAULT_STARS_COLOR);
 
     core->getSimulation()->setFaintestVisible(DEFAULT_VISUAL_MAGNITUDE);
 
@@ -943,14 +943,14 @@ Java_space_celestia_celestia_AppCore_c_1getStarStyle(JNIEnv *env, jclass clazz, 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarColors(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = reinterpret_cast<CelestiaCore *>(pointer);
-    core->getRenderer()->setStarColorTable(GetStarColorTable(static_cast<ColorTableType>(value)));
+    core->getRenderer()->setStarColorTable(static_cast<ColorTableType>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarColors(JNIEnv *env, jclass clazz, jlong pointer) {
     auto core = reinterpret_cast<CelestiaCore *>(pointer);
-    return static_cast<jint>(core->getRenderer()->getStarColorTable()->type());
+    return static_cast<jint>(core->getRenderer()->getStarColorTable());
 }
 
 extern "C"
