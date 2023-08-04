@@ -41,7 +41,7 @@ public:
 
     bool initialize();
     void destroy();
-    inline void resizeIfNeeded();
+    inline void resizeIfNeeded(int windowWidth, int windowHeight);
     inline void tickAndDraw() const;
     void start();
     void stop();
@@ -55,6 +55,7 @@ public:
     void setCorePointer(CelestiaCore *core);
     void makeContextCurrent();
     void setFrameRateOption(int frameRateOption);
+    inline void setHasPendingTasks(bool h);
 
     jobject javaObject = nullptr;
 
@@ -87,10 +88,11 @@ private:
     pthread_mutex_t msgMutex {};
     pthread_cond_t resumeCond {};
 
-    int windowWidth = 0;
-    int windowHeight = 0;
-    int currentWindowWidth = 0;
-    int currentWindowHeight = 0;
+    int windowWidth{ 0 };
+    int windowHeight{ 0 };
+    int currentWindowWidth{ 0 };
+    int currentWindowHeight{ 0 };
+    bool hasPendingTasks{ false };
 
     ANativeWindow *window = nullptr;
 
@@ -215,13 +217,13 @@ void CelestiaRenderer::destroy()
     currentWindowHeight = 0;
 }
 
-void CelestiaRenderer::resizeIfNeeded()
+void CelestiaRenderer::resizeIfNeeded(int newWindowWidth, int newWindowHeight)
 {
-    if (currentWindowHeight != windowHeight || currentWindowWidth != windowWidth)
+    if (currentWindowHeight != newWindowHeight || currentWindowWidth != newWindowWidth)
     {
-        core->resize(windowWidth, windowHeight);
-        currentWindowWidth = windowWidth;
-        currentWindowHeight = windowHeight;
+        core->resize(newWindowWidth, newWindowHeight);
+        currentWindowWidth = newWindowWidth;
+        currentWindowHeight = newWindowHeight;
     }
 }
 
@@ -327,6 +329,13 @@ void CelestiaRenderer::makeContextCurrent()
     eglMakeCurrent(display, surface, surface, context);
 }
 
+void CelestiaRenderer::setHasPendingTasks(bool h)
+{
+    lock();
+    hasPendingTasks = h;
+    unlock();
+}
+
 void CelestiaRenderer::setFrameRateOption(int frameRateOption)
 {
     switch (frameRateOption)
@@ -373,8 +382,6 @@ void *CelestiaRenderer::threadCallback(void *self)
                 break;
             renderer->engineStartedCalled = true;
         }
-        if (renderer->engineStartedCalled)
-            newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushTasksMethod);
 
         renderer->lock();
         renderer->wait();
@@ -393,15 +400,19 @@ void *CelestiaRenderer::threadCallback(void *self)
         renderer->msg = CelestiaRenderer::MSG_NONE;
 
         bool needsDrawn = false;
+        bool hasPendingTasks = renderer->hasPendingTasks;
+        int newWindowWidth = renderer->windowWidth;
+        int newWindowHeight = renderer->windowHeight;
         if (renderer->engineStartedCalled && renderer->surface != EGL_NO_SURFACE && renderer->core)
-        {
-            renderer->resizeIfNeeded();
             needsDrawn = true;
-        }
         renderer->unlock();
+
+        if (renderer->engineStartedCalled && hasPendingTasks)
+            newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushTasksMethod);
 
         if (needsDrawn)
         {
+            renderer->resizeIfNeeded(newWindowWidth, newWindowHeight);
             renderer->tickAndDraw();
             if (!SwappyGL_swap(renderer->display, renderer->surface))
                 LOG_ERROR("SwappyGL_swap() returned error %d", eglGetError());
@@ -539,4 +550,13 @@ JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Renderer_c_1createNativeRenderObject(JNIEnv *env,
                                                                              jclass clazz) {
     return (jlong)new CelestiaRenderer;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_Renderer_c_1setHasPendingTasks(JNIEnv *env, jobject thiz,
+                                                            jlong pointer,
+                                                            jboolean has_pending_tasks) {
+    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    renderer->setHasPendingTasks(has_pending_tasks == JNI_TRUE);
 }

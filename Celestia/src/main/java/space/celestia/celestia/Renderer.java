@@ -60,7 +60,10 @@ public class Renderer implements AutoCloseable {
 
     public void enqueueTask(@NonNull Callback task) {
         synchronized (taskLock) {
+            int previousTaskCount = tasks.size();
             tasks.add(task);
+            if (previousTaskCount == 0)
+                c_setHasPendingTasks(pointer, true);
         }
     }
 
@@ -120,10 +123,10 @@ public class Renderer implements AutoCloseable {
             if (tasks.isEmpty()) return;
             taskCopy = new ArrayList<>(tasks);
             tasks = new ArrayList<>();
+            c_setHasPendingTasks(pointer, false);
         }
-        for (Callback task : taskCopy) {
+        for (Callback task : taskCopy)
             task.call();
-        }
     }
 
     private static native long c_createNativeRenderObject();
@@ -138,4 +141,5 @@ public class Renderer implements AutoCloseable {
     private native void c_setSurfaceSize(long pointer, int width, int height);
     private native void c_makeContextCurrent(long pointer);
     private native void c_setFrameRateOption(long pointer, int frameRateOption);
+    private native void c_setHasPendingTasks(long pointer, boolean hasPendingTasks);
 }
