@@ -14,38 +14,61 @@
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_celestia_DMS_c_1getDegrees(JNIEnv *env, jobject thiz,
-                                                          jdouble decimal) {
-    int degrees, minutes;
+Java_space_celestia_celestia_DMS_c_1getDegrees(JNIEnv *env, jclass clazz, jdouble decimal) {
+    int degrees;
+    int minutes;
     double seconds;
-    astro::decimalToDegMinSec(decimal, degrees, minutes, seconds);
-    return degrees;
+    astro::decimalToDegMinSec(static_cast<double>(decimal), degrees, minutes, seconds);
+    return static_cast<jint>(degrees);
 }
-
 extern "C"
 JNIEXPORT jint JNICALL
-Java_space_celestia_celestia_DMS_c_1getMinutes(JNIEnv *env, jobject thiz,
-                                                          jdouble decimal) {
-    int degrees, minutes;
+Java_space_celestia_celestia_DMS_c_1getMinutes(JNIEnv *env, jclass clazz, jdouble decimal) {
+    int degrees;
+    int minutes;
     double seconds;
-    astro::decimalToDegMinSec(decimal, degrees, minutes, seconds);
-    return minutes;
+    astro::decimalToDegMinSec(static_cast<double>(decimal), degrees, minutes, seconds);
+    return static_cast<jint>(minutes);
 }
-
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_celestia_DMS_c_1getSeconds(JNIEnv *env, jobject thiz,
-                                                          jdouble decimal) {
-    int degrees, minutes;
+Java_space_celestia_celestia_DMS_c_1getSeconds(JNIEnv *env, jclass clazz, jdouble decimal) {
+    int degrees;
+    int minutes;
     double seconds;
-    astro::decimalToDegMinSec(decimal, degrees, minutes, seconds);
-    return seconds;
+    astro::decimalToDegMinSec(static_cast<double>(decimal), degrees, minutes, seconds);
+    return static_cast<jdouble>(seconds);
 }
-
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_DMS_c_1getHMSHours(JNIEnv *env, jclass clazz, jdouble decimal) {
+    int hours;
+    int minutes;
+    double seconds;
+    astro::decimalToHourMinSec(static_cast<double>(decimal), hours, minutes, seconds);
+    return static_cast<jint>(hours);
+}
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_DMS_c_1getHMSMinutes(JNIEnv *env, jclass clazz, jdouble decimal) {
+    int hours;
+    int minutes;
+    double seconds;
+    astro::decimalToHourMinSec(static_cast<double>(decimal), hours, minutes, seconds);
+    return static_cast<jint>(minutes);
+}
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_space_celestia_celestia_DMS_c_1getDecimal(JNIEnv *env, jobject thiz,
-                                                          jint degrees, jint minutes,
-                                                          jdouble seconds) {
-    return astro::degMinSecToDecimal(degrees, minutes, seconds);
+Java_space_celestia_celestia_DMS_c_1getHMSSeconds(JNIEnv *env, jclass clazz, jdouble decimal) {
+    int hours;
+    int minutes;
+    double seconds;
+    astro::decimalToHourMinSec(static_cast<double>(decimal), hours, minutes, seconds);
+    return static_cast<jdouble>(seconds);
+}
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_DMS_c_1getDecimal(JNIEnv *env, jclass clazz, jint degrees,
+                                               jint minutes, jdouble seconds) {
+    return static_cast<jdouble>(astro::degMinSecToDecimal(static_cast<int>(degrees), static_cast<int>(minutes), static_cast<double >(seconds)));
 }

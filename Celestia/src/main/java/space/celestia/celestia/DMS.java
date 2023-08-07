@@ -12,44 +12,45 @@
 package space.celestia.celestia;
 
 public class DMS {
-    private int degrees;
-    private int minutes;
-    private double seconds;
+    private double decimal;
 
     public DMS(int degrees, int minutes, double seconds) {
-        this.degrees = degrees;
-        this.minutes = minutes;
-        this.seconds = seconds;
+        decimal = c_getDecimal(degrees, minutes, seconds);
     }
 
     public DMS(double decimal) {
-        this.degrees = c_getDegrees(decimal);
-        this.minutes = c_getMinutes(decimal);
-        this.seconds = c_getSeconds(decimal);
+        this.decimal = decimal;
     }
 
     public int getDegrees() {
-        return degrees;
-    }
-
-    public int getHours() {
-        return getDegrees();
+        return c_getDegrees(decimal);
     }
 
     public int getMinutes() {
-        return minutes;
+        return c_getMinutes(decimal);
     }
 
     public double getSeconds() {
-        return seconds;
+        return c_getSeconds(decimal);
     }
 
-    public double getDecimal() {
-        return c_getDecimal(degrees, minutes, seconds);
+    public int getHMSHours() {
+        return c_getHMSHours(decimal);
     }
 
-    private native int c_getDegrees(double decimal);
-    private native int c_getMinutes(double decimal);
-    private native double c_getSeconds(double decimal);
-    private native double c_getDecimal(int degrees, int minutes, double seconds);
+    public int getHMSMinutes() {
+        return c_getHMSMinutes(decimal);
+    }
+
+    public double getHMSSeconds() {
+        return c_getHMSSeconds(decimal);
+    }
+
+    private static native int c_getDegrees(double decimal);
+    private static native int c_getMinutes(double decimal);
+    private static native double c_getSeconds(double decimal);
+    private static native int c_getHMSHours(double decimal);
+    private static native int c_getHMSMinutes(double decimal);
+    private static native double c_getHMSSeconds(double decimal);
+    private static native double c_getDecimal(int degrees, int minutes, double seconds);
 }

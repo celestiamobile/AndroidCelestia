@@ -144,10 +144,10 @@ private fun AppCore.getOverviewForStar(star: Star): String {
     numberFormat.isGroupingUsed = true
 
     val hms = DMS(sph.x)
-    lines.add(CelestiaString("RA: %sh %sm %ss", "").format(numberFormat.format(hms.hours), numberFormat.format(hms.minutes), numberFormat.format(hms.seconds)))
+    lines.add(CelestiaString("RA: %sh %sm %ss", "").format(numberFormat.format(hms.hmsHours), numberFormat.format(hms.hmsMinutes), numberFormat.format(hms.hmsSeconds)))
 
     val dms = DMS(sph.y)
-    lines.add(CelestiaString("DEC: %s° %s′ %s″", "").format(numberFormat.format(dms.hours), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
+    lines.add(CelestiaString("DEC: %s° %s′ %s″", "").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     return lines.joinToString(separator = "\n")
 }
@@ -166,19 +166,19 @@ private fun getOverviewForDSO(dso: DSO): String {
     numberFormat.isGroupingUsed = true
 
     val hms = DMS(sph.x)
-    lines.add(CelestiaString("RA: %sh %sm %ss", "").format(numberFormat.format(hms.hours), numberFormat.format(hms.minutes), numberFormat.format(hms.seconds)))
+    lines.add(CelestiaString("RA: %sh %sm %ss", "").format(numberFormat.format(hms.hmsHours), numberFormat.format(hms.hmsMinutes), numberFormat.format(hms.hmsSeconds)))
 
     var dms = DMS(sph.y)
-    lines.add(CelestiaString("DEC: %s° %s′ %s″", "").format(numberFormat.format(dms.hours), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
+    lines.add(CelestiaString("DEC: %s° %s′ %s″", "").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     val galPos = Utils.equatorialToGalactic(eqPos)
     sph = Utils.rectToSpherical(galPos)
 
     dms = DMS(sph.x)
-    lines.add(CelestiaString("L: %s° %s′ %s″", "").format(numberFormat.format(dms.hours), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
+    lines.add(CelestiaString("L: %s° %s′ %s″", "").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     dms = DMS(sph.y)
-    lines.add(CelestiaString("B: %s° %s′ %s″", "").format(numberFormat.format(dms.hours), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
+    lines.add(CelestiaString("B: %s° %s′ %s″", "").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     return lines.joinToString(separator = "\n")
 }
