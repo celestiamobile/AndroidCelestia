@@ -30,7 +30,6 @@ enum class CelestiaAction(val value: Int) : Serializable {
     Chase(34),
     Track(116),
     Follow(102),
-    RunDemo(100),
     CancelScript(27),
     Home(104),
     Stop(115),
@@ -44,7 +43,6 @@ enum class CelestiaAction(val value: Int) : Serializable {
                 PlayPause -> "Resume/Pause"
                 CurrentTime -> "Current Time"
                 SyncOrbit -> "Sync Orbit"
-                RunDemo -> "Run Demo"
                 CancelScript -> "Cancel Script"
                 Home -> "Home (Sol)"
                 Reverse -> "Reverse Time"

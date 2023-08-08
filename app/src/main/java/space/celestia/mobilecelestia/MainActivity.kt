@@ -1144,7 +1144,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onRunDemo() {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.charEnter(CelestiaAction.RunDemo.value)
+            appCore.runDemo()
         }
     }
 
@@ -1265,7 +1265,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onHelpActionSelected(action: HelpAction) {
         when (action) {
             HelpAction.RunDemo -> {
-                lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.charEnter(CelestiaAction.RunDemo.value) }
+                lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.runDemo() }
             }
         }
     }
@@ -2167,8 +2167,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "51"
+        private const val CURRENT_DATA_VERSION = "52"
         // 52: 1.5.26 Localization
+        // 51: 1.5.25 Localization, data update (commit 604e02d462a4db4b31a43f0c98e04f57d996c6d5)
         // 50: 1.5.24 Shader, localization, data update (commit a269ed58c91135991eba927bfe6c2dd60e774676)
         // 45: 1.5.23 Localization update, data update (commit 809c3fa60fb52667c4fc073328654549b253f493)
         // 44: 1.5.20 Localization update

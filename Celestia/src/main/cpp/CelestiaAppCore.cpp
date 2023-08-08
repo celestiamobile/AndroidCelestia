@@ -606,6 +606,17 @@ Java_space_celestia_celestia_AppCore_c_1runScript(JNIEnv *env, jclass clazz,
 }
 
 extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1runDemo(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    const auto& demoScriptFile = core->getConfig()->demoScriptFile;
+    if (!demoScriptFile.empty()) {
+        core->cancelScript();
+        core->runScript(demoScriptFile);
+    }
+}
+
+extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_AppCore_c_1getCurrentURL(JNIEnv *env, jclass clazz,
                                                                  jlong ptr) {

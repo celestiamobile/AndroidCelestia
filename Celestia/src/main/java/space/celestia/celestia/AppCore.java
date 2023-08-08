@@ -189,6 +189,7 @@ public class AppCore {
     }
 
     public void runScript(@NonNull String scriptPath) { c_runScript(pointer, scriptPath); }
+    public void runDemo() { c_runDemo(pointer); }
     public @NonNull String getCurrentURL() { return c_getCurrentURL(pointer); }
     public void goToURL(@NonNull String url) { c_goToURL(pointer, url); }
 
@@ -295,6 +296,7 @@ public class AppCore {
     private static native void c_joystickAxis(long ptr, int axis, float amount);
 
     private static native void c_runScript(long ptr, String path);
+    private static native void c_runDemo(long ptr);
     private static native String c_getCurrentURL(long ptr);
     private static native void c_goToURL(long ptr, String url);
 
