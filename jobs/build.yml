@@ -11,7 +11,7 @@ jobs:
   - checkout: Celestia
     fetchDepth: 0
   - checkout: CelestiaContent
-    fetchDepth: 1
+    fetchDepth: 0
   - checkout: CelestiaLocalization
     fetchDepth: 0
   - checkout: self
@@ -47,6 +47,11 @@ jobs:
       git checkout origin/$(System.PullRequest.TargetBranch)
     displayName: 'Checkout Branch (PR)'
     condition: eq( variables['Build.Reason'], 'PullRequest' )
+
+  - script: |
+      cd CelestiaContent
+      git checkout 604e02d462a4db4b31a43f0c98e04f57d996c6d5
+    displayName: 'Checkout Content'
 
   - script: |
       cd AndroidCelestia
