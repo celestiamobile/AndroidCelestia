@@ -247,7 +247,8 @@ class SettingsSliderItem(
 class SettingsPreferenceSwitchItem(
     val key: PreferenceManager.PredefinedKey,
     private val rawDisplayName: String,
-    val defaultOn: Boolean = false
+    val defaultOn: Boolean = false,
+    val subtitle: String? = null
 ) : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString(rawDisplayName, "")
@@ -543,6 +544,17 @@ private val staticRendererItems: List<SettingsItem> = listOf(
 )
 
 private val staticAdvancedItems: List<SettingsItem> = listOf(
+    SettingsCommonItem(
+        CelestiaString("Interaction", ""),
+        listOf(
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, rawDisplayName = "Context Menu", true, subtitle = CelestiaString("Long press or context click triggers context menu display", "")),
+                ),
+                footer = CelestiaString("Configuration will take effect after a restart.", "")
+            )
+        )
+    ),
     SettingsCommonItem(
         CelestiaString("Game Controller", ""),
         listOf(

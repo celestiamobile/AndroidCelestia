@@ -97,6 +97,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var interactionMode = CelestiaInteraction.InteractionMode.Object
     private lateinit var controlView: CelestiaControlView
 
+    private var isContextMenuEnabled = true
+
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
         fun celestiaFragmentDidRequestObjectInfo()
@@ -123,6 +125,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
             frameRateOption = it.getInt(ARG_FRAME_RATE_OPTION)
         }
+
+        isContextMenuEnabled = appSettings[PreferenceManager.PredefinedKey.ContextMenu] != "false"
 
         if (savedInstanceState != null) {
             previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
@@ -160,7 +164,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             hasSetRenderer = true
         }
 
-        setupGLView(view.findViewById(R.id.celestia_gl_view))
+        setUpGLView(view.findViewById(R.id.celestia_gl_view))
         return view
     }
 
@@ -245,7 +249,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    private fun setupGLView(container: FrameLayout) {
+    private fun setUpGLView(container: FrameLayout) {
         val activity = this.activity ?: return
         val view = CelestiaView(activity, scaleFactor)
 
@@ -363,10 +367,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             updateContentScale()
             appCore.layoutDirection = if (isRTL) AppCore.LAYOUT_DIRECTION_RTL else AppCore.LAYOUT_DIRECTION_LTR
         }
-        setupInteractions()
+        setUpInteractions()
     }
 
-    private fun setupInteractions() {
+    private fun setUpInteractions() {
         // Set up control buttons
         val items = listOf(
             CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", ""), interactionMode == CelestiaInteraction.InteractionMode.Camera),
@@ -379,7 +383,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         controlView.buttons = items
 
         glView.isReady = true
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isContextMenuEnabled) {
             glView.isContextClickable = true
         }
         viewInteraction.isReady = true
@@ -404,10 +408,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
         glView.setOnHoverListener(viewInteraction)
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.setContextMenuHandler(this@CelestiaFragment)
+            if (isContextMenuEnabled)
+                appCore.setContextMenuHandler(this@CelestiaFragment)
             appCore.setFatalErrorHandler(this@CelestiaFragment)
         }
-        registerForContextMenu(glView)
+        if (isContextMenuEnabled)
+            registerForContextMenu(glView)
         loadSuccess = true
 
         Log.d(TAG, "Ready to display")
@@ -648,6 +654,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun requestContextMenu(x: Float, y: Float, selection: Selection) {
+        if (!isContextMenuEnabled)
+            return
+
         // Avoid showing context menu before Android 8, since it is fullscreen
         if (selection.isEmpty || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return

@@ -16,16 +16,29 @@
     android:orientation="horizontal"
     style="@style/ListItem">
 
-    <TextView
-        android:id="@+id/title"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_weight="1"
-        android:layout_gravity="center_vertical"
         android:layout_marginStart="@dimen/list_item_medium_margin_horizontal"
         android:layout_marginEnd="@dimen/list_item_gap_horizontal"
         android:layout_marginVertical="@dimen/list_item_medium_margin_vertical"
-        style="@style/PrimaryListItemLabel"/>
+        android:layout_gravity="center_vertical">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/PrimaryListItemLabel"/>
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/subtitle"
+            android:layout_marginTop="@dimen/list_text_gap_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/SecondaryListItemLabel"/>
+    </LinearLayout>
+
 
     <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/accessory"

@@ -75,6 +75,8 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     private var isLeftTriggerPressed = false
     private var isRightTriggerPressed = false
 
+    private val isContextMenuEnabled = appSettings[PreferenceManager.PredefinedKey.ContextMenu] != "false"
+
     private var currentSpan: Float? = null
     private var internalInteractionMode = interactionMode
 
@@ -517,6 +519,9 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     override fun onShowPress(e: MotionEvent) {}
 
     override fun onLongPress(e: MotionEvent) {
+        if (!isContextMenuEnabled)
+            return
+
         // Bring up the context menu
         val point = PointF(e.x, e.y).scaleBy(scaleFactor)
         val button = AppCore.MOUSE_BUTTON_RIGHT

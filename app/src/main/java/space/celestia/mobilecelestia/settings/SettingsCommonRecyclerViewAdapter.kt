@@ -110,13 +110,13 @@ class SettingsCommonRecyclerViewAdapter(
         }
         if (holder is SwitchViewHolder) {
             if (item is SettingsPreferenceSwitchItem) {
-                holder.configure(item.name, dataSource?.commonSettingPreferenceSwitchState(item.key) ?: item.defaultOn) { checked ->
+                holder.configure(item.name, item.subtitle, dataSource?.commonSettingPreferenceSwitchState(item.key) ?: item.defaultOn) { checked ->
                     val self = weakSelf.get() ?: return@configure
                     self.listener?.onCommonSettingPreferenceSwitchStateChanged(item.key, checked)
                 }
             } else if (item is SettingsSwitchItem) {
                 val on = dataSource?.commonSettingSwitchState(item.key) ?: false
-                holder.configure(item.name, on) { newValue ->
+                holder.configure(item.name, null, on) { newValue ->
                     val self = weakSelf.get() ?: return@configure
                     self.listener?.onCommonSettingSwitchStateChanged(item.key, newValue, item.volatile)
                 }
@@ -190,13 +190,22 @@ class SettingsCommonRecyclerViewAdapter(
     inner class SwitchViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView
             get() = itemView.findViewById(R.id.title)
+        val subtitle: TextView
+            get() = itemView.findViewById(R.id.subtitle)
         val switch: MaterialSwitch
             get() = itemView.findViewById(R.id.accessory)
 
-        fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
+        fun configure(text:String, description: String?, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
             switch.setOnCheckedChangeListener(null)
             title.text = text
             switch.isChecked = isChecked
+            if (description != null) {
+                subtitle.text = description
+                subtitle.visibility = View.VISIBLE
+            } else {
+                subtitle.text = null
+                subtitle.visibility = View.GONE
+            }
             switch.setOnCheckedChangeListener { _, checked ->
                 stateChangeCallback(checked)
             }
