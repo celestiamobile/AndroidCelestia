@@ -22,12 +22,23 @@
         android:layout_marginVertical="@dimen/list_item_medium_margin_vertical">
         <TextView
             android:id="@+id/title"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
             android:layout_marginHorizontal="@dimen/list_item_medium_margin_horizontal"
-            android:layout_marginBottom="@dimen/list_item_gap_vertical"
             style="@style/PrimaryListItemLabel"/>
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/list_item_medium_margin_horizontal"
+            android:layout_marginTop="@dimen/list_text_gap_vertical"
+            style="@style/SecondaryListItemLabel"/>
+
+        <Space
+            android:id="@+id/gap"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/list_item_gap_vertical"/>
 
         <RadioGroup
             android:id="@+id/button_group"

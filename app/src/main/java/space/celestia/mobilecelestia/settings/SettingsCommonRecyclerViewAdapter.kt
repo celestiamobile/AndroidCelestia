@@ -57,6 +57,9 @@ class SettingsCommonRecyclerViewAdapter(
         if (item is SettingsSelectionSingleItem)
             return ITEM_SINGLE_SELECTION
 
+        if (item is SettingsPreferenceSliderItem)
+            return ITEM_PREF_SLIDER
+
         return super.itemViewType(item)
     }
 
@@ -75,17 +78,25 @@ class SettingsCommonRecyclerViewAdapter(
 
     override fun bindVH(holder: RecyclerView.ViewHolder, item: RecyclerViewItem) {
         val weakSelf = WeakReference(this)
-        if (holder is SliderViewHolder && item is SettingsSliderItem) {
-            val num = dataSource?.commonSettingSliderValue(item.key) ?: 0.0
-            holder.configure(item.name, item.minValue, item.maxValue, num) { newValue ->
-                val self = weakSelf.get() ?: return@configure
-                self.listener?.onCommonSettingSliderItemChange(item.key, newValue)
+        if (holder is SliderViewHolder) {
+            if (item is SettingsSliderItem) {
+                val num = dataSource?.commonSettingSliderValue(item.key) ?: 0.0
+                holder.configure(item.name, null, item.minValue, item.maxValue, num) { newValue ->
+                    val self = weakSelf.get() ?: return@configure
+                    self.listener?.onCommonSettingSliderItemChange(item.key, newValue)
+                }
+            } else if (item is SettingsPreferenceSliderItem) {
+                val num = dataSource?.commonSettingPreferenceSliderState(item.key) ?: item.defaultValue
+                holder.configure(item.name, item.subtitle, item.minValue, item.maxValue, num) { newValue ->
+                    val self = weakSelf.get() ?: return@configure
+                    self.listener?.onCommonSettingPreferenceSliderStateChanged(item.key, newValue)
+                }
             }
             return
         }
         if (holder is RadioButtonViewHolder && item is SettingsSelectionSingleItem) {
             val selected = dataSource?.commonSettingSelectionValue(item.key) ?: item.defaultSelection
-            holder.configure(text = item.name, showTitle = item.showTitle, options = item.options.map { it.second }, checkedIndex = item.options.indexOfFirst { it.first == selected }) { newIndex ->
+            holder.configure(text = item.name, description = item.subtitle, showTitle = item.showTitle, options = item.options.map { it.second }, checkedIndex = item.options.indexOfFirst { it.first == selected }) { newIndex ->
                 val self = weakSelf.get() ?: return@configure
                 self.listener?.onCommonSettingSelectionChanged(item.key, item.options[newIndex].first)
             }
@@ -135,7 +146,7 @@ class SettingsCommonRecyclerViewAdapter(
     }
 
     override fun createVH(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewType == ITEM_SLIDER) {
+        if (viewType == ITEM_SLIDER || viewType == ITEM_PREF_SLIDER) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.common_text_list_with_slider_item, parent,false)
             return SliderViewHolder(view)
         }
@@ -160,6 +171,8 @@ class SettingsCommonRecyclerViewAdapter(
     inner class SliderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val title: TextView
             get() = itemView.findViewById(R.id.title)
+        private val subtitle: TextView
+            get() = itemView.findViewById(R.id.subtitle)
         private val seekBar: Slider
             get() = itemView.findViewById(R.id.slider)
 
@@ -177,8 +190,15 @@ class SettingsCommonRecyclerViewAdapter(
             })
         }
 
-        fun configure(text: String, minValue: Double, maxValue: Double, value: Double, callback: (Double) -> Unit) {
+        fun configure(text: String, description: String? = null, minValue: Double, maxValue: Double, value: Double, callback: (Double) -> Unit) {
             title.text = text
+            if (description != null) {
+                subtitle.visibility = View.VISIBLE
+                subtitle.text = description
+            } else {
+                subtitle.visibility = View.GONE
+                subtitle.text = null
+            }
             seekBar.valueFrom = minValue.toFloat()
             seekBar.valueTo = maxValue.toFloat()
             // Avoid exceeding the range
@@ -190,9 +210,9 @@ class SettingsCommonRecyclerViewAdapter(
     inner class SwitchViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView
             get() = itemView.findViewById(R.id.title)
-        val subtitle: TextView
+        private val subtitle: TextView
             get() = itemView.findViewById(R.id.subtitle)
-        val switch: MaterialSwitch
+        private val switch: MaterialSwitch
             get() = itemView.findViewById(R.id.accessory)
 
         fun configure(text:String, description: String?, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
@@ -213,7 +233,7 @@ class SettingsCommonRecyclerViewAdapter(
     }
 
     inner class CheckboxViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val checkbox: MaterialCheckBox
+        private val checkbox: MaterialCheckBox
             get() = itemView.findViewById(R.id.checkbox)
 
         fun configure(text:String, isChecked: Boolean, stateChangeCallback: (Boolean) -> Unit) {
@@ -255,5 +275,6 @@ class SettingsCommonRecyclerViewAdapter(
         const val ITEM_UNKNOWN_TEXT     = 5
         const val ITEM_PREF_SELECTION   = 6
         const val ITEM_SINGLE_SELECTION = 7
+        const val ITEM_PREF_SLIDER      = 8
     }
 }

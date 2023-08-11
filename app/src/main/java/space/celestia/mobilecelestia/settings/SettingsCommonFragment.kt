@@ -86,6 +86,7 @@ class SettingsCommonFragment : NavigationFragment.SubFragment(), SettingsBaseFra
         fun onCommonSettingSliderItemChange(field: String, value: Double)
         fun onCommonSettingActionItemSelected(action: Int)
         fun onCommonSettingPreferenceSwitchStateChanged(key: PreferenceManager.PredefinedKey, value: Boolean)
+        fun onCommonSettingPreferenceSliderStateChanged(key: PreferenceManager.PredefinedKey, value: Double)
         fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean)
         fun onCommonSettingUnknownAction(id: String)
         fun onCommonSettingSelectionChanged(field: String, selected: Int)
@@ -96,6 +97,7 @@ class SettingsCommonFragment : NavigationFragment.SubFragment(), SettingsBaseFra
     interface DataSource {
         fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean?
         fun commonSettingPreferenceSelectionState(key: PreferenceManager.PredefinedKey): Int?
+        fun commonSettingPreferenceSliderState(key: PreferenceManager.PredefinedKey): Double?
         fun commonSettingSwitchState(field: String): Boolean
         fun commonSettingSliderValue(field: String): Double
         fun commonSettingSelectionValue(field: String): Int

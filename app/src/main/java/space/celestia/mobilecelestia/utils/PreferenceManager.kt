@@ -48,7 +48,8 @@ class PreferenceManager(context: Context, name: String) {
         ControllerRemapDpadDown,
         ControllerInvertX,
         ControllerInvertY,
-        ContextMenu
+        ContextMenu,
+        PickSensitivity
         ;
 
         override val valueString: String

@@ -98,6 +98,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private lateinit var controlView: CelestiaControlView
 
     private var isContextMenuEnabled = true
+    private var sensitivity = 10.0f
 
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
@@ -127,6 +128,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
 
         isContextMenuEnabled = appSettings[PreferenceManager.PredefinedKey.ContextMenu] != "false"
+        val pickSensitivity = appSettings[PreferenceManager.PredefinedKey.PickSensitivity]?.toDoubleOrNull()
+        if (pickSensitivity != null) {
+            sensitivity = pickSensitivity.toFloat()
+        }
 
         if (savedInstanceState != null) {
             previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
@@ -340,7 +345,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         renderer.makeContextCurrent()
 
         appCore.setDPI((96 * density * scaleFactor).toInt())
-        appCore.setPickTolerance(10f * density * scaleFactor)
+        appCore.setPickTolerance(sensitivity * density * scaleFactor)
 
         appCore.setSafeAreaInsets(savedInsets.scaleBy(scaleFactor))
 

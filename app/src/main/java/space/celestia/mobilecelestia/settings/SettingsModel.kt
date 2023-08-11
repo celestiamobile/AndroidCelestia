@@ -257,6 +257,21 @@ class SettingsPreferenceSwitchItem(
         get() = false
 }
 
+class SettingsPreferenceSliderItem(
+    val key: PreferenceManager.PredefinedKey,
+    private val rawDisplayName: String,
+    val subtitle: String? = null,
+    val minValue: Double = 0.0,
+    val maxValue: Double = 1.0,
+    val defaultValue: Double = 0.0
+) : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString(rawDisplayName, "")
+
+    override val clickable: Boolean
+        get() = false
+}
+
 interface SettingsDynamicListItem: SettingsItem {
     fun createItems(): List<SettingsItem>
 }
@@ -303,12 +318,13 @@ class SettingsSelectionSingleItem(
     private val displayName: String,
     val options: List<Pair<Int, String>>,
     val defaultSelection: Int,
-    val showTitle: Boolean = true
+    val showTitle: Boolean = true,
+    val subtitle: String? = null
 ) : SettingsItem, Serializable {
     override val name: String
         get() = displayName
 
-    constructor(key: SettingsKey, displayName: String, options: List<Pair<Int, String>>, defaultSelection: Int, showTitle: Boolean = true) : this(key.valueString, displayName, options, defaultSelection, showTitle)
+    constructor(key: SettingsKey, displayName: String, options: List<Pair<Int, String>>, defaultSelection: Int, showTitle: Boolean = true, subtitle: String? = null) : this(key.valueString, displayName, options, defaultSelection, showTitle, subtitle)
 
     override val clickable: Boolean
         get() = false
@@ -549,7 +565,8 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         listOf(
             SettingsCommonItem.Section(
                 listOf(
-                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, rawDisplayName = "Context Menu", true, subtitle = CelestiaString("Long press or context click triggers context menu display", "")),
+                    SettingsPreferenceSliderItem(PreferenceManager.PredefinedKey.PickSensitivity, rawDisplayName = "Sensitivity", subtitle = CelestiaString("Sensitivity for object selection", ""), minValue = 1.0, maxValue = 20.0, defaultValue = 10.0),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, rawDisplayName = "Context Menu", true, subtitle = CelestiaString("Context menu by long press or context click", "")),
                 ),
                 footer = CelestiaString("Configuration will take effect after a restart.", "")
             )
@@ -594,9 +611,8 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
                         Pair(0, CelestiaString("Ask", "")),
                         Pair(1, CelestiaString("Allow", "")),
                         Pair(2, CelestiaString("Deny", "")),
-                    ), displayName = SettingsKey.ScriptSystemAccessPolicy.displayName, defaultSelection = 0, showTitle = true)
+                    ), displayName = SettingsKey.ScriptSystemAccessPolicy.displayName, defaultSelection = 0, showTitle = true, subtitle = CelestiaString("Lua scripts' access to the file system", ""))
                 ),
-                footer = CelestiaString("This policy decides whether Lua scripts have access to the files on the system or not.", "")
             )
         )
     ),

@@ -1431,6 +1431,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         appSettings[key] = if (value) "true" else "false"
     }
 
+    override fun onCommonSettingPreferenceSliderStateChanged(
+        key: PreferenceManager.PredefinedKey,
+        value: Double
+    ) {
+        appSettings[key] = value.toString()
+    }
+
     override fun onCommonSettingSelectionChanged(field: String, selected: Int) {
         applyIntValue(selected, field, true)
     }
@@ -1445,6 +1452,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun commonSettingPreferenceSelectionState(key: PreferenceManager.PredefinedKey): Int? {
         return appSettings[key]?.toIntOrNull()
+    }
+
+    override fun commonSettingPreferenceSliderState(key: PreferenceManager.PredefinedKey): Double? {
+        return appSettings[key]?.toDoubleOrNull()
     }
 
     override fun commonSettingSliderValue(field: String): Double {
