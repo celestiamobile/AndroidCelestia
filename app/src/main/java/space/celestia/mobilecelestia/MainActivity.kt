@@ -51,6 +51,7 @@ import com.google.gson.reflect.TypeToken
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
+import com.microsoft.appcenter.crashes.model.ErrorReport
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -1400,6 +1401,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
+    @Suppress("SameParameterValue")
     private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
         withContext(executor.asCoroutineDispatcher()) { appCore.setBooleanValueForField(field, value) }
         if (!volatile)
@@ -1579,7 +1581,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // is not exactly the one supported by Celestia, we check a full
         // match with language_region first and then language only
         val locale = Locale.forLanguageTag(overrideLocale.toLanguageTags())
-        if (!locale.country.isEmpty()) {
+        if (locale.country.isNotEmpty()) {
             val potential = "${locale.language}_${locale.country}"
             if (availableLanguageCodes.contains(potential))
                 return potential
@@ -1893,6 +1895,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    private suspend fun getLastCrashAsync() = suspendCoroutine<ErrorReport?>  { cont ->
+        Crashes.getLastSessionCrashReport().thenAccept { errorReport ->
+            cont.resume(errorReport)
+        }
+    }
+
     private fun reportBug() = lifecycleScope.launch {
         val directory = File(cacheDir, "feedback")
         if (!directory.exists())
@@ -1908,11 +1916,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val url = appCore.currentURL
             return@withContext Triple(renderInfo, url, success)
         }
+        val crashReport = getLastCrashAsync()
         val screenshotFile = if (celestiaInfo.third) proposedScreenshotFile else null
         val renderInfoFile = writeTextToFileWithName(celestiaInfo.first, parentDirectory, "renderinfo.txt")
         val urlInfoFile = writeTextToFileWithName(celestiaInfo.second, parentDirectory, "urlinfo.txt")
-        val addons = resourceManager.installedResourcesAsync().map { "${it.name}/${it.id}" }.joinToString("\n")
+        val addons =
+            resourceManager.installedResourcesAsync().joinToString("\n") { "${it.name}/${it.id}" }
         val addonInfoFile = writeTextToFileWithName(addons, parentDirectory, "addoninfo.txt")
+        val crashInfoFile = if (crashReport != null) writeTextToFileWithName(crashReport.id, parentDirectory, "crashinfo.txt") else null
         val systemInfo = "Application Version: ${versionName}(${versionCode})\n" +
             "Operating System: Android\n" +
             "Operating System Version: ${Build.VERSION.RELEASE}(${Build.VERSION.SDK_INT})\n" +
@@ -1925,7 +1936,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             renderInfoFile,
             urlInfoFile,
             addonInfoFile,
-            systemInfoFile
+            systemInfoFile,
+            crashInfoFile
         ).mapNotNull {
             if (it != null) FileProvider.getUriForFile(this@MainActivity, FILE_PROVIDER_AUTHORITY, it) else null
         })
@@ -1934,7 +1946,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL_ADDRESS))
             putExtra(Intent.EXTRA_SUBJECT, CelestiaString("Bug report for Celestia", ""))
             putExtra(Intent.EXTRA_TEXT, CelestiaString("Please describe the issue and repro steps, if known.", ""))
-            if (!uris.isEmpty())
+            if (uris.isNotEmpty())
                 putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
         }
         if (intent.resolveActivity(packageManager) != null) {
@@ -1950,11 +1962,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun writeTextToFileWithName(text: String, directory: File, fileName: String): File? {
         val proposedFile = File(directory, fileName)
-        try {
+        return try {
             FileUtils.writeTextToFile(text, proposedFile)
-            return proposedFile
+            proposedFile
         } catch (ignored: Throwable) {
-            return null
+            null
         }
     }
 
@@ -2087,6 +2099,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    @Suppress("SameParameterValue")
     private fun shareFile(file: File, mimeType: String) {
         val uri = FileProvider.getUriForFile(this, FILE_PROVIDER_AUTHORITY, file)
         val intent = ShareCompat.IntentBuilder(this)
