@@ -97,6 +97,19 @@ android {
     preBuild.dependsOn copyLocalizedFiles
     preBuild.dependsOn copyGeneralData
     preBuild.dependsOn convertPO
+
+    flavorDimensions = ["distribution"]
+    productFlavors {
+        sideload {
+            isDefault = true
+            dimension "distribution"
+            assetPacks = []
+        }
+        play {
+            dimension "distribution"
+            assetPacks = [":base_assets"]
+        }
+    }
 }
 
 dependencies {
