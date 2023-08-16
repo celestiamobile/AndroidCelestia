@@ -50,7 +50,7 @@ allprojects {
     }
 }
 
-task clean(type: Delete) {
+tasks.register('clean', Delete) {
     delete "$rootProject.projectDir/app/src/main/assets/CelestiaResources"
     delete rootProject.buildDir
 }
