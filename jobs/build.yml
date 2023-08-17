@@ -54,14 +54,6 @@ jobs:
     displayName: 'Checkout Content'
 
   - script: |
-      cd AndroidCelestia
-      git config --global user.email "you@example.com"
-      git config --global user.name "Your Name"
-      git cherry-pick origin/asset-pack-integration
-    displayName: 'Cherry-Pick Asset Pack Integration'
-    condition: eq( variables['outputFormat'], 'aab' )
-
-  - script: |
       mkdir -p AndroidCelestia/Celestia/src/main/cpp/dependency/android
     displayName: 'Creating Directories for Third Party Dependencies'
 
@@ -102,7 +94,7 @@ jobs:
       gradleOptions: '-Xmx3072m'
       publishJUnitResults: false
       testResultsFiles: '**/TEST-*.xml'
-      tasks: 'assembleRelease'
+      tasks: 'assembleSideloadRelease'
     displayName: 'Build APK'
     condition: eq( variables['outputFormat'], 'apk' )
 
@@ -113,7 +105,7 @@ jobs:
       gradleOptions: '-Xmx3072m'
       publishJUnitResults: false
       testResultsFiles: '**/TEST-*.xml'
-      tasks: 'bundleRelease'
+      tasks: 'bundlePlayRelease'
     displayName: 'Build AAB'
     condition: eq( variables['outputFormat'], 'aab' )
 
@@ -137,7 +129,7 @@ jobs:
     condition: eq( variables['outputFormat'], 'aab' )
 
   - script: |
-      jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(keyStoreFile.secureFilePath) -storepass $(JARSIGNER_KEYSTORE_PASSWORD) -keypass $(JARSIGNER_KEY_PASSWORD) $(system.defaultworkingdirectory)/AndroidCelestia/app/build/outputs/bundle/release/*.aab celestia
+      jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(keyStoreFile.secureFilePath) -storepass $(JARSIGNER_KEYSTORE_PASSWORD) -keypass $(JARSIGNER_KEY_PASSWORD) $(system.defaultworkingdirectory)/AndroidCelestia/app/build/outputs/bundle/playRelease/*.aab celestia
     displayName: "Sign AAB"
     condition: eq( variables['outputFormat'], 'aab' )
 
