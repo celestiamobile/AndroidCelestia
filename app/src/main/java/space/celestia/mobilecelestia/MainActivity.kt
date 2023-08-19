@@ -76,6 +76,8 @@ import space.celestia.mobilecelestia.help.NewHelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
+import space.celestia.mobilecelestia.purchase.PurchaseManager
+import space.celestia.mobilecelestia.purchase.SubscriptionManagerFragment
 import space.celestia.mobilecelestia.resource.*
 import space.celestia.mobilecelestia.resource.model.*
 import space.celestia.mobilecelestia.search.SearchFragment
@@ -150,6 +152,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var resourceManager: ResourceManager
     @Inject
     lateinit var executor: CelestiaExecutor
+
+    @Inject
+    lateinit var purchaseManager: PurchaseManager
 
     private lateinit var appStatusReporter: AppStatusReporter
 
