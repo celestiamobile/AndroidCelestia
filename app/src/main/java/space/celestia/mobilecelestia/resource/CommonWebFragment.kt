@@ -63,6 +63,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         fun onShareURL(title: String, url: String)
         fun onReceivedACK(id: String)
         fun onRunDemo()
+        fun onOpenSubscriptionPage()
     }
 
     open fun createFallbackFragment(): Fragment? {
@@ -338,6 +339,10 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
     override fun runDemo() {
         listener?.onRunDemo()
+    }
+
+    override fun openSubscriptionPage() {
+        listener?.onOpenSubscriptionPage()
     }
 
     override fun menuItemClicked(groupId: Int, id: Int): Boolean {

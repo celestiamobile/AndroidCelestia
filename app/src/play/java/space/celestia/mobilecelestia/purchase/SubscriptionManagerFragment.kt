@@ -1,67 +1,80 @@
 package space.celestia.mobilecelestia.purchase
 
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.android.billingclient.api.BillingClient.BillingResponseCode
-import com.google.accompanist.themeadapter.material3.Mdc3Theme
+import com.android.billingclient.api.ProductDetails
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.utils.CelestiaString
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class SubscriptionManagerFragment: Fragment() {
     @Inject
     lateinit var purchaseManager: PurchaseManager
+
+    private var bottomPadding = mutableIntStateOf(0)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return ComposeView(requireContext()).apply {
+        val view = ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -69,6 +82,22 @@ class SubscriptionManagerFragment: Fragment() {
                 Mdc3Theme {
                     MainScreen()
                 }
+            }
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(view) { _, windowInsets ->
+            bottomPadding.intValue = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            WindowInsetsCompat.CONSUMED
+        }
+        return view
+    }
+
+    @Composable
+    private fun MainScreen() {
+        Column(modifier = Modifier
+            .fillMaxWidth()) {
+            Content(modifier = Modifier.weight(1.0f))
+            with(LocalDensity.current) {
+                Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
             }
         }
     }
@@ -79,33 +108,63 @@ class SubscriptionManagerFragment: Fragment() {
             painter = painterResource(id = R.drawable.loading_icon),
             contentDescription = null,
             modifier = modifier
-                .size(128.dp)
-                .clip(RoundedCornerShape(30.dp))
-                .background(Color.Black)
-                .padding(14.dp)
+                .size(dimensionResource(id = R.dimen.app_icon_dimension))
         )
     }
 
     @Composable
-    private fun ErrorText(text: String, retry: () -> Unit) {
-        Text(text = text)
-        FilledTonalButton(onClick = {
-            retry()
-        }) {
-            Text(text = "Retry")
+    private fun ErrorText(text: String?, modifier: Modifier = Modifier, retry: () -> Unit) {
+        Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = text ?: CelestiaString("We encountered an error.", ""))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
+            FilledTonalButton(onClick = {
+                retry()
+            }) {
+                Text(text = CelestiaString("Refresh", ""))
+            }
         }
     }
 
     @Composable
-    private fun MainScreen() {
-        var subscriptionPlans by remember {
-            mutableStateOf<List<PurchaseManager.Plan>?>(null)
+    private fun Content(modifier: Modifier = Modifier) {
+        var needsRefreshing by remember {
+            mutableStateOf(true)
+        }
+        var subscription by remember {
+            mutableStateOf<PurchaseManager.Subscription?>(null)
         }
         var errorText by remember {
             mutableStateOf<String?>(null)
         }
+        var subscriptionStatus by remember {
+            mutableStateOf(purchaseManager.subscriptionStatus)
+        }
+
+        val listener by remember {
+            mutableStateOf(object: PurchaseManager.Listener {
+                override fun subscriptionStatusChanged(newStatus: PurchaseManager.SubscriptionStatus) {
+                    subscriptionStatus = newStatus
+                }
+            })
+        }
+        val lifeCycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(lifeCycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_CREATE) {
+                    purchaseManager.addListener(listener)
+                } else if (event == Lifecycle.Event.ON_DESTROY) {
+                    purchaseManager.removeListener(listener)
+                }
+            }
+            lifeCycleOwner.lifecycle.addObserver(observer)
+            onDispose {
+                lifeCycleOwner.lifecycle.removeObserver(observer)
+            }
+        }
+
         val scroll = rememberScrollState(0)
-        Column(modifier = Modifier
+        Column(modifier = modifier
+            .fillMaxWidth()
             .verticalScroll(scroll)
             .padding(
                 horizontal = dimensionResource(
@@ -115,55 +174,177 @@ class SubscriptionManagerFragment: Fragment() {
                     id = R.dimen.common_page_small_margin_vertical
                 ),
             )) {
-            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                AppIcon()
-            }
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
-            if (errorText != null) {
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.0f), horizontalArrangement = Arrangement.Center) {
-                    Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                        ErrorText(text = errorText ?: "") {
-                            errorText = null
-                        }
-                    }
-                }
-            } else if (subscriptionPlans == null) {
+            if (needsRefreshing) {
                 LaunchedEffect(true) {
                     val subscriptionResult = purchaseManager.getSubscriptionDetails()
-                    val subscription = subscriptionResult.subscription
-                    if (subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscription == null) {
-                        errorText = "We encountered an error"
+                    purchaseManager.getValidSubscription()
+                    val subscriptionValue = subscriptionResult?.subscription
+                    needsRefreshing = false
+                    if (subscriptionResult == null || subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscriptionValue == null || purchaseManager.subscriptionStatus is PurchaseManager.SubscriptionStatus.Error) {
+                        errorText = CelestiaString("We encountered an error.", "")
                     } else {
-                        subscriptionPlans = subscription.plans
+                        subscription = subscriptionValue
                     }
                 }
-                Row(modifier = Modifier
+                Box(modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1.0f), horizontalArrangement = Arrangement.Center) {
-                    Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator(progress = 0.5f)
+                    .weight(1.0f)) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+            } else if (errorText != null || subscriptionStatus !is PurchaseManager.SubscriptionStatus.Good) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1.0f)) {
+                    ErrorText(text = errorText, modifier = Modifier.align(Alignment.Center)) {
+                        needsRefreshing = true
                     }
                 }
             } else {
-                var insertSpace = false
-                val plans = subscriptionPlans ?: listOf()
-                for (index in plans.indices) {
-                    PlanCard(plan = plans[index])
-                    if (index != plans.size - 1) {
-                        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
-                    }
+                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                    AppIcon()
+                }
+
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
+
+                Text(
+                    text = CelestiaString("Celestia PLUS", ""),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
+
+                FeatureList()
+
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
+
+                val status = subscriptionStatus as? PurchaseManager.SubscriptionStatus.Good
+                val plans = subscription?.plans
+                val productDetails = subscription?.productDetails
+                if (status != null && plans != null && productDetails != null) {
+                    PlanList(productDetails = productDetails, plans = plans, status = status)
                 }
             }
         }
     }
 
     @Composable
-    private fun PlanCard(plan: PurchaseManager.Plan) {
+    private fun FeatureList() {
+        val features = listOf(
+            Pair(R.drawable.plus_feature_latest_update, CelestiaString("Get latest add-ons, updates, and trending add-ons.", "")),
+            Pair(R.drawable.plus_feature_feedback, CelestiaString("Receive timely feedback on feature requests and bug reports.", "")),
+            Pair(R.drawable.plus_feature_support, CelestiaString("Support the developer community and keep the project going.", ""))
+        )
+
         Column(modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Red)
+            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.purchase_box_corner_radius)))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(
+                horizontal = dimensionResource(
+                    id = R.dimen.common_page_medium_margin_horizontal
+                ),
+                vertical = dimensionResource(
+                    id = R.dimen.common_page_medium_margin_vertical
+                ),
+            )) {
+            for (featureIndex in features.indices) {
+                val feature = features[featureIndex]
+                Feature(resource = feature.first, text = feature.second)
+                if (featureIndex != features.size - 1) {
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
+                }
+            }
+        }
+    }
+    
+    @Composable
+    private fun Feature(@DrawableRes resource: Int, text: String) {
+        Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
+            Image(painter = painterResource(id = resource), contentDescription = null, colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer), modifier = Modifier
+                .padding(
+                    dimensionResource(id = R.dimen.purchase_feature_icon_padding)
+                )
+                .size(
+                    dimensionResource(id = R.dimen.purchase_feature_icon_size)
+                ))
+            Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.common_page_medium_gap_horizontal)))
+            Text(text, color = MaterialTheme.colorScheme.onSecondaryContainer, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+
+    @Composable
+    private fun PlanList(productDetails: ProductDetails, plans: List<PurchaseManager.Plan>, status: PurchaseManager.SubscriptionStatus.Good) {
+        val weakSelf = WeakReference(this)
+        val token: String?
+        val canAction: Boolean
+        val actionTitle: String
+        val text: String
+        when (status) {
+            is PurchaseManager.SubscriptionStatus.Good.None -> {
+                token = null
+                canAction = true
+                actionTitle = CelestiaString("Get", "")
+                text = CelestiaString("Choose one of the plans below to get Celestia PLUS", "")
+            }
+            is PurchaseManager.SubscriptionStatus.Good.Pending -> {
+                token = status.purchaseToken
+                canAction = false
+                actionTitle = CelestiaString("Get", "")
+                text = CelestiaString("Your purchase is pending", "")
+            }
+            is PurchaseManager.SubscriptionStatus.Good.NotAcknowledged -> {
+                token = status.purchaseToken
+                canAction = false
+                actionTitle = CelestiaString("Get", "")
+                text = CelestiaString("We are processing your purchase", "")
+            }
+            is PurchaseManager.SubscriptionStatus.Good.Acknowledged -> {
+                token = status.purchaseToken
+                canAction = true
+                actionTitle = CelestiaString("Change", "")
+                text = CelestiaString("Congratulations, you are a Celestia PLUS user", "")
+            }
+        }
+        Text(text = text, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
+        for (index in plans.indices) {
+            val plan = plans[index]
+            PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction) {
+                val self = weakSelf.get() ?: return@PlanCard
+                val activity = self.activity ?: return@PlanCard
+                self.purchaseManager.createSubscription(plan, productDetails, token, activity)
+            }
+            if (index != plans.size - 1) {
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
+            }
+        }
+        if (status is PurchaseManager.SubscriptionStatus.Good.Acknowledged) {
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
+            FilledTonalButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    val self = weakSelf.get() ?: return@FilledTonalButton
+                    val activity = self.activity ?: return@FilledTonalButton
+                    val url = self.purchaseManager.subscriptionManagementURL()
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    val ai = intent.resolveActivityInfo(activity.packageManager, PackageManager.MATCH_DEFAULT_ONLY)
+                    if (ai != null && ai.exported)
+                        activity.startActivity(intent)
+                }) {
+                Text(text = CelestiaString("Manage Subscription", ""))
+            }
+        }
+    }
+
+    @Composable
+    private fun PlanCard(plan: PurchaseManager.Plan, actionButtonText: String, actionButtonEnabled: Boolean, modifier: Modifier = Modifier, action: () -> Unit) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.purchase_box_corner_radius)))
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .padding(
                 horizontal = dimensionResource(
                     id = R.dimen.common_page_small_margin_horizontal
@@ -172,11 +353,17 @@ class SubscriptionManagerFragment: Fragment() {
                     id = R.dimen.common_page_small_margin_vertical
                 ),
             )) {
-            Text(text = when (plan.type) {
-                PurchaseManager.PlanType.Yearly -> CelestiaString("Yearly", "")
-                PurchaseManager.PlanType.Monthly -> CelestiaString("Monthly", "")
-            }, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
-            Text(text = plan.formattedPrice, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyMedium)
+            Column {
+                Text(text = when (plan.type) {
+                    PurchaseManager.PlanType.Yearly -> CelestiaString("Yearly", "")
+                    PurchaseManager.PlanType.Monthly -> CelestiaString("Monthly", "")
+                }, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
+                Text(text = plan.formattedPrice, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyMedium)
+            }
+            Button(onClick = action, enabled = actionButtonEnabled) {
+                Text(text = actionButtonText)
+            }
         }
     }
 

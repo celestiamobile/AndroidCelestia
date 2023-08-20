@@ -77,7 +77,6 @@ import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.purchase.SubscriptionManagerFragment
 import space.celestia.mobilecelestia.resource.*
 import space.celestia.mobilecelestia.resource.model.*
 import space.celestia.mobilecelestia.search.SearchFragment
@@ -507,9 +506,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
         findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
         if (supportFragmentManager.findFragmentById(R.id.drawer) == null) {
+            val actions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
             supportFragmentManager
                 .beginTransaction()
-                .add(R.id.drawer, ToolbarFragment.newInstance(listOf()))
+                .add(R.id.drawer, ToolbarFragment.newInstance(actions))
                 .commitAllowingStateLoss()
         }
 
@@ -1023,15 +1023,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             ToolbarAction.Download -> {
                 val baseURL = "https://celestia.mobi/resources/categories"
-                val uri = Uri.parse(baseURL)
+                var builder = Uri.parse(baseURL)
                     .buildUpon()
                     .appendQueryParameter("lang", AppCore.getLanguage())
                     .appendQueryParameter("platform", "android")
                     .appendQueryParameter("theme", "dark")
                     .appendQueryParameter("api", "1")
-                    .build()
+                if (purchaseManager.canUseInAppPurchase())
+                    builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
                 lifecycleScope.launch {
-                    showBottomSheetFragment(CommonWebNavigationFragment.newInstance(uri))
+                    showBottomSheetFragment(CommonWebNavigationFragment.newInstance(builder.build()))
                 }
             }
             ToolbarAction.Feedback -> {
@@ -1040,7 +1041,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     showSendFeedback()
                 }
             }
+            ToolbarAction.CelestiaPlus -> {
+                showInAppPurchase()
+            }
         }
+    }
+
+    private fun showInAppPurchase() = lifecycleScope.launch {
+        val fragment = purchaseManager.createInAppPurchaseFragment() ?: return@launch
+        showBottomSheetFragment(fragment)
     }
 
     // Listeners...
@@ -1152,6 +1161,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             appCore.runDemo()
         }
+    }
+
+    override fun onOpenSubscriptionPage() {
+        showInAppPurchase()
     }
 
     override fun onSearchItemSelected(text: String) {
@@ -1890,18 +1903,57 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun suggestFeature() {
-        val intent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:")
-            putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL_ADDRESS))
-            putExtra(Intent.EXTRA_SUBJECT, CelestiaString("Feature suggestion for Celestia", ""))
-            putExtra(Intent.EXTRA_TEXT, CelestiaString("Please describe the feature you want to see in Celestia.", ""))
+    private fun suggestFeature() = lifecycleScope.launch {
+        val directory = File(cacheDir, "feedback")
+        if (!directory.exists())
+            directory.mkdir()
+
+        val parentDirectory = File(directory, "${UUID.randomUUID()}")
+        val purchaseToken = purchaseManager.purchaseToken()
+        val purchaseTokenFile: File? = if (purchaseToken != null) {
+            writeTextToFileWithName(purchaseToken, parentDirectory, "purchasetoken.txt")
+        } else {
+            null
+        }
+        if (!sendEmail(listOfNotNull(purchaseTokenFile), CelestiaString("Feature suggestion for Celestia", ""), CelestiaString("Please describe the feature you want to see in Celestia.", ""))) {
+            reportBugSuggestFeatureFallback()
+        }
+    }
+
+    private fun sendEmail(files: List<File>, subject: String, body: String): Boolean {
+        val intent: Intent
+        val uris: List<Uri> = files.mapNotNull { file ->
+            try {
+                return@mapNotNull FileProvider.getUriForFile(
+                    this@MainActivity,
+                    FILE_PROVIDER_AUTHORITY,
+                    file
+                )
+            } catch (_: Throwable) {
+                return@mapNotNull null
+            }
+        }
+        if (uris.isEmpty()) {
+            intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:")
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL_ADDRESS))
+                putExtra(Intent.EXTRA_SUBJECT, subject)
+                putExtra(Intent.EXTRA_TEXT, body)
+            }
+        } else {
+            intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = "message/rfc822"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL_ADDRESS))
+                putExtra(Intent.EXTRA_SUBJECT, subject)
+                putExtra(Intent.EXTRA_TEXT, body)
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+            }
         }
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent)
-        } else {
-            reportBugSuggestFeatureFallback()
+            return true
         }
+        return false
     }
 
     private suspend fun getLastCrashAsync() = suspendCoroutine<ErrorReport?>  { cont ->
@@ -1933,6 +1985,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             resourceManager.installedResourcesAsync().joinToString("\n") { "${it.name}/${it.id}" }
         val addonInfoFile = writeTextToFileWithName(addons, parentDirectory, "addoninfo.txt")
         val crashInfoFile = if (crashReport != null) writeTextToFileWithName(crashReport.id, parentDirectory, "crashinfo.txt") else null
+        val purchaseToken = purchaseManager.purchaseToken()
+        val purchaseTokenFile: File? = if (purchaseToken != null) {
+            writeTextToFileWithName(purchaseToken, parentDirectory, "purchasetoken.txt")
+        } else {
+            null
+        }
         val systemInfo = "Application Version: ${versionName}(${versionCode})\n" +
             "Operating System: Android\n" +
             "Operating System Version: ${Build.VERSION.RELEASE}(${Build.VERSION.SDK_INT})\n" +
@@ -1940,27 +1998,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             "Device Model: ${Build.MODEL}\n" +
             "Device Manufacturer: ${Build.MANUFACTURER}"
         val systemInfoFile = writeTextToFileWithName(systemInfo, parentDirectory, "systeminfo.txt")
-        val uris = ArrayList(listOf(
+        val files = listOfNotNull(
             screenshotFile,
             renderInfoFile,
             urlInfoFile,
             addonInfoFile,
             systemInfoFile,
-            crashInfoFile
-        ).mapNotNull {
-            if (it != null) FileProvider.getUriForFile(this@MainActivity, FILE_PROVIDER_AUTHORITY, it) else null
-        })
-        val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
-            type = "message/rfc822"
-            putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL_ADDRESS))
-            putExtra(Intent.EXTRA_SUBJECT, CelestiaString("Bug report for Celestia", ""))
-            putExtra(Intent.EXTRA_TEXT, CelestiaString("Please describe the issue and repro steps, if known.", ""))
-            if (uris.isNotEmpty())
-                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
-        }
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        } else {
+            crashInfoFile,
+            purchaseTokenFile
+        )
+        if (!sendEmail(files,  CelestiaString("Bug report for Celestia", ""), CelestiaString("Please describe the issue and repro steps, if known.", ""))) {
             reportBugSuggestFeatureFallback()
         }
     }

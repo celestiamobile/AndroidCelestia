@@ -11,6 +11,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         fun receivedACK(id: String)
         fun openAddonNext(id: String)
         fun runDemo()
+        fun openSubscriptionPage()
     }
 
     class MessagePayload(val operation: String, val content: String, val minScriptVersion: Int)
@@ -24,6 +25,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     class SendACKContext(val id: String)
     class OpenAddonNextContext(val id: String)
     class RunDemoContext
+    class OpenSubscriptionPageContext
 
     abstract class JavascriptHandler<T>(private val clazz: Class<T>): BaseJavascriptHandler() {
         abstract fun execute(context: T, handler: MessageHandler)
@@ -81,6 +83,15 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
+    class OpenSubscriptionPageHandler: JavascriptHandler<OpenSubscriptionPageContext>(OpenSubscriptionPageContext::class.java) {
+        override val operation: String
+            get() = "openSubscriptionPage"
+
+        override fun execute(context: OpenSubscriptionPageContext, handler: MessageHandler) {
+            handler.openSubscriptionPage()
+        }
+    }
+
     private val handler = WeakReference(handler)
 
     @JavascriptInterface
@@ -99,7 +110,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     }
 
     private companion object {
-        val supportedScriptVersion = 4
+        val supportedScriptVersion = 5
 
         val contextHandlers: List<BaseJavascriptHandler> = listOf(
             RunScriptHandler(),
@@ -107,6 +118,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
             SendACKHandler(),
             OpenAddonNextHandler(),
             RunDemoHandler(),
+            OpenSubscriptionPageHandler()
         )
     }
 }
