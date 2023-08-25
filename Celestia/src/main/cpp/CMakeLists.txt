@@ -231,6 +231,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/constellation.h
         ${CELESTIA_SRC_DIR}/celengine/curveplot.cpp
         ${CELESTIA_SRC_DIR}/celengine/curveplot.h
+        ${CELESTIA_SRC_DIR}/celengine/dateformatter.cpp
+        ${CELESTIA_SRC_DIR}/celengine/dateformatter.h
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.cpp
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
         ${CELESTIA_SRC_DIR}/celengine/dsodb.cpp

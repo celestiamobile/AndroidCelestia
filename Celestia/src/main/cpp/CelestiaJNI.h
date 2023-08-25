@@ -47,10 +47,6 @@ extern jmethodID cvwMethodID;
 extern jclass cdClz;
 extern jmethodID cdInitMethodID;
 
-// app core
-extern jclass appCoreClz;
-extern jmethodID formatDateMethodID;
-
 // selection
 extern jclass selectionClz;
 extern jmethodID selectionGetObjectPointerMethodID;
