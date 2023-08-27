@@ -62,9 +62,9 @@ Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1findObject(JNIEnv *env, jclass clazz, jlong pointer, jstring name) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     const char *str = env->GetStringUTFChars(name, nullptr);
-    auto sel = sim->findObject(str, true);
+    auto sel = sim->findObjectFromPath(str, true);
     env->ReleaseStringUTFChars(name, str);
     return selectionAsJavaSelection(env, sel);
 }

@@ -2130,8 +2130,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showGoTo(data: GoToInputFragment.GoToData? = null) = lifecycleScope.launch {
+        val earth = AppCore.getLocalizedString("Earth", "celestia-data")
         val inputData = data ?: GoToInputFragment.GoToData(
-            AppCore.getLocalizedString("Earth", "celestia-data"),
+            earth,
+            earth,
             0.0f,
             0.0f,
             8.0,
@@ -2141,7 +2143,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onGoToObject(goToData: GoToInputFragment.GoToData) {
-        val selection = appCore.simulation.findObject(goToData.objectName)
+        val selection = appCore.simulation.findObject(goToData.objectPath)
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return

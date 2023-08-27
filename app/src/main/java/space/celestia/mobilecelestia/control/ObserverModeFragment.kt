@@ -27,6 +27,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.FooterLink
+import space.celestia.mobilecelestia.compose.ObjectNameAutoComplete
 import space.celestia.mobilecelestia.utils.CelestiaString
 import javax.inject.Inject
 
@@ -67,11 +68,17 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
         var referenceObjectName by remember {
             mutableStateOf("")
         }
+        var referenceObjectPath by remember {
+            mutableStateOf("")
+        }
         var targetObjectName by remember {
             mutableStateOf("")
         }
         var selectedCoordinateIndex by remember {
             mutableStateOf(0)
+        }
+        var targetObjectPath by remember {
+            mutableStateOf("")
         }
         val selectedCoordinateSystem = coordinateSystems[selectedCoordinateIndex].first
         Column(modifier = Modifier
@@ -84,16 +91,20 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
 
             if (selectedCoordinateSystem != Observer.COORDINATE_SYSTEM_UNIVERSAL) {
                 Header(text = CelestiaString("Reference Object", ""))
-                ObjectNameAutoComplete(executor = executor, core = appCore, name = referenceObjectName, inputUpdated = {
+                ObjectNameAutoComplete(executor = executor, core = appCore, name = referenceObjectName, path = referenceObjectPath, inputUpdated = {
                     referenceObjectName = it
+                }, objectPathUpdated = {
+                    referenceObjectPath = it
                 }, modifier = internalViewModifier)
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             }
 
             if (selectedCoordinateSystem == Observer.COORDINATE_SYSTEM_PHASE_LOCK) {
                 Header(text = CelestiaString("Target Object", ""))
-                ObjectNameAutoComplete(executor = executor, core = appCore, name = targetObjectName, inputUpdated = {
+                ObjectNameAutoComplete(executor = executor, core = appCore, name = targetObjectName, path = targetObjectPath, inputUpdated = {
                     targetObjectName = it
+                }, objectPathUpdated = {
+                    targetObjectPath = it
                 }, modifier = internalViewModifier)
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             }
@@ -105,7 +116,7 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
             })
 
             FilledTonalButton(modifier = internalViewModifier, onClick = {
-                applyObserverMode(referenceObjectName = referenceObjectName, targetObjectName = targetObjectName, coordinateSystem = selectedCoordinateSystem)
+                applyObserverMode(referenceObjectPath = referenceObjectPath, targetObjectPath = targetObjectPath, coordinateSystem = selectedCoordinateSystem)
             }) {
                 Text(text = CelestiaString("OK", ""))
             }
@@ -119,9 +130,9 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
         title = CelestiaString("Flight Mode", "")
     }
 
-    private fun applyObserverMode(referenceObjectName: String, targetObjectName: String, coordinateSystem: Int) = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-        val ref = if (referenceObjectName.isEmpty()) Selection() else appCore.simulation.findObject(referenceObjectName)
-        val target = if (targetObjectName.isEmpty()) Selection() else appCore.simulation.findObject(targetObjectName)
+    private fun applyObserverMode(referenceObjectPath: String, targetObjectPath: String, coordinateSystem: Int) = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+        val ref = if (referenceObjectPath.isEmpty()) Selection() else appCore.simulation.findObject(referenceObjectPath)
+        val target = if (targetObjectPath.isEmpty()) Selection() else appCore.simulation.findObject(targetObjectPath)
         appCore.simulation.activeObserver.setFrame(coordinateSystem, ref, target)
     }
 

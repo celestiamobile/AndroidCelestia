@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.control
+package space.celestia.mobilecelestia.compose
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -21,13 +21,16 @@ import java.lang.ref.WeakReference
 
 @SuppressLint("InflateParams")
 @Composable
-fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: String, modifier: Modifier = Modifier, inputUpdated: (String) -> Unit) {
+fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: String, modifier: Modifier = Modifier, path: String, inputUpdated: (String) -> Unit, objectPathUpdated: (String) -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     var savedCompletions by rememberSaveable {
         mutableStateOf(listOf<String>())
     }
     var savedName by rememberSaveable {
         mutableStateOf(name)
+    }
+    var savedPath by rememberSaveable {
+        mutableStateOf(path)
     }
 
     class StringArrayAdapter(context: Context, var content: List<String> = listOf()): ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line) {
@@ -54,6 +57,7 @@ fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: Stri
         val autoCompleteAction: (String) -> Unit = { text ->
             savedName = text
             inputUpdated(savedName)
+            objectPathUpdated(savedName)
             coroutineScope.launch {
                 val strongView = weakView.get() ?: return@launch
                 val completions = if (text.isEmpty()) listOf<String>() else withContext(executor.asCoroutineDispatcher()) {
@@ -68,7 +72,7 @@ fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: Stri
                     else
                         adapter.notifyDataSetChanged()
                 }
-                if (!savedCompletions.isEmpty())
+                if (savedCompletions.isNotEmpty())
                     strongView.showDropDown()
             }
         }
@@ -83,6 +87,19 @@ fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: Stri
             if (strongView.isPerformingCompletion) return@addTextChangedListener
             val text = it?.toString() ?: ""
             autoCompleteAction(text)
+        }
+        autoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
+            if (position >= 0 && position < adapter.count) {
+                val result = adapter.getItem(position)
+                val lastSeparator = savedName.lastIndexOf('/')
+                val objectPath: String = if (lastSeparator != -1) {
+                    savedName.substring(startIndex = 0, endIndex = lastSeparator + 1) + result
+                } else {
+                    result
+                }
+                savedPath = objectPath
+                objectPathUpdated(objectPath)
+            }
         }
         return@AndroidView view
     }, modifier = modifier)

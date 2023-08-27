@@ -22,6 +22,7 @@ import space.celestia.mobilecelestia.search.model.SearchResultItem
 class SearchRecyclerViewAdapter(
     private val listener: SearchFragment.Listener?
 ) : SeparatorRecyclerViewAdapter(showSeparators = false) {
+    private var searchKey = ""
 
     override fun itemViewType(item: RecyclerViewItem): Int {
         return SEARCH_RESULT
@@ -39,11 +40,19 @@ class SearchRecyclerViewAdapter(
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is SearchResultItem) {
-            listener?.onSearchItemSelected(item.result)
+            val lastSeparator = searchKey.lastIndexOf('/')
+            val name: String
+            if (lastSeparator != -1) {
+                name = searchKey.substring(startIndex = 0, endIndex = lastSeparator + 1) + item.result
+            } else {
+                name = item.result
+            }
+            listener?.onSearchItemSelected(name)
         }
     }
 
-    fun updateSearchResults(results: List<String>) {
+    fun updateSearchResults(key: String, results: List<String>) {
+        searchKey = key
         updateSections(listOf(CommonSection(results.map { SearchResultItem(it) })))
     }
 

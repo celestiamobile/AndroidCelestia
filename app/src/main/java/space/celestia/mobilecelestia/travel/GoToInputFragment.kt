@@ -16,13 +16,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -34,20 +42,19 @@ import space.celestia.celestia.GoToLocation
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.ObjectNameAutoComplete
 import space.celestia.mobilecelestia.control.Header
-import space.celestia.mobilecelestia.control.ObjectNameAutoComplete
 import space.celestia.mobilecelestia.control.OptionSelect
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getSerializableValue
 import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.io.Serializable
 import java.text.NumberFormat
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class GoToInputFragment : NavigationFragment.SubFragment() {
-    class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: GoToLocation.DistanceUnit) :
+    class GoToData(var objectName: String, var objectPath: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: GoToLocation.DistanceUnit) :
         Serializable
 
     private var listener: Listener? = null
@@ -101,6 +108,9 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         var objectName by remember {
             mutableStateOf(initialData.objectName)
         }
+        var objectPath by remember {
+            mutableStateOf(initialData.objectPath)
+        }
         var longitudeString by rememberSaveable {
             mutableStateOf(displayNumberFormat.format(initialData.longitude))
         }
@@ -129,9 +139,11 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Header(text = CelestiaString("Object", ""))
-            ObjectNameAutoComplete(executor = executor, core = appCore, name = objectName, modifier = textViewModifier) {
+            ObjectNameAutoComplete(executor = executor, core = appCore, name = objectName, path = objectPath, modifier = textViewModifier, inputUpdated = {
                 objectName = it
-            }
+            }, objectPathUpdated = {
+                objectPath = it
+            })
             Header(text = CelestiaString("Coordinates", ""))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
                 OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "")) }, onValueChange = {
@@ -164,7 +176,7 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                     val longitude = currentLongitudeValue ?: return@FilledTonalButton
                     val latitude = currentLatitudeValue ?: return@FilledTonalButton
                     val distance = currentDistanceValue ?: return@FilledTonalButton
-                    listener?.onGoToObject(GoToData(objectName, longitude = longitude.toFloat(), latitude = latitude.toFloat(), distance = distance, distanceUnit = distanceUnit))
+                    listener?.onGoToObject(GoToData(objectName, objectPath, longitude = longitude.toFloat(), latitude = latitude.toFloat(), distance = distance, distanceUnit = distanceUnit))
                 }
             ) {
                 Text(text = CelestiaString("Go", ""))

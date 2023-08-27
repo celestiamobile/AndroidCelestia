@@ -94,7 +94,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
         }
 
         // Set the adapter
-        listAdapter.updateSearchResults(searchResults)
+        listAdapter.updateSearchResults(searchKey, searchResults)
         listView = view.findViewById(R.id.list)
         listView.layoutManager = LinearLayoutManager(context)
         listView.adapter = listAdapter
@@ -134,7 +134,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
                 withContext(Dispatchers.Main) {
                     searchKey = it.first
                     searchResults = it.second
-                    listAdapter.updateSearchResults(searchResults)
+                    listAdapter.updateSearchResults(searchKey, searchResults)
                     listAdapter.notifyDataSetChanged()
                 }
             }
