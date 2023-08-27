@@ -32,6 +32,7 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
     private var startTime = Date(Date().time - DEFAULT_SEARCHING_INTERVAL)
     private var endTime = Date()
     private var objectName = AppCore.getLocalizedString("Earth", "celestia-data")
+    private var objectPath = "Sol/Earth"
 
     private val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
 
@@ -109,13 +110,13 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
             val self = weakSelf.get() ?: return@setOnClickListener
             val ac = self.activity ?: return@setOnClickListener
             val objects = listOf(
-                AppCore.getLocalizedString("Earth", "celestia-data"),
-                AppCore.getLocalizedString("Jupiter", "celestia-data")
+                Pair(AppCore.getLocalizedString("Earth", "celestia-data"), "Sol/Earth"),
+                Pair(AppCore.getLocalizedString("Jupiter", "celestia-data"), "Sol/Jupiter"),
             )
             val other = CelestiaString("Other", "")
             ac.showOptions(
                 CelestiaString("Please choose an object.", ""),
-                (objects + other).toTypedArray()
+                objects.map { it.first }.toTypedArray() + other
             ) { index ->
                 if (index >= objects.size) {
                     // User choose other, show text input for the object name
@@ -124,11 +125,13 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
                         self.objectName
                     ) { objectName ->
                         self.objectName = objectName
+                        self.objectPath = objectName
                         self.reload()
                     }
                     return@showOptions
                 }
-                self.objectName = objects[index]
+                self.objectName = objects[index].first
+                self.objectPath = objects[index].second
                 self.reload()
             }
         }
@@ -136,7 +139,7 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
         findButton.setOnClickListener {
             val self = weakSelf.get() ?: return@setOnClickListener
 
-            self.listener?.onSearchForEvent(objectName, startTime, endTime)
+            self.listener?.onSearchForEvent(objectPath, startTime, endTime)
         }
 
         reload()
@@ -155,7 +158,8 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
         if (savedInstanceState != null) {
             startTime = savedInstanceState.getSerializableValue(START_TIME_TAG, Date::class.java) ?: startTime
             endTime = savedInstanceState.getSerializableValue(END_TIME_TAG, Date::class.java) ?: endTime
-            objectName = savedInstanceState.getString(OBJECT_TAG, objectName)
+            objectName = savedInstanceState.getString(OBJECT_NAME_TAG, objectName)
+            objectPath = savedInstanceState.getString(OBJECT_PATH_TAG, objectPath)
         }
     }
 
@@ -168,7 +172,8 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable(START_TIME_TAG, startTime)
         outState.putSerializable(END_TIME_TAG, endTime)
-        outState.putString(OBJECT_TAG, objectName)
+        outState.putString(OBJECT_NAME_TAG, objectName)
+        outState.putString(OBJECT_PATH_TAG, objectPath)
 
         super.onSaveInstanceState(outState)
     }
@@ -194,7 +199,8 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
     companion object {
         private const val START_TIME_TAG = "start_time"
         private const val END_TIME_TAG = "end_time"
-        private const val OBJECT_TAG = "object"
+        private const val OBJECT_NAME_TAG = "name"
+        private const val OBJECT_PATH_TAG = "path"
 
         private const val DEFAULT_SEARCHING_INTERVAL: Long = 365L * 24 * 60 * 60 * 1000
 

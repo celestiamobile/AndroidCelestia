@@ -2130,10 +2130,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showGoTo(data: GoToInputFragment.GoToData? = null) = lifecycleScope.launch {
-        val earth = AppCore.getLocalizedString("Earth", "celestia-data")
         val inputData = data ?: GoToInputFragment.GoToData(
-            earth,
-            earth,
+            objectName = AppCore.getLocalizedString("Earth", "celestia-data"),
+            objectPath = "Sol/Earth",
             0.0f,
             0.0f,
             8.0,
