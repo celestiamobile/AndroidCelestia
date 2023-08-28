@@ -645,10 +645,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
 
         zoomTimer?.cancel()
+        val weakSelf = WeakReference(this)
         zoomTimer = fixedRateTimer("zoom", false, 0, 100) {
-            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                viewInteraction.callZoom()
-            }
+            val self = weakSelf.get() ?: return@fixedRateTimer
+            self.viewInteraction.callZoom()
         }
     }
 

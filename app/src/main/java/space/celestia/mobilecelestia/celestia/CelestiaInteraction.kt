@@ -130,10 +130,12 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private fun callZoom(deltaY: Float) {
-        if (internalInteractionMode == InteractionMode.Camera) {
-            appCore.mouseMove(AppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), AppCore.SHIFT_KEY)
-        } else {
-            appCore.mouseWheel(deltaY, 0)
+        executor.execute {
+            if (internalInteractionMode == InteractionMode.Camera) {
+                appCore.mouseMove(AppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), AppCore.SHIFT_KEY)
+            } else {
+                appCore.mouseWheel(deltaY, 0)
+            }
         }
     }
 
@@ -454,9 +456,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
         Log.d(TAG, "Pinch with deltaY: $deltaY")
 
-        executor.execute {
-            callZoom(deltaY)
-        }
+        callZoom(deltaY)
 
         this.currentSpan = currentSpan
 
