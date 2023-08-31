@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.lifecycleScope
-import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -27,7 +26,10 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.FooterLink
+import space.celestia.mobilecelestia.compose.Header
+import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.ObjectNameAutoComplete
+import space.celestia.mobilecelestia.compose.OptionSelect
 import space.celestia.mobilecelestia.utils.CelestiaString
 import javax.inject.Inject
 

@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.control
+package space.celestia.mobilecelestia.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding

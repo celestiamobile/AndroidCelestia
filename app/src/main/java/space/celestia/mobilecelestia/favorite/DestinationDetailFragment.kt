@@ -35,10 +35,10 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import space.celestia.celestia.Destination
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getSerializableValue
 
@@ -92,7 +92,9 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
                 end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
             )
         ) {
-            SelectionContainer(modifier = Modifier.verticalScroll(scroll).weight(1.0f)
+            SelectionContainer(modifier = Modifier
+                .verticalScroll(scroll)
+                .weight(1.0f)
                 .fillMaxWidth()
                 .padding(
                     top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),

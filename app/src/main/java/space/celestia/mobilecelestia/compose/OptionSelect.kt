@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.control
+package space.celestia.mobilecelestia.compose
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
