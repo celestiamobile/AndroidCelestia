@@ -376,7 +376,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
             val interactionRect = RectF(insetLeft, insetTop, v.width - insetRight,  v.height - insetBottom)
             if (!interactionRect.contains(point.x, point.y)) {
-                Log.d(TAG, "$interactionRect does not contain $point, interaction blocked")
+                // interactionRect does not contain point, interaction blocked
                 canInteract = false
                 return true
             }
@@ -417,14 +417,12 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
         if ((event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) && isScrolling) {
             // Last finger is lifted while scrolling
-            Log.d(TAG, "on scroll end")
-
             stopScrolling()
             return true
         }
 
         // Other events
-        Log.d(TAG, "unhandled event, ${event.actionMasked}")
+        Log.e(TAG, "unhandled event, ${event.actionMasked}")
         return true
     }
 
@@ -432,29 +430,21 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         if (isScrolling)
             stopScrolling()
 
-        Log.d(TAG, "on scale begin")
-
         currentSpan = detector.currentSpan
         isScaling = true
 
         return true
     }
 
-    override fun onScaleEnd(detector: ScaleGestureDetector) {
-        Log.d(TAG, "on scale end")
-    }
+    override fun onScaleEnd(detector: ScaleGestureDetector) {}
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
         val previousSpan = currentSpan ?: return true
         val currentSpan = detector.currentSpan
 
-        Log.d(TAG, "on scale")
-
         val delta = detector.currentSpan / previousSpan
         // FIXME: 8 is a magic number
         val deltaY = (1 - delta) * previousSpan / density / 8
-
-        Log.d(TAG, "Pinch with deltaY: $deltaY")
 
         callZoom(deltaY)
 
@@ -464,8 +454,6 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     override fun onSingleTapUp(e: MotionEvent): Boolean {
-        Log.d(TAG, "on single tap up")
-
         val point = PointF(e.x, e.y).scaleBy(scaleFactor)
         executor.execute {
             appCore.mouseButtonDown(AppCore.MOUSE_BUTTON_LEFT, point, 0)
@@ -476,27 +464,26 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     override fun onFling(
-        e1: MotionEvent,
+        e1: MotionEvent?,
         e2: MotionEvent,
         velocityX: Float,
         velocityY: Float
     ): Boolean {
-        Log.d(TAG, "on fling")
         return false
     }
 
-    override fun onScroll(
-        event1: MotionEvent,
-        event2: MotionEvent,
-        distanceX: Float,
-        distanceY: Float
-    ): Boolean {
+    override fun onScroll(event1: MotionEvent?, event2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
         if (!canScroll) return false
 
-        Log.d(TAG, "on scroll")
+        if (event1 == null) {
+            // https://developer.android.com/reference/android/view/GestureDetector.OnGestureListener#onScroll(android.view.MotionEvent,%20android.view.MotionEvent,%20float,%20float)
+            // A null event indicates an incomplete event stream or error state.
+            if (isScrolling)
+                stopScrolling()
+            return true
+        }
 
         val button = internalInteractionMode.button
-
         val offset = PointF(-distanceX, -distanceY).scaleBy(scaleFactor)
         val originalPoint = PointF(event1.x, event1.y).scaleBy(scaleFactor)
         val newPoint = PointF(event2.x, event2.y).scaleBy(scaleFactor)
@@ -532,7 +519,6 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     override fun onDown(e: MotionEvent): Boolean {
-        Log.d(TAG, "on down")
         return true
     }
 
@@ -672,8 +658,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private fun stopScrolling() {
-        Log.d(TAG, "stop scrolling")
-        val lp = lastPoint!!
+        val lp = lastPoint ?: return
 
         executor.execute {
             appCore.mouseButtonUp(scrollingMouseButton, lp, 0)

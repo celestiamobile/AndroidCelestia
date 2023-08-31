@@ -12,7 +12,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.9.0'
+    ext.kotlin_version = '1.9.10'
     ext.core_ktx_version = '1.10.1'
     ext.core_appcompat_version = '1.6.1'
     ext.material_version = '1.9.0'
@@ -36,10 +36,10 @@ allprojects {
     project.ext {
         constants = [
                 minSdkVersion     : 21,
-                targetSdkVersion  : 33,
-                compileSdkVersion : 33,
+                targetSdkVersion  : 34,
+                compileSdkVersion : 34,
                 ndkVersion        : "25.2.9519653",
-                buildToolsVersion : "33.0.2",
+                buildToolsVersion : "34.0.0",
                 cmakeVersion      : "3.22.1"
         ]
     }
