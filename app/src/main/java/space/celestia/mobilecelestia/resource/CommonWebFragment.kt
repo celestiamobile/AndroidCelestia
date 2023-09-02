@@ -135,7 +135,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 return shouldOverrideUrl(request?.url.toString())
             }
 
-            @Deprecated("Deprecated in Java")
+            @Deprecated("Deprecated in Java", ReplaceWith("shouldOverrideUrl(url)"))
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return shouldOverrideUrl(url)
             }
@@ -271,10 +271,10 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
         val savedState = webViewState ?: savedInstanceState
         val wv = webView
-        if (savedState != null && wv != null) {
-            leftNavigationBarItem = if (wv.canGoBack()) NavigationFragment.BarButtonItem(MENU_ITEM_BACK_BUTTON, null, R.drawable.ic_action_arrow_back) else null
+        leftNavigationBarItem = if (savedState != null && wv != null) {
+            if (wv.canGoBack()) NavigationFragment.BarButtonItem(MENU_ITEM_BACK_BUTTON, null, R.drawable.ic_action_arrow_back) else null
         } else {
-            leftNavigationBarItem = null
+            null
         }
     }
 
@@ -328,7 +328,8 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             try {
                 val result = resourceAPI.item(lang, id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
                 val frag = parentFragment
-                if (frag is NavigationFragment) {
+                // Do not push another ResourceItemFragment if it is the top
+                if (frag is NavigationFragment && frag.top !is ResourceItemFragment) {
                     frag.pushFragment(ResourceItemFragment.newInstance(result, lang, Date()))
                 }
             } catch (ignored: Throwable) {}
@@ -365,11 +366,11 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         private const val ARG_SHOW_FALLBACK = "show_fallback_container"
         private const val MENU_ITEM_BACK_BUTTON = 12425
 
-        fun newInstance(uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File? = null) = CommonWebFragment.create({ CommonWebFragment() }, uri, matchingQueryKeys, contextDirectory, true)
-        fun newInstance(uri: Uri) = CommonWebFragment.create({ CommonWebFragment() }, uri, listOf(), null, false)
+        fun newInstance(uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File? = null) = create({ CommonWebFragment() }, uri, matchingQueryKeys, contextDirectory, true)
+        fun newInstance(uri: Uri) = create({ CommonWebFragment() }, uri, listOf(), null, false)
 
-        fun <T: Fragment> create(fragmentCreater: () -> T, uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File?, filterURL: Boolean): T {
-            val fragment = fragmentCreater().apply {
+        fun <T: Fragment> create(fragmentCreator: () -> T, uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File?, filterURL: Boolean): T {
+            val fragment = fragmentCreator().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARG_URI, uri)
                     putSerializable(ARG_CONTEXT_DIRECTORY, contextDirectory)
