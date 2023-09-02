@@ -225,16 +225,22 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     }
 
     override fun onResourceFetchError(identifier: String) {
+        if (identifier != item.id) { return }
+
         currentState = ResourceItemState.None
         updateUI()
         activity?.showAlert(CelestiaString("Failed to download or install this add-on.", ""))
     }
 
     override fun onFileDownloaded(identifier: String) {
+        if (identifier != item.id) { return }
+
         updateUI()
     }
 
     override fun onFileUnzipped(identifier: String) {
+        if (identifier != item.id) { return }
+
         currentState = ResourceItemState.Installed
         updateUI()
     }
