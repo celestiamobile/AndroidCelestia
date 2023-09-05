@@ -17,7 +17,7 @@ buildscript {
     ext.core_appcompat_version = '1.6.1'
     ext.material_version = '1.9.0'
     ext.kotlinx_coroutines_version = '1.7.3'
-    ext.hilt_version = '2.47'
+    ext.hilt_version = '2.48'
     ext.lifecycle_version = '2.6.1'
 
     repositories {
