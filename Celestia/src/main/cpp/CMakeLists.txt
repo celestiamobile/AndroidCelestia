@@ -265,8 +265,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/glshader.h
         ${CELESTIA_SRC_DIR}/celengine/hash.cpp
         ${CELESTIA_SRC_DIR}/celengine/hash.h
-        ${CELESTIA_SRC_DIR}/celengine/image.cpp
-        ${CELESTIA_SRC_DIR}/celengine/image.h
         ${CELESTIA_SRC_DIR}/celengine/lightenv.h
         ${CELESTIA_SRC_DIR}/celengine/location.cpp
         ${CELESTIA_SRC_DIR}/celengine/location.h
@@ -381,8 +379,11 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celimage/dds.cpp
         ${CELESTIA_SRC_DIR}/celimage/dds_decompress.cpp
         ${CELESTIA_SRC_DIR}/celimage/dds_decompress.h
+        ${CELESTIA_SRC_DIR}/celimage/image.cpp
+        ${CELESTIA_SRC_DIR}/celimage/image.h
         ${CELESTIA_SRC_DIR}/celimage/imageformats.h
         ${CELESTIA_SRC_DIR}/celimage/jpeg.cpp
+        ${CELESTIA_SRC_DIR}/celimage/pixelformat.h
         ${CELESTIA_SRC_DIR}/celimage/png.cpp
         )
 
