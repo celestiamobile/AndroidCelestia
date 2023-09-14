@@ -19,8 +19,8 @@ jobs:
 
   - script: |
       sudo apt update
-      sudo apt install -y gettext
-    displayName: 'Install Gettext'
+      sudo apt install -y gettext gperf
+    displayName: 'Install Dependencies'
 
   - task: NodeTool@0
     inputs:
@@ -52,6 +52,11 @@ jobs:
       cd CelestiaContent
       git checkout 4b07c079d31c7b174d1a9d8efbf1db92f54fa05d
     displayName: 'Checkout Content'
+
+  - script: |
+      cd Celestia/src/celscript/legacy
+      gperf commands.gperf -m4 --output-file=commands.inc
+    displayName: 'Running gperf'
 
   - script: |
       mkdir -p AndroidCelestia/Celestia/src/main/cpp/dependency/android
