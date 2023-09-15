@@ -54,22 +54,11 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         }
     }
 
-    enum class ZoomMode {
-        In, Out;
-
-        val distance: Float
-            get() = when (this) {
-                In -> -1.5f
-                Out -> 1.5f
-            }
-    }
-
     private val scaleGestureDetector = ScaleGestureDetector(context, this)
     private val gestureDetector = GestureDetectorCompat(context, this)
     var pointerCaptureListener: Any? = null
 
     var isReady = false
-    var zoomMode: ZoomMode? = null
     var scaleFactor: Float = 1f
     var density: Float = 1f
     private var isLeftTriggerPressed = false
@@ -122,11 +111,6 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         executor.execute {
             internalInteractionMode = interactionMode
         }
-    }
-
-    fun callZoom() {
-        val mode = zoomMode ?: return
-        callZoom(mode.distance)
     }
 
     private fun callZoom(deltaY: Float) {

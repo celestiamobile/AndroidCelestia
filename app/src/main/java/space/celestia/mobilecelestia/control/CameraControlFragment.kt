@@ -16,13 +16,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Footer
@@ -40,7 +44,7 @@ import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class CameraControlAction(val value: Int) {
-    Pitch0(32), Pitch1(26), Yaw0(28), Yaw1(30), Roll0(31), Roll1(33), Reverse(-1);
+    Pitch0(32), Pitch1(26), Yaw0(28), Yaw1(30), Roll0(31), Roll1(33), Reverse(-1), ZoomIn(5), ZoomOut(6);
 }
 
 class CameraControlFragment : NavigationFragment.SubFragment() {
@@ -90,6 +94,9 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
             StepperRow(name = CelestiaString("Yaw", ""), minusAction = CameraControlAction.Yaw0, plusAction = CameraControlAction.Yaw1, modifier = internalViewModifier)
             StepperRow(name = CelestiaString("Roll", ""), minusAction = CameraControlAction.Roll0, plusAction = CameraControlAction.Roll1, modifier = internalViewModifier)
             Footer(text = CelestiaString("Long press on stepper to change orientation.", ""))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+            StepperRow(name = CelestiaString("Zoom (Distance)", ""), minusAction = CameraControlAction.ZoomOut, plusAction = CameraControlAction.ZoomIn, modifier = internalViewModifier)
+            Footer(text = CelestiaString("Long press on stepper to zoom in/out.", ""))
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = {
                 listener?.onCameraControlObserverModeClicked()
