@@ -21,7 +21,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.StandardImageButton
 
 enum class CelestiaControlAction {
-    ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Hide, Show
+    ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Hide, Show
 }
 
 interface CelestiaControlButton

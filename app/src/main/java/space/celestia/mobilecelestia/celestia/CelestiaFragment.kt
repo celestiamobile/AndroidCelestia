@@ -90,8 +90,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private val scaleFactor: Float
         get() = if (enableFullResolution) 1.0f else (1.0f / density)
 
-    private var zoomTimer: Timer? = null
-
     private var loadSuccess = false
     private var haveSurface = false
     private var interactionMode = CelestiaInteraction.InteractionMode.Object
@@ -215,8 +213,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         listener = null
         activity = null
-        zoomTimer?.cancel()
-        zoomTimer = null
     }
 
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
@@ -379,8 +375,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         // Set up control buttons
         val items = listOf(
             CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", ""), interactionMode == CelestiaInteraction.InteractionMode.Camera),
-            CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
-            CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
             CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "")),
             CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "")),
             CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", ""))
@@ -637,26 +631,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    override fun didStartPressingAction(action: CelestiaControlAction) {
-        when (action) {
-            CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
-            CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
-            else -> {}
-        }
+    override fun didStartPressingAction(action: CelestiaControlAction) {}
 
-        zoomTimer?.cancel()
-        val weakSelf = WeakReference(this)
-        zoomTimer = fixedRateTimer("zoom", false, 0, 100) {
-            val self = weakSelf.get() ?: return@fixedRateTimer
-            self.viewInteraction.callZoom()
-        }
-    }
-
-    override fun didEndPressingAction(action: CelestiaControlAction) {
-        zoomTimer?.cancel()
-        zoomTimer = null
-        viewInteraction.zoomMode = null
-    }
+    override fun didEndPressingAction(action: CelestiaControlAction) {}
 
     override fun requestContextMenu(x: Float, y: Float, selection: Selection) {
         if (!isContextMenuEnabled)
