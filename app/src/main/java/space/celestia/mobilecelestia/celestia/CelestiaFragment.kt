@@ -101,6 +101,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
         fun celestiaFragmentDidRequestObjectInfo()
+        fun celestiaFragmentDidRequestSearch()
         fun celestiaFragmentDidRequestObjectInfo(selection: Selection)
         fun provideFallbackConfigFilePath(): String
         fun provideFallbackDataDirectoryPath(): String
@@ -156,7 +157,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         appStatusReporter.register(this)
 
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
-        controlView = view.findViewById<CelestiaControlView>(R.id.control_view)
+        controlView = view.findViewById(R.id.control_view)
         controlView.listener = this
 
         if (!hasSetRenderer) {
@@ -376,6 +377,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val items = listOf(
             CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", ""), interactionMode == CelestiaInteraction.InteractionMode.Camera),
             CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "")),
+            CelestiaTapButton(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
             CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "")),
             CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", ""))
         )
@@ -556,6 +558,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             }
             CelestiaControlAction.Info -> {
                 listener?.celestiaFragmentDidRequestObjectInfo()
+            }
+            CelestiaControlAction.Search -> {
+                listener?.celestiaFragmentDidRequestSearch()
             }
             CelestiaControlAction.Hide -> {
                 hideControlViewIfNeeded()

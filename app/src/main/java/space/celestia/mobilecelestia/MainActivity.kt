@@ -1666,6 +1666,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showInfo(selection)
     }
 
+    override fun celestiaFragmentDidRequestSearch() {
+        showSearch()
+    }
+
     override fun celestiaFragmentCanAcceptKeyEvents(): Boolean {
         // check drawer
         if (drawerLayout.isDrawerOpen(GravityCompat.END))
