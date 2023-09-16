@@ -149,7 +149,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celephem/customorbit.h
         ${CELESTIA_SRC_DIR}/celephem/customrotation.cpp
         ${CELESTIA_SRC_DIR}/celephem/customrotation.h
-        ${CELESTIA_SRC_DIR}/celephem/customorbittype.h
         ${CELESTIA_SRC_DIR}/celephem/jpleph.cpp
         ${CELESTIA_SRC_DIR}/celephem/jpleph.h
         ${CELESTIA_SRC_DIR}/celephem/nutation.cpp
