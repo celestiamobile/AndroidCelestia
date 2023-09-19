@@ -22,12 +22,6 @@ jobs:
       sudo apt install -y gettext gperf
     displayName: 'Install Dependencies'
 
-  - task: NodeTool@0
-    inputs:
-      versionSource: 'spec'
-      versionSpec: '14.9.0'
-    displayName: 'Install Node.js'
-
   - script: |
       npm install -g appcenter-cli
     displayName: 'Install AppCenter-CLI'
