@@ -54,13 +54,7 @@ jobs:
     displayName: 'Checkout Content'
 
   - script: |
-      cd $(System.DefaultWorkingDirectory)/Celestia/src/celscript/legacy
-      gperf commands.gperf -m4 --output-file=commands.inc
-      cd $(System.DefaultWorkingDirectory)/Celestia/src/celephem
-      gperf customrotation.gperf -m4 --output-file=customrotation.inc
-      gperf customorbit.gperf -m4 --output-file=customorbit.inc
-      cd $(System.DefaultWorkingDirectory)/Celestia/src/celengine
-      gperf location.gperf -m4 --output-file=location.inc
+      sh $(System.DefaultWorkingDirectory)/AndroidCelestia/app/run_gperf.sh $(System.DefaultWorkingDirectory)/Celestia
     displayName: 'Running gperf'
 
   - script: |

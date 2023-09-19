@@ -1,6 +1,9 @@
 #!/bin/sh
 
-export PATH="/opt/homebrew/bin:/usr/local/opt/gettext/bin:$PATH"
+if [ "$(uname)" = "Darwin" ]; then
+    HOMEBREW_PATH=$(brew --prefix)
+    export PATH="$HOMEBREW_PATH/bin:$PATH"
+fi
 
 cd `dirname $0`
 
