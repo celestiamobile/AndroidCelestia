@@ -142,6 +142,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celmodel/modelfile.cpp
         ${CELESTIA_SRC_DIR}/celmodel/modelfile.h
         ${CELESTIA_SRC_DIR}/celmodel/model.h
+        ${CELESTIA_SRC_DIR}/celmodel/tangents.cpp
         )
 
 list(APPEND CELESTIA_SOURCES
