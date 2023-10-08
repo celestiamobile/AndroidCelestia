@@ -111,7 +111,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        searchBar.text = searchKey
+        searchBar.setText(searchKey)
         searchView.setText(searchKey)
         searchView.editText.hint = ""
         searchView.editText.imeOptions =
@@ -145,15 +145,15 @@ class SearchFragment : NavigationFragment.SubFragment() {
         searchView.addTransitionListener { _, _, newState ->
             val self = weakSelf.get() ?: return@addTransitionListener
             if (newState == SearchView.TransitionState.HIDING || newState == SearchView.TransitionState.HIDDEN) {
-                self.searchBar.text = self.searchView.text
+                self.searchBar.setText(self.searchView.text)
             }
         }
         searchView.editText.setOnEditorActionListener { _, actionId, _ ->
             val self = weakSelf.get() ?: return@setOnEditorActionListener false
             val searchKey = self.searchView.text
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                val searchText = searchKey?.toString()
-                if (!searchText.isNullOrEmpty() && searchResults.isEmpty()) {
+                val searchText = searchKey.toString()
+                if (!searchText.isEmpty() && searchResults.isEmpty()) {
                     listener?.onSearchItemSubmit(searchText)
                 }
             }
