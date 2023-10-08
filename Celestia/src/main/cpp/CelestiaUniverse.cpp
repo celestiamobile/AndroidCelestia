@@ -255,6 +255,9 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
         for (const auto loc : *locations)
         {
             auto name = loc->getName(true);
+            if (name.empty())
+                continue;
+
             locationsMap[name] = make_pair(reinterpret_cast<jlong>(loc), name);
         }
         if (!locationsMap.empty())

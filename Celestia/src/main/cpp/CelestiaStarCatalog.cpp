@@ -16,7 +16,7 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_StarCatalog_c_1getStarName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
     auto d = (StarDatabase *)ptr;
-    return env->NewStringUTF(d->getStarName(*(Star *)pointer, true).c_str());
+    return env->NewStringUTF(d->getStarName(*(Star *)pointer).c_str());
 }
 
 extern "C"

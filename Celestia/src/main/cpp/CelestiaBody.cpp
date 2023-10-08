@@ -91,14 +91,14 @@ JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Body_c_1getAlternateSurfaceNames(JNIEnv *env,
                                                                                  jclass clazz, jlong pointer) {
     auto body = (Body *)pointer;
-    std::vector<std::string> *altSurfaces = body->getAlternateSurfaceNames();
-    if (!altSurfaces || altSurfaces->empty())
+    auto altSurfaces = body->getAlternateSurfaceNames();
+    if (!altSurfaces.has_value() || altSurfaces->empty())
         return  nullptr;
 
-    jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)altSurfaces->size());
-    for (auto &altSurface : *altSurfaces)
+    jobject arrayObject = env->NewObject(alClz, aliMethodID, static_cast<jint>(altSurfaces->size()));
+    for (const auto &surface : *altSurfaces)
     {
-        jstring name = env->NewStringUTF(altSurface.c_str());
+        jstring name = env->NewStringUTF(surface.c_str());
         env->CallBooleanMethod(arrayObject, alaMethodID, name);
         env->DeleteLocalRef(name);
     }

@@ -16,7 +16,7 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_DSOCatalog_c_1getDSOName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
     auto d = (DSODatabase *)ptr;
-    return env->NewStringUTF(d->getDSOName((DeepSkyObject *)pointer, true).c_str());
+    return env->NewStringUTF(d->getDSOName((DeepSkyObject *)pointer).c_str());
 }
 
 extern "C"
