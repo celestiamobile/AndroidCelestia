@@ -58,6 +58,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/intrusiveptr.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
+        ${CELESTIA_SRC_DIR}/celutil/range.h
         ${CELESTIA_SRC_DIR}/celutil/r128.h
         ${CELESTIA_SRC_DIR}/celutil/r128util.cpp
         ${CELESTIA_SRC_DIR}/celutil/r128util.h

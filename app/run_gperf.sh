@@ -16,3 +16,4 @@ gperf customorbit.gperf -m4 --output-file=customorbit.inc
 
 cd "$CELESTIA_REPO_PATH/src/celengine"
 gperf location.gperf -m4 --output-file=location.inc
+gperf solarsys.gperf -m4 --output-file=solarsys.inc

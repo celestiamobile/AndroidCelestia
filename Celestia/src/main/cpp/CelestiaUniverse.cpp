@@ -248,16 +248,14 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
             create_browser_item_and_add(j, _("Spacecraft"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
     }
 
-    vector<Location *>* locations = b->getLocations();
-    if (locations != nullptr)
+    auto locations = b->getLocations();
+    if (locations.has_value() && !locations->empty())
     {
-        map<string, pair<jlong, string>> locationsMap;
-
-        vector<Location *>::iterator iter;
-        for (iter = locations->begin(); iter != locations->end(); iter++)
+        std::map<string, pair<jlong, string>> locationsMap;
+        for (const auto loc : *locations)
         {
-            string name = (*iter)->getName(true).c_str();
-            locationsMap[name] = make_pair((jlong)*iter, name);
+            auto name = loc->getName(true);
+            locationsMap[name] = make_pair(reinterpret_cast<jlong>(loc), name);
         }
         if (!locationsMap.empty())
             create_browser_item_and_add(j, _("Locations"), BROWSER_ITEM_TYPE_LOCATION, locationsMap);
