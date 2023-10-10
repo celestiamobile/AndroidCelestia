@@ -25,8 +25,8 @@
         style="@style/Container">
 
         <androidx.appcompat.widget.AppCompatImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/app_icon_dimension"
+            android:layout_height="@dimen/app_icon_dimension"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/loading_icon"/>
 
