@@ -107,7 +107,7 @@ android {
         }
         play {
             dimension "distribution"
-            assetPacks = []
+            assetPacks = [":base_assets"]
         }
     }
 }
