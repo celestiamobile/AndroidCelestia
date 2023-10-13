@@ -45,15 +45,7 @@ class PurchaseManager {
     }
 
     var subscriptionStatus: SubscriptionStatus = SubscriptionStatus.Error.NotConnected
-        private set(value) {
-            val isDifferent = field != value
-            field = value
-            if (isDifferent) {
-                for (listener in listeners) {
-                    listener.subscriptionStatusChanged(value)
-                }
-            }
-        }
+        private set
 
     sealed class SubscriptionStatus {
         sealed class Error: SubscriptionStatus() {
@@ -103,14 +95,14 @@ class PurchaseManager {
             override fun onBillingServiceDisconnected() {
                 val self = weakSelf.get() ?: return
                 self.connected = false
-                self.subscriptionStatus = SubscriptionStatus.Error.NotConnected
+                self.changeSubscriptionStatus(SubscriptionStatus.Error.NotConnected)
             }
 
             override fun onBillingSetupFinished(p0: BillingResult) {
                 val self = weakSelf.get() ?: return
                 if (p0.responseCode == BillingResponseCode.OK) {
                     self.connected = true
-                    self.subscriptionStatus = SubscriptionStatus.Connected
+                    self.changeSubscriptionStatus(SubscriptionStatus.Connected)
                     self.getValidSubscriptionAsync()
                 }
             }
@@ -127,36 +119,36 @@ class PurchaseManager {
 
     private fun handlePurchase(purchase: Purchase, handler: (() -> Unit)? = null) {
         if (purchase.purchaseState == PurchaseState.PENDING) {
-            subscriptionStatus = SubscriptionStatus.Good.Pending(purchase.purchaseToken)
+            changeSubscriptionStatus(SubscriptionStatus.Good.Pending(purchase.purchaseToken))
             if (handler != null)
                 handler()
             return
         }
         if (purchase.purchaseState != PurchaseState.PURCHASED) {
-            subscriptionStatus = SubscriptionStatus.Error.Unknown
+            changeSubscriptionStatus(SubscriptionStatus.Error.Unknown)
             if (handler != null)
                 handler()
             return
         }
         if (!purchase.isAcknowledged) {
-            subscriptionStatus = SubscriptionStatus.Good.NotAcknowledged(purchase.purchaseToken)
+            changeSubscriptionStatus(SubscriptionStatus.Good.NotAcknowledged(purchase.purchaseToken))
             val weakSelf = WeakReference(this)
             requireNotNull(billingClient).acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build(), object: AcknowledgePurchaseResponseListener {
                 override fun onAcknowledgePurchaseResponse(p0: BillingResult) {
                     val self = weakSelf.get() ?: return
                     if (p0.responseCode == BillingResponseCode.OK) {
-                        self.subscriptionStatus = SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken)
+                        self.changeSubscriptionStatus(SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken))
                         if (handler != null)
                             handler()
                     } else {
-                        self.subscriptionStatus = SubscriptionStatus.Error.Billing(p0.responseCode)
+                        self.changeSubscriptionStatus(SubscriptionStatus.Error.Billing(p0.responseCode))
                         if (handler != null)
                             handler()
                     }
                 }
             })
         } else {
-            subscriptionStatus = SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken)
+            changeSubscriptionStatus(SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken))
             if (handler != null)
                 handler()
         }
@@ -178,7 +170,7 @@ class PurchaseManager {
         val queryPurchasesParams = QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
         requireNotNull(billingClient).queryPurchasesAsync(queryPurchasesParams) { result, purchasesList ->
             if (result.responseCode != BillingResponseCode.OK) {
-                subscriptionStatus = SubscriptionStatus.Error.Billing(result.responseCode)
+                changeSubscriptionStatus(SubscriptionStatus.Error.Billing(result.responseCode))
                 if (handler != null)
                     handler()
             } else {
@@ -186,7 +178,7 @@ class PurchaseManager {
                 if (purchase != null) {
                     handlePurchase(purchase, handler)
                 } else {
-                    subscriptionStatus = SubscriptionStatus.Good.None
+                    changeSubscriptionStatus(SubscriptionStatus.Good.None)
                     if (handler != null)
                         handler()
                 }
@@ -240,6 +232,16 @@ class PurchaseManager {
     fun subscriptionManagementURL(): String {
         // https://developer.android.com/google/play/billing/subscriptions#deep-link
         return "https://play.google.com/store/account/subscriptions?sku=${subscriptionId}&package=${BuildConfig.APPLICATION_ID}"
+    }
+
+    private fun changeSubscriptionStatus(newStatus: SubscriptionStatus) {
+        val isDifferent = subscriptionStatus != newStatus
+        subscriptionStatus = newStatus
+        if (isDifferent) {
+            for (listener in listeners) {
+                listener.subscriptionStatusChanged(newStatus)
+            }
+        }
     }
 
     private companion object {
