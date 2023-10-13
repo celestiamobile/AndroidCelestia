@@ -1,6 +1,7 @@
 package space.celestia.mobilecelestia.purchase
 
 import android.app.Activity
+import android.content.Context
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener
@@ -20,13 +21,22 @@ import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.queryProductDetails
 import space.celestia.mobilecelestia.BuildConfig
+import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class PurchaseManager {
+class PurchaseManager(context: Context) {
     internal var billingClient: BillingClient? = null
     private var connected = false
+
+    private var dataStore: PreferenceManager
+    private var cachedPurchaseToken: String?
+
+    init {
+        dataStore = PreferenceManager(context, "celestia_plus")
+        cachedPurchaseToken = dataStore.get(purchaseTokenCacheKey)
+    }
 
     fun canUseInAppPurchase(): Boolean {
         return true
@@ -37,11 +47,7 @@ class PurchaseManager {
     }
 
     fun purchaseToken(): String? {
-        val status = subscriptionStatus
-        if (status is SubscriptionStatus.Good.Acknowledged) {
-            return status.purchaseToken
-        }
-        return null
+        return cachedPurchaseToken
     }
 
     var subscriptionStatus: SubscriptionStatus = SubscriptionStatus.Error.NotConnected
@@ -238,6 +244,28 @@ class PurchaseManager {
         val isDifferent = subscriptionStatus != newStatus
         subscriptionStatus = newStatus
         if (isDifferent) {
+            val (newPurchaseToken: String?, updateValue: Boolean) = when (newStatus) {
+                is SubscriptionStatus.Error -> {
+                    Pair(null, true)
+                }
+                is SubscriptionStatus.Good.Acknowledged -> {
+                    Pair(newStatus.purchaseToken, true)
+                }
+                is SubscriptionStatus.Good -> {
+                    Pair(null, true)
+                }
+                else -> {
+                    Pair(null, false)
+                }
+            }
+
+            if (updateValue) {
+                if (newPurchaseToken != cachedPurchaseToken) {
+                    cachedPurchaseToken = newPurchaseToken
+                    dataStore[purchaseTokenCacheKey] = newPurchaseToken
+                }
+            }
+
             for (listener in listeners) {
                 listener.subscriptionStatusChanged(newStatus)
             }
@@ -248,5 +276,6 @@ class PurchaseManager {
         const val subscriptionId = "space.celestia.mobilecelestia.plus"
         const val monthlyPlanId = "celestia-plus-monthly"
         const val yearlyPlanId = "celestia-plus-yearly"
+        val purchaseTokenCacheKey = PreferenceManager.CustomKey("purchase_token_cache")
     }
 }

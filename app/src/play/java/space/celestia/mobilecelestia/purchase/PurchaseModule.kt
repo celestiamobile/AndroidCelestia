@@ -10,6 +10,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.lang.ref.WeakReference
 import javax.inject.Singleton
 
@@ -19,7 +20,7 @@ class PurchaseModule {
     @Singleton
     @Provides
     fun providePurchaseManager(@ApplicationContext context: Context): PurchaseManager {
-        val purchaseManager = PurchaseManager()
+        val purchaseManager = PurchaseManager(context)
         val weakManager = WeakReference(purchaseManager)
         val billingClient = BillingClient
             .newBuilder(context)
