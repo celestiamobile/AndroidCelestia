@@ -77,6 +77,7 @@ import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
+import space.celestia.mobilecelestia.purchase.SubscriptionBackingFragment
 import space.celestia.mobilecelestia.resource.*
 import space.celestia.mobilecelestia.resource.model.*
 import space.celestia.mobilecelestia.search.SearchFragment
@@ -129,7 +130,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
-    ObserverModeFragment.Listener {
+    ObserverModeFragment.Listener,
+    SubscriptionBackingFragment.Listener {
 
     @AppSettings
     @Inject
@@ -570,29 +572,29 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun loadConfig() {
         availableInstalledFonts = mapOf(
             "ja" to Pair(
-                Pair("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
-                Pair("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
+                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
+                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
             ),
             "ko" to Pair(
-                Pair("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
-                Pair("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
+                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
+                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
             ),
             "zh_CN" to Pair(
-                Pair("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
-                Pair("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
+                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
+                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
             ),
             "zh_TW" to Pair(
-                Pair("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
-                Pair("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
+                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
+                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
             ),
             "ar" to Pair(
-                Pair("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
-                Pair("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
+                CustomFont("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
+                CustomFont("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
             )
         )
         defaultInstalledFont = Pair(
-            Pair("$fontDirPath/NotoSans-Regular.ttf", 0),
-            Pair("$fontDirPath/NotoSans-Bold.ttf", 0)
+            CustomFont("$fontDirPath/NotoSans-Regular.ttf", 0),
+            CustomFont("$fontDirPath/NotoSans-Bold.ttf", 0)
         )
 
         // Read custom paths here
@@ -1045,6 +1047,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showInAppPurchase()
             }
         }
+    }
+
+    override fun requestOpenSubscriptionManagement() {
+        showInAppPurchase()
     }
 
     private fun showInAppPurchase() = lifecycleScope.launch {
@@ -2315,8 +2321,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var enableMultisample = false
         private var enableHiDPI = false
 
-        var availableInstalledFonts: Map<String, Pair<Pair<String, Int>, Pair<String, Int>>> = mapOf()
-        var defaultInstalledFont: Pair<Pair<String, Int>, Pair<String, Int>>? = null
+        var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
+        var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
 
         private var availableLanguageCodes: List<String> = listOf()
 

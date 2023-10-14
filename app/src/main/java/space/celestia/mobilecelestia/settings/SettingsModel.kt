@@ -11,6 +11,8 @@
 
 package space.celestia.mobilecelestia.settings
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import space.celestia.mobilecelestia.celestia.CelestiaInteraction
 import space.celestia.mobilecelestia.common.CommonSectionV2
 import space.celestia.mobilecelestia.common.RecyclerViewItem
@@ -501,6 +503,12 @@ class SettingsDataLocationItem : SettingsItem, Serializable {
         get() = CelestiaString("Data Location", "")
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
+class SettingsFontItem : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString("Font", "")
+}
+
 class SettingsRefreshRateItem : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString("Frame Rate", "")
@@ -643,12 +651,27 @@ private val staticOtherItems: List<SettingsItem> = listOf(
     SettingsAboutItem()
 )
 
-val mainSettingSections: List<CommonSectionV2> = listOf(
+val celestiaPlusSettingSection: List<CommonSectionV2> by lazy {
+    val items = arrayListOf<SettingsItem>()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        items.add(SettingsFontItem())
+    }
+    if (items.isEmpty()) {
+        listOf()
+    } else {
+        listOf(CommonSectionV2(items, CelestiaString("Celestia PLUS", "")))
+    }
+}
+
+val mainSettingSectionsBeforePlus: List<CommonSectionV2> = listOf(
     CommonSectionV2(staticDisplayItems, CelestiaString("Display", "")),
     CommonSectionV2(staticTimeAndRegionItems, CelestiaString("Time & Region", "")),
     CommonSectionV2(staticRendererItems, CelestiaString("Renderer", "")),
     CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "")),
-    CommonSectionV2(staticOtherItems, "")
+)
+
+val mainSettingSectionsAfterPlus: List<CommonSectionV2> = listOf(
+    CommonSectionV2(staticOtherItems, ""),
 )
 
 class SettingsCommonItem(override val name: String, val sections: List<Section>) : SettingsItem, Serializable {

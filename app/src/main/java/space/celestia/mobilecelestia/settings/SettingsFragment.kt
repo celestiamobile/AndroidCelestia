@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.settings
 
+import android.os.Build
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,6 +22,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.purchase.FontSettingFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -59,6 +61,10 @@ class SettingsFragment : NavigationFragment(), SettingsBaseFragment {
             }
             is SettingsLanguageItem -> {
                 pushFragment(SettingsLanguageFragment.newInstance())
+            }
+            is SettingsFontItem -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    pushFragment(FontSettingFragment.newInstance())
             }
             else -> {
                 throw RuntimeException("SettingsFragment cannot handle item $item")

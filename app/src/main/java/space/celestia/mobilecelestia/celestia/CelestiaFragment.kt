@@ -38,11 +38,13 @@ import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
+import space.celestia.mobilecelestia.purchase.PurchaseManager
+import space.celestia.mobilecelestia.settings.boldFont
+import space.celestia.mobilecelestia.settings.normalFont
 import space.celestia.mobilecelestia.utils.*
 import java.lang.ref.WeakReference
 import java.util.*
 import javax.inject.Inject
-import kotlin.concurrent.fixedRateTimer
 
 @AndroidEntryPoint
 class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler {
@@ -59,6 +61,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     @AppSettings
     @Inject
     lateinit var appSettings: PreferenceManager
+    @Inject
+    lateinit var purchaseManager: PurchaseManager
 
     // MARK: GL View
     private lateinit var glView: CelestiaView
@@ -350,14 +354,21 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         // Use installed font
         val locale = AppCore.getLanguage()
+        val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
+        var normalFont = if (hasCelestiaPlus) appSettings.normalFont else null
+        var boldFont = if (hasCelestiaPlus) appSettings.boldFont else null
         val preferredInstalledFont = MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
         if (preferredInstalledFont != null) {
-            val font = preferredInstalledFont.first
-            val boldFont = preferredInstalledFont.second
-            appCore.setFont(font.first, font.second, 9)
-            appCore.setTitleFont(boldFont.first, boldFont.second, 15)
-            appCore.setRendererFont(font.first, font.second, 9, AppCore.RENDER_FONT_STYLE_NORMAL)
-            appCore.setRendererFont(boldFont.first, boldFont.second, 15, AppCore.RENDER_FONT_STYLE_LARGE)
+            normalFont = normalFont ?: preferredInstalledFont.first
+            boldFont = boldFont ?: preferredInstalledFont.second
+        }
+        if (normalFont != null) {
+            appCore.setFont(normalFont.path, normalFont.ttcIndex, 9)
+            appCore.setRendererFont(normalFont.path, normalFont.ttcIndex, 9, AppCore.RENDER_FONT_STYLE_NORMAL)
+        }
+        if (boldFont != null) {
+            appCore.setTitleFont(boldFont.path, boldFont.ttcIndex, 15)
+            appCore.setRendererFont(boldFont.path, boldFont.ttcIndex, 15, AppCore.RENDER_FONT_STYLE_LARGE)
         }
         previousDensity = density
     }

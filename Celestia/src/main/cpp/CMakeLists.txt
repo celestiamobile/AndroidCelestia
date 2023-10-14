@@ -439,6 +439,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaObserver.cpp
         ${CELESTIA_JNI_DIR}/CelestiaDestination.cpp
         ${CELESTIA_JNI_DIR}/CelestiaRenderer.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaFont.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/dependency/android")

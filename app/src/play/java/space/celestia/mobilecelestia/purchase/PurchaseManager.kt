@@ -35,7 +35,7 @@ class PurchaseManager(context: Context) {
 
     init {
         dataStore = PreferenceManager(context, "celestia_plus")
-        cachedPurchaseToken = dataStore.get(purchaseTokenCacheKey)
+        cachedPurchaseToken = dataStore[purchaseTokenCacheKey]
     }
 
     fun canUseInAppPurchase(): Boolean {

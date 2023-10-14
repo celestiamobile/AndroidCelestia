@@ -49,7 +49,11 @@ class PreferenceManager(context: Context, name: String) {
         ControllerInvertX,
         ControllerInvertY,
         ContextMenu,
-        PickSensitivity
+        PickSensitivity,
+        NormalFontPath,
+        NormalFontIndex,
+        BoldFontPath,
+        BoldFontIndex
         ;
 
         override val valueString: String
