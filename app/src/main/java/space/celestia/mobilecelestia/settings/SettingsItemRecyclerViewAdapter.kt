@@ -20,8 +20,9 @@ import space.celestia.mobilecelestia.common.SeparatorHeaderRecyclerViewAdapter
 import space.celestia.mobilecelestia.settings.SettingsItemFragment.Listener
 
 class SettingsItemRecyclerViewAdapter(
-    private val listener: Listener?
-) : SeparatorHeaderRecyclerViewAdapter(mainSettingSections) {
+    private val listener: Listener?,
+    showCelestiaPlusItems: Boolean
+) : SeparatorHeaderRecyclerViewAdapter(if (showCelestiaPlusItems) mainSettingSectionsBeforePlus + celestiaPlusSettingSection + mainSettingSectionsAfterPlus else mainSettingSectionsBeforePlus + mainSettingSectionsAfterPlus) {
 
     override fun onItemSelected(item: RecyclerViewItem) {
         if (item is SettingsItem)

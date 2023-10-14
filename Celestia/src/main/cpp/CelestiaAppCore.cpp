@@ -24,6 +24,8 @@
 
 #include <android/keycodes.h>
 
+jclass stringClz = nullptr;
+
 jclass cbClz = nullptr;
 jmethodID cbiMethodID = nullptr;
 jclass clClz = nullptr;
@@ -67,6 +69,8 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     JNIEnv* env;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
         return JNI_ERR;
+
+    stringClz = (jclass)env->NewGlobalRef(env->FindClass("java/lang/String"));
 
     jclass cb = env->FindClass("space/celestia/celestia/Body");
     cbClz = (jclass)env->NewGlobalRef(cb);

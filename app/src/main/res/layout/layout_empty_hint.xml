@@ -15,10 +15,25 @@
     android:layout_height="match_parent"
     style="@style/Background">
 
-    <TextView
-        android:id="@+id/hint"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        style="@style/EmptyHint"/>
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/EmptyHint"/>
+
+        <Button
+            android:visibility="gone"
+            android:id="@+id/action_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/common_page_medium_gap_vertical"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_gravity="center"/>
+    </LinearLayout>
 </FrameLayout>

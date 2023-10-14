@@ -18,12 +18,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.utils.CelestiaString
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SettingsItemFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
     var listener: Listener? = null
+
+    @Inject
+    lateinit var purchaseManager: PurchaseManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,7 +42,7 @@ class SettingsItemFragment : NavigationFragment.SubFragment(), SettingsBaseFragm
         if (view is RecyclerView) {
             with(view) {
                 layoutManager = LinearLayoutManager(context)
-                adapter = SettingsItemRecyclerViewAdapter(listener)
+                adapter = SettingsItemRecyclerViewAdapter(listener, purchaseManager.canUseInAppPurchase())
                 clipToPadding = false
                 fitsSystemWindows = true
             }

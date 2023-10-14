@@ -101,4 +101,6 @@
 
     <dimen name="list_spacing_short">8dp</dimen>
     <dimen name="list_spacing_tall">28dp</dimen>
+
+    <dimen name="tab_title_text_padding_vertical">10dp</dimen>
 </resources>

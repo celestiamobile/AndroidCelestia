@@ -16,6 +16,8 @@
 #include <pthread.h>
 
 extern "C" {
+extern jclass stringClz;
+
 extern jclass cbClz;
 extern jmethodID cbiMethodID;
 extern jclass clClz;
