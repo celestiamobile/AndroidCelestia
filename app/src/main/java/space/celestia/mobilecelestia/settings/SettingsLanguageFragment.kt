@@ -25,9 +25,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
@@ -110,8 +112,10 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
                 horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
                 vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
             )
-        val languages = dataSource?.availableLanguages() ?: listOf()
-        val currentOverrideLanguage = remember {
+        val languages = remember {
+            dataSource?.availableLanguages() ?: listOf()
+        }
+        var currentOverrideLanguage: String? by remember {
             mutableStateOf(dataSource?.currentOverrideLanguage())
         }
         LazyColumn {
@@ -127,8 +131,8 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                 }
                 items(items = languages) {
-                    RadioButtonRow(primaryText = getLocalizedLanguageName(it), selected = currentOverrideLanguage.value == it) {
-                        currentOverrideLanguage.value = it
+                    RadioButtonRow(primaryText = getLocalizedLanguageName(it), selected = currentOverrideLanguage == it) {
+                        currentOverrideLanguage = it
                         listener?.onSetOverrideLanguage(it)
                     }
                 }
@@ -142,13 +146,13 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
 
             item {
                 FilledTonalButton(modifier = internalViewModifier, onClick = {
-                    currentOverrideLanguage.value = null
+                    currentOverrideLanguage = null
                     listener?.onSetOverrideLanguage(null)
                 }) {
                     Text(text = CelestiaString("Reset to Default", ""))
                 }
                 Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
                 with(LocalDensity.current) {
                     Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
                 }

@@ -3,6 +3,7 @@ package space.celestia.mobilecelestia.purchase
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -232,11 +233,14 @@ class SubscriptionManagerFragment: Fragment() {
 
     @Composable
     private fun FeatureList() {
-        val features = listOf(
+        val features = arrayListOf(
             Pair(R.drawable.plus_feature_latest_update, CelestiaString("Get latest add-ons, updates, and trending add-ons.", "")),
             Pair(R.drawable.plus_feature_feedback, CelestiaString("Receive timely feedback on feature requests and bug reports.", "")),
             Pair(R.drawable.plus_feature_support, CelestiaString("Support the developer community and keep the project going.", ""))
         )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            features.add(0, Pair(R.drawable.plus_feature_customize, CelestiaString("Customize the visual appearance of Celestia.", "")))
+        }
 
         Column(modifier = Modifier
             .fillMaxWidth()
