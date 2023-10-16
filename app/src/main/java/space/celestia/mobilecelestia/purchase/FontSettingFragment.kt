@@ -93,8 +93,8 @@ class FontSettingFragment : SubscriptionBackingFragment() {
 
     @Composable
     private fun MainScreen() {
-        var systemFonts by remember {
-            mutableStateOf<List<Font>>(listOf())
+        var systemFonts = remember {
+            listOf<Font>()
         }
         var fontsLoaded by remember {
             mutableStateOf(false)
@@ -162,7 +162,7 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                 }
                 item {
                     Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
-                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
                     with(LocalDensity.current) {
                         Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
                     }
