@@ -129,6 +129,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
+    SettingsRefreshRateFragment.DataSource,
     CommonWebFragment.Listener,
     ObserverModeFragment.Listener,
     SubscriptionBackingFragment.Listener {
@@ -1418,6 +1419,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun currentRefreshRateOption(): Int {
+        return customFrameRateOption
+    }
+
     override fun onRefreshRateChanged(frameRateOption: Int) {
         appSettings[PreferenceManager.PredefinedKey.FrameRateOption] = frameRateOption.toString()
         customFrameRateOption = frameRateOption
@@ -2314,7 +2319,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var customDataDirPath: String? = null
         var customConfigFilePath: String? = null
-        var customFrameRateOption: Int = Renderer.FRAME_60FPS
+        private var customFrameRateOption: Int = Renderer.FRAME_60FPS
         private var language: String = "en"
         private var addonPaths: List<String> = listOf()
         private var extraScriptPaths: List<String> = listOf()
