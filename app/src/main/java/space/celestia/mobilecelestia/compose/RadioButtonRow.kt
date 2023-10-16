@@ -26,7 +26,6 @@ fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondary
         vertical = dimensionResource(id = R.dimen.list_item_small_margin_vertical)
     )) {
         RadioButton(selected = selected, onClick = onClick)
-        Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.list_item_gap_horizontal)))
         val textModifier = if (onClick != null) {
             Modifier.clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
                 onClick()
