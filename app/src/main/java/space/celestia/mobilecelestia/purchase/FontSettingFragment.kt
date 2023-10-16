@@ -93,8 +93,8 @@ class FontSettingFragment : SubscriptionBackingFragment() {
 
     @Composable
     private fun MainScreen() {
-        var systemFonts = remember {
-            listOf<Font>()
+        var systemFonts by remember {
+            mutableStateOf(listOf<Font>())
         }
         var fontsLoaded by remember {
             mutableStateOf(false)
@@ -195,8 +195,8 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                     }
                     results
                 }
-                fontsLoaded = true
                 systemFonts = fonts
+                fontsLoaded = true
             }
             Box(modifier = Modifier
                 .fillMaxWidth()
