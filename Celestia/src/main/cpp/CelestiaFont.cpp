@@ -33,9 +33,14 @@ Java_space_celestia_celestia_Font_c_1getFontNames(JNIEnv *env, jclass, jstring p
         if (FT_New_Face(ftlib, cppPath.c_str(), i, &face) != 0)
             return nullptr;
 
-        std::string name = fmt::format("{} ({})", face->family_name, face->style_name);
+        if (face->family_name != nullptr)
+        {
+            std::string name = face->family_name;
+            if (face->style_name != nullptr)
+                name = fmt::format("{} ({})", face->family_name, face->style_name);
+            fontNames.push_back(name);
+        }
         FT_Done_Face(face);
-        fontNames.push_back(name);
     }
     jobjectArray results = env->NewObjectArray(static_cast<jsize>(faceNum), stringClz, nullptr);
     for (FT_Long i = 0; i < faceNum; ++i)
