@@ -10,6 +10,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Query
+import space.celestia.mobilecelestia.utils.BaseResult
 import java.lang.ref.WeakReference
 import javax.inject.Singleton
 
@@ -18,8 +23,8 @@ import javax.inject.Singleton
 class PurchaseModule {
     @Singleton
     @Provides
-    fun providePurchaseManager(@ApplicationContext context: Context): PurchaseManager {
-        val purchaseManager = PurchaseManager(context)
+    fun providePurchaseManager(@ApplicationContext context: Context, purchaseAPI: PurchaseAPIService): PurchaseManager {
+        val purchaseManager = PurchaseManager(context, purchaseAPI)
         val weakManager = WeakReference(purchaseManager)
         val billingClient = BillingClient
             .newBuilder(context)
@@ -35,4 +40,22 @@ class PurchaseModule {
         purchaseManager.connectToService()
         return purchaseManager
     }
+
+    @Singleton
+    @Provides
+    fun providePurchaseAPI(): PurchaseAPIService {
+        return Retrofit.Builder()
+            .baseUrl("https://celestia.mobi/api/subscription/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PurchaseAPIService::class.java)
+    }
+}
+
+
+interface PurchaseAPIService {
+    @GET("play")
+    suspend fun subscriptionStatus(
+        @Query("purchaseToken") purchaseToken: String,
+    ): BaseResult
 }

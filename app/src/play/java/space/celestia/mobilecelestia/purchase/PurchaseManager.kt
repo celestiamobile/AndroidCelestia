@@ -20,13 +20,18 @@ import com.android.billingclient.api.Purchase.PurchaseState
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.queryProductDetails
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.BuildConfig
 import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.mobilecelestia.utils.commonHandler
+import java.io.Serializable
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class PurchaseManager(context: Context) {
+class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     internal var billingClient: BillingClient? = null
     private var connected = false
 
@@ -69,6 +74,8 @@ class PurchaseManager(context: Context) {
             class Pending(val purchaseToken: String) : Good()
             class NotAcknowledged(val purchaseToken: String): Good()
             class Acknowledged(val purchaseToken: String): Good()
+            class NotVerified(val purchaseToken: String): Good()
+            class Verified(val purchaseToken: String, val plan: PlanType?): Good()
         }
     }
 
@@ -86,9 +93,9 @@ class PurchaseManager(context: Context) {
         listeners.remove(listener)
     }
 
-    enum class PlanType {
-        Yearly,
-        Monthly
+    enum class PlanType(val level: Int) {
+        Yearly(1),
+        Monthly(0)
     }
 
     class Plan(val type: PlanType, val offerToken: String, val formattedPrice: String)
@@ -144,8 +151,7 @@ class PurchaseManager(context: Context) {
                     val self = weakSelf.get() ?: return
                     if (p0.responseCode == BillingResponseCode.OK) {
                         self.changeSubscriptionStatus(SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken))
-                        if (handler != null)
-                            handler()
+                        verifyStatus(purchase.purchaseToken, handler)
                     } else {
                         self.changeSubscriptionStatus(SubscriptionStatus.Error.Billing(p0.responseCode))
                         if (handler != null)
@@ -155,8 +161,7 @@ class PurchaseManager(context: Context) {
             })
         } else {
             changeSubscriptionStatus(SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken))
-            if (handler != null)
-                handler()
+            verifyStatus(purchase.purchaseToken, handler)
         }
     }
 
@@ -188,6 +193,39 @@ class PurchaseManager(context: Context) {
                     if (handler != null)
                         handler()
                 }
+            }
+        }
+    }
+
+    private fun verifyStatus(purchaseToken: String, handler: (() -> Unit)? = null) {
+        class Status(val valid: Boolean, val planId: String?): Serializable
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = purchaseAPI.subscriptionStatus(purchaseToken)
+                try {
+                    val status = result.commonHandler(Status::class.java)
+                    if (status.valid) {
+                        val plan = when (status.planId) {
+                            yearlyPlanId -> PlanType.Yearly
+                            monthlyPlanId -> PlanType.Monthly
+                            else -> null
+                        }
+                        changeSubscriptionStatus(SubscriptionStatus.Good.Verified(purchaseToken, plan))
+                    } else {
+                        changeSubscriptionStatus(SubscriptionStatus.Good.None)
+                    }
+                    if (handler != null)
+                        handler()
+                } catch (ignored: Throwable) {
+                    // API error
+                    changeSubscriptionStatus(SubscriptionStatus.Error.Unknown)
+                    if (handler != null)
+                        handler()
+                }
+            } catch(ignored: Throwable) {
+                changeSubscriptionStatus(SubscriptionStatus.Good.NotVerified(purchaseToken))
+                if (handler != null)
+                    handler()
             }
         }
     }
@@ -245,14 +283,14 @@ class PurchaseManager(context: Context) {
         subscriptionStatus = newStatus
         if (isDifferent) {
             val (newPurchaseToken: String?, updateValue: Boolean) = when (newStatus) {
-                is SubscriptionStatus.Error -> {
+                is SubscriptionStatus.Error, SubscriptionStatus.Good.None -> {
                     Pair(null, true)
                 }
-                is SubscriptionStatus.Good.Acknowledged -> {
+                is SubscriptionStatus.Good.Verified -> {
                     Pair(newStatus.purchaseToken, true)
                 }
-                is SubscriptionStatus.Good -> {
-                    Pair(null, true)
+                is SubscriptionStatus.Good.NotVerified -> {
+                    Pair(newStatus.purchaseToken, true)
                 }
                 else -> {
                     Pair(null, false)

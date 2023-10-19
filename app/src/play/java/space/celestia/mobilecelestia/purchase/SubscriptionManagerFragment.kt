@@ -282,33 +282,18 @@ class SubscriptionManagerFragment: Fragment() {
     @Composable
     private fun PlanList(productDetails: ProductDetails, plans: List<PurchaseManager.Plan>, status: PurchaseManager.SubscriptionStatus.Good) {
         val weakSelf = WeakReference(this)
-        val token: String?
-        val canAction: Boolean
-        val actionTitle: String
         val text: String
         when (status) {
             is PurchaseManager.SubscriptionStatus.Good.None -> {
-                token = null
-                canAction = true
-                actionTitle = CelestiaString("Get", "")
                 text = CelestiaString("Choose one of the plans below to get Celestia PLUS", "")
             }
             is PurchaseManager.SubscriptionStatus.Good.Pending -> {
-                token = status.purchaseToken
-                canAction = false
-                actionTitle = CelestiaString("Get", "")
                 text = CelestiaString("Your purchase is pending", "")
             }
             is PurchaseManager.SubscriptionStatus.Good.NotAcknowledged -> {
-                token = status.purchaseToken
-                canAction = false
-                actionTitle = CelestiaString("Get", "")
                 text = CelestiaString("We are processing your purchase", "")
             }
-            is PurchaseManager.SubscriptionStatus.Good.Acknowledged -> {
-                token = status.purchaseToken
-                canAction = true
-                actionTitle = CelestiaString("Change", "")
+            is PurchaseManager.SubscriptionStatus.Good.Acknowledged, is PurchaseManager.SubscriptionStatus.Good.NotVerified, is PurchaseManager.SubscriptionStatus.Good.Verified -> {
                 text = CelestiaString("Congratulations, you are a Celestia PLUS user", "")
             }
         }
@@ -316,7 +301,58 @@ class SubscriptionManagerFragment: Fragment() {
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
         for (index in plans.indices) {
             val plan = plans[index]
-            PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction) {
+            val token: String?
+            val canAction: Boolean
+            val actionTitle: String
+            val actionButtonHidden: Boolean
+            when (status) {
+                is PurchaseManager.SubscriptionStatus.Good.None -> {
+                    token = null
+                    canAction = true
+                    actionButtonHidden = false
+                    actionTitle = CelestiaString("Get", "")
+                }
+                is PurchaseManager.SubscriptionStatus.Good.Pending -> {
+                    token = status.purchaseToken
+                    canAction = false
+                    actionButtonHidden = false
+                    actionTitle = CelestiaString("Get", "")
+                }
+                is PurchaseManager.SubscriptionStatus.Good.NotAcknowledged -> {
+                    token = status.purchaseToken
+                    canAction = false
+                    actionButtonHidden = false
+                    actionTitle = CelestiaString("Get", "")
+                }
+                is PurchaseManager.SubscriptionStatus.Good.Acknowledged -> {
+                    token = status.purchaseToken
+                    canAction = false
+                    actionButtonHidden = false
+                    actionTitle = CelestiaString("Change", "")
+                }
+                is PurchaseManager.SubscriptionStatus.Good.NotVerified -> {
+                    token = status.purchaseToken
+                    canAction = true
+                    actionButtonHidden = false
+                    actionTitle = CelestiaString("Change", "")
+                }
+                is PurchaseManager.SubscriptionStatus.Good.Verified -> {
+                    token = status.purchaseToken
+                    val currentPlan = status.plan
+                    canAction = currentPlan != plan.type
+                    actionButtonHidden = !canAction
+                    if (currentPlan == null) {
+                        actionTitle = CelestiaString("Change", "")
+                    } else if (currentPlan.level < plan.type.level) {
+                        actionTitle = CelestiaString("Upgrade", "")
+                    } else  if (currentPlan.level > plan.type.level) {
+                        actionTitle = CelestiaString("Downgrade", "")
+                    } else {
+                        actionTitle = ""
+                    }
+                }
+            }
+            PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction, actionButtonHidden = actionButtonHidden) {
                 val self = weakSelf.get() ?: return@PlanCard
                 val activity = self.activity ?: return@PlanCard
                 self.purchaseManager.createSubscription(plan, productDetails, token, activity)
@@ -325,7 +361,7 @@ class SubscriptionManagerFragment: Fragment() {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
             }
         }
-        if (status is PurchaseManager.SubscriptionStatus.Good.Acknowledged) {
+        if (status is PurchaseManager.SubscriptionStatus.Good.NotVerified || status is PurchaseManager.SubscriptionStatus.Good.Verified || status is PurchaseManager.SubscriptionStatus.Good.Acknowledged) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
             FilledTonalButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -344,7 +380,7 @@ class SubscriptionManagerFragment: Fragment() {
     }
 
     @Composable
-    private fun PlanCard(plan: PurchaseManager.Plan, actionButtonText: String, actionButtonEnabled: Boolean, modifier: Modifier = Modifier, action: () -> Unit) {
+    private fun PlanCard(plan: PurchaseManager.Plan, actionButtonText: String, actionButtonEnabled: Boolean, actionButtonHidden: Boolean, modifier: Modifier = Modifier, action: () -> Unit) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(dimensionResource(id = R.dimen.purchase_box_corner_radius)))
@@ -365,8 +401,10 @@ class SubscriptionManagerFragment: Fragment() {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
                 Text(text = plan.formattedPrice, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyMedium)
             }
-            Button(onClick = action, enabled = actionButtonEnabled) {
-                Text(text = actionButtonText)
+            if (!actionButtonHidden) {
+                Button(onClick = action, enabled = actionButtonEnabled) {
+                    Text(text = actionButtonText)
+                }
             }
         }
     }
