@@ -910,7 +910,7 @@ Java_space_celestia_celestia_AppCore_c_1getTimeZone(JNIEnv *env, jclass clazz, j
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setDateFormat(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = reinterpret_cast<CelestiaCore*>(pointer);
-    core->setDateFormat(static_cast<astro::Date::Format>(value));
+    core->setDateFormat(static_cast<celestia::astro::Date::Format>(value));
 }
 
 extern "C"

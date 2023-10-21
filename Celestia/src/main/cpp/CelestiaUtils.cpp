@@ -18,7 +18,7 @@ JNIEXPORT jintArray JNICALL
 Java_space_celestia_celestia_Utils_getJulianDayComponents(JNIEnv *env,
                                                                      jclass clazz,
                                                                      jdouble julian_day) {
-    astro::Date astroDate = astro::TDBtoUTC(julian_day);
+    celestia::astro::Date astroDate = celestia::astro::TDBtoUTC(julian_day);
     jint date[8] = { 0 };
 
     int year = astroDate.year;
@@ -49,14 +49,14 @@ Java_space_celestia_celestia_Utils_getJulianDay(JNIEnv *env, jclass clazz,
                                                            jint day, jint hour, jint minute,
                                                            jint second, jint millisecond) {
     if (era < 1) year = 1 - year;
-    astro::Date astroDate(year, month, day);
+    celestia::astro::Date astroDate(year, month, day);
     astroDate.hour    = hour;
     astroDate.minute  = minute;
     astroDate.seconds = second;
 
     astroDate.seconds += millisecond / (double)1000;
 
-    double jd = astro::UTCtoTDB(astroDate);
+    double jd = celestia::astro::UTCtoTDB(astroDate);
     return jd;
 }
 
@@ -74,7 +74,7 @@ Java_space_celestia_celestia_Utils_eclipticToEquatorial(JNIEnv *env,
                                                                    jclass clazz,
                                                                    jobject ecliptic) {
     Eigen::Vector3d p = vector3dFromObject(env, ecliptic);
-    return createVectorForVector3d(env, astro::eclipticToEquatorial(p));
+    return createVectorForVector3d(env, celestia::astro::eclipticToEquatorial(p));
 }
 
 extern "C"
@@ -83,7 +83,7 @@ Java_space_celestia_celestia_Utils_equatorialToGalactic(JNIEnv *env,
                                                                    jclass clazz,
                                                                    jobject equatorial) {
     Eigen::Vector3d p = vector3dFromObject(env, equatorial);
-    return createVectorForVector3d(env, astro::equatorialToGalactic(p));
+    return createVectorForVector3d(env, celestia::astro::equatorialToGalactic(p));
 }
 
 extern "C"
@@ -103,5 +103,5 @@ Java_space_celestia_celestia_Utils_rectToSpherical(JNIEnv *env, jclass clazz,
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Utils_AUToKilometers(JNIEnv *env, jclass clazz, jdouble au) {
-    return astro::AUtoKilometers(au);
+    return celestia::astro::AUtoKilometers(au);
 }
