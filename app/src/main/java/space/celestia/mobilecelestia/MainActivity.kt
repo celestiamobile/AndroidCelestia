@@ -23,6 +23,7 @@ import android.provider.DocumentsContract
 import android.util.LayoutDirection
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
@@ -422,18 +423,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val safeInsetStart = if (isRTL) safeInsets.right else safeInsets.left
         val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
 
+        val toolbarOverlay = findViewById<ViewGroup>(R.id.toolbar_overlay)
         val toolbarSafeAreaParams = findViewById<FrameLayout>(R.id.toolbar_safe_area).layoutParams as ConstraintLayout.LayoutParams
         toolbarSafeAreaParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
         toolbarSafeAreaParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
         toolbarSafeAreaParams.topMargin = safeInsets.top
         toolbarSafeAreaParams.bottomMargin = safeInsets.bottom
+        toolbarOverlay.requestLayout()
 
         val drawerParams = findViewById<View>(R.id.drawer).layoutParams
         drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
 
         val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
         bottomSheetContainer.edgeInsets = safeInsets
-        bottomSheetContainer.postInvalidate()
+        bottomSheetContainer.requestLayout()
 
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)
     }
