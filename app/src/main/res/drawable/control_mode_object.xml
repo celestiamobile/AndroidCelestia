@@ -2,7 +2,8 @@
     android:width="43dp"
     android:height="41dp"
     android:viewportWidth="1266.000000"
-    android:viewportHeight="1223.000000">
+    android:viewportHeight="1223.000000"
+    android:tint="?attr/colorOnBackground">
     <group
         android:scaleX="0.1"
         android:scaleY="-0.1"

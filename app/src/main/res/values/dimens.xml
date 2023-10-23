@@ -93,6 +93,7 @@
     <dimen name="bottom_navigation_view_item_padding_bottom">10dp</dimen>
 
     <dimen name="control_view_container_margin_end">8dp</dimen>
+    <dimen name="control_view_container_margin_bottom">6dp</dimen>
     <dimen name="control_view_margin">8dp</dimen>
     <dimen name="control_view_icon_size">40dp</dimen>
     <dimen name="control_view_icon_spacing">6dp</dimen>

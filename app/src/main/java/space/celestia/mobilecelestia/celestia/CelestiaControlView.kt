@@ -21,7 +21,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.StandardImageButton
 
 enum class CelestiaControlAction {
-    ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Search, Hide, Show
+    ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Search, Hide
 }
 
 interface CelestiaControlButton
@@ -45,8 +45,6 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
     fun setUp() {
         removeAllViews()
 
-        orientation = VERTICAL
-
         for (index in buttons.indices) {
             val item = buttons[index]
             val button = StandardImageButton(context)
@@ -55,7 +53,11 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
             val size = resources.getDimensionPixelSize(R.dimen.control_view_icon_size)
             val params = LayoutParams(size, size)
             if (index != 0) {
-                params.topMargin = resources.getDimensionPixelOffset(R.dimen.control_view_icon_spacing)
+                if (orientation == VERTICAL) {
+                    params.topMargin = resources.getDimensionPixelOffset(R.dimen.control_view_icon_spacing)
+                } else {
+                    params.marginStart = resources.getDimensionPixelOffset(R.dimen.control_view_icon_spacing)
+                }
             }
             button.layoutParams = params
             when (item) {

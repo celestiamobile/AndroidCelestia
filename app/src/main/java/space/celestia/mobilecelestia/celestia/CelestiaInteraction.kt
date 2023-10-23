@@ -109,8 +109,12 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
     fun setInteractionMode(interactionMode: InteractionMode) {
         executor.execute {
-            internalInteractionMode = interactionMode
+            setInteractionModeInternal(interactionMode)
         }
+    }
+
+    fun setInteractionModeInternal(interactionMode: InteractionMode) {
+        internalInteractionMode = interactionMode
     }
 
     private fun callZoom(deltaY: Float) {

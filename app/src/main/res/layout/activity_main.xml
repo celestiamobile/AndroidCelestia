@@ -37,6 +37,36 @@
             android:layout_height="match_parent"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/action_bar_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            style="@style/Container">
+
+            <FrameLayout
+                android:id="@+id/action_bar_safe_area"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <FrameLayout
+                style="@style/ControlViewBackground"
+                android:id="@+id/action_bar_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/control_view_container_margin_end"
+                app:layout_constraintEnd_toEndOf="@id/action_bar_safe_area"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+                <space.celestia.mobilecelestia.celestia.CelestiaControlView
+                    android:id="@+id/action_bar"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:layout_margin="@dimen/control_view_margin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/toolbar_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -115,7 +145,6 @@
                         android:clickable="true" />
                 </LinearLayout>
             </FrameLayout>
-
         </space.celestia.mobilecelestia.common.SheetLayout>
 
         <FrameLayout

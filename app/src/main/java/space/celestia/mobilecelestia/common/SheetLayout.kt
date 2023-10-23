@@ -149,14 +149,14 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
         return max(widthLowerBound, min(widthUpperBound, sheetStandardWidthDp * density)).toInt()
     }
 
-    private companion object {
-        const val TAG = "SheetLayout"
-        const val sheetPaddingNonFullWidthDp = 16
-        const val sheetStandardWidthDp = 320
-        const val sheetMinWidthRatio = 0.3f
-        const val sheetMaxWidthRatio = 0.5f
-        const val sheetMaxHeightRatio = 0.9
-        const val sheetHandleHeight = 30
+    companion object {
+        private const val TAG = "SheetLayout"
+        private const val sheetPaddingNonFullWidthDp = 16
+        private const val sheetStandardWidthDp = 320
+        private const val sheetMinWidthRatio = 0.3f
+        private const val sheetMaxWidthRatio = 0.5f
+        private const val sheetMaxHeightRatio = 0.9
+        private const val sheetHandleHeight = 30
         const val sheetMaxFullWidthDp = 600
     }
 }

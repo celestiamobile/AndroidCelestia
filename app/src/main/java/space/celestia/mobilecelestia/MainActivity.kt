@@ -33,6 +33,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.Insets
@@ -59,7 +60,12 @@ import kotlinx.coroutines.*
 import org.json.JSONObject
 import space.celestia.celestia.*
 import space.celestia.mobilecelestia.browser.*
+import space.celestia.mobilecelestia.celestia.CelestiaControlAction
+import space.celestia.mobilecelestia.celestia.CelestiaControlView
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
+import space.celestia.mobilecelestia.celestia.CelestiaInteraction
+import space.celestia.mobilecelestia.celestia.CelestiaTapButton
+import space.celestia.mobilecelestia.celestia.CelestiaToggleButton
 import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.di.AppSettings
@@ -152,12 +158,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private lateinit var drawerLayout: DrawerLayout
 
+    private var isControlViewVisible = true
+    private var hideActionBarAnimator: ObjectAnimator? = null
+    private var showActionBarAnimator: ObjectAnimator? = null
+
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface AppStatusInterface {
         fun getAppStatusReporter(): AppStatusReporter
     }
 
+    private var interactionMode = CelestiaInteraction.InteractionMode.Object
     private var interactionBlocked = false
 
     private var readyForInteraction = false
@@ -181,6 +192,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var bottomSheetCommitIds = arrayListOf<Int>()
     private var initialURLCheckPerformed = false
+
+    private val celestiaFragment: CelestiaFragment?
+        get() = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
@@ -293,6 +307,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         if (savedState != null) {
+            if (savedState.containsKey(ARG_INTERACTION_MODE))
+                interactionMode = CelestiaInteraction.InteractionMode.fromButton(savedState.getInt(ARG_INTERACTION_MODE))
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
             val menuVisible = savedState.getBoolean(MENU_VISIBLE_TAG, false)
             val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
@@ -341,6 +357,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
         outState.putIntegerArrayList(ARG_COMMIT_IDS, bottomSheetCommitIds)
         outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
+        outState.putInt(ARG_INTERACTION_MODE, interactionMode.button)
         super.onSaveInstanceState(outState)
     }
 
@@ -366,12 +383,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun updateConfiguration(configuration: Configuration, windowInsets: WindowInsetsCompat?) {
         val isRTL = configuration.layoutDirection == LayoutDirection.RTL
-
-        val safeInsets = EdgeInsets(
+        val baseSafeInsets = EdgeInsets(
             EdgeInsets(windowInsets),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RoundedCorners(windowInsets) else RoundedCorners(0, 0, 0, 0),
             configuration
         )
+        val safeInsets = EdgeInsets(left = baseSafeInsets.left, top = baseSafeInsets.top, right = baseSafeInsets.right, bottom = baseSafeInsets.bottom)
 
         val safeInsetStart = if (isRTL) safeInsets.right else safeInsets.left
         val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
@@ -384,6 +401,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         toolbarSafeAreaParams.bottomMargin = safeInsets.bottom
         toolbarOverlay.requestLayout()
 
+        val actionBarOverlay = findViewById<ViewGroup>(R.id.action_bar_overlay)
+        val actionBarSafeAreaParams = findViewById<FrameLayout>(R.id.action_bar_safe_area).layoutParams as ConstraintLayout.LayoutParams
+        actionBarSafeAreaParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
+        actionBarSafeAreaParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
+        actionBarSafeAreaParams.topMargin = safeInsets.top
+        actionBarSafeAreaParams.bottomMargin = safeInsets.bottom
+        actionBarOverlay.requestLayout()
+
         val drawerParams = findViewById<View>(R.id.drawer).layoutParams
         drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
 
@@ -391,7 +416,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         bottomSheetContainer.edgeInsets = safeInsets
         bottomSheetContainer.requestLayout()
 
-        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)
+        celestiaFragment?.handleInsetsChanged(safeInsets)
+
+        updateActionBars(findViewById(R.id.action_bar))
+    }
+
+    private fun updateActionBars(controlView: CelestiaControlView?) {
+        if (controlView != null) {
+            val buttonItems = listOf(
+                CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", ""), interactionMode == CelestiaInteraction.InteractionMode.Camera),
+                CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "")),
+                CelestiaTapButton(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
+                CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "")),
+                CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", ""))
+            )
+            controlView.buttons = buttonItems
+        }
     }
 
     private fun loadExternalConfig(savedInstanceState: Bundle?) {
@@ -472,6 +512,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .commitAllowingStateLoss()
         }
 
+        configureActionBarActions()
+
         val weakSelf = WeakReference(this)
         onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -499,6 +541,46 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    private fun configureActionBarActions() {
+        val weakSelf = WeakReference(this)
+        findViewById<CelestiaControlView>(R.id.action_bar).listener = object: CelestiaControlView.Listener {
+            override fun didTapAction(action: CelestiaControlAction) {
+                val self = weakSelf.get() ?: return
+                when (action) {
+                    CelestiaControlAction.Info -> {
+                        self.celestiaFragmentDidRequestObjectInfo()
+                    }
+                    CelestiaControlAction.Search -> {
+                        self.celestiaFragmentDidRequestSearch()
+                    }
+                    CelestiaControlAction.ShowMenu -> {
+                        self.celestiaFragmentDidRequestActionMenu()
+                    }
+                    CelestiaControlAction.Hide -> {
+                        self.celestiaFragmentHideActionBarIfNeeded()
+                    }
+                    else -> {}
+                }
+            }
+
+            override fun didStartPressingAction(action: CelestiaControlAction) {}
+
+            override fun didEndPressingAction(action: CelestiaControlAction) {}
+
+            override fun didToggleToMode(action: CelestiaControlAction) {
+                val self = weakSelf.get() ?: return
+                val newInteractionMode = when (action) {
+                    CelestiaControlAction.ToggleModeToCamera -> CelestiaInteraction.InteractionMode.Camera
+                    CelestiaControlAction.ToggleModeToObject -> CelestiaInteraction.InteractionMode.Object
+                    else -> null
+                } ?: return
+                self.interactionMode = newInteractionMode
+                self.celestiaFragment?.setInteractionMode(newInteractionMode)
+                self.showToast(if (newInteractionMode == CelestiaInteraction.InteractionMode.Camera) CelestiaString("Switched to camera mode", "") else CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT)
+            }
+        }
+    }
+
     private fun celestiaLoadingFailed() {
         appStatusReporter.updateStatus(CelestiaString("Loading Celestia failed…", ""))
         lifecycleScope.launch {
@@ -514,7 +596,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun removeCelestiaFragment() {
-        supportFragmentManager.findFragmentById(R.id.celestia_fragment_container)?.let {
+        celestiaFragment?.let {
             supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
         }
     }
@@ -1336,7 +1418,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onRefreshRateChanged(frameRateOption: Int) {
-        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
+        celestiaFragment?.updateFrameRateOption(frameRateOption)
     }
 
     override fun onAboutURLSelected(url: String) {
@@ -1385,7 +1467,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showToolbar()
     }
 
-    override fun celestiaFragmentDidRequestObjectInfo() {
+    private fun celestiaFragmentDidRequestObjectInfo() {
         lifecycleScope.launch {
             val selection =
                 withContext(executor.asCoroutineDispatcher()) { appCore.simulation.selection }
@@ -1395,12 +1477,62 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun celestiaFragmentInteractionMode(): CelestiaInteraction.InteractionMode {
+        return interactionMode
+    }
+
     override fun celestiaFragmentDidRequestObjectInfo(selection: Selection) {
         showInfo(selection)
     }
 
-    override fun celestiaFragmentDidRequestSearch() {
+    private fun celestiaFragmentDidRequestSearch() {
         showSearch()
+    }
+
+    private fun celestiaFragmentHideActionBarIfNeeded() {
+        if (isControlViewVisible)
+            celestiaFragmentHideActionBar()
+    }
+
+    override fun celestiaFragmentShowActionBarIfNeeded() {
+        if (!isControlViewVisible)
+            celestiaFragmentShowActionBar()
+    }
+
+    private fun celestiaFragmentShowActionBar() {
+        val controlView = findViewById<ConstraintLayout>(R.id.action_bar_overlay) ?: return
+        if (showActionBarAnimator != null) return
+        hideActionBarAnimator?.let {
+            it.cancel()
+            hideActionBarAnimator = null
+        }
+
+        val animator = ObjectAnimator.ofFloat(controlView, View.ALPHA, 0f, 1f)
+        animator.duration = 200
+        animator.doOnEnd {
+            showActionBarAnimator = null
+            isControlViewVisible = true
+        }
+        animator.start()
+        showActionBarAnimator = animator
+    }
+
+    private fun celestiaFragmentHideActionBar() {
+        val controlView = findViewById<ConstraintLayout>(R.id.action_bar_overlay) ?: return
+        if (hideActionBarAnimator != null) return
+        showActionBarAnimator?.let {
+            it.cancel()
+            showActionBarAnimator = null
+        }
+
+        val animator = ObjectAnimator.ofFloat(controlView, View.ALPHA, 1f, 0f)
+        animator.duration = 200
+        animator.doOnEnd {
+            hideActionBarAnimator = null
+            isControlViewVisible = false
+        }
+        animator.start()
+        hideActionBarAnimator = animator
     }
 
     override fun celestiaFragmentCanAcceptKeyEvents(): Boolean {
@@ -1997,6 +2129,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 
         private const val ARG_COMMIT_IDS = "commit-ids"
+        private const val ARG_INTERACTION_MODE = "interaction-mode"
         private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 
@@ -2016,6 +2149,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
 
         private val supportedScriptTypes = listOf("cel", "celx")
+
+        private const val INFO_MENU_ITEM_ID = 100
+        private const val SEARCH_MENU_ITEM_ID = 101
+        private const val MENU_MENU_ITEM_ID = 102
+        private const val MODE_MENU_ITEM_ID = 103
 
         init {
             System.loadLibrary("nativecrashhandler")
