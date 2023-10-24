@@ -12,8 +12,10 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -83,7 +85,9 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
             mutableStateOf("")
         }
         val selectedCoordinateSystem = coordinateSystems[selectedCoordinateIndex].first
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
         Column(modifier = Modifier
+            .nestedScroll(nestedScrollInterop)
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Header(text = CelestiaString("Coordinate System", ""))

@@ -26,8 +26,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
@@ -102,7 +104,9 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment(), SettingsBa
 
     @Composable
     fun MainScreen() {
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
         Column(modifier = Modifier
+            .nestedScroll(nestedScrollInterop)
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))

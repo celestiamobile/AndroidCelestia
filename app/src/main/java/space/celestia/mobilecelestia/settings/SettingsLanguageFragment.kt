@@ -31,9 +31,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -118,7 +120,8 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
         var currentOverrideLanguage: String? by remember {
             mutableStateOf(dataSource?.currentOverrideLanguage())
         }
-        LazyColumn {
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
+        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop)) {
             item {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                 TextRow(primaryText = CelestiaString("Current Language", ""), secondaryText = getLocalizedLanguageName(dataSource?.currentLanguage() ?: "en"))

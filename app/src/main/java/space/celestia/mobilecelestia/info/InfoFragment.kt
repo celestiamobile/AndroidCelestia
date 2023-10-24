@@ -26,8 +26,10 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
@@ -102,7 +104,8 @@ class InfoFragment : NavigationFragment.SubFragment() {
             bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical) + systemPadding.calculateBottomPadding(),
         )
 
-        LazyVerticalGrid(modifier = Modifier, contentPadding = contentPadding, columns = GridCells.Fixed(2), content = {
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
+        LazyVerticalGrid(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = contentPadding, columns = GridCells.Fixed(2), content = {
             val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
             val hasWebInfo = !selection.webInfoURL.isNullOrEmpty()
 

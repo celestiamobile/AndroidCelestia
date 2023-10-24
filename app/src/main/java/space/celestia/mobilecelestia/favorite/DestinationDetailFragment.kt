@@ -28,8 +28,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.core.view.ViewCompat
@@ -84,13 +86,14 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
     @Composable
     fun MainScreen() {
         val scroll = rememberScrollState(0)
-
-        Column(
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
+        Column(modifier = Modifier
+            .nestedScroll(nestedScrollInterop)
+            .padding(
                 start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
                 end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
-            )
+            ),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             SelectionContainer(modifier = Modifier
                 .verticalScroll(scroll)

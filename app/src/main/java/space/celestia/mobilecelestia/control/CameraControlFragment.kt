@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
@@ -32,8 +33,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -86,7 +89,9 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
                 horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
                 vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
             )
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
         Column(modifier = Modifier
+            .nestedScroll(nestedScrollInterop)
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))

@@ -18,6 +18,7 @@ import android.view.Display
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,9 +30,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.core.hardware.display.DisplayManagerCompat
 import androidx.core.view.ViewCompat
@@ -106,7 +109,8 @@ class SettingsRefreshRateFragment : NavigationFragment.SubFragment() {
         }
 
         val (options, max) = availableRefreshRates()?: return
-        LazyColumn {
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
+        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop)) {
             item {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                 RadioButtonRow(primaryText = CelestiaString("Maximum (%s FPS)", "").format(numberFormat.format(max)), selected = currentRefreshRateOption == Renderer.FRAME_MAX) {

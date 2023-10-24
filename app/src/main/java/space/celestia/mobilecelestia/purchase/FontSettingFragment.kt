@@ -28,9 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -110,7 +112,8 @@ class FontSettingFragment : SubscriptionBackingFragment() {
         }
         val currentFont = if (selectedTabIndex == 0) normalFont else boldFont
         if (fontsLoaded) {
-            LazyColumn {
+            val nestedScrollInterop = rememberNestedScrollInteropConnection()
+            LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop)) {
                 item {
                     // TODO: Replace with SegmentedButton
                     TabRow(selectedTabIndex = selectedTabIndex) {

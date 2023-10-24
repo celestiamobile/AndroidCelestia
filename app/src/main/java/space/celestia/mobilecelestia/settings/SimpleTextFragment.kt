@@ -15,6 +15,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -24,8 +25,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -63,7 +66,9 @@ class SimpleTextFragment : NavigationFragment.SubFragment() {
     @Composable
     fun MainScreen() {
         val scroll = rememberScrollState(0)
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
         SelectionContainer(modifier = Modifier
+            .nestedScroll(nestedScrollInterop)
             .verticalScroll(scroll)
             .fillMaxWidth()
             .padding(
