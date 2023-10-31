@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -15,13 +16,13 @@ import androidx.compose.ui.res.painterResource
 import space.celestia.mobilecelestia.R
 
 @Composable
-fun TextRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, @DrawableRes accessoryResource: Int = 0, accessoryContentDescription: String = "") {
+fun TextRow(primaryText: String, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, @DrawableRes accessoryResource: Int = 0, accessoryContentDescription: String = "") {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(
         horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
         vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
     )) {
         Column(modifier = Modifier.weight(1.0f), horizontalAlignment = Alignment.Start) {
-            Text(text = primaryText, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
+            Text(text = primaryText, color = primaryTextColor ?: MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
             if (secondaryText != null) {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_item_gap_vertical)))
                 Text(

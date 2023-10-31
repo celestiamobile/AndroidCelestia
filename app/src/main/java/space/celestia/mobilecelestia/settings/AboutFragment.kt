@@ -16,10 +16,32 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.res.dimensionResource
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.MultiLineTextRow
+import space.celestia.mobilecelestia.compose.Separator
+import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.AssetUtils
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.versionCode
@@ -28,20 +50,25 @@ import space.celestia.mobilecelestia.utils.versionName
 class AboutFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
+    private var bottomPadding = mutableIntStateOf(0)
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
-
-        // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
-                layoutManager = LinearLayoutManager(context)
-                adapter = AboutRecyclerViewAdapter(createAboutItems(), listener)
-                clipToPadding = false
-                fitsSystemWindows = true
+    ): View {
+        val view = ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen()
+                }
             }
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(view) { _, windowInsets ->
+            bottomPadding.intValue = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            WindowInsetsCompat.CONSUMED
         }
         return view
     }
@@ -50,6 +77,53 @@ class AboutFragment : NavigationFragment.SubFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         title = CelestiaString("About", "")
+    }
+
+    @Composable
+    fun MainScreen() {
+        val aboutSections by remember {
+            mutableStateOf(createAboutItems())
+        }
+        val nestedScrollInterop = rememberNestedScrollInteropConnection()
+        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop)) {
+            for (index in aboutSections.indices) {
+                val aboutSection = aboutSections[index]
+                item {
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+                }
+                items(aboutSection) { item ->
+                    when (item) {
+                        is ActionItem -> {
+                            TextRow(primaryText = item.title, primaryTextColor = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable {
+                                listener?.onAboutURLSelected(item.url)
+                            })
+                        }
+                        is VersionItem -> {
+                            TextRow(primaryText = CelestiaString("Version", ""), secondaryText = item.versionName)
+                        }
+                        is DetailItem -> {
+                            MultiLineTextRow(text = item.detail)
+                        }
+                        is TitleItem -> {
+                            TextRow(primaryText = item.title)
+                        }
+                    }
+                }
+                item {
+                    if (index != aboutSections.size - 1) {
+                        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+                        Separator()
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
+                with(LocalDensity.current) {
+                    Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
+                }
+            }
+        }
     }
 
     private fun createAboutItems(): List<List<AboutItem>> {
