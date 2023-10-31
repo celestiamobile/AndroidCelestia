@@ -47,6 +47,7 @@ class ResourceManager {
     private val parentJob = Job()
 
     var addonDirectory: String? = null
+    var scriptDirectory: String? = null
 
     enum class State {
         Downloading, Downloaded
@@ -74,8 +75,8 @@ class ResourceManager {
         return tasks[identifier] != null
     }
 
-    fun isInstalled(identifier: String): Boolean {
-        return contextDirectory(identifier).exists()
+    fun isInstalled(item: ResourceItem): Boolean {
+        return contextDirectory(item).exists()
     }
 
     suspend fun installedResourcesAsync(): List<ResourceItem> {
@@ -85,37 +86,79 @@ class ResourceManager {
     }
 
     private fun installedResources(): List<ResourceItem> {
-        val parentDirPath = addonDirectory ?: return listOf()
-        val parentDir = File(parentDirPath)
-        if (!parentDir.exists() || !parentDir.isDirectory) return listOf()
         val items = arrayListOf<ResourceItem>()
-
-        for (folder in parentDir.listFiles() ?: arrayOf()) {
-            if (!folder.isDirectory) {
-                continue
-            }
-            val jsonDescriptionFile = File(folder, "description.json")
-            if (!jsonDescriptionFile.exists() || jsonDescriptionFile.isDirectory)
-                continue
-            try {
-                val reader = FileReader(jsonDescriptionFile)
-                reader.use {
-                    val gson = GsonBuilder().create()
-                    val item = gson.fromJson(it, ResourceItem::class.java)
-                    if (item.id == folder.name)
-                        items.add(item)
+        // Scan script directory first because add-on directory may need migration
+        val scriptDirPath = scriptDirectory
+        val trackedIds = hashSetOf<String>()
+        if (scriptDirPath != null) {
+            val parentDir = File(scriptDirPath)
+            if (parentDir.exists() && parentDir.isDirectory) {
+                for (folder in parentDir.listFiles() ?: arrayOf()) {
+                    if (!folder.isDirectory) {
+                        continue
+                    }
+                    val jsonDescriptionFile = File(folder, "description.json")
+                    if (!jsonDescriptionFile.exists() || jsonDescriptionFile.isDirectory)
+                        continue
+                    try {
+                        val reader = FileReader(jsonDescriptionFile)
+                        reader.use {
+                            val gson = GsonBuilder().create()
+                            val item = gson.fromJson(it, ResourceItem::class.java)
+                            if (item.id == folder.name && item.type == "script") {
+                                items.add(item)
+                                trackedIds.add(item.id)
+                            }
+                        }
+                    } catch (ignored: Throwable) {}
                 }
-            } catch (ignored: Exception) {}
+            }
+        }
+
+        val addonDirPath = addonDirectory
+        if (addonDirPath != null) {
+            val parentDir = File(addonDirPath)
+            if (parentDir.exists() && parentDir.isDirectory) {
+                for (folder in parentDir.listFiles() ?: arrayOf()) {
+                    if (!folder.isDirectory) {
+                        continue
+                    }
+                    val jsonDescriptionFile = File(folder, "description.json")
+                    if (!jsonDescriptionFile.exists() || jsonDescriptionFile.isDirectory)
+                        continue
+                    try {
+                        val reader = FileReader(jsonDescriptionFile)
+                        reader.use {
+                            val gson = GsonBuilder().create()
+                            val item = gson.fromJson(it, ResourceItem::class.java)
+                            if (item.id == folder.name && !trackedIds.contains(item.id)) {
+                                if (item.type == "script") {
+                                    // Perform migration by moving folder to scripts folder
+                                    try {
+                                        val newFolder = File(scriptDirPath, item.id)
+                                        folder.renameTo(newFolder)
+                                        items.add(item)
+                                    } catch (ignored: Throwable) {}
+                                } else {
+                                    items.add(item)
+                                }
+                            }
+                        }
+                    } catch (ignored: Throwable) {}
+                }
+            }
         }
         return items
     }
 
-    fun contextDirectory(identifier: String): File {
-        return File(addonDirectory, identifier)
+    fun contextDirectory(item: ResourceItem): File {
+        if (item.type == "script")
+            return File(scriptDirectory, item.id)
+        return File(addonDirectory, item.id)
     }
 
-    fun uninstall(identifier: String): Boolean {
-        return contextDirectory(identifier).deleteRecursively()
+    fun uninstall(item: ResourceItem): Boolean {
+        return contextDirectory(item).deleteRecursively()
     }
 
     fun cancel(identifier: String) {
@@ -124,7 +167,7 @@ class ResourceManager {
 
     @Suppress("BlockingMethodInNonBlockingContext")
     fun download(item: ResourceItem, destination: File) {
-        val unzipDestination = contextDirectory(item.id)
+        val unzipDestination = contextDirectory(item)
         val reference = WeakReference(this)
         val task = CoroutineScope(parentJob + Dispatchers.IO).executeAsyncTask(doInBackground = { publishProgress: suspend (progress: Progress) -> Unit ->
             val client = OkHttpClient()

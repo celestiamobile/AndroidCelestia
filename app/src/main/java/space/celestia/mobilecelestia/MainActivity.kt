@@ -537,6 +537,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         })
 
         resourceManager.addonDirectory = addonPaths.firstOrNull()
+        resourceManager.scriptDirectory = extraScriptPaths.firstOrNull()
         readyForInteraction = true
 
         if (!initialURLCheckPerformed) {

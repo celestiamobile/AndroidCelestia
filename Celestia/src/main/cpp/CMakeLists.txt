@@ -161,6 +161,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celephem/precession.h
         ${CELESTIA_SRC_DIR}/celephem/rotation.cpp
         ${CELESTIA_SRC_DIR}/celephem/rotation.h
+        ${CELESTIA_SRC_DIR}/celephem/sampfile.cpp
+        ${CELESTIA_SRC_DIR}/celephem/sampfile.h
         ${CELESTIA_SRC_DIR}/celephem/samporbit.cpp
         ${CELESTIA_SRC_DIR}/celephem/samporbit.h
         ${CELESTIA_SRC_DIR}/celephem/samporient.cpp

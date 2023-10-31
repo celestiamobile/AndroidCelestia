@@ -127,7 +127,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         if (savedInstanceState == null) {
             val uri = URLHelper.buildInAppAddonURI(item.id, language)
-            replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item.id)), R.id.webview_container)
+            replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item)), R.id.webview_container)
         }
 
         if (Date().time - lastUpdateDate.time > UPDATE_INTERVAL_MILLISECONDS) {
@@ -192,11 +192,11 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         val dm = resourceManager
 
         // Already installed, offer an option for uninstalling
-        if (dm.isInstalled(item.id)) {
+        if (dm.isInstalled(item)) {
             activity.showAlert(CelestiaString("Do you want to uninstall this add-on?", "")) {
                 var success = false
                 try {
-                    success = dm.uninstall(item.id)
+                    success = dm.uninstall(item)
                 } catch (_: Exception) {}
                 if (success) {
                     currentState = ResourceItemState.None
@@ -256,7 +256,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     private fun updateUI() {
         // Ensure we are up to date with these cases
         val dm = resourceManager
-        if (dm.isInstalled(item.id))
+        if (dm.isInstalled(item))
             currentState = ResourceItemState.Installed
         if (dm.isDownloading(item.id))
             currentState = ResourceItemState.Downloading
@@ -281,7 +281,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         if (item.type == "script") {
             val mainScriptName = item.mainScriptName
             if (currentState == ResourceItemState.Installed && mainScriptName != null) {
-                val scriptFile = File(resourceManager.contextDirectory(item.id), mainScriptName)
+                val scriptFile = File(resourceManager.contextDirectory(item), mainScriptName)
                 if (scriptFile.exists()) {
                     goToButton.visibility = View.VISIBLE
                     goToButton.setOnClickListener {
