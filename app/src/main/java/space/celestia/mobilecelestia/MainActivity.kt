@@ -1360,7 +1360,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onCommonSettingUnknownAction(id: String) {
         if (id == settingUnmarkAllID)
-            appCore.simulation.universe.unmarkAll()
+            lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.universe.unmarkAll() }
     }
 
     override fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean) {
