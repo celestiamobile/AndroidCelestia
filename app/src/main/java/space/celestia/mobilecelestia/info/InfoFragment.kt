@@ -17,14 +17,26 @@ import android.util.LayoutDirection
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
@@ -40,7 +52,11 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.LinkPreview
 import space.celestia.mobilecelestia.compose.Mdc3Theme
-import space.celestia.mobilecelestia.info.model.*
+import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
+import space.celestia.mobilecelestia.info.model.InfoActionItem
+import space.celestia.mobilecelestia.info.model.InfoWebActionItem
+import space.celestia.mobilecelestia.info.model.MarkItem
+import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.utils.getOverviewForSelection
 import java.net.MalformedURLException
 import java.net.URL
@@ -79,16 +95,14 @@ class InfoFragment : NavigationFragment.SubFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    Scaffold(topBar = {}) { paddingValues ->
-                        MainScreen(systemPadding = paddingValues)
-                    }
+                    MainScreen()
                 }
             }
         }
     }
 
     @Composable
-    private fun MainScreen(systemPadding: PaddingValues) {
+    private fun MainScreen() {
         var isWebInfoLoaded by remember {
             mutableStateOf(false)
         }
@@ -97,6 +111,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
 
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
         val direction = if (isRTL) androidx.compose.ui.unit.LayoutDirection.Rtl else androidx.compose.ui.unit.LayoutDirection.Ltr
+        val systemPadding = WindowInsets.systemBars.asPaddingValues()
         val contentPadding = PaddingValues(
             start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal) + systemPadding.calculateStartPadding(direction),
             top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical) + systemPadding.calculateTopPadding(),

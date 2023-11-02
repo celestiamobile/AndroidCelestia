@@ -274,10 +274,6 @@ class SettingsPreferenceSliderItem(
         get() = false
 }
 
-interface SettingsDynamicListItem: SettingsItem {
-    fun createItems(): List<SettingsItem>
-}
-
 class SettingsLanguageItem : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString("Language", "")
@@ -682,8 +678,4 @@ class SettingsCommonItem(override val name: String, val sections: List<Section>)
             return SettingsCommonItem(name, listOf(Section(items)))
         }
     }
-}
-
-interface SettingsBaseFragment {
-    fun reload() {}
 }

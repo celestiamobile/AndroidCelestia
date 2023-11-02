@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -19,15 +19,15 @@ import androidx.compose.ui.res.dimensionResource
 import space.celestia.mobilecelestia.R
 
 @Composable
-fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, selected: Boolean, onClick: (() -> Unit)?) {
+fun CheckboxRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(
         start = dimensionResource(id = R.dimen.list_item_small_margin_horizontal),
         end = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)
     )) {
-        RadioButton(selected = selected, onClick = onClick)
-        val textModifier = if (onClick != null) {
+        Checkbox(checked = checked, onCheckedChange = onCheckedChange)
+        val textModifier = if (onCheckedChange != null) {
             Modifier.clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
-                onClick()
+                onCheckedChange(!checked)
             }
         } else {
             Modifier
