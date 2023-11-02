@@ -11,7 +11,6 @@
 
 package space.celestia.mobilecelestia.settings
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,14 +30,26 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Utils
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.TextRow
+import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.julianDay
+import space.celestia.mobilecelestia.utils.showAlert
+import space.celestia.mobilecelestia.utils.showDateInput
+import space.celestia.mobilecelestia.utils.showTextInput
+import space.celestia.mobilecelestia.utils.toDoubleOrNull
+import java.lang.ref.WeakReference
 import java.text.DateFormat
 import java.text.NumberFormat
 import java.util.Date
@@ -46,30 +57,26 @@ import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SettingsCurrentTimeFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
+class SettingsCurrentTimeFragment : NavigationFragment.SubFragment() {
     private val formatter by lazy { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault()) }
-
-    private var listener: Listener? = null
+    private val displayNumberFormat by lazy { NumberFormat.getNumberInstance() }
 
     @Inject
     lateinit var appCore: AppCore
+    @Inject
+    lateinit var executor: CelestiaExecutor
 
     private var currentTime = mutableStateOf(Date())
     private var currentJulianDay = mutableStateOf(0.0)
-
-    private lateinit var displayNumberFormat: NumberFormat
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        displayNumberFormat = NumberFormat.getNumberInstance()
         displayNumberFormat.isGroupingUsed = false
         displayNumberFormat.maximumFractionDigits = 4
 
-        val time = appCore.simulation.time
-        currentTime.value = Utils.createDateFromJulianDay(time)
-        currentJulianDay.value = time
+        reload()
         return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
@@ -88,20 +95,6 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment(), SettingsBa
         title = CelestiaString("Current Time", "")
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement SettingsCurrentTimeFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
     @Composable
     fun MainScreen() {
         val nestedScrollInterop = rememberNestedScrollInteropConnection()
@@ -111,28 +104,79 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment(), SettingsBa
             .systemBarsPadding()) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             TextRow(primaryText = CelestiaString("Select Time", ""), secondaryText = formatter.format(currentTime.value), modifier = Modifier.clickable(onClick = {
-                listener?.onPickTime()
+                onPickTime()
             }))
             TextRow(primaryText = CelestiaString("Julian Day", ""), secondaryText = displayNumberFormat.format(currentJulianDay.value), modifier = Modifier.clickable {
-                listener?.onPickJulianDay()
+                onPickJulianDay()
             })
             TextRow(primaryText = CelestiaString("Set to Current Time", ""), modifier = Modifier.clickable(onClick = {
-                listener?.onSyncWithCurrentTime()
+                onSyncWithCurrentTime()
             }))
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
         }
     }
 
-    override fun reload() {
+    private fun onPickTime() {
+        val activity = this.activity ?: return
+        val format = android.text.format.DateFormat.getBestDateTimePattern(
+            Locale.getDefault(),
+            "yyyyMMddHHmmss"
+        )
+        val weakSelf = WeakReference(this)
+        activity.showDateInput(
+            CelestiaString(
+                "Please enter the time in \"%s\" format.",
+                ""
+            ).format(format), format
+        ) { date ->
+            val self = weakSelf.get() ?: return@showDateInput
+            val innerActivity = self.activity ?: return@showDateInput
+            if (date == null) {
+                innerActivity.showAlert(CelestiaString("Unrecognized time string.", ""))
+                return@showDateInput
+            }
+            self.lifecycleScope.launch {
+                withContext(self.executor.asCoroutineDispatcher()) {
+                    self.appCore.simulation.time = date.julianDay
+                }
+                self.reload()
+            }
+        }
+    }
+
+    private fun onPickJulianDay() {
+        val activity = this.activity ?: return
+        val numberFormat = NumberFormat.getNumberInstance()
+        numberFormat.isGroupingUsed = false
+        val weakSelf = WeakReference(this)
+        activity.showTextInput(title = CelestiaString("Please enter Julian day.", "")) { julianDayString ->
+            val self = weakSelf.get() ?: return@showTextInput
+            val innerActivity = self.activity ?: return@showTextInput
+            val value = julianDayString.toDoubleOrNull(numberFormat)
+            if (value == null) {
+                innerActivity.showAlert(CelestiaString("Invalid Julian day string.", ""))
+                return@showTextInput
+            }
+            self.lifecycleScope.launch {
+                withContext(self.executor.asCoroutineDispatcher()) {
+                    self.appCore.simulation.time = value
+                }
+                self.reload()
+            }
+        }
+    }
+
+    private fun onSyncWithCurrentTime() {
+        lifecycleScope.launch {
+            withContext(executor.asCoroutineDispatcher()) { appCore.charEnter(CelestiaAction.CurrentTime.value) }
+            reload()
+        }
+    }
+
+    private fun reload() {
         val time = appCore.simulation.time
         currentTime.value = Utils.createDateFromJulianDay(time)
         currentJulianDay.value = time
-    }
-
-    interface Listener {
-        fun onPickTime()
-        fun onPickJulianDay()
-        fun onSyncWithCurrentTime()
     }
 
     companion object {

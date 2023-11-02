@@ -11,11 +11,15 @@
 
 package space.celestia.mobilecelestia.settings
 
-import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,25 +40,67 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import space.celestia.mobilecelestia.MainActivity
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.Separator
 import space.celestia.mobilecelestia.compose.TextRow
+import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.mobilecelestia.utils.RealPathUtils
+import space.celestia.mobilecelestia.utils.showAlert
+import java.lang.ref.WeakReference
+import javax.inject.Inject
 
-enum class DataType {
-    Config, DataDirectory;
-}
-
-class SettingsDataLocationFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
-    private var listener: Listener? = null
-
+@AndroidEntryPoint
+class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
     private var bottomPadding = mutableIntStateOf(0)
-    private var customConfigFilePath = mutableStateOf(MainActivity.customConfigFilePath)
-    private var customDataDirPath = mutableStateOf(MainActivity.customDataDirPath)
+    private var customConfigFilePath = mutableStateOf<String?>(null)
+    private var customDataDirPath = mutableStateOf<String?>(null)
+
+    @AppSettings
+    @Inject
+    lateinit var appSettings: PreferenceManager
+
+    private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
+    private lateinit var directoryChooserLauncher: ActivityResultLauncher<Intent>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        customConfigFilePath.value = appSettings[PreferenceManager.PredefinedKey.ConfigFilePath]
+        customDataDirPath.value = appSettings[PreferenceManager.PredefinedKey.DataDirPath]
+
+        val weakSelf = WeakReference(this)
+        fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val self = weakSelf.get() ?: return@registerForActivityResult
+            val activity = self.activity ?: return@registerForActivityResult
+            val uri = it.data?.data ?: return@registerForActivityResult
+            val path = RealPathUtils.getRealPath(activity, uri)
+            if (path == null) {
+                self.showWrongPathProvided()
+            } else {
+                self.appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] = path
+                self.customConfigFilePath.value = path
+            }
+        }
+
+        directoryChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val self = weakSelf.get() ?: return@registerForActivityResult
+            val activity = self.activity ?: return@registerForActivityResult
+            val uri = it.data?.data ?: return@registerForActivityResult
+            val path = RealPathUtils.getRealPath(activity, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
+            if (path == null) {
+                self.showWrongPathProvided()
+            } else {
+                self.appSettings[PreferenceManager.PredefinedKey.DataDirPath] = path
+                self.customDataDirPath.value = path
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,23 +129,36 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment(), SettingsB
         title = CelestiaString("Data Location", "")
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement SettingsDataLocationFragment.Listener")
-        }
+    private fun showWrongPathProvided() {
+        val activity = this.activity ?: return
+        val expectedParent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) activity.externalMediaDirs.firstOrNull() else activity.getExternalFilesDir(null)
+        activity.showAlert(CelestiaString("Unable to resolve path", ""), CelestiaString("Please ensure that you have selected a path under %s.", "").format(expectedParent?.absolutePath ?: ""))
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
+    private fun launchDataDirectoryPicker() {
+        val packageManager = activity?.packageManager ?: return
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+        if (intent.resolveActivity(packageManager) != null)
+            directoryChooserLauncher.launch(intent)
+        else
+            showUnsupportedAction()
     }
 
-    override fun reload() {
-        customConfigFilePath.value = MainActivity.customConfigFilePath
-        customDataDirPath.value = MainActivity.customDataDirPath
+    private fun launchConfigFilePicker() {
+        val packageManager = activity?.packageManager ?: return
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.type = "*/*"
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+        if (intent.resolveActivity(packageManager) != null)
+            fileChooserLauncher.launch(intent)
+        else
+            showUnsupportedAction()
+    }
+
+    private fun showUnsupportedAction() {
+        val activity = this.activity ?: return
+        activity.showAlert(CelestiaString("Unsupported action.", ""))
     }
 
     @Composable
@@ -117,10 +176,10 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment(), SettingsB
             }
             item {
                 TextRow(primaryText = CelestiaString("Config File", ""), secondaryText = if (customConfigFilePath.value == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable {
-                    listener?.onDataLocationRequested(DataType.Config)
+                    launchConfigFilePicker()
                 })
                 TextRow(primaryText = CelestiaString("Data Directory", ""), secondaryText = if (customDataDirPath.value == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable {
-                    listener?.onDataLocationRequested(DataType.DataDirectory)
+                    launchDataDirectoryPicker()
                 })
             }
             item {
@@ -130,7 +189,10 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment(), SettingsB
             }
             item {
                 FilledTonalButton(modifier = internalViewModifier, onClick = {
-                    listener?.onDataLocationNeedReset()
+                    appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] = null
+                    appSettings[PreferenceManager.PredefinedKey.DataDirPath] = null
+                    customConfigFilePath.value = null
+                    customDataDirPath.value = null
                 }) {
                     Text(text = CelestiaString("Reset to Default", ""))
                 }
@@ -141,11 +203,6 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment(), SettingsB
                 }
             }
         }
-    }
-
-    interface Listener {
-        fun onDataLocationNeedReset()
-        fun onDataLocationRequested(dataType: DataType)
     }
 
     companion object {

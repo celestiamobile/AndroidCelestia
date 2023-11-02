@@ -12,18 +12,11 @@
 package space.celestia.mobilecelestia.settings
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 
-class SettingsCurrentTimeNavigationFragment: NavigationFragment(), SettingsBaseFragment {
+class SettingsCurrentTimeNavigationFragment: NavigationFragment() {
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return SettingsCurrentTimeFragment.newInstance()
-    }
-
-    override fun reload() {
-        val frag = childFragmentManager.findFragmentById(R.id.fragment_container)
-        if (frag is SettingsBaseFragment)
-            frag.reload()
     }
 
     companion object {

@@ -19,7 +19,6 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.DocumentsContract
 import android.util.LayoutDirection
 import android.util.Log
 import android.view.View
@@ -29,8 +28,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
@@ -92,7 +89,6 @@ import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.URL
-import java.text.NumberFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.component1
@@ -114,23 +110,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     FavoriteFragment.Listener,
     FavoriteItemFragment.Listener,
     SettingsItemFragment.Listener,
-    SettingsCurrentTimeFragment.Listener,
     AboutFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    SettingsDataLocationFragment.Listener,
     SettingsCommonFragment.Listener,
     SettingsCommonFragment.DataSource,
     EventFinderInputFragment.Listener,
     EventFinderResultFragment.Listener,
-    SettingsLanguageFragment.Listener,
     SettingsLanguageFragment.DataSource,
     InstalledAddonListFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
-    SettingsRefreshRateFragment.DataSource,
     CommonWebFragment.Listener,
     ObserverModeFragment.Listener,
     SubscriptionBackingFragment.Listener {
@@ -179,12 +171,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val defaultConfigFilePath by lazy { "$defaultDataDirectoryPath/$CELESTIA_CFG_NAME" }
     private val defaultDataDirectoryPath by lazy { "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME" }
 
-    private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
-    private lateinit var directoryChooserLauncher: ActivityResultLauncher<Intent>
-
     private val celestiaConfigFilePath: String
         get() {
-            val custom = customConfigFilePath
+            val custom = appSettings[PreferenceManager.PredefinedKey.ConfigFilePath]
             if (custom != null)
                 return custom
             return defaultConfigFilePath
@@ -192,7 +181,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val celestiaDataDirPath: String
         get() {
-            val custom = customDataDirPath
+            val custom = appSettings[PreferenceManager.PredefinedKey.DataDirPath]
             if (custom != null)
                 return custom
             return defaultDataDirectoryPath
@@ -349,31 +338,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 celestiaLoadingFinished()
             }
             else -> {}
-        }
-
-        val weakSelf = WeakReference(this)
-        fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            val self = weakSelf.get() ?: return@registerForActivityResult
-            val uri = it.data?.data ?: return@registerForActivityResult
-            val path = RealPathUtils.getRealPath(self, uri)
-            if (path == null) {
-                self.showWrongPathProvided()
-            } else {
-                self.setConfigFilePath(path)
-                self.reloadSettings()
-            }
-        }
-
-        directoryChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            val self = weakSelf.get() ?: return@registerForActivityResult
-            val uri = it.data?.data ?: return@registerForActivityResult
-            val path = RealPathUtils.getRealPath(self, DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)))
-            if (path == null) {
-                self.showWrongPathProvided()
-            } else {
-                self.setDataDirectoryPath(path)
-                self.reloadSettings()
-            }
         }
 
         val rootView = findViewById<View>(android.R.id.content).rootView
@@ -601,13 +565,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             CustomFont("$fontDirPath/NotoSans-Regular.ttf", 0),
             CustomFont("$fontDirPath/NotoSans-Bold.ttf", 0)
         )
-
-        // Read custom paths here
-        customConfigFilePath = appSettings[PreferenceManager.PredefinedKey.ConfigFilePath]
-        customDataDirPath = appSettings[PreferenceManager.PredefinedKey.DataDirPath]
-        customFrameRateOption =
-            appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull()
-                ?: Renderer.FRAME_60FPS
 
         val localeDirectory = File("${celestiaDataDirPath}/locale")
         if (localeDirectory.exists()) {
@@ -935,6 +892,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun loadConfigSuccess() {
+        val customFrameRateOption =
+            appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull()
+                ?: Renderer.FRAME_60FPS
         // Add gl fragment
         val celestiaFragment = CelestiaFragment.newInstance(
             celestiaDataDirPath,
@@ -1423,14 +1383,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun currentRefreshRateOption(): Int {
-        return customFrameRateOption
-    }
-
     override fun onRefreshRateChanged(frameRateOption: Int) {
-        appSettings[PreferenceManager.PredefinedKey.FrameRateOption] = frameRateOption.toString()
-        customFrameRateOption = frameRateOption
-        reloadSettings()
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
@@ -1505,100 +1458,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         return appCore.getBooleanValueForPield(field)
     }
 
-    override fun onPickTime() {
-        val format = android.text.format.DateFormat.getBestDateTimePattern(
-            Locale.getDefault(),
-            "yyyyMMddHHmmss"
-        )
-        showDateInput(
-            CelestiaString(
-                "Please enter the time in \"%s\" format.",
-                ""
-            ).format(format), format
-        ) { date ->
-            if (date == null) {
-                showAlert(CelestiaString("Unrecognized time string.", ""))
-                return@showDateInput
-            }
-            lifecycleScope.launch {
-                withContext(executor.asCoroutineDispatcher()) {
-                    appCore.simulation.time = date.julianDay
-                }
-                reloadSettings()
-            }
-        }
-    }
-
-    override fun onPickJulianDay() {
-        val numberFormat = NumberFormat.getNumberInstance()
-        numberFormat.isGroupingUsed = false
-        showTextInput(title = CelestiaString("Please enter Julian day.", "")) { julianDayString ->
-            val value = julianDayString.toDoubleOrNull(numberFormat)
-            if (value == null) {
-                showAlert(CelestiaString("Invalid Julian day string.", ""))
-                return@showTextInput
-            }
-            lifecycleScope.launch {
-                withContext(executor.asCoroutineDispatcher()) {
-                    appCore.simulation.time = value
-                }
-                reloadSettings()
-            }
-        }
-    }
-
-    override fun onSyncWithCurrentTime() {
-        lifecycleScope.launch {
-            withContext(executor.asCoroutineDispatcher()) { appCore.charEnter(CelestiaAction.CurrentTime.value) }
-            reloadSettings()
-        }
-    }
-
     override fun onAboutURLSelected(url: String) {
         openURL(url)
-    }
-
-    override fun onDataLocationNeedReset() {
-        setConfigFilePath(null)
-        setDataDirectoryPath(null)
-        reloadSettings()
-    }
-
-    override fun onDataLocationRequested(dataType: DataType) {
-        when (dataType) {
-            DataType.Config -> {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                intent.type = "*/*"
-                intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                if (intent.resolveActivity(packageManager) != null)
-                    fileChooserLauncher.launch(intent)
-                else
-                    showUnsupportedAction()
-            }
-            DataType.DataDirectory -> {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                if (intent.resolveActivity(packageManager) != null)
-                    directoryChooserLauncher.launch(intent)
-                else
-                    showUnsupportedAction()
-            }
-        }
-    }
-
-    override fun onSetOverrideLanguage(language: String?) {
-        if (language == null) {
-            AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
-        } else {
-            AppCompatDelegate.setApplicationLocales(
-                LocaleListCompat.forLanguageTags(
-                    language.uppercase(
-                        Locale.US
-                    ).replace("_", "-")
-                )
-            )
-        }
-        reloadSettings()
     }
 
     override fun currentLanguage(): String {
@@ -1660,21 +1521,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             appCore.simulation.goToEclipse(eclipse)
         }
-    }
-
-    private fun setDataDirectoryPath(path: String?) {
-        appSettings[PreferenceManager.PredefinedKey.DataDirPath] = path
-        customDataDirPath = path
-    }
-
-    private fun setConfigFilePath(path: String?) {
-        appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] = path
-        customConfigFilePath = path
-    }
-
-    private fun showWrongPathProvided() {
-        val expectedParent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) externalMediaDirs.firstOrNull() else getExternalFilesDir(null)
-        showAlert(CelestiaString("Unable to resolve path", ""), CelestiaString("Please ensure that you have selected a path under %s.", "").format(expectedParent?.absolutePath ?: ""))
     }
 
     private fun showUnsupportedAction() {
@@ -2322,9 +2168,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         private const val TAG = "MainActivity"
 
-        var customDataDirPath: String? = null
-        var customConfigFilePath: String? = null
-        private var customFrameRateOption: Int = Renderer.FRAME_60FPS
         private var language: String = "en"
         private var addonPaths: List<String> = listOf()
         private var extraScriptPaths: List<String> = listOf()

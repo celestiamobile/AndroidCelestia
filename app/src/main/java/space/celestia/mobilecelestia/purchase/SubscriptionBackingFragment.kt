@@ -10,13 +10,12 @@ import android.widget.TextView
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.settings.SettingsBaseFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @AndroidEntryPoint
-abstract class SubscriptionBackingFragment : NavigationFragment.SubFragment(), SettingsBaseFragment {
+abstract class SubscriptionBackingFragment : NavigationFragment.SubFragment() {
     @Inject
     lateinit var purchaseManager: PurchaseManager
 

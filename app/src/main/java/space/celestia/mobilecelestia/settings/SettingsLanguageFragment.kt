@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,8 +38,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
+import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Footer
@@ -49,8 +52,8 @@ import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.util.Locale
 
+@AndroidEntryPoint
 class SettingsLanguageFragment : NavigationFragment.SubFragment() {
-    private var listener: Listener? = null
     private var dataSource: DataSource? = null
 
     private var bottomPadding = mutableIntStateOf(0)
@@ -136,7 +139,7 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
                 items(items = languages) {
                     RadioButtonRow(primaryText = getLocalizedLanguageName(it), selected = currentOverrideLanguage == it) {
                         currentOverrideLanguage = it
-                        listener?.onSetOverrideLanguage(it)
+                        setOverrideLanguage(it)
                     }
                 }
             }
@@ -150,7 +153,7 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
             item {
                 FilledTonalButton(modifier = internalViewModifier, onClick = {
                     currentOverrideLanguage = null
-                    listener?.onSetOverrideLanguage(null)
+                    setOverrideLanguage(null)
                 }) {
                     Text(text = CelestiaString("Reset to Default", ""))
                 }
@@ -165,8 +168,7 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is Listener && context is DataSource) {
-            listener = context
+        if (context is DataSource) {
             dataSource = context
         } else {
             throw RuntimeException("$context must implement SettingsLanguageFragment.Listener and SettingsLanguageFragment.DataSource")
@@ -175,12 +177,21 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
 
     override fun onDetach() {
         super.onDetach()
-        listener = null
         dataSource = null
     }
 
-    interface Listener {
-        fun onSetOverrideLanguage(language: String?)
+    private fun setOverrideLanguage(language: String?) {
+        if (language == null) {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+        } else {
+            AppCompatDelegate.setApplicationLocales(
+                LocaleListCompat.forLanguageTags(
+                    language.uppercase(
+                        Locale.US
+                    ).replace("_", "-")
+                )
+            )
+        }
     }
 
     interface DataSource {

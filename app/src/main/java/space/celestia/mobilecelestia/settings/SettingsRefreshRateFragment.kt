@@ -18,7 +18,6 @@ import android.view.Display
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,18 +38,26 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.core.hardware.display.DisplayManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.RadioButtonRow
+import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.text.NumberFormat
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SettingsRefreshRateFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
-    private var dataSource: DataSource? = null
     private var bottomPadding = mutableIntStateOf(0)
+
+    @AppSettings
+    @Inject
+    lateinit var appSettings: PreferenceManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,23 +93,17 @@ class SettingsRefreshRateFragment : NavigationFragment.SubFragment() {
         } else {
             throw RuntimeException("$context must implement SettingsRefreshRateFragment.Listener")
         }
-        if (context is DataSource) {
-            dataSource = context
-        } else {
-            throw RuntimeException("$context must implement SettingsRefreshRateFragment.DataSource")
-        }
     }
 
     override fun onDetach() {
         super.onDetach()
         listener = null
-        dataSource = null
     }
 
     @Composable
     private fun MainScreen() {
         var currentRefreshRateOption by remember {
-            mutableIntStateOf(dataSource?.currentRefreshRateOption() ?: Renderer.FRAME_60FPS)
+            mutableIntStateOf(appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS)
         }
         val numberFormat by remember {
             mutableStateOf(NumberFormat.getNumberInstance().apply { isGroupingUsed = true })
@@ -114,15 +115,17 @@ class SettingsRefreshRateFragment : NavigationFragment.SubFragment() {
             item {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                 RadioButtonRow(primaryText = CelestiaString("Maximum (%s FPS)", "").format(numberFormat.format(max)), selected = currentRefreshRateOption == Renderer.FRAME_MAX) {
-                    listener?.onRefreshRateChanged(Renderer.FRAME_MAX)
+                    appSettings[PreferenceManager.PredefinedKey.FrameRateOption] = Renderer.FRAME_MAX.toString()
                     currentRefreshRateOption = Renderer.FRAME_MAX
+                    listener?.onRefreshRateChanged(Renderer.FRAME_MAX)
                 }
             }
 
             items(options) {
                 RadioButtonRow(primaryText = CelestiaString("%s FPS", "").format(numberFormat.format(it.second)), selected = currentRefreshRateOption == it.first) {
-                    listener?.onRefreshRateChanged(it.first)
+                    appSettings[PreferenceManager.PredefinedKey.FrameRateOption] = it.first.toString()
                     currentRefreshRateOption = it.first
+                    listener?.onRefreshRateChanged(it.first)
                 }
             }
 
@@ -152,11 +155,6 @@ class SettingsRefreshRateFragment : NavigationFragment.SubFragment() {
     interface Listener {
         fun onRefreshRateChanged(frameRateOption: Int)
     }
-
-    interface DataSource {
-        fun currentRefreshRateOption(): Int
-    }
-
     companion object {
         @JvmStatic
         fun newInstance() =
