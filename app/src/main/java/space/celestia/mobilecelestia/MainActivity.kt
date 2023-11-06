@@ -99,16 +99,13 @@ import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.control.BottomControlAction
 import space.celestia.mobilecelestia.control.BottomControlFragment
-import space.celestia.mobilecelestia.control.CameraControlAction
 import space.celestia.mobilecelestia.control.CameraControlContainerFragment
-import space.celestia.mobilecelestia.control.CameraControlFragment
 import space.celestia.mobilecelestia.control.ContinuousAction
 import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
 import space.celestia.mobilecelestia.control.GroupAction
 import space.celestia.mobilecelestia.control.GroupActionItem
 import space.celestia.mobilecelestia.control.InstantAction
-import space.celestia.mobilecelestia.control.ObserverModeFragment
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
@@ -162,7 +159,7 @@ import space.celestia.mobilecelestia.settings.SettingsRefreshRateFragment
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
-import space.celestia.mobilecelestia.travel.GoToInputFragment
+import space.celestia.mobilecelestia.travel.GoToData
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
@@ -204,7 +201,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     EventFinderResultFragment.Listener,
     InstalledAddonListFragment.Listener,
     DestinationDetailFragment.Listener,
-    GoToInputFragment.Listener,
+    GoToContainerFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
@@ -2044,7 +2041,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showGoTo() = lifecycleScope.launch {
-        val inputData = GoToInputFragment.GoToData(
+        val inputData = GoToData(
             objectName = "",
             0.0f,
             0.0f,
@@ -2054,7 +2051,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(GoToContainerFragment.newInstance(inputData, Selection()))
     }
 
-    override fun onGoToObject(goToData: GoToInputFragment.GoToData, selection: Selection) {
+    override fun onGoToObject(goToData: GoToData, selection: Selection) {
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return
