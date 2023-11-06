@@ -9,10 +9,13 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,15 +65,12 @@ class FontSettingFragment : SubscriptionBackingFragment() {
     @Inject
     lateinit var appSettings: PreferenceManager
 
-    private var bottomPadding = mutableIntStateOf(0)
-
     override fun createView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        val view = ComposeView(requireContext()).apply {
+        return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -80,11 +80,6 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                 }
             }
         }
-        ViewCompat.setOnApplyWindowInsetsListener(view) { _, windowInsets ->
-            bottomPadding.intValue = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            WindowInsetsCompat.CONSUMED
-        }
-        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -113,7 +108,7 @@ class FontSettingFragment : SubscriptionBackingFragment() {
         val currentFont = if (selectedTabIndex == 0) normalFont else boldFont
         if (fontsLoaded) {
             val nestedScrollInterop = rememberNestedScrollInteropConnection()
-            LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop)) {
+            LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = WindowInsets.systemBars.asPaddingValues()) {
                 item {
                     // TODO: Replace with SegmentedButton
                     TabRow(selectedTabIndex = selectedTabIndex) {
@@ -166,9 +161,6 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                 item {
                     Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
-                    with(LocalDensity.current) {
-                        Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
-                    }
                 }
             }
         } else {

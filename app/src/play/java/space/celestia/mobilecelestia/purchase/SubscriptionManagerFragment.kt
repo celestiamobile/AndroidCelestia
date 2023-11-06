@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,7 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
@@ -51,8 +50,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -60,6 +57,7 @@ import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.ProductDetails
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.lang.ref.WeakReference
@@ -70,14 +68,12 @@ class SubscriptionManagerFragment: Fragment() {
     @Inject
     lateinit var purchaseManager: PurchaseManager
 
-    private var bottomPadding = mutableIntStateOf(0)
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = ComposeView(requireContext()).apply {
+        return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -87,11 +83,6 @@ class SubscriptionManagerFragment: Fragment() {
                 }
             }
         }
-        ViewCompat.setOnApplyWindowInsetsListener(view) { _, windowInsets ->
-            bottomPadding.intValue = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            WindowInsetsCompat.CONSUMED
-        }
-        return view
     }
 
     @Composable
@@ -101,9 +92,6 @@ class SubscriptionManagerFragment: Fragment() {
             .nestedScroll(nestedScrollInterop)
             .fillMaxWidth()) {
             Content(modifier = Modifier.weight(1.0f))
-            with(LocalDensity.current) {
-                Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
-            }
         }
     }
 
@@ -119,15 +107,12 @@ class SubscriptionManagerFragment: Fragment() {
 
     @Composable
     private fun ErrorText(text: String?, modifier: Modifier = Modifier, retry: () -> Unit) {
-        Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = text ?: CelestiaString("We encountered an error.", ""))
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
-            FilledTonalButton(onClick = {
-                retry()
-            }) {
-                Text(text = CelestiaString("Refresh", ""))
-            }
-        }
+        EmptyHint(
+            text = text ?: CelestiaString("We encountered an error.", ""),
+            modifier = modifier,
+            actionText = CelestiaString("Refresh", ""),
+            actionHandler = retry
+        )
     }
 
     @Composable
@@ -171,13 +156,10 @@ class SubscriptionManagerFragment: Fragment() {
         Column(modifier = modifier
             .fillMaxWidth()
             .verticalScroll(scroll)
+            .systemBarsPadding()
             .padding(
-                horizontal = dimensionResource(
-                    id = R.dimen.common_page_small_margin_horizontal
-                ),
-                vertical = dimensionResource(
-                    id = R.dimen.common_page_small_margin_vertical
-                ),
+                horizontal = dimensionResource(id = R.dimen.common_page_small_margin_horizontal),
+                vertical = dimensionResource(id = R.dimen.common_page_small_margin_vertical)
             )) {
             if (needsRefreshing) {
                 LaunchedEffect(true) {
@@ -191,16 +173,12 @@ class SubscriptionManagerFragment: Fragment() {
                         subscription = subscriptionValue
                     }
                 }
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.0f)) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                Box(modifier = Modifier.fillMaxWidth().weight(1.0f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             } else if (errorText != null || subscriptionStatus !is PurchaseManager.SubscriptionStatus.Good) {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.0f)) {
-                    ErrorText(text = errorText, modifier = Modifier.align(Alignment.Center)) {
+                Box(modifier = Modifier.fillMaxWidth().weight(1.0f), contentAlignment = Alignment.Center) {
+                    ErrorText(text = errorText) {
                         needsRefreshing = true
                     }
                 }

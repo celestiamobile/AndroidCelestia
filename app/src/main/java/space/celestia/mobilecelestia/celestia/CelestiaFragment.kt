@@ -36,6 +36,7 @@ import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
+import space.celestia.mobilecelestia.common.FilePaths
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.purchase.PurchaseManager
@@ -63,6 +64,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     lateinit var appSettings: PreferenceManager
     @Inject
     lateinit var purchaseManager: PurchaseManager
+    @Inject
+    lateinit var defaultFilePaths: FilePaths
 
     // MARK: GL View
     private lateinit var glView: CelestiaView
@@ -107,8 +110,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         fun celestiaFragmentDidRequestObjectInfo()
         fun celestiaFragmentDidRequestSearch()
         fun celestiaFragmentDidRequestObjectInfo(selection: Selection)
-        fun provideFallbackConfigFilePath(): String
-        fun provideFallbackDataDirectoryPath(): String
         fun celestiaFragmentLoadingFromFallback()
         fun celestiaFragmentCanAcceptKeyEvents(): Boolean
     }
@@ -303,8 +304,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             val lis = listener
             if (lis != null) {
                 // Read from fallback
-                val fallbackConfigPath = lis.provideFallbackConfigFilePath()
-                val fallbackDataPath = lis.provideFallbackDataDirectoryPath()
+                val fallbackConfigPath = defaultFilePaths.configFilePath
+                val fallbackDataPath = defaultFilePaths.dataDirectoryPath
                 if (fallbackConfigPath != cfg || fallbackDataPath != data) {
                     lis.celestiaFragmentLoadingFromFallback()
                     AppCore.chdir(fallbackDataPath)

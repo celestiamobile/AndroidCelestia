@@ -5,11 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import dagger.hilt.android.AndroidEntryPoint
-import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.EmptyHint
+import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -30,22 +35,32 @@ abstract class SubscriptionBackingFragment : NavigationFragment.SubFragment() {
         savedInstanceState: Bundle?
     ): View {
         return if (!purchaseManager.canUseInAppPurchase()) {
-            val view = inflater.inflate(R.layout.layout_empty_hint, container, false)
-            val hint = view.findViewById<TextView>(R.id.hint)
-            hint.text = CelestiaString("This feature is not supported.", "")
-            view
-        } else if (purchaseManager.purchaseToken() == null) {
-            val view = inflater.inflate(R.layout.layout_empty_hint, container, false)
-            val hint = view.findViewById<TextView>(R.id.hint)
-            val button = view.findViewById<Button>(R.id.action_button)
-            button.visibility = View.VISIBLE
-            button.text = CelestiaString("Get Celestia PLUS", "")
-            hint.text = CelestiaString("This feature is only available to Celestia PLUS users.", "")
-            val weakSelf = WeakReference(this)
-            button.setOnClickListener {
-                weakSelf.get()?.listener?.requestOpenSubscriptionManagement()
+            ComposeView(requireContext()).apply {
+                // Dispose of the Composition when the view's LifecycleOwner
+                // is destroyed
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    Mdc3Theme {
+                        EmptyHint(text = CelestiaString("This feature is not supported.", ""))
+                    }
+                }
             }
-            view
+        } else if (purchaseManager.purchaseToken() == null) {
+            val weakSelf = WeakReference(this)
+            ComposeView(requireContext()).apply {
+                // Dispose of the Composition when the view's LifecycleOwner
+                // is destroyed
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    Mdc3Theme {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            EmptyHint(text = CelestiaString("This feature is only available to Celestia PLUS users.", ""), actionText = CelestiaString("Get Celestia PLUS", "")) {
+                                weakSelf.get()?.listener?.requestOpenSubscriptionManagement()
+                            }
+                        }
+                    }
+                }
+            }
         } else {
             createView(inflater, container, savedInstanceState)
         }

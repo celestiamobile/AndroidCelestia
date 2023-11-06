@@ -26,7 +26,7 @@ import space.celestia.mobilecelestia.purchase.FontSettingFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SettingsFragment : NavigationFragment(), SettingsBaseFragment {
+class SettingsFragment : NavigationFragment() {
     @Inject
     lateinit var appCore: AppCore
     @Inject
@@ -70,12 +70,6 @@ class SettingsFragment : NavigationFragment(), SettingsBaseFragment {
                 throw RuntimeException("SettingsFragment cannot handle item $item")
             }
         }
-    }
-
-    override fun reload() {
-        val frag = childFragmentManager.findFragmentById(R.id.fragment_container)
-        if (frag is SettingsBaseFragment)
-            frag.reload()
     }
 
     companion object {

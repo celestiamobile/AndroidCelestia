@@ -22,24 +22,23 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -57,7 +56,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
-    private var bottomPadding = mutableIntStateOf(0)
     private var customConfigFilePath = mutableStateOf<String?>(null)
     private var customDataDirPath = mutableStateOf<String?>(null)
 
@@ -106,7 +104,7 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = ComposeView(requireContext()).apply {
+        return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -116,11 +114,6 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
                 }
             }
         }
-        ViewCompat.setOnApplyWindowInsetsListener(view) { _, windowInsets ->
-            bottomPadding.intValue = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            WindowInsetsCompat.CONSUMED
-        }
-        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -170,7 +163,7 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
                 vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
             )
         val nestedScrollInterop = rememberNestedScrollInteropConnection()
-        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop)) {
+        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = WindowInsets.systemBars.asPaddingValues()) {
             item {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             }
@@ -198,9 +191,6 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
                 }
                 Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
-                with(LocalDensity.current) {
-                    Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
-                }
             }
         }
     }

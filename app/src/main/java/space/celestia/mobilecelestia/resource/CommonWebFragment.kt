@@ -13,7 +13,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
 import android.widget.FrameLayout
-import android.widget.TextView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -30,6 +35,8 @@ import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
+import space.celestia.mobilecelestia.compose.EmptyHint
+import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.resource.model.ResourceItem
@@ -93,10 +100,18 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             configureWebView(view, savedInstanceState)
             view
         } catch (ignored: Throwable) {
-            val view = inflater.inflate(R.layout.layout_empty_hint, container, false)
-            val hint = view.findViewById<TextView>(R.id.hint)
-            hint.text = CelestiaString("WebView is not available.", "")
-            view
+            ComposeView(requireContext()).apply {
+                // Dispose of the Composition when the view's LifecycleOwner
+                // is destroyed
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    Mdc3Theme {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            EmptyHint(text = CelestiaString("WebView is not available.", ""))
+                        }
+                    }
+                }
+            }
         }
     }
 

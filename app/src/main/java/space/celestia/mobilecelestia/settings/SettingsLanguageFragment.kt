@@ -11,58 +11,75 @@
 
 package space.celestia.mobilecelestia.settings
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.core.os.LocaleListCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
+import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.FilePaths
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.RadioButtonRow
 import space.celestia.mobilecelestia.compose.Separator
 import space.celestia.mobilecelestia.compose.TextRow
+import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.PreferenceManager
+import java.io.File
 import java.util.Locale
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsLanguageFragment : NavigationFragment.SubFragment() {
-    private var dataSource: DataSource? = null
+    @AppSettings
+    @Inject
+    lateinit var appSettings: PreferenceManager
+    @Inject
+    lateinit var defaultFilePaths: FilePaths
 
-    private var bottomPadding = mutableIntStateOf(0)
+    private var availableLanguageCodes = listOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = ComposeView(requireContext()).apply {
+        val dataDirectory = appSettings[PreferenceManager.PredefinedKey.DataDirPath] ?: defaultFilePaths.dataDirectoryPath
+        val localeDirectory = File("${dataDirectory}/locale")
+        if (localeDirectory.exists()) {
+            val languageCodes = ArrayList((localeDirectory.listFiles { file ->
+                return@listFiles file.isDirectory
+            } ?: arrayOf()).map { file -> file.name })
+            availableLanguageCodes = languageCodes.sorted()
+        }
+
+        return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -72,11 +89,6 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
                 }
             }
         }
-        ViewCompat.setOnApplyWindowInsetsListener(view) { _, windowInsets ->
-            bottomPadding.intValue = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            WindowInsetsCompat.CONSUMED
-        }
-        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -117,26 +129,23 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
                 horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
                 vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
             )
-        val languages = remember {
-            dataSource?.availableLanguages() ?: listOf()
-        }
         var currentOverrideLanguage: String? by remember {
-            mutableStateOf(dataSource?.currentOverrideLanguage())
+            mutableStateOf(currentOverrideLanguage())
         }
         val nestedScrollInterop = rememberNestedScrollInteropConnection()
-        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop)) {
+        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = WindowInsets.systemBars.asPaddingValues()) {
             item {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-                TextRow(primaryText = CelestiaString("Current Language", ""), secondaryText = getLocalizedLanguageName(dataSource?.currentLanguage() ?: "en"))
+                TextRow(primaryText = CelestiaString("Current Language", ""), secondaryText = getLocalizedLanguageName(currentLanguage()))
             }
 
-            if (languages.isNotEmpty()) {
+            if (availableLanguageCodes.isNotEmpty()) {
                 item {
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                     Separator()
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                 }
-                items(items = languages) {
+                items(items = availableLanguageCodes) {
                     RadioButtonRow(primaryText = getLocalizedLanguageName(it), selected = currentOverrideLanguage == it) {
                         currentOverrideLanguage = it
                         setOverrideLanguage(it)
@@ -159,25 +168,8 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
                 }
                 Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
-                with(LocalDensity.current) {
-                    Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
-                }
             }
         }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is DataSource) {
-            dataSource = context
-        } else {
-            throw RuntimeException("$context must implement SettingsLanguageFragment.Listener and SettingsLanguageFragment.DataSource")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        dataSource = null
     }
 
     private fun setOverrideLanguage(language: String?) {
@@ -194,10 +186,27 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
         }
     }
 
-    interface DataSource {
-        fun availableLanguages(): List<String>
-        fun currentOverrideLanguage(): String?
-        fun currentLanguage(): String
+    private fun currentOverrideLanguage(): String? {
+        val overrideLocale = AppCompatDelegate.getApplicationLocales()
+        if (overrideLocale.isEmpty)
+            return null
+
+        // If set from system picker it is possible that the override locale
+        // is not exactly the one supported by Celestia, we check a full
+        // match with language_region first and then language only
+        val locale = Locale.forLanguageTag(overrideLocale.toLanguageTags())
+        if (locale.country.isNotEmpty()) {
+            val potential = "${locale.language}_${locale.country}"
+            if (availableLanguageCodes.contains(potential))
+                return potential
+        }
+        if (availableLanguageCodes.contains(locale.language))
+            return locale.language
+        return null
+    }
+
+    private fun currentLanguage(): String {
+        return AppCore.getLanguage()
     }
 
     companion object {

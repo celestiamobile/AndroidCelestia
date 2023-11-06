@@ -113,11 +113,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     AboutFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    SettingsCommonFragment.Listener,
-    SettingsCommonFragment.DataSource,
     EventFinderInputFragment.Listener,
     EventFinderResultFragment.Listener,
-    SettingsLanguageFragment.DataSource,
     InstalledAddonListFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
@@ -136,7 +133,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var coreSettings: PreferenceManager
 
     private val legacyCelestiaParentPath by lazy { this.filesDir.absolutePath }
-    private val celestiaParentPath by lazy { this.noBackupFilesDir.absolutePath }
+
     private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
 
     @Inject
@@ -168,27 +165,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var addonToOpen: String? = null
     private var guideToOpen: String? = null
 
-    private val defaultConfigFilePath by lazy { "$defaultDataDirectoryPath/$CELESTIA_CFG_NAME" }
-    private val defaultDataDirectoryPath by lazy { "$celestiaParentPath/$CELESTIA_DATA_FOLDER_NAME" }
+    @Inject
+    lateinit var defaultFilePaths: FilePaths
 
     private val celestiaConfigFilePath: String
-        get() {
-            val custom = appSettings[PreferenceManager.PredefinedKey.ConfigFilePath]
-            if (custom != null)
-                return custom
-            return defaultConfigFilePath
-        }
+        get() = appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] ?: defaultFilePaths.configFilePath
 
     private val celestiaDataDirPath: String
-        get() {
-            val custom = appSettings[PreferenceManager.PredefinedKey.DataDirPath]
-            if (custom != null)
-                return custom
-            return defaultDataDirectoryPath
-        }
+        get() = appSettings[PreferenceManager.PredefinedKey.DataDirPath] ?: defaultFilePaths.dataDirectoryPath
 
     private val fontDirPath: String
-        get() = "$celestiaParentPath/$CELESTIA_FONT_FOLDER_NAME"
+        get() = defaultFilePaths.fontDirectoryPath
 
     private var latestNewsID: String? = null
 
@@ -292,11 +279,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.bottom_sheet_overlay)) { _, insets ->
+        val bottomSheetContainer = findViewById<FrameLayout>(R.id.bottom_sheet)
+        ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
             // TODO: the suggested replacement for the deprecated methods does not work
             val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0, 0, 0, insets.systemWindowInsetBottom))
             return@setOnApplyWindowInsetsListener builder.build()
         }
+        bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
             celestiaLoadingFailed()
@@ -570,14 +559,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             CustomFont("$fontDirPath/NotoSans-Bold.ttf", 0)
         )
 
-        val localeDirectory = File("${celestiaDataDirPath}/locale")
-        if (localeDirectory.exists()) {
-            val languageCodes = ArrayList((localeDirectory.listFiles { file ->
-                return@listFiles file.isDirectory
-            } ?: arrayOf()).map { file -> file.name })
-            availableLanguageCodes = languageCodes.sorted()
-        }
-
         language = getString(R.string.celestia_language)
 
         enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true"
@@ -752,13 +733,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun copyAssetsAndRemoveOldAssets() {
         try {
             // Remove old ones, ignore any exception thrown
-            File(legacyCelestiaParentPath, CELESTIA_DATA_FOLDER_NAME).deleteRecursively()
-            File(legacyCelestiaParentPath, CELESTIA_FONT_FOLDER_NAME).deleteRecursively()
-            File(celestiaParentPath, CELESTIA_DATA_FOLDER_NAME).deleteRecursively()
-            File(celestiaParentPath, CELESTIA_FONT_FOLDER_NAME).deleteRecursively()
+            File(legacyCelestiaParentPath, FilePaths.CELESTIA_DATA_FOLDER_NAME).deleteRecursively()
+            File(legacyCelestiaParentPath, FilePaths.CELESTIA_FONT_FOLDER_NAME).deleteRecursively()
+            File(defaultFilePaths.dataDirectoryPath).deleteRecursively()
+            File(defaultFilePaths.fontDirectoryPath).deleteRecursively()
         } catch (ignored: Exception) {}
-        AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_DATA_FOLDER_NAME, celestiaParentPath)
-        AssetUtils.copyFileOrDir(this@MainActivity, CELESTIA_FONT_FOLDER_NAME, celestiaParentPath)
+        AssetUtils.copyFileOrDir(this@MainActivity, FilePaths.CELESTIA_DATA_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
+        AssetUtils.copyFileOrDir(this@MainActivity, FilePaths.CELESTIA_FONT_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
         appSettings[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
     }
 
@@ -1354,143 +1335,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onCommonSettingSliderItemChange(field: String, value: Double) {
-        applyDoubleValue(value, field, true)
-    }
-
-    override fun onCommonSettingActionItemSelected(action: Int) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.charEnter(action) }
-    }
-
-    override fun onCommonSettingUnknownAction(id: String) {
-        if (id == settingUnmarkAllID)
-            lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.universe.unmarkAll() }
-    }
-
-    override fun onCommonSettingSwitchStateChanged(field: String, value: Boolean, volatile: Boolean) {
-        applyBooleanValue(value, field, true, volatile)
-    }
-
-    override fun onCommonSettingSelectionRequested(
-        key: PreferenceManager.PredefinedKey,
-        options: List<Pair<Int, String>>
-    ) {
-        showOptions("", options = options.map { it.second }.toTypedArray()) { index ->
-            appSettings[key] = options[index].first.toString()
-            reloadSettings()
-        }
-    }
-
-    override fun onCommonSettingSelectionRequested(key: String, options: List<Pair<Int, String>>) {
-        showOptions("", options = options.map { it.second }.toTypedArray()) { index ->
-            applyIntValue(options[index].first, key, true)
-        }
-    }
-
     override fun onRefreshRateChanged(frameRateOption: Int) {
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
-    @Suppress("SameParameterValue")
-    private fun applyBooleanValue(value: Boolean, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
-        withContext(executor.asCoroutineDispatcher()) { appCore.setBooleanValueForField(field, value) }
-        if (!volatile)
-            coreSettings[PreferenceManager.CustomKey(field)] = if (value) "1" else "0"
-        if (reloadSettings)
-            reloadSettings()
-    }
-
-    private fun applyIntValue(value: Int, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
-        withContext(executor.asCoroutineDispatcher()) { appCore.setIntValueForField(field, value) }
-        if (!volatile)
-            coreSettings[PreferenceManager.CustomKey(field)] = value.toString()
-        if (reloadSettings)
-            reloadSettings()
-    }
-
-    private fun applyDoubleValue(value: Double, field: String, reloadSettings: Boolean = false, volatile: Boolean = false) = lifecycleScope.launch {
-        withContext(executor.asCoroutineDispatcher()) { appCore.setDoubleValueForField(field, value) }
-        if (!volatile)
-            coreSettings[PreferenceManager.CustomKey(field)] = value.toString()
-        if (reloadSettings)
-            reloadSettings()
-    }
-
-    override fun onCommonSettingPreferenceSwitchStateChanged(
-        key: PreferenceManager.PredefinedKey,
-        value: Boolean
-    ) {
-        appSettings[key] = if (value) "true" else "false"
-    }
-
-    override fun onCommonSettingPreferenceSliderStateChanged(
-        key: PreferenceManager.PredefinedKey,
-        value: Double
-    ) {
-        appSettings[key] = value.toString()
-    }
-
-    override fun onCommonSettingSelectionChanged(field: String, selected: Int) {
-        applyIntValue(selected, field, true)
-    }
-
-    override fun commonSettingPreferenceSwitchState(key: PreferenceManager.PredefinedKey): Boolean? {
-        return when (appSettings[key]) {
-            "true" -> true
-            "false" -> false
-            else -> null
-        }
-    }
-
-    override fun commonSettingPreferenceSelectionState(key: PreferenceManager.PredefinedKey): Int? {
-        return appSettings[key]?.toIntOrNull()
-    }
-
-    override fun commonSettingPreferenceSliderState(key: PreferenceManager.PredefinedKey): Double? {
-        return appSettings[key]?.toDoubleOrNull()
-    }
-
-    override fun commonSettingSliderValue(field: String): Double {
-        return appCore.getDoubleValueForField(field)
-    }
-
-    override fun commonSettingSelectionValue(field: String): Int {
-        return appCore.getIntValueForField(field)
-    }
-
-    override fun commonSettingSwitchState(field: String): Boolean {
-        return appCore.getBooleanValueForPield(field)
-    }
-
     override fun onAboutURLSelected(url: String) {
         openURL(url)
-    }
-
-    override fun currentLanguage(): String {
-        return AppCore.getLanguage()
-    }
-
-    override fun currentOverrideLanguage(): String? {
-        val overrideLocale = AppCompatDelegate.getApplicationLocales()
-        if (overrideLocale.isEmpty)
-            return null
-
-        // If set from system picker it is possible that the override locale
-        // is not exactly the one supported by Celestia, we check a full
-        // match with language_region first and then language only
-        val locale = Locale.forLanguageTag(overrideLocale.toLanguageTags())
-        if (locale.country.isNotEmpty()) {
-            val potential = "${locale.language}_${locale.country}"
-            if (availableLanguageCodes.contains(potential))
-                return potential
-        }
-        if (availableLanguageCodes.contains(locale.language))
-            return locale.language
-        return null
-    }
-
-    override fun availableLanguages(): List<String> {
-        return availableLanguageCodes
     }
 
     override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
@@ -1563,14 +1413,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         return true
     }
 
-    override fun provideFallbackConfigFilePath(): String {
-        return defaultConfigFilePath
-    }
-
-    override fun provideFallbackDataDirectoryPath(): String {
-        return defaultDataDirectoryPath
-    }
-
     override fun celestiaFragmentLoadingFromFallback() {
         lifecycleScope.launch {
             showAlert(CelestiaString("Error loading data, fallback to original configuration.", ""))
@@ -1584,12 +1426,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             startActivity(intent)
         else
             showUnsupportedAction()
-    }
-
-    private fun reloadSettings() {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is SettingsBaseFragment)
-            frag.reload()
     }
 
     private suspend fun hideOverlay(animated: Boolean) {
@@ -2152,9 +1988,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // 10: 1.0
         // < 10: 1.0 Beta X
 
-        private const val CELESTIA_DATA_FOLDER_NAME = "CelestiaResources"
-        private const val CELESTIA_FONT_FOLDER_NAME = "fonts"
-        private const val CELESTIA_CFG_NAME = "celestia.cfg"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"
 
@@ -2180,8 +2013,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
         var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
-
-        private var availableLanguageCodes: List<String> = listOf()
 
         private val supportedScriptTypes = listOf("cel", "celx")
 

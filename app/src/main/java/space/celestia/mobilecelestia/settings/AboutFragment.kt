@@ -18,24 +18,23 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Mdc3Theme
@@ -50,13 +49,11 @@ import space.celestia.mobilecelestia.utils.versionName
 class AboutFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
 
-    private var bottomPadding = mutableIntStateOf(0)
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = ComposeView(requireContext()).apply {
+        return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -66,11 +63,6 @@ class AboutFragment : NavigationFragment.SubFragment() {
                 }
             }
         }
-        ViewCompat.setOnApplyWindowInsetsListener(view) { _, windowInsets ->
-            bottomPadding.intValue = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            WindowInsetsCompat.CONSUMED
-        }
-        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -85,7 +77,7 @@ class AboutFragment : NavigationFragment.SubFragment() {
             mutableStateOf(createAboutItems())
         }
         val nestedScrollInterop = rememberNestedScrollInteropConnection()
-        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop)) {
+        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = WindowInsets.systemBars.asPaddingValues()) {
             for (index in aboutSections.indices) {
                 val aboutSection = aboutSections[index]
                 item {
@@ -119,9 +111,6 @@ class AboutFragment : NavigationFragment.SubFragment() {
 
             item {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
-                with(LocalDensity.current) {
-                    Spacer(modifier = Modifier.height(bottomPadding.intValue.toDp()))
-                }
             }
         }
     }
