@@ -544,6 +544,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
                 CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
             ),
+            "ka" to Pair(
+                CustomFont("$fontDirPath/NotoSansGeorgian-Regular.ttf", 0),
+                CustomFont("$fontDirPath/NotoSansGeorgian-Bold.ttf", 0)
+            ),
             "ko" to Pair(
                 CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
                 CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 1)

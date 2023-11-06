@@ -11,6 +11,7 @@
     <locale android:name="gl"/> <!-- Galician -->
     <locale android:name="it"/> <!-- Italian -->
     <locale android:name="ja"/> <!-- Japanese -->
+    <locale android:name="ka"/> <!-- Georgian -->
     <locale android:name="ko"/> <!-- Korean -->
     <locale android:name="lt"/> <!-- Lithuanian -->
     <locale android:name="lv"/> <!-- Latvian -->
