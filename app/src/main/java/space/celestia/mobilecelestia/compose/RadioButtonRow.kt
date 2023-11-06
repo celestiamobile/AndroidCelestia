@@ -19,8 +19,8 @@ import androidx.compose.ui.res.dimensionResource
 import space.celestia.mobilecelestia.R
 
 @Composable
-fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, selected: Boolean, onClick: (() -> Unit)?) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(
+fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, selected: Boolean, hideHorizontalPadding: Boolean = false, onClick: (() -> Unit)?) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = if (hideHorizontalPadding) modifier else modifier.padding(
         start = dimensionResource(id = R.dimen.list_item_small_margin_horizontal),
         end = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)
     )) {
