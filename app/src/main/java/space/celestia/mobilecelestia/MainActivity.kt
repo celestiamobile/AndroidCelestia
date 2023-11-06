@@ -10,7 +10,6 @@
  */
 
 package space.celestia.mobilecelestia
-
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
@@ -84,7 +83,6 @@ import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.purchase.SubscriptionBackingFragment
 import space.celestia.mobilecelestia.resource.*
 import space.celestia.mobilecelestia.resource.model.*
 import space.celestia.mobilecelestia.search.SearchFragment
@@ -120,8 +118,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     HelpFragment.Listener,
     FavoriteFragment.Listener,
     FavoriteItemFragment.Listener,
-    SettingsItemFragment.Listener,
-    AboutFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
     EventFinderInputFragment.Listener,
@@ -130,9 +126,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     DestinationDetailFragment.Listener,
     GoToContainerFragment.Listener,
     ResourceItemFragment.Listener,
-    SettingsRefreshRateFragment.Listener,
-    CommonWebFragment.Listener,
-    SubscriptionBackingFragment.Listener {
+    SettingsFragment.Listener,
+    CommonWebFragment.Listener {
 
     @AppSettings
     @Inject
@@ -1387,13 +1382,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is FavoriteFragment) {
             frag.move(fromIndex, toIndex)
-        }
-    }
-
-    override fun onMainSettingItemSelected(item: SettingsItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is SettingsFragment) {
-            frag.pushMainSettingItem(item)
         }
     }
 
