@@ -92,7 +92,7 @@ import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
-import space.celestia.mobilecelestia.travel.GoToInputFragment
+import space.celestia.mobilecelestia.travel.GoToData
 import space.celestia.mobilecelestia.utils.*
 import java.io.File
 import java.io.IOException
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     EventFinderResultFragment.Listener,
     InstalledAddonListFragment.Listener,
     DestinationDetailFragment.Listener,
-    GoToInputFragment.Listener,
+    GoToContainerFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
@@ -1968,7 +1968,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showGoTo() = lifecycleScope.launch {
-        val inputData = GoToInputFragment.GoToData(
+        val inputData = GoToData(
             objectName = "",
             0.0f,
             0.0f,
@@ -1978,7 +1978,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(GoToContainerFragment.newInstance(inputData, Selection()))
     }
 
-    override fun onGoToObject(goToData: GoToInputFragment.GoToData, selection: Selection) {
+    override fun onGoToObject(goToData: GoToData, selection: Selection) {
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return
