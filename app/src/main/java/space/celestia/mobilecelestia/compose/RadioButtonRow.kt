@@ -19,14 +19,14 @@ import androidx.compose.ui.semantics.Role
 import space.celestia.mobilecelestia.R
 
 @Composable
-fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, selected: Boolean, onClick: (() -> Unit)?) {
+fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, selected: Boolean, hideHorizontalPadding: Boolean = false, onClick: (() -> Unit)?) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.toggleable(selected, role = Role.RadioButton, onValueChange = { newValue ->
         if (newValue)
             onClick?.invoke()
-    }).padding(
+    }).then(if (hideHorizontalPadding) Modifier else Modifier.padding(
         start = dimensionResource(id = R.dimen.list_item_small_margin_horizontal),
         end = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)
-    )) {
+    ))) {
         RadioButton(selected = selected, onClick = null, modifier = Modifier.minimumInteractiveComponentSize())
         Column(modifier = Modifier.weight(1.0f).padding(
             vertical = dimensionResource(id = R.dimen.list_item_small_margin_vertical)
