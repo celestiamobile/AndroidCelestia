@@ -15,7 +15,7 @@ import space.celestia.mobilecelestia.R
 
 @Composable
 fun EmptyHint(text: String, modifier: Modifier = Modifier, actionText: String? = null, actionHandler: (() -> Unit)? = null) {
-    Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = text, textAlign = TextAlign.Center)
         if (actionText != null) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))

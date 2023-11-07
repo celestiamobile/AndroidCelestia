@@ -13,13 +13,8 @@ package space.celestia.mobilecelestia.settings
 
 import android.os.Build
 import android.os.Bundle
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
-import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.purchase.FontSettingFragment
@@ -45,10 +40,7 @@ class SettingsFragment : NavigationFragment() {
                 pushFragment(SettingsCurrentTimeFragment.newInstance())
             }
             is SettingsRenderInfoItem -> {
-                lifecycleScope.launch {
-                    val renderInfo = withContext(executor.asCoroutineDispatcher()) { appCore.renderInfo }
-                    pushFragment(SimpleTextFragment.newInstance(item.name, renderInfo))
-                }
+                pushFragment(RenderInfoFragment.newInstance())
             }
             is SettingsRefreshRateItem -> {
                 pushFragment(SettingsRefreshRateFragment.newInstance())

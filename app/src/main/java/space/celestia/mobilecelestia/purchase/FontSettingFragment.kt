@@ -3,19 +3,17 @@ package space.celestia.mobilecelestia.purchase
 import android.graphics.fonts.SystemFonts
 import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,55 +30,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import dagger.hilt.android.AndroidEntryPoint
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.Font
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.Header
-import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.RadioButtonRow
-import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.settings.CustomFont
 import space.celestia.mobilecelestia.settings.boldFont
 import space.celestia.mobilecelestia.settings.normalFont
+import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.PreferenceManager
-import javax.inject.Inject
 
-@AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
 class FontSettingFragment : SubscriptionBackingFragment() {
     private class Font(val path: String, val name: String, val ttcIndex: Int)
-
-    @AppSettings
-    @Inject
-    lateinit var appSettings: PreferenceManager
-
-    override fun createView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    MainScreen()
-                }
-            }
-        }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -89,7 +57,8 @@ class FontSettingFragment : SubscriptionBackingFragment() {
     }
 
     @Composable
-    private fun MainScreen() {
+    override fun MainView() {
+        val viewModel: SettingsViewModel = hiltViewModel()
         var systemFonts by remember {
             mutableStateOf(listOf<Font>())
         }
@@ -100,10 +69,10 @@ class FontSettingFragment : SubscriptionBackingFragment() {
             mutableIntStateOf(0)
         }
         var normalFont by remember {
-            mutableStateOf(appSettings.normalFont)
+            mutableStateOf(viewModel.appSettings.normalFont)
         }
         var boldFont by remember {
-            mutableStateOf(appSettings.boldFont)
+            mutableStateOf(viewModel.appSettings.boldFont)
         }
         val currentFont = if (selectedTabIndex == 0) normalFont else boldFont
         if (fontsLoaded) {
@@ -129,10 +98,10 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                     RadioButtonRow(primaryText = CelestiaString("Default", ""), selected = currentFont == null, onClick = {
                         if (selectedTabIndex == 0) {
-                            appSettings.normalFont = null
+                            viewModel.appSettings.normalFont = null
                             normalFont = null
                         } else {
-                            appSettings.boldFont = null
+                            viewModel.appSettings.boldFont = null
                             boldFont = null
                         }
                     })
@@ -149,10 +118,10 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                             onClick = {
                                 val font = CustomFont(it.path, it.ttcIndex)
                                 if (selectedTabIndex == 0) {
-                                    appSettings.normalFont = font
+                                    viewModel.appSettings.normalFont = font
                                     normalFont = font
                                 } else {
-                                    appSettings.boldFont = font
+                                    viewModel.appSettings.boldFont = font
                                     boldFont = font
                                 }
                             })
@@ -193,10 +162,8 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                 systemFonts = fonts
                 fontsLoaded = true
             }
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            Box(modifier = Modifier.fillMaxSize().systemBarsPadding(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
         }
     }

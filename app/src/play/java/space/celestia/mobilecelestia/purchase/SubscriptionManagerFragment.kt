@@ -169,7 +169,9 @@ class SubscriptionManagerFragment: Fragment() {
                     needsRefreshing = false
                     if (subscriptionResult == null || subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscriptionValue == null || purchaseManager.subscriptionStatus is PurchaseManager.SubscriptionStatus.Error) {
                         errorText = CelestiaString("We encountered an error.", "")
+                        subscription = null
                     } else {
+                        errorText = null
                         subscription = subscriptionValue
                     }
                 }
