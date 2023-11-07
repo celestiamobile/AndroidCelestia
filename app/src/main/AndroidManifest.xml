@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="442"
+    android:versionCode="443"
     android:versionName="1.6.1">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
