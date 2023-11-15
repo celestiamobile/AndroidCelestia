@@ -21,7 +21,6 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
-import javax.inject.Singleton
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
@@ -87,9 +86,7 @@ class ResourceManager {
 
     private fun installedResources(): List<ResourceItem> {
         val items = arrayListOf<ResourceItem>()
-        // Scan script directory first because add-on directory may need migration
         val scriptDirPath = scriptDirectory
-        val trackedIds = hashSetOf<String>()
         if (scriptDirPath != null) {
             val parentDir = File(scriptDirPath)
             if (parentDir.exists() && parentDir.isDirectory) {
@@ -107,7 +104,6 @@ class ResourceManager {
                             val item = gson.fromJson(it, ResourceItem::class.java)
                             if (item.id == folder.name && item.type == "script") {
                                 items.add(item)
-                                trackedIds.add(item.id)
                             }
                         }
                     } catch (ignored: Throwable) {}
@@ -131,17 +127,8 @@ class ResourceManager {
                         reader.use {
                             val gson = GsonBuilder().create()
                             val item = gson.fromJson(it, ResourceItem::class.java)
-                            if (item.id == folder.name && !trackedIds.contains(item.id)) {
-                                if (item.type == "script") {
-                                    // Perform migration by moving folder to scripts folder
-                                    try {
-                                        val newFolder = File(scriptDirPath, item.id)
-                                        folder.renameTo(newFolder)
-                                        items.add(item)
-                                    } catch (ignored: Throwable) {}
-                                } else {
-                                    items.add(item)
-                                }
+                            if (item.id == folder.name && item.type != "script") {
+                                items.add(item)
                             }
                         }
                     } catch (ignored: Throwable) {}
