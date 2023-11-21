@@ -44,7 +44,7 @@ jobs:
 
   - script: |
       cd CelestiaContent
-      git checkout 3a9eeb95cff1de78374643cab92fb9fe7db4f2c4
+      git checkout db53ae319ffc06d2d6fe92d2b65d210fdae7bd67
     displayName: 'Checkout Content'
 
   - script: |
