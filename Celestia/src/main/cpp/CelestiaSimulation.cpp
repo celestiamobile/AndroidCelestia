@@ -100,7 +100,7 @@ Java_space_celestia_celestia_Simulation_c_1setTime(JNIEnv *env, jclass clazz, jl
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1goToEclipse(JNIEnv *env, jclass clazz, jlong pointer, jdouble time, jobject ref, jobject target) {
-    using namespace celmath;
+    using namespace celestia::math;
     auto refSel = javaSelectionAsSelection(env, ref);
     auto targetSel = javaSelectionAsSelection(env, target);
     auto sim = (Simulation *)pointer;

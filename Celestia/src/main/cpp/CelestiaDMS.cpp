@@ -10,7 +10,7 @@
  */
 
 #include "CelestiaJNI.h"
-#include <celengine/astro.h>
+#include <celastro/astro.h>
 
 extern "C"
 JNIEXPORT jint JNICALL

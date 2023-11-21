@@ -10,7 +10,7 @@
  */
 
 #include "CelestiaVector.h"
-#include <celengine/astro.h>
+#include <celastro/date.h>
 #include <celengine/observer.h>
 
 extern "C"

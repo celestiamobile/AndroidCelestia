@@ -205,10 +205,6 @@ public class AppCore {
         c_setRendererFont(pointer, fontPath, collectionIndex, fontSize, fontStyle);
     }
 
-    public void clearFonts() {
-        c_clearFonts(pointer);
-    }
-
     public void setPickTolerance(float pickTolerance) {
         c_setPickTolerance(pointer, pickTolerance);
     }
@@ -285,7 +281,6 @@ public class AppCore {
     private static native void c_setFont(long ptr, String fontPath, int collectionIndex, int fontSize);
     private static native void c_setTitleFont(long ptr, String fontPath, int collectionIndex, int fontSize);
     private static native void c_setRendererFont(long ptr, String fontPath, int collectionIndex, int fontSize, int fontStyle);
-    private static native void c_clearFonts(long ptr);
 
     private static native void c_setPickTolerance(long ptr, float pickTolerance);
 

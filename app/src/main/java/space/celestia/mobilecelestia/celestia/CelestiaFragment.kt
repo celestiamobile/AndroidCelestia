@@ -351,8 +351,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         appCore.setSafeAreaInsets(savedInsets.scaleBy(scaleFactor))
 
-        appCore.clearFonts()
-
         // Use installed font
         val locale = AppCore.getLanguage()
         val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null

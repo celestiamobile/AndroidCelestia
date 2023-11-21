@@ -19,17 +19,35 @@ set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/favorites.h
         ${CELESTIA_SRC_DIR}/celestia/helper.cpp
         ${CELESTIA_SRC_DIR}/celestia/helper.h
+        ${CELESTIA_SRC_DIR}/celestia/hud.cpp
+        ${CELESTIA_SRC_DIR}/celestia/hud.h
         ${CELESTIA_SRC_DIR}/celestia/miniaudiosession.cpp
         ${CELESTIA_SRC_DIR}/celestia/miniaudiosession.h
         ${CELESTIA_SRC_DIR}/celestia/moviecapture.h
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.cpp
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.h
+        ${CELESTIA_SRC_DIR}/celestia/textinput.cpp
+        ${CELESTIA_SRC_DIR}/celestia/textinput.h
         ${CELESTIA_SRC_DIR}/celestia/textprintposition.cpp
         ${CELESTIA_SRC_DIR}/celestia/textprintposition.h
+        ${CELESTIA_SRC_DIR}/celestia/timeinfo.h
         ${CELESTIA_SRC_DIR}/celestia/url.cpp
         ${CELESTIA_SRC_DIR}/celestia/url.h
         ${CELESTIA_SRC_DIR}/celestia/view.cpp
         ${CELESTIA_SRC_DIR}/celestia/view.h
+        ${CELESTIA_SRC_DIR}/celestia/viewmanager.cpp
+        ${CELESTIA_SRC_DIR}/celestia/viewmanager.h
+        ${CELESTIA_SRC_DIR}/celestia/windowmetrics.cpp
+        ${CELESTIA_SRC_DIR}/celestia/windowmetrics.h
+        )
+
+list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_SRC_DIR}/celastro/astro.cpp
+        ${CELESTIA_SRC_DIR}/celastro/astro.h
+        ${CELESTIA_SRC_DIR}/celastro/date.cpp
+        ${CELESTIA_SRC_DIR}/celastro/date.h
+        ${CELESTIA_SRC_DIR}/celastro/units.cpp
+        ${CELESTIA_SRC_DIR}/celastro/units.h
         )
 
 list(APPEND CELESTIA_SOURCES
@@ -216,8 +234,6 @@ list(APPEND CELESTIA_SOURCES
 list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/asterism.cpp
         ${CELESTIA_SRC_DIR}/celengine/asterism.h
-        ${CELESTIA_SRC_DIR}/celengine/astro.cpp
-        ${CELESTIA_SRC_DIR}/celengine/astro.h
         ${CELESTIA_SRC_DIR}/celengine/astroobj.h
         ${CELESTIA_SRC_DIR}/celengine/atmosphere.h
         ${CELESTIA_SRC_DIR}/celengine/axisarrow.cpp

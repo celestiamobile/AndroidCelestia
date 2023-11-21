@@ -870,7 +870,7 @@ Java_space_celestia_celestia_AppCore_c_1getHudDetail(JNIEnv *env, jclass clazz, 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setMeasurementSystem(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = (CelestiaCore *)pointer;
-    core->setMeasurementSystem((CelestiaCore::MeasurementSystem)value);
+    core->setMeasurementSystem(static_cast<celestia::MeasurementSystem>(value));
 }
 
 extern "C"
@@ -884,7 +884,7 @@ Java_space_celestia_celestia_AppCore_c_1getMeasurementSystem(JNIEnv *env, jclass
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setTemperatureScale(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = (CelestiaCore *)pointer;
-    core->setTemperatureScale((CelestiaCore::TemperatureScale)value);
+    core->setTemperatureScale(static_cast<celestia::TemperatureScale>(value));
 }
 
 extern "C"
@@ -1058,7 +1058,7 @@ Java_space_celestia_celestia_AppCore_c_1setFont(JNIEnv *env, jclass clazz,
                                                            jint font_size) {
     auto core = (CelestiaCore *)ptr;
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
-    core->setFont(c_path, collection_index, font_size);
+    core->setHudFont(c_path, collection_index, font_size);
     env->ReleaseStringUTFChars(font_path, c_path);
 }
 
@@ -1071,7 +1071,7 @@ Java_space_celestia_celestia_AppCore_c_1setTitleFont(JNIEnv *env, jclass clazz,
                                                                 jint font_size) {
     auto core = (CelestiaCore *)ptr;
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
-    core->setTitleFont(c_path, collection_index, font_size);
+    core->setHudTitleFont(c_path, collection_index, font_size);
     env->ReleaseStringUTFChars(font_path, c_path);
 }
 
@@ -1087,13 +1087,6 @@ Java_space_celestia_celestia_AppCore_c_1setRendererFont(JNIEnv *env, jclass claz
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
     core->setRendererFont(c_path, collection_index, font_size, (Renderer::FontStyle)font_style);
     env->ReleaseStringUTFChars(font_path, c_path);
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_space_celestia_celestia_AppCore_c_1clearFonts(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto core = (CelestiaCore *)ptr;
-    core->clearFonts();
 }
 
 extern "C"
@@ -1186,5 +1179,5 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setLayoutDirection(JNIEnv *env, jclass clazz, jlong ptr,
                                                            jint layout_direction) {
     auto core = reinterpret_cast<CelestiaCore *>(ptr);
-    core->setLayoutDirection((CelestiaCore::LayoutDirection)layout_direction);
+    core->setLayoutDirection(static_cast<celestia::LayoutDirection>(layout_direction));
 }
