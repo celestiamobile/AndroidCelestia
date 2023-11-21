@@ -18,6 +18,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.purchase.FontSettingFragment
+import space.celestia.mobilecelestia.purchase.ToolbarSettingFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -57,6 +58,9 @@ class SettingsFragment : NavigationFragment() {
             is SettingsFontItem -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                     pushFragment(FontSettingFragment.newInstance())
+            }
+            is SettingsToolbarItem -> {
+                pushFragment(ToolbarSettingFragment.newInstance())
             }
             else -> {
                 throw RuntimeException("SettingsFragment cannot handle item $item")

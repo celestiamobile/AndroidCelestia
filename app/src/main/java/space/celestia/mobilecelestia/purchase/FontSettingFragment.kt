@@ -45,6 +45,7 @@ import space.celestia.mobilecelestia.settings.boldFont
 import space.celestia.mobilecelestia.settings.normalFont
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.PreferenceManager
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class FontSettingFragment : SubscriptionBackingFragment() {

@@ -505,6 +505,12 @@ class SettingsFontItem : SettingsItem, Serializable {
         get() = CelestiaString("Font", "")
 }
 
+class SettingsToolbarItem : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString("Toolbar", "")
+}
+
+
 class SettingsRefreshRateItem : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString("Frame Rate", "")
@@ -649,6 +655,7 @@ private val staticOtherItems: List<SettingsItem> = listOf(
 
 val celestiaPlusSettingSection: List<CommonSectionV2> by lazy {
     val items = arrayListOf<SettingsItem>()
+    items.add(SettingsToolbarItem())
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         items.add(SettingsFontItem())
     }

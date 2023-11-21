@@ -103,4 +103,6 @@
     <dimen name="list_spacing_tall">28dp</dimen>
 
     <dimen name="tab_title_text_padding_vertical">10dp</dimen>
+
+    <dimen name="list_item_icon_size">24dp</dimen>
 </resources>

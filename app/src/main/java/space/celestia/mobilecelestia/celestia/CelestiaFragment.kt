@@ -40,12 +40,16 @@ import space.celestia.mobilecelestia.common.FilePaths
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.purchase.PurchaseManager
+import space.celestia.mobilecelestia.purchase.ToolbarSettingFragment
+import space.celestia.mobilecelestia.purchase.toolbarItems
 import space.celestia.mobilecelestia.settings.boldFont
 import space.celestia.mobilecelestia.settings.normalFont
 import space.celestia.mobilecelestia.utils.*
 import java.lang.ref.WeakReference
 import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
+import kotlin.concurrent.fixedRateTimer
 
 @AndroidEntryPoint
 class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler {
@@ -96,6 +100,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     private val scaleFactor: Float
         get() = if (enableFullResolution) 1.0f else (1.0f / density)
+
+    private var zoomTimer: Timer? = null
 
     private var loadSuccess = false
     private var haveSurface = false
@@ -219,6 +225,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         listener = null
         activity = null
+        zoomTimer?.cancel()
+        zoomTimer = null
     }
 
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
@@ -384,14 +392,20 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     private fun setUpInteractions() {
         // Set up control buttons
-        val items = listOf(
-            CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", ""), interactionMode == CelestiaInteraction.InteractionMode.Camera),
-            CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "")),
-            CelestiaTapButton(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
-            CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "")),
-            CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", ""))
+        val buttonMap = hashMapOf(
+            ToolbarSettingFragment.ToolbarAction.Mode to CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", ""), interactionMode == CelestiaInteraction.InteractionMode.Camera),
+            ToolbarSettingFragment.ToolbarAction.ZoomIn to CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
+            ToolbarSettingFragment.ToolbarAction.ZoomOut to CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
+            ToolbarSettingFragment.ToolbarAction.Info to CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "")),
+            ToolbarSettingFragment.ToolbarAction.Search to CelestiaTapButton(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
+            ToolbarSettingFragment.ToolbarAction.Menu to CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "")),
+            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", ""))
         )
-        controlView.buttons = items
+        val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
+        val actions = ArrayList(if (hasCelestiaPlus) appSettings.toolbarItems ?: ToolbarSettingFragment.ToolbarAction.defaultItems else ToolbarSettingFragment.ToolbarAction.defaultItems)
+        if (!actions.contains(ToolbarSettingFragment.ToolbarAction.Menu))
+            actions.add(ToolbarSettingFragment.ToolbarAction.Menu)
+        controlView.buttons = actions.mapNotNull { buttonMap.get(it) }
 
         glView.isReady = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isContextMenuEnabled) {
@@ -646,9 +660,26 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    override fun didStartPressingAction(action: CelestiaControlAction) {}
+    override fun didStartPressingAction(action: CelestiaControlAction) {
+        when (action) {
+            CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
+            CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
+            else -> {}
+        }
 
-    override fun didEndPressingAction(action: CelestiaControlAction) {}
+        zoomTimer?.cancel()
+        val weakSelf = WeakReference(this)
+        zoomTimer = fixedRateTimer("zoom", false, 0, 100) {
+            val self = weakSelf.get() ?: return@fixedRateTimer
+            self.viewInteraction.callZoom()
+        }
+    }
+
+    override fun didEndPressingAction(action: CelestiaControlAction) {
+        zoomTimer?.cancel()
+        zoomTimer = null
+        viewInteraction.zoomMode = null
+    }
 
     override fun requestContextMenu(x: Float, y: Float, selection: Selection) {
         if (!isContextMenuEnabled)

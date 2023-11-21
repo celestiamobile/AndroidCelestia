@@ -53,7 +53,8 @@ class PreferenceManager(context: Context, name: String) {
         NormalFontPath,
         NormalFontIndex,
         BoldFontPath,
-        BoldFontIndex
+        BoldFontIndex,
+        ToolbarItems
         ;
 
         override val valueString: String
