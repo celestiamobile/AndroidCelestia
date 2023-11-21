@@ -175,11 +175,15 @@ class SubscriptionManagerFragment: Fragment() {
                         subscription = subscriptionValue
                     }
                 }
-                Box(modifier = Modifier.fillMaxWidth().weight(1.0f), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1.0f), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             } else if (errorText != null || subscriptionStatus !is PurchaseManager.SubscriptionStatus.Good) {
-                Box(modifier = Modifier.fillMaxWidth().weight(1.0f), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1.0f), contentAlignment = Alignment.Center) {
                     ErrorText(text = errorText) {
                         needsRefreshing = true
                     }
@@ -360,6 +364,9 @@ class SubscriptionManagerFragment: Fragment() {
                 }) {
                 Text(text = CelestiaString("Manage Subscription", ""))
             }
+        } else {
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
+            Text(text = CelestiaString("Purchase will be available immediately. Cancel at anytime in Subscriptions on Google Play.", ""), color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodySmall)
         }
     }
 
