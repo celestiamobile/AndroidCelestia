@@ -223,6 +223,9 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
                             dimensionResource(id = R.dimen.list_item_action_icon_padding)
                         ))
                 }
+                if (!item.isLeaf) {
+                    Image(painter = painterResource(id = R.drawable.accessory_full_disclosure), contentDescription = "", colorFilter = ColorFilter.tint(colorResource(id = com.google.android.material.R.color.material_on_background_disabled)))
+                }
             }
         }
     }

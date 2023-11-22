@@ -203,7 +203,14 @@ class SearchFragment : NavigationFragment.SubFragment() {
         ) {
             items(searchResults) {
                 TextRow(primaryText = it, modifier = Modifier.clickable {
-                    listener?.onSearchItemSelected(it)
+                    val lastSeparator = searchKey.lastIndexOf('/')
+                    val name: String
+                    if (lastSeparator != -1) {
+                        name = searchKey.substring(startIndex = 0, endIndex = lastSeparator + 1) + it
+                    } else {
+                        name = it
+                    }
+                    listener?.onSearchItemSelected(name)
                 })
             }
         }
