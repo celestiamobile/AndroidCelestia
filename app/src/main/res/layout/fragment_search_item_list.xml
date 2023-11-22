@@ -39,7 +39,8 @@
         android:layout_height="match_parent"
         app:layout_anchor="@id/search_bar"
         style="@style/SearchView">
-        <include layout="@layout/fragment_general_grouped_list"
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/main_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
     </com.google.android.material.search.SearchView>

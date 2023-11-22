@@ -1,7 +1,7 @@
 /*
  * SearchFragment.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2023-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,9 +21,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,6 +47,8 @@ import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.TextRow
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 
@@ -57,14 +72,12 @@ fun EditText.textChanges(): Flow<String> {
 @AndroidEntryPoint
 class SearchFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
-    private val listAdapter by lazy { SearchRecyclerViewAdapter(listener) }
 
     private lateinit var searchView: SearchView
     private lateinit var searchBar: SearchBar
-    private lateinit var listView: RecyclerView
 
     private var searchKey: String = ""
-    private var searchResults = listOf<String>()
+    private var searchResults = mutableStateListOf<String>()
 
     @Inject
     lateinit var appCore: AppCore
@@ -77,7 +90,9 @@ class SearchFragment : NavigationFragment.SubFragment() {
 
         if (savedInstanceState != null) {
             searchKey = savedInstanceState.getString(SEARCH_KEY_ARG, "")
-            searchResults = savedInstanceState.getStringArrayList(SEARCH_RESULTS_ARG) ?: listOf()
+            val results = savedInstanceState.getStringArrayList(SEARCH_RESULTS_ARG) ?: listOf()
+            searchResults.clear()
+            searchResults.addAll(results)
         }
     }
 
@@ -93,16 +108,16 @@ class SearchFragment : NavigationFragment.SubFragment() {
             searchView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         }
 
-        // Set the adapter
-        listAdapter.updateSearchResults(searchKey, searchResults)
-        listView = view.findViewById(R.id.list)
-        listView.layoutManager = LinearLayoutManager(context)
-        listView.adapter = listAdapter
-
-        // layout_behavior and layout_anchor do not work well together, so we cannot do edge to edge here...
-        // listView.clipToPadding = false
-        // listView.fitsSystemWindows = true
-
+        view.findViewById<ComposeView>(R.id.main_content).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainContent()
+                }
+            }
+        }
         return view
     }
 
@@ -133,9 +148,8 @@ class SearchFragment : NavigationFragment.SubFragment() {
             .onEach {
                 withContext(Dispatchers.Main) {
                     searchKey = it.first
-                    searchResults = it.second
-                    listAdapter.updateSearchResults(searchKey, searchResults)
-                    listAdapter.notifyDataSetChanged()
+                    searchResults.clear()
+                    searchResults.addAll(it.second)
                 }
             }
             .flowOn(Dispatchers.IO)
@@ -179,6 +193,20 @@ class SearchFragment : NavigationFragment.SubFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    @Composable
+    private fun MainContent() {
+        LazyColumn(
+            contentPadding = WindowInsets.systemBars.asPaddingValues(),
+            modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()).background(color = MaterialTheme.colorScheme.background)
+        ) {
+            items(searchResults) {
+                TextRow(primaryText = it, modifier = Modifier.clickable {
+                    listener?.onSearchItemSelected(it)
+                })
+            }
+        }
     }
 
     interface Listener {
