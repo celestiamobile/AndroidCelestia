@@ -114,6 +114,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
+        fun celestiaFragmentDidRequestGoTo()
         fun celestiaFragmentDidRequestObjectInfo()
         fun celestiaFragmentDidRequestSearch()
         fun celestiaFragmentDidRequestObjectInfo(selection: Selection)
@@ -400,13 +401,14 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             ToolbarSettingFragment.ToolbarAction.Info to CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "")),
             ToolbarSettingFragment.ToolbarAction.Search to CelestiaTapButton(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
             ToolbarSettingFragment.ToolbarAction.Menu to CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "")),
-            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", ""))
+            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", "")),
+            ToolbarSettingFragment.ToolbarAction.Go to CelestiaTapButton(R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", ""))
         )
         val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
         val actions = ArrayList(if (hasCelestiaPlus) appSettings.toolbarItems ?: ToolbarSettingFragment.ToolbarAction.defaultItems else ToolbarSettingFragment.ToolbarAction.defaultItems)
         if (!actions.contains(ToolbarSettingFragment.ToolbarAction.Menu))
             actions.add(ToolbarSettingFragment.ToolbarAction.Menu)
-        controlView.buttons = actions.mapNotNull { buttonMap.get(it) }
+        controlView.buttons = actions.mapNotNull { buttonMap[it] }
 
         glView.isReady = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isContextMenuEnabled) {
@@ -592,6 +594,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             }
             CelestiaControlAction.Show -> {
                 showControlViewIfNeeded()
+            }
+            CelestiaControlAction.Go -> {
+                listener?.celestiaFragmentDidRequestGoTo()
             }
             else -> {}
         }

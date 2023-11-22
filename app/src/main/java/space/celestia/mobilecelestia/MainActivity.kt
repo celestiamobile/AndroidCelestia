@@ -1416,6 +1416,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showSearch()
     }
 
+    override fun celestiaFragmentDidRequestGoTo() {
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+            appCore.charEnter(CelestiaAction.GoTo.value)
+        }
+    }
+
     override fun celestiaFragmentCanAcceptKeyEvents(): Boolean {
         // check drawer
         if (drawerLayout.isDrawerOpen(GravityCompat.END))

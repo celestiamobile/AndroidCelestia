@@ -68,7 +68,8 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
         Menu("menu"),
         Hide("hide"),
         ZoomIn("zoom_in"),
-        ZoomOut("zoom_out");
+        ZoomOut("zoom_out"),
+        Go("go");
 
         val title: String
             get() {
@@ -80,6 +81,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     Hide -> CelestiaString("Hide", "")
                     ZoomIn -> CelestiaString("Zoom In", "")
                     ZoomOut -> CelestiaString("Zoom Out", "")
+                    Go -> CelestiaString("Go", "")
                 }
             }
 
@@ -93,6 +95,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     Hide -> R.drawable.toolbar_exit
                     ZoomIn -> R.drawable.control_zoom_in
                     ZoomOut -> R.drawable.control_zoom_out
+                    Go -> R.drawable.control_go
                 }
             }
 
@@ -117,7 +120,8 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     Menu,
                     Hide,
                     ZoomIn,
-                    ZoomOut
+                    ZoomOut,
+                    Go
                 )
         }
     }
@@ -155,7 +159,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
         }
 
         @Composable
-        fun Item(item: ToolbarAction, isDraggable: Boolean, isDragging: Boolean) {
+        fun Item(item: ToolbarAction, isDraggable: Boolean) {
             var showMenu by remember { mutableStateOf(false) }
             var rowModifier = Modifier
                 .fillMaxWidth()
@@ -221,13 +225,13 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
             contentPadding = contentPadding
         ) {
             itemsIndexed(list, key = { _, item -> item }) { index, item ->
-                DraggableItem(dragDropState, index) { isDragging ->
-                    Item(item = item, isDraggable = true, isDragging = isDragging)
+                DraggableItem(dragDropState, index) { _ ->
+                    Item(item = item, isDraggable = true)
                 }
             }
 
-            itemsIndexed(otherItems, key = { _, item -> item }) { index, item ->
-                Item(item = item, isDraggable = false, isDragging = false)
+            itemsIndexed(otherItems, key = { _, item -> item }) { _, item ->
+                Item(item = item, isDraggable = false)
             }
 
             item {
@@ -269,6 +273,7 @@ var PreferenceManager.toolbarItems: List<ToolbarSettingFragment.ToolbarAction>?
         if (value == null) {
             set(PreferenceManager.PredefinedKey.ToolbarItems, null)
         } else {
-            set(PreferenceManager.PredefinedKey.ToolbarItems, value.map { it.id }.joinToString(separator = ","))
+            set(PreferenceManager.PredefinedKey.ToolbarItems,
+                value.joinToString(separator = ",") { it.id })
         }
     }
