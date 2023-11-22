@@ -12,7 +12,7 @@
 package space.celestia.mobilecelestia.utils
 
 import space.celestia.celestia.*
-import space.celestia.mobilecelestia.favorite.BookmarkNode
+import space.celestia.celestiafoundation.favorite.BookmarkNode
 import java.text.DateFormat
 import java.text.NumberFormat
 import java.util.*

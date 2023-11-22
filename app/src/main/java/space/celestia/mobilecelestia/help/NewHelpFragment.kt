@@ -3,7 +3,7 @@ package space.celestia.mobilecelestia.help
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.resource.CommonWebFragment
-import space.celestia.mobilecelestia.utils.URLHelper
+import space.celestia.celestiafoundation.utils.URLHelper
 
 @AndroidEntryPoint
 class NewHelpFragment: CommonWebFragment() {

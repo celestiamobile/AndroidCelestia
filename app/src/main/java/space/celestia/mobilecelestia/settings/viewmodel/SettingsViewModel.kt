@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.common.CelestiaExecutor
-import space.celestia.mobilecelestia.common.FilePaths
+import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.purchase.PurchaseManager

@@ -40,10 +40,10 @@ import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
-import space.celestia.mobilecelestia.resource.model.ResourceItem
+import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.commonHandler
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.utils.commonHandler
+import space.celestia.celestiafoundation.utils.getSerializableValue
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.*

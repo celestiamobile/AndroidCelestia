@@ -126,17 +126,16 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:1.6.2"
 
     implementation "com.google.android.material:material:$material_version"
-    implementation "com.google.code.gson:gson:2.10.1"
+    implementation "com.google.code.gson:gson:$gson_version"
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
-    implementation "com.squareup.okhttp3:okhttp:4.12.0"
-
-    implementation "net.lingala.zip4j:zip4j:2.11.5"
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
     implementation "androidx.webkit:webkit:1.8.0"
 
     implementation project(path: ':LinkPreview')
     implementation project(path: ':Celestia')
+    implementation project(path: ':CelestiaFoundation')
 
     def appCenterSdkVersion = '5.0.2'
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
@@ -153,7 +152,7 @@ dependencies {
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.material3:material3"
 
-    playImplementation "com.android.billingclient:billing-ktx:6.0.1"
+    playImplementation "com.android.billingclient:billing-ktx:6.1.0"
 
     testImplementation "junit:junit:4.13.2"
     androidTestImplementation "androidx.test.ext:junit:1.1.5"

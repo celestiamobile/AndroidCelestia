@@ -34,7 +34,7 @@ import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.info.InfoFragment
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.utils.getSerializableValue
 import java.io.Serializable
 import javax.inject.Inject
 

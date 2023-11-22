@@ -18,6 +18,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import space.celestia.celestiafoundation.utils.FileUtils
 import space.celestia.mobilecelestia.BuildConfig
 import java.io.File
 import java.io.IOException

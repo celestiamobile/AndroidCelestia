@@ -14,7 +14,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-import space.celestia.mobilecelestia.utils.BaseResult
+import space.celestia.celestiafoundation.utils.BaseResult
 import java.lang.ref.WeakReference
 import javax.inject.Singleton
 

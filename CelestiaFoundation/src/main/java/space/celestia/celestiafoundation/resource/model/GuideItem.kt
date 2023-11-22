@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.resource.model
+package space.celestia.celestiafoundation.resource.model
 
 import java.io.Serializable
 

@@ -14,7 +14,7 @@ package space.celestia.mobilecelestia.resource.model
 import com.google.gson.*
 import retrofit2.http.GET
 import retrofit2.http.Query
-import space.celestia.mobilecelestia.utils.BaseResult
+import space.celestia.celestiafoundation.utils.BaseResult
 import java.lang.reflect.Type
 import java.util.*
 

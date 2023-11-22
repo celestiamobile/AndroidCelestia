@@ -42,7 +42,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.utils.getSerializableValue
 
 class DestinationDetailFragment : NavigationFragment.SubFragment() {
     private var item: Destination? = null

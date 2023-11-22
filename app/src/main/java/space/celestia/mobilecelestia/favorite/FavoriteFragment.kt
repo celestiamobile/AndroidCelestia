@@ -15,7 +15,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.utils.getSerializableValue
 
 class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null

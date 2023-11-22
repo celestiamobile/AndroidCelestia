@@ -56,7 +56,7 @@ import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.utils.getSerializableValue
 import space.celestia.mobilecelestia.utils.showOptions
 import javax.inject.Inject
 

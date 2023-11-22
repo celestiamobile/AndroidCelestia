@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.utils
+package space.celestia.celestiafoundation.utils
 
 import android.app.Activity
 import android.widget.Toast

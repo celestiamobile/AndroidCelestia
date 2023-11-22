@@ -1,7 +1,6 @@
 package space.celestia.mobilecelestia.di
 
 import android.content.Context
-import android.content.SharedPreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -11,11 +10,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
-import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.common.CelestiaExecutor
-import space.celestia.mobilecelestia.common.FilePaths
+import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
-import space.celestia.mobilecelestia.resource.model.ResourceManager
+import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import javax.inject.Qualifier

@@ -41,10 +41,10 @@ import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.MultiLineTextRow
 import space.celestia.mobilecelestia.compose.Separator
 import space.celestia.mobilecelestia.compose.TextRow
-import space.celestia.mobilecelestia.utils.AssetUtils
+import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.versionCode
-import space.celestia.mobilecelestia.utils.versionName
+import space.celestia.celestiafoundation.utils.versionCode
+import space.celestia.celestiafoundation.utils.versionName
 
 class AboutFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null

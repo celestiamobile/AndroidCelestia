@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.common
+package space.celestia.celestiafoundation.utils
 
 import android.content.Context
 

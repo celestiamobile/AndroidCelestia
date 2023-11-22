@@ -42,7 +42,7 @@ import androidx.core.os.LocaleListCompat
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.FilePaths
+import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.Mdc3Theme

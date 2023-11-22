@@ -14,7 +14,7 @@ package space.celestia.mobilecelestia.resource
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.resource.model.ResourceItem
+import space.celestia.celestiafoundation.resource.model.ResourceItem
 import java.util.*
 
 class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {

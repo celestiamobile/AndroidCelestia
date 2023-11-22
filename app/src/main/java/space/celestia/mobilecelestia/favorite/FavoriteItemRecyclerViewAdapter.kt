@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.celestia.Destination
 import space.celestia.celestia.Script
+import space.celestia.celestiafoundation.favorite.BookmarkNode
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.favorite.FavoriteItemFragment.Listener

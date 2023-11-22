@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.utils
+package space.celestia.celestiafoundation.utils
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

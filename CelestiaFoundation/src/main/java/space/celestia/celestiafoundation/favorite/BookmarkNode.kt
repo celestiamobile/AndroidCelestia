@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.favorite
+package space.celestia.celestiafoundation.favorite
 
 import java.io.Serializable
 

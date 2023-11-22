@@ -25,7 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.BuildConfig
 import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.mobilecelestia.utils.commonHandler
+import space.celestia.celestiafoundation.utils.commonHandler
 import java.io.Serializable
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resume

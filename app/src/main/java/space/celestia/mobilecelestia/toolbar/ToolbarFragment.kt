@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.utils.getSerializableValue
 import java.io.Serializable
 import java.util.*
 

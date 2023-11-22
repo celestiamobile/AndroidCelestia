@@ -9,7 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.utils
+package space.celestia.celestiafoundation.utils
 
 import android.content.Context
 import android.net.Uri
@@ -40,10 +40,12 @@ object FileUtils {
     @Throws(IOException::class)
     fun copyUri(context: Context, uri: Uri, path: String): Boolean {
         val input = context.contentResolver.openInputStream(uri) ?: return false
-        val file = File(path)
-        if (!file.exists())
-            file.createNewFile()
-        file.outputStream().use { input.copyTo(it) }
+        input.use { i ->
+            val file = File(path)
+            if (!file.exists())
+                file.createNewFile()
+            file.outputStream().use { o -> i.copyTo(o) }
+        }
         return true
     }
 }

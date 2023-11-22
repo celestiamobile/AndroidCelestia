@@ -19,6 +19,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import space.celestia.celestia.AppCore
+import space.celestia.celestiafoundation.utils.getSerializableValue
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.*

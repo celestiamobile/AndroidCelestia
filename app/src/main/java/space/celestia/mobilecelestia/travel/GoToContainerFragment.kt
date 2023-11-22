@@ -13,7 +13,7 @@ package space.celestia.mobilecelestia.travel
 
 import android.os.Bundle
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.utils.getSerializableValue
 
 class GoToContainerFragment : NavigationFragment() {
     private val goToData: GoToInputFragment.GoToData

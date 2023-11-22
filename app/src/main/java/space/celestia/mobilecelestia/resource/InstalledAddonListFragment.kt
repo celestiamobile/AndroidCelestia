@@ -6,9 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,8 +17,8 @@ import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.resource.model.InstalledAddonListAdapter
-import space.celestia.mobilecelestia.resource.model.ResourceItem
-import space.celestia.mobilecelestia.resource.model.ResourceManager
+import space.celestia.celestiafoundation.resource.model.ResourceItem
+import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.lang.ref.WeakReference
 import javax.inject.Inject

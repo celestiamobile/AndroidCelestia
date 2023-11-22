@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.utils
+package space.celestia.celestiafoundation.utils
 
 import android.os.Build
 import android.os.Bundle

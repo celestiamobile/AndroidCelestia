@@ -2,8 +2,8 @@ package space.celestia.mobilecelestia.resource
 
 import android.os.Bundle
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.resource.model.ResourceItem
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.resource.model.ResourceItem
+import space.celestia.celestiafoundation.utils.getSerializableValue
 import java.lang.ref.WeakReference
 import java.util.*
 

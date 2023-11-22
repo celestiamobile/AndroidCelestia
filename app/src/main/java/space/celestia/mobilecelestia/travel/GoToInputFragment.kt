@@ -48,7 +48,7 @@ import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.ObjectNameAutoComplete
 import space.celestia.mobilecelestia.compose.OptionSelect
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.getSerializableValue
+import space.celestia.celestiafoundation.utils.getSerializableValue
 import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.io.Serializable
 import java.text.NumberFormat
