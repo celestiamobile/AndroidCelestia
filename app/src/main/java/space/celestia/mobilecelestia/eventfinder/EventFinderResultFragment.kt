@@ -1,7 +1,7 @@
 /*
  * EventFinderResultFragment.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2023-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,31 +16,51 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.res.dimensionResource
 import space.celestia.celestia.EclipseFinder
+import space.celestia.celestia.Utils
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
+import java.text.DateFormat
+import java.util.Locale
 
 class EventFinderResultFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
+    private val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_general_grouped_list, container, false)
-
-        val recView = view.findViewById<RecyclerView>(R.id.list)
-        recView.layoutManager = LinearLayoutManager(context)
-        val adapter = EventFinderResultRecyclerViewAdapter({ eclipse ->
-            listener?.onEclipseChosen(eclipse)
-        }, eclipses)
-        recView.adapter = adapter
-        recView.clipToPadding = false
-        recView.fitsSystemWindows = true
-        return view
+    ): View {
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen()
+                }
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -61,6 +81,28 @@ class EventFinderResultFragment : NavigationFragment.SubFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    @Composable
+    private fun MainScreen() {
+        val systemPadding = WindowInsets.systemBars.asPaddingValues()
+        val direction = LocalLayoutDirection.current
+        val contentPadding = PaddingValues(
+            start = systemPadding.calculateStartPadding(direction),
+            top = dimensionResource(id = R.dimen.list_spacing_short) + systemPadding.calculateTopPadding(),
+            end = systemPadding.calculateEndPadding(direction),
+            bottom = dimensionResource(id = R.dimen.list_spacing_tall) + systemPadding.calculateBottomPadding(),
+        )
+        LazyColumn(
+            contentPadding = contentPadding,
+            modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
+        ) {
+            items(eclipses) { eclipse ->
+                TextRow(primaryText = "${eclipse.occulter.name} -> ${eclipse.receiver.name}", secondaryText = formatter.format(Utils.createDateFromJulianDay(eclipse.startTimeJulian)), modifier = Modifier.clickable {
+                    listener?.onEclipseChosen(eclipse)
+                })
+            }
+        }
     }
 
     interface Listener {
