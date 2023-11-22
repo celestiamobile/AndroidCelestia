@@ -105,4 +105,5 @@
     <dimen name="tab_title_text_padding_vertical">10dp</dimen>
 
     <dimen name="list_item_icon_size">24dp</dimen>
+    <dimen name="list_item_action_icon_padding">4dp</dimen>
 </resources>

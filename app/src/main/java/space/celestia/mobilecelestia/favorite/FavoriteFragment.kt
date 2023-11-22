@@ -1,7 +1,7 @@
 /*
  * FavoriteFragment.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2023-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -48,6 +48,11 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
 
     fun remove(index: Int) {
         (current.favoriteItem as MutableFavoriteBaseItem).remove(index)
+        current.reload()
+    }
+
+    fun move(fromIndex: Int, toIndex: Int) {
+        (current.favoriteItem as MutableFavoriteBaseItem).move(fromIndex, toIndex)
         current.reload()
     }
 

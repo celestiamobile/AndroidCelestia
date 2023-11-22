@@ -1341,6 +1341,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun moveFavoriteItem(fromIndex: Int, toIndex: Int) {
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+        if (frag is FavoriteFragment) {
+            frag.move(fromIndex, toIndex)
+        }
+    }
+
     override fun onMainSettingItemSelected(item: SettingsItem) {
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is SettingsFragment) {
