@@ -17,6 +17,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -42,9 +44,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
@@ -52,6 +58,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.ContextMenuContainer
 import space.celestia.mobilecelestia.compose.DraggableItem
 import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.dragContainerForDragHandle
@@ -132,7 +139,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
         title = CelestiaString("Toolbar", "")
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
     @Composable
     override fun MainView() {
         val viewModel: SettingsViewModel = hiltViewModel()
@@ -174,28 +181,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     }
                     .then(rowModifier)
             }
-            Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
-                Image(painter = painterResource(id = item.imageResource), contentDescription = "Action Icon", colorFilter = ColorFilter.tint(
-                    MaterialTheme.colorScheme.onBackground
-                ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)))
-                Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f))
-                if (isDraggable) {
-                    Image(painter = painterResource(id = R.drawable.ic_dehaze), contentDescription = CelestiaString("Drag Handle", ""), colorFilter = ColorFilter.tint(
-                        colorResource(id = com.google.android.material.R.color.material_on_background_disabled)
-                    ), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item))
-                } else {
-                    Image(painter = painterResource(id = R.drawable.ic_add), contentDescription = CelestiaString("Add Button", ""), colorFilter = ColorFilter.tint(
-                        colorResource(id = com.google.android.material.R.color.material_on_background_disabled)
-                    ), modifier = Modifier.clickable {
-                        list = list.toMutableList().apply {
-                            add(item)
-                        }
-                        viewModel.appSettings.toolbarItems = list
-                    })
-                }
-            }
-
-            DropdownMenu(expanded = isDraggable && showMenu, onDismissRequest = { showMenu = false }) {
+            ContextMenuContainer(expanded = isDraggable && showMenu, onDismissRequest = { showMenu = false }, menu = {
                 DropdownMenuItem(text = {
                     Text(text = CelestiaString("Delete", ""))
                 }, onClick = {
@@ -207,6 +193,27 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                         viewModel.appSettings.toolbarItems = list
                     }
                 })
+            }) {
+                Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+                    Image(painter = painterResource(id = item.imageResource), contentDescription = "Action Icon", colorFilter = ColorFilter.tint(
+                        MaterialTheme.colorScheme.onBackground
+                    ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)))
+                    Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f))
+                    if (isDraggable) {
+                        Image(painter = painterResource(id = R.drawable.ic_dehaze), contentDescription = CelestiaString("Drag Handle", ""), colorFilter = ColorFilter.tint(
+                            colorResource(id = com.google.android.material.R.color.material_on_background_disabled)
+                        ), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item))
+                    } else {
+                        Image(painter = painterResource(id = R.drawable.ic_add), contentDescription = CelestiaString("Add Button", ""), colorFilter = ColorFilter.tint(
+                            colorResource(id = com.google.android.material.R.color.material_on_background_disabled)
+                        ), modifier = Modifier.clickable {
+                            list = list.toMutableList().apply {
+                                add(item)
+                            }
+                            viewModel.appSettings.toolbarItems = list
+                        })
+                    }
+                }
             }
         }
 
