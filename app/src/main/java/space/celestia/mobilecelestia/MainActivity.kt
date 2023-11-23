@@ -298,6 +298,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0, 0, 0, insets.systemWindowInsetBottom))
             return@setOnApplyWindowInsetsListener builder.build()
         }
+        val toolbarContainer = findViewById<FrameLayout>(R.id.toolbar_container)
+        toolbarContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
@@ -313,7 +315,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
 
             findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+            toolbarContainer.visibility = if (toolbarVisible) View.VISIBLE else View.GONE
 
             if (menuVisible) {
                 // Try to open the drawer, need to post delay since it might have been closed just now

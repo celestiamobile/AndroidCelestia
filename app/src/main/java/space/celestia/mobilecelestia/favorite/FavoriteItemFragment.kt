@@ -198,7 +198,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
         ContextMenuContainer(expanded = !item.supportedItemActions.isEmpty() && showMenu, onDismissRequest = { showMenu = false }, menu = {
             if (item !is MutableFavoriteBaseItem) return@ContextMenuContainer
             for (supportedAction in item.supportedItemActions) {
-                DropdownMenuItem(text = { Text(text = CelestiaString(supportedAction.name, "")) }, onClick = {
+                DropdownMenuItem(text = { Text(text = supportedAction.title) }, onClick = {
                     showMenu = false
                     when (supportedAction) {
                         FavoriteItemAction.Delete -> {
@@ -223,7 +223,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
                             dimensionResource(id = R.dimen.list_item_action_icon_padding)
                         ))
                 }
-                if (!item.isLeaf) {
+                if (!item.isLeaf || item.hasFullPageRepresentation) {
                     Image(painter = painterResource(id = R.drawable.accessory_full_disclosure), contentDescription = "", colorFilter = ColorFilter.tint(colorResource(id = com.google.android.material.R.color.material_on_background_disabled)))
                 }
             }

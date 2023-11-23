@@ -19,7 +19,16 @@ import java.io.Serializable
 import java.util.*
 
 enum class FavoriteItemAction {
-    Delete, Rename, Share
+    Delete, Rename, Share;
+
+    val title: String
+        get() {
+            return when (this) {
+                Delete -> CelestiaString("Delete", "")
+                Rename -> CelestiaString("Rename", "")
+                Share -> CelestiaString("Share", "")
+            }
+        }
 }
 
 interface FavoriteBaseItem : Serializable {
