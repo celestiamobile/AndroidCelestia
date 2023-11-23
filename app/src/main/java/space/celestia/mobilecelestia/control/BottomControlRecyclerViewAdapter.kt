@@ -46,6 +46,7 @@ class BottomControlRecyclerViewAdapter(
         if (position == values.size) {
             holder.imageButton.setImageResource(R.drawable.bottom_control_hide)
             holder.imageButton.contentDescription = CelestiaString("Close", "")
+            holder.imageButton.setOnTouchListener(null)
             holder.imageButton.setOnClickListener {
                 listener?.onBottomControlHide()
             }
