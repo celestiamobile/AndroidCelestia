@@ -88,10 +88,9 @@ class SettingsItemFragment : NavigationFragment.SubFragment() {
                     }
                 }
                 items(section.items) { item ->
-                    if (item is SettingsItem)
-                        TextRow(primaryText = item.name, modifier = Modifier.clickable {
-                            listener?.onMainSettingItemSelected(item)
-                        })
+                    TextRow(primaryText = item.name, modifier = Modifier.clickable {
+                        listener?.onMainSettingItemSelected(item)
+                    })
                 }
                 item {
                     val footer = section.footer
