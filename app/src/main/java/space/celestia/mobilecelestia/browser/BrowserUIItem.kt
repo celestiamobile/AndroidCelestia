@@ -11,7 +11,6 @@
 
 package space.celestia.mobilecelestia.browser
 
-import space.celestia.mobilecelestia.common.RecyclerViewItem
 import space.celestia.celestia.*
 import space.celestia.celestia.BrowserItem
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -165,4 +164,4 @@ fun Universe.dsoBrowserRoot(): BrowserItem {
     return dsoRoot!!
 }
 
-class BrowserUIItem(val item: BrowserItem, val isLeaf: Boolean) : RecyclerViewItem
+class BrowserUIItem(val item: BrowserItem, val isLeaf: Boolean)

@@ -16,16 +16,37 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.graphics.Insets
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.toolbar.model.ToolbarActionItem
-import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.celestiafoundation.utils.getSerializableValue
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.Separator
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 import java.util.*
 
@@ -55,9 +76,29 @@ enum class ToolbarAction : Serializable {
             return CelestiaString(orig, "")
         }
 
-    val imageName: String
+    val imageResource: Int
         get() {
-            return "toolbar_" + toString().lowercase(Locale.US)
+            return when(this) {
+                Setting -> R.drawable.toolbar_setting
+                Share -> R.drawable.toolbar_share
+                Search -> R.drawable.toolbar_search
+                Time -> R.drawable.toolbar_time
+                Script -> R.drawable.toolbar_script
+                Camera -> R.drawable.toolbar_camera
+                Browse -> R.drawable.toolbar_browse
+                Help -> R.drawable.toolbar_help
+                Favorite -> R.drawable.toolbar_favorite
+                Home -> R.drawable.toolbar_home
+                Event -> R.drawable.toolbar_event
+                Exit -> R.drawable.toolbar_exit
+                Addons -> R.drawable.toolbar_addons
+                Download -> R.drawable.toolbar_download
+                Paperplane -> R.drawable.toolbar_paperplane
+                Speedometer -> R.drawable.toolbar_speedometer
+                NewsArchive -> R.drawable.toolbar_newsarchive
+                Feedback -> R.drawable.toolbar_feedback
+                CelestiaPlus -> R.drawable.toolbar_celestiaplus
+            }
         }
 
     companion object {
@@ -93,24 +134,16 @@ class ToolbarFragment: Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_toolbar_list, container, false)
-
-        val allItems = ArrayList(existingActions)
-        allItems.addAll(ToolbarAction.persistentAction)
-        val model = allItems.map { it.map { inner -> ToolbarActionItem(inner, resources.getIdentifier(inner.imageName, "drawable", requireActivity().packageName)) } }
-
-        val listView = view.findViewById<RecyclerView>(R.id.list)
-        with(listView) {
-            layoutManager = LinearLayoutManager(context)
-            adapter = ToolbarRecyclerViewAdapter(model, listener)
-        }
-
-        // Container framelayout already has applied the horizontal insets, stop passing the horizontal insets
-        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.list_container)) { _, insets ->
-            // TODO: the suggested replacement for the deprecated methods does not work
-            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0 , insets.systemWindowInsetTop, 0, insets.systemWindowInsetBottom))
-            return@setOnApplyWindowInsetsListener builder.build()
+    ): View {
+        val view =  ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen()
+                }
+            }
         }
         return view
     }
@@ -127,6 +160,34 @@ class ToolbarFragment: Fragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    @Composable
+    private fun MainScreen() {
+        val allSections = ArrayList(existingActions)
+        allSections.addAll(ToolbarAction.persistentAction)
+
+        LazyColumn(
+            contentPadding = WindowInsets.systemBars.asPaddingValues(),
+            modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()).background(color = MaterialTheme.colorScheme.background)
+        ) {
+            for (sectionIndex in allSections.indices) {
+                val section = allSections[sectionIndex]
+                items(section) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal)), modifier = Modifier.clickable {
+                        listener?.onToolbarActionSelected(it)
+                    }.fillMaxWidth().padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal))) {
+                        Icon(painter = painterResource(id = it.imageResource), contentDescription = "", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension)))
+                        Text(text = it.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
+                    }
+                }
+                if (sectionIndex != allSections.size - 1) {
+                    item {
+                        Separator(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.toolbar_separator_padding_vertical)), separatorStart = dimensionResource(id = R.dimen.toolbar_separator_inset_start))
+                    }
+                }
+            }
+        }
     }
 
     interface Listener {

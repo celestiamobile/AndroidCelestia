@@ -14,7 +14,6 @@ package space.celestia.mobilecelestia.favorite
 import space.celestia.celestia.Destination
 import space.celestia.celestia.Script
 import space.celestia.celestiafoundation.favorite.BookmarkNode
-import space.celestia.mobilecelestia.common.*
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 import java.util.*
@@ -23,7 +22,7 @@ enum class FavoriteItemAction {
     Delete, Rename, Share
 }
 
-interface FavoriteBaseItem : RecyclerViewItem, Serializable {
+interface FavoriteBaseItem : Serializable {
     val children: List<FavoriteBaseItem>
     val isLeaf: Boolean
     val title: String

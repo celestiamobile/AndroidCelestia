@@ -15,8 +15,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import space.celestia.mobilecelestia.celestia.CelestiaInteraction
 import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.common.RecyclerViewItem
-import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.io.Serializable
@@ -228,7 +226,7 @@ private val gameControllerRemapOptions = listOf(
     Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT, CelestiaString("Roll Right", "")),
 )
 
-interface SettingsItem : RecyclerViewItem {
+interface SettingsItem {
     val name: String
 }
 
@@ -241,9 +239,6 @@ class SettingsSliderItem(
 
     override val name: String
         get() = CelestiaString(internalKey.displayName, "")
-
-    override val clickable: Boolean
-        get() = false
 }
 
 class SettingsPreferenceSwitchItem(
@@ -254,9 +249,6 @@ class SettingsPreferenceSwitchItem(
 ) : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString(rawDisplayName, "")
-
-    override val clickable: Boolean
-        get() = false
 }
 
 class SettingsPreferenceSliderItem(
@@ -269,9 +261,6 @@ class SettingsPreferenceSliderItem(
 ) : SettingsItem, Serializable {
     override val name: String
         get() = CelestiaString(rawDisplayName, "")
-
-    override val clickable: Boolean
-        get() = false
 }
 
 class SettingsLanguageItem : SettingsItem, Serializable {
@@ -293,9 +282,6 @@ class SettingsSwitchItem(
         get() = displayName
 
     constructor(key: SettingsKey, representation: Representation = Representation.Checkmark) : this(key.valueString, key.displayName, false, representation)
-
-    override val clickable: Boolean
-        get() = false
 }
 
 class SettingsPreferenceSelectionItem(
@@ -306,9 +292,6 @@ class SettingsPreferenceSelectionItem(
 ) : SettingsItem, Serializable {
     override val name: String
         get() = displayName
-
-    override val clickable: Boolean
-        get() = true
 }
 
 class SettingsSelectionSingleItem(
@@ -323,9 +306,6 @@ class SettingsSelectionSingleItem(
         get() = displayName
 
     constructor(key: SettingsKey, displayName: String, options: List<Pair<Int, String>>, defaultSelection: Int, showTitle: Boolean = true, subtitle: String? = null) : this(key.valueString, displayName, options, defaultSelection, showTitle, subtitle)
-
-    override val clickable: Boolean
-        get() = false
 }
 
 private val staticDisplayItems: List<SettingsItem> = listOf(
@@ -653,7 +633,7 @@ private val staticOtherItems: List<SettingsItem> = listOf(
     SettingsAboutItem()
 )
 
-val celestiaPlusSettingSection: List<CommonSectionV2> by lazy {
+val celestiaPlusSettingSection: List<CommonSectionV2<SettingsItem>> by lazy {
     val items = arrayListOf<SettingsItem>()
     items.add(SettingsToolbarItem())
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -666,14 +646,14 @@ val celestiaPlusSettingSection: List<CommonSectionV2> by lazy {
     }
 }
 
-val mainSettingSectionsBeforePlus: List<CommonSectionV2> = listOf(
+val mainSettingSectionsBeforePlus: List<CommonSectionV2<SettingsItem>> = listOf(
     CommonSectionV2(staticDisplayItems, CelestiaString("Display", "")),
     CommonSectionV2(staticTimeAndRegionItems, CelestiaString("Time & Region", "")),
     CommonSectionV2(staticRendererItems, CelestiaString("Renderer", "")),
     CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "")),
 )
 
-val mainSettingSectionsAfterPlus: List<CommonSectionV2> = listOf(
+val mainSettingSectionsAfterPlus: List<CommonSectionV2<SettingsItem>> = listOf(
     CommonSectionV2(staticOtherItems, ""),
 )
 

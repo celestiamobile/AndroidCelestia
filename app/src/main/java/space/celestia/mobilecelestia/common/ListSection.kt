@@ -1,5 +1,5 @@
 /*
- * HelpItem.kt
+ * ListSection.kt
  *
  * Copyright (C) 2023-present, Celestia Development Team
  *
@@ -9,9 +9,6 @@
  * of the License, or (at your option) any later version.
  */
 
-package space.celestia.mobilecelestia.help
-
-open class HelpItem
-class DescriptionItem(val description: String, val imageResourceID: Int) : HelpItem()
-class ActionItem(val title: String, val action: HelpAction) : HelpItem()
-class URLItem(val title: String, val url: String) : HelpItem()
+package space.celestia.mobilecelestia.common
+open class CommonSection<T>(val items: List<T>)
+class CommonSectionV2<T>(items: List<T>, val header: String? = "", val footer: String? = null) : CommonSection<T>(items)
