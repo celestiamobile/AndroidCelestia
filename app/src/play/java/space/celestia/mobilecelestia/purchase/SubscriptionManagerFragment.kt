@@ -366,7 +366,7 @@ class SubscriptionManagerFragment: Fragment() {
             }
         } else {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
-            Text(text = CelestiaString("Purchase will be available immediately. Cancel at anytime in Subscriptions on Google Play.", ""), color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodySmall)
+            Text(text = CelestiaString("Purchase will be available immediately. Subscription will be automatically renewed and you will be charged the price listed here each year (for Yearly) or each month (for Monthly). Cancel at anytime in Subscriptions on Google Play.", ""), color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodySmall)
         }
     }
 
