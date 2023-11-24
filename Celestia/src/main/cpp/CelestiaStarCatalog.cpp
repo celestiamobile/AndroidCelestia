@@ -15,20 +15,20 @@
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_StarCatalog_c_1getStarName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
-    auto d = (StarDatabase *)ptr;
-    return env->NewStringUTF(d->getStarName(*(Star *)pointer).c_str());
+    auto d = reinterpret_cast<StarDatabase *>(ptr);
+    return env->NewStringUTF(d->getStarName(*reinterpret_cast<Star *>(pointer), true).c_str());
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_StarCatalog_c_1getCount(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto d = (StarDatabase *)ptr;
-    return d->size();
+    auto d = reinterpret_cast<StarDatabase *>(ptr);
+    return static_cast<jint>(d->size());
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_StarCatalog_c_1getStar(JNIEnv *env, jclass clazz, jlong ptr, jint index) {
-    auto d = (StarDatabase *)ptr;
-    return (jlong)d->getStar(index);
+    auto d = reinterpret_cast<StarDatabase *>(ptr);
+    return reinterpret_cast<jlong>(d->getStar(index));
 }
