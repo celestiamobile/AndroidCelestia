@@ -131,7 +131,6 @@
         android:layout_width="@dimen/toolbar_default_width"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        style="@style/Container"
-        android:background="@android:color/white">
+        style="@style/Container">
     </FrameLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

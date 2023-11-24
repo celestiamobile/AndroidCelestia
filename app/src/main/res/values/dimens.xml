@@ -107,5 +107,6 @@
     <dimen name="list_item_icon_size">24dp</dimen>
     <dimen name="list_item_action_icon_padding">4dp</dimen>
 
-    <dimen name="search_bar_padding_horizontal">8dp</dimen>
+    <dimen name="search_bar_padding_vertical">4dp</dimen>
+    <dimen name="search_bar_padding_horizontal">12dp</dimen>
 </resources>

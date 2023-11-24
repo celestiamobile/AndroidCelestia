@@ -135,6 +135,9 @@ class SearchFragment : NavigationFragment.SubFragment() {
                 .padding(
                     horizontal = if (!isSearchActive) dimensionResource(
                         id = R.dimen.search_bar_padding_horizontal
+                    ) else 0.dp,
+                    vertical = if (!isSearchActive) dimensionResource(
+                        id = R.dimen.search_bar_padding_vertical
                     ) else 0.dp
                 )) {
                 SearchResult(key = searchKey, results = searchResults.toList())
