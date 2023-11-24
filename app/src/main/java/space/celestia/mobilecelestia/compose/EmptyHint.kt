@@ -1,10 +1,9 @@
 package space.celestia.mobilecelestia.compose
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,10 +14,9 @@ import space.celestia.mobilecelestia.R
 
 @Composable
 fun EmptyHint(text: String, modifier: Modifier = Modifier, actionText: String? = null, actionHandler: (() -> Unit)? = null) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = text, textAlign = TextAlign.Center)
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.common_page_medium_gap_vertical))) {
+        Text(text = text, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
         if (actionText != null) {
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
             FilledTonalButton(onClick = {
                 if (actionHandler != null) {
                     actionHandler()

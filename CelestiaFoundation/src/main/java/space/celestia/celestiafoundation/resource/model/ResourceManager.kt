@@ -11,6 +11,9 @@
 
 package space.celestia.celestiafoundation.resource.model
 
+import android.icu.text.Collator
+import android.icu.text.RuleBasedCollator
+import android.os.Build
 import android.util.Log
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
@@ -135,7 +138,17 @@ class ResourceManager {
                 }
             }
         }
-        return items
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val collator = Collator.getInstance()
+            if (collator is RuleBasedCollator) {
+                collator.numericCollation = true
+            }
+            return items.sortedWith(compareBy(collator) {
+                it.name
+            })
+        } else {
+            return items.sortedWith(compareBy { it.name })
+        }
     }
 
     fun contextDirectory(item: ResourceItem): File {

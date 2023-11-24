@@ -988,18 +988,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             }
             ToolbarAction.Download -> {
-                val baseURL = "https://celestia.mobi/resources/categories"
-                var builder = Uri.parse(baseURL)
-                    .buildUpon()
-                    .appendQueryParameter("lang", AppCore.getLanguage())
-                    .appendQueryParameter("platform", "android")
-                    .appendQueryParameter("theme", "dark")
-                    .appendQueryParameter("api", "1")
-                if (purchaseManager.canUseInAppPurchase())
-                    builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
-                lifecycleScope.launch {
-                    showBottomSheetFragment(CommonWebNavigationFragment.newInstance(builder.build()))
-                }
+                openAddonDownload()
             }
             ToolbarAction.Feedback -> {
                 lifecycleScope.launch {
@@ -1910,6 +1899,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (frag is ResourceFragment) {
             frag.pushItem(addon)
+        }
+    }
+
+    override fun onOpenAddonDownload() {
+        openAddonDownload()
+    }
+
+    private fun openAddonDownload() {
+        val baseURL = "https://celestia.mobi/resources/categories"
+        var builder = Uri.parse(baseURL)
+            .buildUpon()
+            .appendQueryParameter("lang", AppCore.getLanguage())
+            .appendQueryParameter("platform", "android")
+            .appendQueryParameter("theme", "dark")
+            .appendQueryParameter("api", "1")
+        if (purchaseManager.canUseInAppPurchase())
+            builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
+        lifecycleScope.launch {
+            showBottomSheetFragment(CommonWebNavigationFragment.newInstance(builder.build()))
         }
     }
 

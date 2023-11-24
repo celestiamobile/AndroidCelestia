@@ -18,14 +18,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,14 +39,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +56,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -110,18 +115,23 @@ class SearchFragment : NavigationFragment.SubFragment() {
         var isSearchActive by rememberSaveable {
             mutableStateOf(false)
         }
+        var isSeaching by remember {
+            mutableStateOf(false)
+        }
         val scope = rememberCoroutineScope()
         Scaffold(topBar = {
             SearchBar(query = searchKey, onQueryChange = {
                 searchKey = it
+                isSeaching = true
                 scope.launch {
                     val result = if (it.isEmpty()) listOf<String>() else withContext(executor.asCoroutineDispatcher()) { appCore.simulation.completionForText(it, SEARCH_RESULT_LIMIT) }
                     if (searchKey == it) {
                         searchResults = result
+                        isSeaching = false
                     }
                 }
             }, onSearch = {
-                if (!searchKey.isEmpty() && searchResults.isEmpty()) {
+                if (searchKey.isNotEmpty() && searchResults.isEmpty()) {
                     listener?.onSearchItemSubmit(searchKey)
                 }
             }, active = isSearchActive, onActiveChange = {
@@ -140,7 +150,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
                         id = R.dimen.search_bar_padding_vertical
                     ) else 0.dp
                 )) {
-                SearchResult(key = searchKey, results = searchResults.toList())
+                SearchResult(key = searchKey, results = searchResults.toList(), isSeaching = isSeaching)
             }
         }) {
             Empty(paddingValues = it)
@@ -151,23 +161,38 @@ class SearchFragment : NavigationFragment.SubFragment() {
     private fun Empty(paddingValues: PaddingValues) {}
 
     @Composable
-    private fun SearchResult(key: String, results: List<String>) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxHeight()
-                .background(color = MaterialTheme.colorScheme.background)
-        ) {
-            items(results) {
-                TextRow(primaryText = it, modifier = Modifier.clickable {
-                    val lastSeparator = key.lastIndexOf('/')
-                    val name: String
-                    if (lastSeparator != -1) {
-                        name = key.substring(startIndex = 0, endIndex = lastSeparator + 1) + it
-                    } else {
-                        name = it
-                    }
-                    listener?.onSearchItemSelected(name)
-                })
+    private fun SearchResult(key: String, results: List<String>, isSeaching: Boolean) {
+        if (results.isEmpty() && isSeaching) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .imePadding()
+                .background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (results.isEmpty()) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .imePadding()
+                .background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+                EmptyHint(text = if (key.isEmpty()) CelestiaString("Find stars, DSOs, and nearby objects", "") else CelestiaString("No result found", ""))
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .background(color = MaterialTheme.colorScheme.background)
+            ) {
+                items(results) {
+                    TextRow(primaryText = it, modifier = Modifier.clickable {
+                        val lastSeparator = key.lastIndexOf('/')
+                        val name = if (lastSeparator != -1) {
+                            key.substring(startIndex = 0, endIndex = lastSeparator + 1) + it
+                        } else {
+                            it
+                        }
+                        listener?.onSearchItemSelected(name)
+                    })
+                }
             }
         }
     }

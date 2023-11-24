@@ -35,6 +35,8 @@ interface FavoriteBaseItem : Serializable {
     val children: List<FavoriteBaseItem>
     val isLeaf: Boolean
     val title: String
+    val emptyHint: String?
+        get() = null
 
     val supportedItemActions: List<FavoriteItemAction>
         get() = listOf()
@@ -154,6 +156,9 @@ open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBas
         bookmark.children!!.add(toIndex, bookmark.children!!.removeAt(fromIndex))
         children.add(toIndex, children.removeAt(fromIndex))
     }
+
+    override val emptyHint: String?
+        get() = CelestiaString("Create a new bookmark with \"+\" button", "")
 }
 
 class FavoriteBookmarkRootItem(bookmark: BookmarkNode) : FavoriteBookmarkItem(bookmark) {

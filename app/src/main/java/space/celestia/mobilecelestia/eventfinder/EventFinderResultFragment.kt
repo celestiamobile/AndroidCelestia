@@ -17,15 +17,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
@@ -37,6 +41,7 @@ import space.celestia.celestia.EclipseFinder
 import space.celestia.celestia.Utils
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -85,22 +90,30 @@ class EventFinderResultFragment : NavigationFragment.SubFragment() {
 
     @Composable
     private fun MainScreen() {
-        val systemPadding = WindowInsets.systemBars.asPaddingValues()
-        val direction = LocalLayoutDirection.current
-        val contentPadding = PaddingValues(
-            start = systemPadding.calculateStartPadding(direction),
-            top = dimensionResource(id = R.dimen.list_spacing_short) + systemPadding.calculateTopPadding(),
-            end = systemPadding.calculateEndPadding(direction),
-            bottom = dimensionResource(id = R.dimen.list_spacing_tall) + systemPadding.calculateBottomPadding(),
-        )
-        LazyColumn(
-            contentPadding = contentPadding,
-            modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
-        ) {
-            items(eclipses) { eclipse ->
-                TextRow(primaryText = "${eclipse.occulter.name} -> ${eclipse.receiver.name}", secondaryText = formatter.format(Utils.createDateFromJulianDay(eclipse.startTimeJulian)), modifier = Modifier.clickable {
-                    listener?.onEclipseChosen(eclipse)
-                })
+        if (eclipses.isEmpty()) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding(), contentAlignment = Alignment.Center) {
+                EmptyHint(text = CelestiaString("No eclipse is found for the given object in the time range", ""))
+            }
+        } else {
+            val systemPadding = WindowInsets.systemBars.asPaddingValues()
+            val direction = LocalLayoutDirection.current
+            val contentPadding = PaddingValues(
+                start = systemPadding.calculateStartPadding(direction),
+                top = dimensionResource(id = R.dimen.list_spacing_short) + systemPadding.calculateTopPadding(),
+                end = systemPadding.calculateEndPadding(direction),
+                bottom = dimensionResource(id = R.dimen.list_spacing_tall) + systemPadding.calculateBottomPadding(),
+            )
+            LazyColumn(
+                contentPadding = contentPadding,
+                modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
+            ) {
+                items(eclipses) { eclipse ->
+                    TextRow(primaryText = "${eclipse.occulter.name} -> ${eclipse.receiver.name}", secondaryText = formatter.format(Utils.createDateFromJulianDay(eclipse.startTimeJulian)), modifier = Modifier.clickable {
+                        listener?.onEclipseChosen(eclipse)
+                    })
+                }
             }
         }
     }

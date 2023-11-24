@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,6 +48,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -64,6 +66,7 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment() {
 
     interface Listener {
         fun onInstalledAddonSelected(addon: ResourceItem)
+        fun onOpenAddonDownload()
     }
 
     override fun onCreateView(
@@ -113,28 +116,40 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment() {
                 installedAddons.addAll(addons)
                 needRefresh.value = false
             }
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
-            val systemPadding = WindowInsets.systemBars.asPaddingValues()
-            val direction = LocalLayoutDirection.current
-            val contentPadding = PaddingValues(
-                start = systemPadding.calculateStartPadding(direction),
-                top = dimensionResource(id = R.dimen.list_spacing_short) + systemPadding.calculateTopPadding(),
-                end = systemPadding.calculateEndPadding(direction),
-                bottom = dimensionResource(id = R.dimen.list_spacing_tall) + systemPadding.calculateBottomPadding(),
-            )
-            LazyColumn(
-                contentPadding = contentPadding,
-                modifier = Modifier
-                    .nestedScroll(rememberNestedScrollInteropConnection())
-                    .background(color = MaterialTheme.colorScheme.background)
-            ) {
-                items(installedAddons) {
-                    TextRow(primaryText = it.name, accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable {
-                        listener?.onInstalledAddonSelected(it)
+            if (installedAddons.isEmpty()) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding(), contentAlignment = Alignment.Center) {
+                    EmptyHint(text = CelestiaString("Enhance Celestia with online add-ons", ""), actionText = CelestiaString("Get Add-ons", ""), actionHandler = {
+                        listener?.onOpenAddonDownload()
                     })
+                }
+            } else {
+                val systemPadding = WindowInsets.systemBars.asPaddingValues()
+                val direction = LocalLayoutDirection.current
+                val contentPadding = PaddingValues(
+                    start = systemPadding.calculateStartPadding(direction),
+                    top = dimensionResource(id = R.dimen.list_spacing_short) + systemPadding.calculateTopPadding(),
+                    end = systemPadding.calculateEndPadding(direction),
+                    bottom = dimensionResource(id = R.dimen.list_spacing_tall) + systemPadding.calculateBottomPadding(),
+                )
+                LazyColumn(
+                    contentPadding = contentPadding,
+                    modifier = Modifier
+                        .nestedScroll(rememberNestedScrollInteropConnection())
+                        .background(color = MaterialTheme.colorScheme.background)
+                ) {
+                    items(installedAddons) {
+                        TextRow(primaryText = it.name, accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable {
+                            listener?.onInstalledAddonSelected(it)
+                        })
+                    }
                 }
             }
         }

@@ -21,6 +21,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -30,6 +31,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -62,6 +64,7 @@ import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.ContextMenuContainer
 import space.celestia.mobilecelestia.compose.DragDropState
 import space.celestia.mobilecelestia.compose.DraggableItem
+import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.dragContainerForDragHandle
 import space.celestia.mobilecelestia.compose.rememberDragDropState
@@ -137,34 +140,42 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun MainScreen() {
-        val systemPadding = WindowInsets.systemBars.asPaddingValues()
-        val direction = LocalLayoutDirection.current
-        val contentPadding = PaddingValues(
-            start = systemPadding.calculateStartPadding(direction),
-            top = dimensionResource(id = R.dimen.list_spacing_short) + systemPadding.calculateTopPadding(),
-            end = systemPadding.calculateEndPadding(direction),
-            bottom = dimensionResource(id = R.dimen.list_spacing_tall) + systemPadding.calculateBottomPadding(),
-        )
-
-        val listState = rememberLazyListState()
-        val dragDropState = rememberDragDropState(listState) { fromIndex, toIndex ->
-            if (favoriteItem is MutableFavoriteBaseItem && fromIndex >= 0 && fromIndex < childItems.size && toIndex >= 0 && toIndex < childItems.size) {
-                listener?.moveFavoriteItem(fromIndex, toIndex)
+        if (childItems.isEmpty()) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .systemBarsPadding(), contentAlignment = Alignment.Center) {
+                EmptyHint(text = favoriteItem?.emptyHint ?: "")
             }
-        }
+        } else {
+            val systemPadding = WindowInsets.systemBars.asPaddingValues()
+            val direction = LocalLayoutDirection.current
+            val contentPadding = PaddingValues(
+                start = systemPadding.calculateStartPadding(direction),
+                top = dimensionResource(id = R.dimen.list_spacing_short) + systemPadding.calculateTopPadding(),
+                end = systemPadding.calculateEndPadding(direction),
+                bottom = dimensionResource(id = R.dimen.list_spacing_tall) + systemPadding.calculateBottomPadding(),
+            )
 
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
-            contentPadding = contentPadding
-        ) {
-            itemsIndexed(childItems, key = { _, item -> item }) { index, item ->
-                if (favoriteItem is MutableFavoriteBaseItem) {
-                    DraggableItem(dragDropState = dragDropState, index = index) {
-                        Item(item = item, index = index, dragDropState = dragDropState, isDraggable = true)
+            val listState = rememberLazyListState()
+            val dragDropState = rememberDragDropState(listState) { fromIndex, toIndex ->
+                if (favoriteItem is MutableFavoriteBaseItem && fromIndex >= 0 && fromIndex < childItems.size && toIndex >= 0 && toIndex < childItems.size) {
+                    listener?.moveFavoriteItem(fromIndex, toIndex)
+                }
+            }
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
+                contentPadding = contentPadding
+            ) {
+                itemsIndexed(childItems, key = { _, item -> item }) { index, item ->
+                    if (favoriteItem is MutableFavoriteBaseItem) {
+                        DraggableItem(dragDropState = dragDropState, index = index) {
+                            Item(item = item, index = index, dragDropState = dragDropState, isDraggable = true)
+                        }
+                    } else {
+                        Item(item = item, index = index, dragDropState = dragDropState, isDraggable = false)
                     }
-                } else {
-                    Item(item = item, index = index, dragDropState = dragDropState, isDraggable = false)
                 }
             }
         }
@@ -215,7 +226,9 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
             }
         }) {
             Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
-                Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f).padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical),))
+                Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier
+                    .weight(1.0f)
+                    .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical),))
                 if (isDraggable) {
                     Icon(imageVector = Icons.Default.Menu, contentDescription = CelestiaString("Drag Handle", ""), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier
                         .dragContainerForDragHandle(dragDropState = dragDropState, key = item)
