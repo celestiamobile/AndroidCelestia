@@ -1,7 +1,7 @@
 /*
  * AboutFragment.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2023-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,24 +17,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.intl.Locale
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Mdc3Theme
@@ -110,8 +117,25 @@ class AboutFragment : NavigationFragment.SubFragment() {
             }
 
             item {
+                if (Locale.current.region == "CN") {
+                    ICPCFooter()
+                }
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
             }
+        }
+    }
+
+    @Composable
+    private fun ICPCFooter() {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
+                vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
+            )) {
+            Text(text = "苏ICP备2023039249号-4A", color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodySmall, modifier = Modifier.clickable {
+                listener?.onAboutURLSelected("https://beian.miit.gov.cn")
+            })
         }
     }
 
