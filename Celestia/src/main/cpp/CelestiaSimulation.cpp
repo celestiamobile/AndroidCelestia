@@ -18,7 +18,7 @@
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1getSelection(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     Selection sel = sim->getSelection();
     return selectionAsJavaSelection(env, sel);
 }
@@ -27,28 +27,28 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1setSelection(JNIEnv *env, jclass clazz, jlong pointer,
                                                         jobject selection) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     sim->setSelection(javaSelectionAsSelection(env, selection));
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Simulation_c_1getUniverse(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     return (jlong)sim->getUniverse();
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass clazz, jlong pointer, jstring text, jint limit) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     const char *str = env->GetStringUTFChars(text, nullptr);
     std::vector<std::string> results;
     sim->getObjectCompletion(results, str, true);
     env->ReleaseStringUTFChars(text, str);
     jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)results.size());
     int count = 0;
-    for (auto result : results) {
+    for (const auto& result : results) {
         if (count > limit)
             break;
         jstring resultString = env->NewStringUTF(result.c_str());
@@ -72,28 +72,28 @@ Java_space_celestia_celestia_Simulation_c_1findObject(JNIEnv *env, jclass clazz,
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Simulation_c_1getStarBrowser(JNIEnv *env, jclass clazz, jlong pointer, jint kind) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     return (jlong)new StarBrowser(sim, (int)kind);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1reverseObserverOrientation(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     sim->reverseObserverOrientation();
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Simulation_c_1getTime(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     return sim->getTime();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1setTime(JNIEnv *env, jclass clazz, jlong pointer, jdouble time) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     sim->setTime(time);
 }
 
@@ -103,7 +103,7 @@ Java_space_celestia_celestia_Simulation_c_1goToEclipse(JNIEnv *env, jclass clazz
     using namespace celestia::math;
     auto refSel = javaSelectionAsSelection(env, ref);
     auto targetSel = javaSelectionAsSelection(env, target);
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     sim->setTime(time);
     sim->setFrame(ObserverFrame::PhaseLock, targetSel, refSel);
     sim->update(0);
@@ -116,6 +116,6 @@ Java_space_celestia_celestia_Simulation_c_1goToEclipse(JNIEnv *env, jclass clazz
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Simulation_c_1getActiveObserver(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = (Simulation *)pointer;
+    auto sim = reinterpret_cast<Simulation *>(pointer);
     return (jlong)sim->getActiveObserver();
 }

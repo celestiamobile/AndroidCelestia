@@ -203,7 +203,7 @@ class SearchFragment : NavigationFragment.SubFragment() {
     }
 
     companion object {
-        private const val SEARCH_RESULT_LIMIT = 20
+        private const val SEARCH_RESULT_LIMIT = 100
 
         @JvmStatic
         fun newInstance() = SearchFragment()
