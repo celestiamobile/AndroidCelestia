@@ -137,7 +137,7 @@ dependencies {
     implementation project(path: ':Celestia')
     implementation project(path: ':CelestiaFoundation')
 
-    def appCenterSdkVersion = '5.0.2'
+    def appCenterSdkVersion = '5.0.3'
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
