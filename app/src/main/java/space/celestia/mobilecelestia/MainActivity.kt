@@ -1048,20 +1048,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 surfaces.add(CelestiaString("Default", ""))
                 surfaces.addAll(alternateSurfaces)
                 showOptions(CelestiaString("Alternate Surfaces", ""), surfaces.toTypedArray()) { index ->
-                    if (index == 0)
-                        appCore.simulation.activeObserver.displayedSurface = ""
-                    else
-                        appCore.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                        if (index == 0)
+                            appCore.simulation.activeObserver.displayedSurface = ""
+                        else
+                            appCore.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
+                    }
                 }
             }
             is MarkItem -> {
                 val markers = CelestiaFragment.availableMarkers
                 showOptions(CelestiaString("Mark", ""), markers.toTypedArray()) { newIndex ->
-                    if (newIndex >= Universe.MARKER_COUNT) {
-                        appCore.simulation.universe.unmark(item)
-                    } else {
-                        appCore.simulation.universe.mark(item, newIndex)
-                        appCore.showMarkers = true
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                        if (newIndex >= Universe.MARKER_COUNT) {
+                            appCore.simulation.universe.unmark(item)
+                        } else {
+                            appCore.simulation.universe.mark(item, newIndex)
+                            appCore.showMarkers = true
+                        }
                     }
                 }
             }
