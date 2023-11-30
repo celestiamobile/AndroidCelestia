@@ -1131,13 +1131,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSearchItemSelected(text: String) {
-        val selection = appCore.simulation.findObject(text)
-        if (selection.isEmpty) {
-            showAlert(CelestiaString("Object not found", ""))
-            return
-        }
+        lifecycleScope.launch {
+            val selection = withContext(executor.asCoroutineDispatcher()) {
+                appCore.simulation.findObject(text)
+            }
 
-        pushBottomSheetFragment(InfoFragment.newInstance(selection))
+            if (selection.isEmpty) {
+                showAlert(CelestiaString("Object not found", ""))
+                return@launch
+            }
+
+            pushBottomSheetFragment(InfoFragment.newInstance(selection))
+        }
     }
 
     override fun onSearchItemSubmit(text: String) {
