@@ -273,7 +273,7 @@ void CelestiaRenderer::resume()
 {
     lock();
     suspendedFlag = false;
-    pthread_cond_broadcast(&resumeCond);
+    pthread_cond_signal(&resumeCond);
     unlock();
 }
 
