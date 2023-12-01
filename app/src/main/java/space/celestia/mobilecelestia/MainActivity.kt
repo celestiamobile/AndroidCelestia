@@ -1130,23 +1130,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showInAppPurchase()
     }
 
-    override fun onSearchItemSelected(text: String) {
-        lifecycleScope.launch {
-            val selection = withContext(executor.asCoroutineDispatcher()) {
-                appCore.simulation.findObject(text)
-            }
-
-            if (selection.isEmpty) {
-                showAlert(CelestiaString("Object not found", ""))
-                return@launch
-            }
-
-            pushBottomSheetFragment(InfoFragment.newInstance(selection))
-        }
-    }
-
-    override fun onSearchItemSubmit(text: String) {
-        onSearchItemSelected(text)
+    override fun onObjectNotFound() {
+        showAlert(CelestiaString("Object not found", ""))
     }
 
     override fun onInstantActionSelected(item: CelestiaAction) {
@@ -1500,22 +1485,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .commitAllowingStateLoss()
             bottomSheetCommitIds = arrayListOf()
         }
-    }
-
-    private fun pushBottomSheetFragment(fragment: Fragment) {
-        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-
-        val ani1 = if (ltr) R.anim.enter_from_right else R.anim.enter_from_left
-        val ani2 = if (ltr) R.anim.exit_to_left else R.anim.exit_to_right
-        val ani3 = if (ltr) R.anim.enter_from_left else R.anim.enter_from_right
-        val ani4 = if (ltr) R.anim.exit_to_right else R.anim.exit_to_left
-
-        val id = supportFragmentManager.beginTransaction()
-            .setCustomAnimations(ani1, ani2, ani3, ani4)
-            .addToBackStack(supportFragmentManager.backStackEntryCount.toString())
-            .replace(R.id.bottom_sheet, fragment)
-            .commitAllowingStateLoss()
-        bottomSheetCommitIds.add(id)
     }
 
     private fun canPopBottomSheetFragment(): Boolean {

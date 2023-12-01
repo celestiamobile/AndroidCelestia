@@ -29,6 +29,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,22 +56,28 @@ import java.net.MalformedURLException
 import java.net.URL
 
 @Composable
-fun InfoScreen(selection: Selection, title: String? = null, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem) -> Unit) {
+fun InfoScreen(selection: Selection, title: String? = null, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem) -> Unit, paddingValues: PaddingValues? = null) {
     val viewModel: InfoViewModel = hiltViewModel()
     var isWebInfoLoaded by remember {
         mutableStateOf(false)
     }
-    val objectName by remember {
-        mutableStateOf(title ?: viewModel.appCore.simulation.universe.getNameForSelection(selection)   )
+    var objectName by remember {
+        mutableStateOf(title ?: viewModel.appCore.simulation.universe.getNameForSelection(selection))
     }
-    val overview by remember {
+    var overview by remember {
         mutableStateOf(viewModel.appCore.getOverviewForSelection(selection))
+    }
+
+    LaunchedEffect(selection, title) {
+        objectName = title ?: viewModel.appCore.simulation.universe.getNameForSelection(selection)
+        overview = viewModel.appCore.getOverviewForSelection(selection)
+        isWebInfoLoaded = false
     }
 
     val rowModifier = Modifier.fillMaxWidth()
 
     val direction = LocalLayoutDirection.current
-    val systemPadding = WindowInsets.systemBars.asPaddingValues()
+    val systemPadding = paddingValues ?: WindowInsets.systemBars.asPaddingValues()
     val contentPadding = PaddingValues(
         start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal) + systemPadding.calculateStartPadding(direction),
         top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical) + systemPadding.calculateTopPadding(),

@@ -1,23 +1,23 @@
 package space.celestia.mobilecelestia.compose
 
 import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
-import android.view.LayoutInflater
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import space.celestia.mobilecelestia.R
-import space.celestia.ui.linkpreview.LPLinkView
-import space.celestia.ui.linkpreview.LPLinkViewData
-import space.celestia.ui.linkpreview.LPMetadataProvider
-import java.net.URL
+                    import android.graphics.BitmapFactory
+                    import android.view.LayoutInflater
+                    import androidx.compose.runtime.*
+                    import androidx.compose.ui.Modifier
+                    import androidx.compose.ui.platform.LocalLifecycleOwner
+                    import androidx.compose.ui.viewinterop.AndroidView
+                    import androidx.lifecycle.Lifecycle
+                    import androidx.lifecycle.LifecycleEventObserver
+                    import kotlinx.coroutines.Dispatchers
+                    import kotlinx.coroutines.withContext
+                    import okhttp3.OkHttpClient
+                    import okhttp3.Request
+                    import space.celestia.mobilecelestia.R
+                    import space.celestia.ui.linkpreview.LPLinkView
+                    import space.celestia.ui.linkpreview.LPLinkViewData
+                    import space.celestia.ui.linkpreview.LPMetadataProvider
+                    import java.net.URL
 
 private enum class FetchState {
     Successful, Failed, Fetching, None
@@ -44,6 +44,9 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, loadResult: (Boolean) -
     var metadata by remember {
         mutableStateOf<LPLinkViewData?>(null)
     }
+    var state by remember {
+        mutableStateOf(FetchState.None)
+    }
     val lifeCycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifeCycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -58,9 +61,11 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, loadResult: (Boolean) -
         }
     }
 
-    var state by remember {
-        mutableStateOf(FetchState.None)
+    LaunchedEffect(url) {
+        metadata = null
+        state = FetchState.None
     }
+
     if (state == FetchState.None) {
         state = FetchState.Fetching
         val fetcher = LPMetadataProvider()
@@ -91,6 +96,7 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, loadResult: (Boolean) -
             state = FetchState.Successful
         }
     }
+
     if (state == FetchState.Successful) {
         LinkPreviewInternal(metadata = metadata, modifier = modifier, onClick = onClick)
     }
