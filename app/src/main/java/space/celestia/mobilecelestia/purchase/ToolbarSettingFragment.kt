@@ -45,7 +45,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
@@ -138,7 +137,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
         title = CelestiaString("Toolbar", "")
     }
 
-    @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     override fun MainView() {
         val viewModel: SettingsViewModel = hiltViewModel()
@@ -181,7 +180,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     Text(text = CelestiaString("Delete", ""))
                 }, onClick = {
                     val index = list.indexOf(item)
-                    if (index >= 0 && index < list.size) {
+                    if (index >= 0 && index < list.size && list[index].deletable) {
                         list = list.toMutableList().apply {
                             removeAt(index)
                         }
@@ -193,15 +192,17 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     Image(painter = painterResource(id = item.imageResource), contentDescription = "Action Icon", colorFilter = ColorFilter.tint(
                         MaterialTheme.colorScheme.onBackground
                     ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)))
-                    Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f).padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical),))
+                    Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f).padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
                     if (isDraggable) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = CelestiaString("Drag Handle", ""), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
                     } else {
                         Icon(imageVector = Icons.Default.Add, contentDescription = CelestiaString("Add Button", ""), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.clip(CircleShape).clickable {
-                            list = list.toMutableList().apply {
-                                add(item)
+                            if (!list.contains(item)) {
+                                list = list.toMutableList().apply {
+                                    add(item)
+                                }
+                                viewModel.appSettings.toolbarItems = list
                             }
-                            viewModel.appSettings.toolbarItems = list
                         }.padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
                     }
                 }
