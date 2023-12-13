@@ -78,16 +78,16 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         }
 
         fun getBrowserItem(appCore: AppCore): BrowserItem {
-            val sim = appCore.simulation
+            val universe = appCore.simulation.universe
             return when (type) {
                 Type.SolarSystem -> {
-                    sim.universe.solBrowserRoot()!!
+                    universe.solBrowserRoot()!!
                 }
                 Type.Star -> {
-                    sim.starBrowserRoot()
+                    universe.starBrowserRoot()
                 }
                 Type.DSO -> {
-                    sim.universe.dsoBrowserRoot()
+                    universe.dsoBrowserRoot()
                 }
             }
         }
@@ -202,10 +202,10 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
         loadingIndicator.visibility = View.VISIBLE
         val browserTabs = arrayListOf(Tab(Tab.Type.Star), Tab(Tab.Type.DSO))
         withContext(executor.asCoroutineDispatcher()) {
-            val sim = appCore.simulation
-            sim.createStaticBrowserItems()
-            sim.createDynamicBrowserItems()
-            val solRoot = sim.universe.solBrowserRoot()
+            val universe = appCore.simulation.universe
+            universe.createStaticBrowserItems()
+            universe.createDynamicBrowserItems()
+            val solRoot = universe.solBrowserRoot()
             if (solRoot != null) {
                 browserTabs.add(0, Tab(Tab.Type.SolarSystem))
             }

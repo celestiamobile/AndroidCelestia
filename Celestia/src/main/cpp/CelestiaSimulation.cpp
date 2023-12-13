@@ -12,7 +12,6 @@
 #include "CelestiaSelection.h"
 #include <celengine/simulation.h>
 #include <celengine/selection.h>
-#include <celengine/starbrowser.h>
 #include <celmath/geomutil.h>
 
 extern "C"
@@ -67,13 +66,6 @@ Java_space_celestia_celestia_Simulation_c_1findObject(JNIEnv *env, jclass clazz,
     auto sel = sim->findObjectFromPath(str, true);
     env->ReleaseStringUTFChars(name, str);
     return selectionAsJavaSelection(env, sel);
-}
-
-extern "C"
-JNIEXPORT jlong JNICALL
-Java_space_celestia_celestia_Simulation_c_1getStarBrowser(JNIEnv *env, jclass clazz, jlong pointer, jint kind) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
-    return (jlong)new StarBrowser(sim, (int)kind);
 }
 
 extern "C"

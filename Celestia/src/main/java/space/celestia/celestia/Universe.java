@@ -54,6 +54,11 @@ public class Universe implements BrowserItem.ChildrenProvider {
         return dsoCatalog;
     }
 
+    public @NonNull
+    StarBrowser getStarBrowser(int kind) {
+        return new StarBrowser(c_getStarBrowser(pointer, kind));
+    }
+
     @NonNull
     public String getNameForSelection(Selection selection) {
         Star star = selection.getStar();
@@ -105,6 +110,7 @@ public class Universe implements BrowserItem.ChildrenProvider {
     // C functions
     private static native long c_getStarCatalog(long ptr);
     private static native long c_getDSOCatalog(long ptr);
+    private static native long c_getStarBrowser(long pointer, int kind);
     private static native String c_getChildrenForStar(long ptr, long pointer);
     private static native String c_getChildrenForBody(long ptr, long pointer);
     private static native Selection c_findObject(long ptr, String name);

@@ -17,27 +17,26 @@
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_StarBrowser_c_1destroy(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto browser = (StarBrowser *)ptr;
+    auto browser = reinterpret_cast<celestia::engine::StarBrowser *>(ptr);
     delete browser;
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_StarBrowser_c_1getStars(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto browser = (StarBrowser *)ptr;
-    std::vector<const Star *> *stars = browser->listStars( BROWSER_MAX_STAR_COUNT );
-    if (stars == nullptr)
+    auto browser = reinterpret_cast<celestia::engine::StarBrowser *>(ptr);
+    std::vector<celestia::engine::StarBrowserRecord> records;
+    browser->populate(records);
+    if (records.empty())
         return env->NewObject(alClz, aliMethodID, 0);
 
-    jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)stars->size());
-    for (int i = 0; i < stars->size(); i++)
+    jobject arrayObject = env->NewObject(alClz, aliMethodID, static_cast<jint>(records.size()));
+    for (const auto &record : records)
      {
-        Star *aStar = (Star *)(*stars)[i];
-        jobject jstar = env->NewObject(csClz, csiMethodID, (jlong)aStar);
+        jobject jstar = env->NewObject(csClz, csiMethodID, reinterpret_cast<jlong>(record.star));
         env->CallBooleanMethod(arrayObject, alaMethodID, jstar);
         env->DeleteLocalRef(jstar);
     }
 
-    delete stars;
     return arrayObject;
 }

@@ -11,6 +11,7 @@
 
 #include "CelestiaSelection.h"
 #include <celengine/body.h>
+#include <celengine/starbrowser.h>
 #include <celengine/universe.h>
 #include <celutil/gettext.h>
 
@@ -32,6 +33,40 @@ JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Universe_c_1getDSOCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
     auto u = (Universe *)pointer;
     return (jlong)u->getDSOCatalog();
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_celestia_Universe_c_1getStarBrowser(JNIEnv *env, jclass clazz, jlong pointer,
+                                                        jint kind) {
+    const jint KIND_NEAREST       = 0;
+    const jint KIND_BRIGHTER      = 1;
+    const jint KIND_BRIGHTEST     = 2;
+    const jint KIND_WITH_PLANETS  = 3;
+    auto u = reinterpret_cast<Universe *>(pointer);
+    auto b = new celestia::engine::StarBrowser(u);
+    switch (kind)
+    {
+    case KIND_NEAREST:
+        b->setComparison(celestia::engine::StarBrowser::Comparison::Nearest);
+        b->setFilter(celestia::engine::StarBrowser::Filter::Visible);
+        break;
+    case KIND_BRIGHTER:
+        b->setComparison(celestia::engine::StarBrowser::Comparison::ApparentMagnitude);
+        b->setFilter(celestia::engine::StarBrowser::Filter::Visible);
+        break;
+    case KIND_BRIGHTEST:
+        b->setComparison(celestia::engine::StarBrowser::Comparison::AbsoluteMagnitude);
+        b->setFilter(celestia::engine::StarBrowser::Filter::Visible);
+        break;
+    case KIND_WITH_PLANETS:
+        b->setComparison(celestia::engine::StarBrowser::Comparison::Nearest);
+        b->setFilter(celestia::engine::StarBrowser::Filter::WithPlanets);
+        break;
+    default:
+        break;
+    }
+    return reinterpret_cast<jlong>(b);
 }
 
 extern "C"

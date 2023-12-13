@@ -43,12 +43,6 @@ public class Simulation {
             universe = new Universe(c_getUniverse(pointer));
         return universe;
     }
-
-    public @NonNull
-    StarBrowser getStarBrowser(int kind) {
-        return new StarBrowser(c_getStarBrowser(pointer, kind));
-    }
-
     public void reverseObserverOrientation() {
         c_reverseObserverOrientation(pointer);
     }
@@ -99,7 +93,6 @@ public class Simulation {
     private static native long c_getUniverse(long pointer);
     private static native List<String> c_completionForText(long pointer, String text, int limit);
     private static native Selection c_findObject(long pointer, String name);
-    private static native long c_getStarBrowser(long pointer, int kind);
     private static native void c_reverseObserverOrientation(long pointer);
     private static native double c_getTime(long pointer);
     private static native void c_setTime(long pointer, double time);
