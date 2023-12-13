@@ -13,8 +13,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="464"
-    android:versionName="1.6.3">
+    android:versionCode="465"
+    android:versionName="1.6.4">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
