@@ -21,6 +21,7 @@
 #include <celutil/fsutils.h>
 #include <celutil/gettext.h>
 #include <celestia/url.h>
+#include <unicode/uloc.h>
 
 #include <android/keycodes.h>
 
@@ -647,6 +648,10 @@ Java_space_celestia_celestia_AppCore_c_1setLocaleDirectoryPath(JNIEnv *env,
     // Set environment variable since NDK does not support locale
     const char *str = env->GetStringUTFChars(locale, nullptr);
     setenv("LANG", str, true);
+
+    UErrorCode status = U_ZERO_ERROR;
+    uloc_setDefault(str, &status);
+
     env->ReleaseStringUTFChars(locale, str);
     str = env->GetStringUTFChars(path, nullptr);
     bindtextdomain("celestia", str);
