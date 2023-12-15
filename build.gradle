@@ -1,7 +1,7 @@
 /*
  * build.gradle
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2023-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,7 +15,7 @@ buildscript {
     ext.kotlin_version = '1.9.21'
     ext.core_ktx_version = '1.12.0'
     ext.core_appcompat_version = '1.6.1'
-    ext.material_version = '1.10.0'
+    ext.material_version = '1.11.0'
     ext.kotlinx_coroutines_version = '1.7.3'
     ext.hilt_version = '2.49'
     ext.lifecycle_version = '2.6.2'
