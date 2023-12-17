@@ -1,6 +1,7 @@
 package space.celestia.mobilecelestia.resource
 
 import android.webkit.JavascriptInterface
+import androidx.annotation.Keep
 import com.google.gson.Gson
 import java.lang.ref.WeakReference
 
@@ -14,17 +15,24 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         fun openSubscriptionPage()
     }
 
+    @Keep
     class MessagePayload(val operation: String, val content: String, val minScriptVersion: Int)
     abstract class BaseJavascriptHandler {
         abstract val operation: String
         abstract fun executeWithContent(content: String, handler: MessageHandler)
     }
 
+    @Keep
     class RunScriptContext(val scriptContent: String, val scriptType: String, val scriptName: String?, val scriptLocation: String?)
+    @Keep
     class ShareURLContext(val title: String, val url: String)
+    @Keep
     class SendACKContext(val id: String)
+    @Keep
     class OpenAddonNextContext(val id: String)
+    @Keep
     class RunDemoContext
+    @Keep
     class OpenSubscriptionPageContext
 
     abstract class JavascriptHandler<T>(private val clazz: Class<T>): BaseJavascriptHandler() {
