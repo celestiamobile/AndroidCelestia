@@ -11,9 +11,11 @@
 
 package space.celestia.celestiafoundation.resource.model
 
+import androidx.annotation.Keep
 import java.io.Serializable
 import java.util.*
 
+@Keep
 class ResourceItem(
     val id: String,
     val name: String,
