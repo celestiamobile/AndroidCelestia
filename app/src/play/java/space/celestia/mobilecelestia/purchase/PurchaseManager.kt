@@ -2,6 +2,7 @@ package space.celestia.mobilecelestia.purchase
 
 import android.app.Activity
 import android.content.Context
+import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener
@@ -198,6 +199,7 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     }
 
     private fun verifyStatus(purchaseToken: String, handler: (() -> Unit)? = null) {
+        @Keep
         class Status(val valid: Boolean, val planId: String?): Serializable
         CoroutineScope(Dispatchers.Main).launch {
             try {
