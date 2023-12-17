@@ -167,3 +167,18 @@ jobs:
       ArtifactName: '$(outputFormat)-symbols'
       publishLocation: 'Container'
     displayName: 'Publish Symbols'
+
+  - script: |
+      export VERSION_CODE=`grep versionCode $(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml | cut -d\" -f2`
+      export VERSION_NAME=`grep versionName $(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml | cut -d\" -f2`
+      mkdir -p mapping
+      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/outputs/mapping/**/mapping.txt mapping
+      appcenter crashes upload-mappings --mapping mapping/mapping.txt --version-name $VERSION_NAME --version-code $VERSION_CODE --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
+    displayName: 'Upload Mapping'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'mapping/mapping.txt'
+      ArtifactName: '$(outputFormat)-mapping'
+      publishLocation: 'Container'
+    displayName: 'Publish Mapping'
