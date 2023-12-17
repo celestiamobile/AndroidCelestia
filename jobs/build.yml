@@ -6,6 +6,9 @@ jobs:
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
+    appCenterSecret: ${{ parameters.appCenterSecret }}
+    appCenterToken: ${{ parameters.appCenterToken }}
+    appCenterProject: ${{ parameters.appCenterProject }}
 
   steps:
   - checkout: Celestia
@@ -72,7 +75,7 @@ jobs:
     displayName: 'Move Dependencies'
 
   - script: |
-      sed -i 's/APPCENTER-APP-ID/$(APPCENTER_SECRET)/g' app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
+      sed -i 's/APPCENTER-APP-ID/$(appCenterSecret)/g' app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
       echo "New Content:"
       cat app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
     workingDirectory: '$(System.DefaultWorkingDirectory)/AndroidCelestia'
@@ -158,7 +161,7 @@ jobs:
       cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/native_symbol_tables/release/out/* symbols
       cd symbols
       zip -vr symbols.zip * -x "*.DS_Store"
-      appcenter crashes upload-symbols --breakpad symbols.zip --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
+      appcenter crashes upload-symbols --breakpad symbols.zip --app $(appCenterProject) --token $(appCenterToken) --disable-telemetry --debug
     displayName: 'Upload Symbols'
 
   - task: PublishBuildArtifacts@1
@@ -173,7 +176,7 @@ jobs:
       export VERSION_NAME=`grep versionName $(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml | cut -d\" -f2`
       mkdir -p mapping
       cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/outputs/mapping/**/mapping.txt mapping
-      appcenter crashes upload-mappings --mapping mapping/mapping.txt --version-name $VERSION_NAME --version-code $VERSION_CODE --app CelestiaProject/Celestia-1 --token $(APP_CENTER_TOKEN) --disable-telemetry --debug
+      appcenter crashes upload-mappings --mapping mapping/mapping.txt --version-name $VERSION_NAME --version-code $VERSION_CODE --app $(appCenterProject) --token $(appCenterToken) --disable-telemetry --debug
     displayName: 'Upload Mapping'
 
   - task: PublishBuildArtifacts@1
