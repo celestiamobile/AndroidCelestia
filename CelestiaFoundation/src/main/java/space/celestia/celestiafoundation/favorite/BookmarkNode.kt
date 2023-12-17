@@ -11,8 +11,10 @@
 
 package space.celestia.celestiafoundation.favorite
 
+import androidx.annotation.Keep
 import java.io.Serializable
 
+@Keep
 class BookmarkNode(var name: String, var url: String, var children: ArrayList<BookmarkNode>?) : Serializable {
     val isLeaf: Boolean
         get() = children == null

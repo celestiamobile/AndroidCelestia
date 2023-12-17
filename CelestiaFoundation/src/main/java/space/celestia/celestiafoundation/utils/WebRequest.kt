@@ -11,11 +11,14 @@
 
 package space.celestia.celestiafoundation.utils
 
+import androidx.annotation.Keep
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import java.lang.reflect.Type
 
+@Keep
 class BaseResult(val status: Int, val info: Info) {
+    @Keep
     class Info(val detail: String?, val reason: String?)
 }
 
