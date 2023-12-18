@@ -1181,11 +1181,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun shareURLDirect(title: String, url: String) {
-        val intent = ShareCompat.IntentBuilder(this)
+        var intent = ShareCompat.IntentBuilder(this)
             .setType("text/plain")
-            .setChooserTitle(title)
             .setText(url)
-            .createChooserIntent()
+            .intent
+        intent.putExtra(Intent.EXTRA_TITLE, title)
+        intent = Intent.createChooser(intent, null)
         val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
         if (ai != null && ai.exported)
             startActivity(intent)
