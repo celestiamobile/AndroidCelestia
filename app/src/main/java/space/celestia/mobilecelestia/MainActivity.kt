@@ -1841,7 +1841,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val file = File(directory, "${UUID.randomUUID()}.png")
         val success = withContext(executor.asCoroutineDispatcher()) {
-            appCore.draw()
             return@withContext appCore.saveScreenshot(file.absolutePath, AppCore.IMAGE_TYPE_PNG)
         }
         if (success) {
