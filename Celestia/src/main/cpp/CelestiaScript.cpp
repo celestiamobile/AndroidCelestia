@@ -19,12 +19,12 @@ Java_space_celestia_celestia_Script_c_1getScriptsInDirectory(JNIEnv *env,
                                                                                 jstring path,
                                                                                 jboolean deep_scan) {
     const char *str = env->GetStringUTFChars(path, nullptr);
-    std::vector<ScriptMenuItem> *results = ScanScriptsDirectory(str, deep_scan != JNI_FALSE);
+    auto results = ScanScriptsDirectory(str, deep_scan != JNI_FALSE);
     env->ReleaseStringUTFChars(path, str);
 
-    jobject arrayObj = env->NewObject(alClz, aliMethodID, (int)results->size());
+    jobject arrayObj = env->NewObject(alClz, aliMethodID, static_cast<jint>(results.size()));
 
-    for (const auto& result : *results)
+    for (const auto& result : results)
     {
         jstring filename = env->NewStringUTF(result.filename.c_str());
         jstring title = env->NewStringUTF(result.title.c_str());
@@ -35,6 +35,5 @@ Java_space_celestia_celestia_Script_c_1getScriptsInDirectory(JNIEnv *env,
         env->DeleteLocalRef(jscript);
     }
 
-    delete results;
     return arrayObj;
 }
