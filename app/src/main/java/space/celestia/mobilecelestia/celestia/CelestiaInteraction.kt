@@ -77,7 +77,6 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
     private val isContextMenuEnabled = appSettings[PreferenceManager.PredefinedKey.ContextMenu] != "false"
 
-    private var currentSpan: Float? = null
     private var internalInteractionMode = interactionMode
 
     private var lastPoint: PointF? = null
@@ -119,9 +118,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     fun setInteractionMode(interactionMode: InteractionMode) {
-        executor.execute {
-            internalInteractionMode = interactionMode
-        }
+        internalInteractionMode = interactionMode
     }
 
     fun callZoom() {
@@ -130,8 +127,9 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private fun callZoom(deltaY: Float) {
+        val isCameraMode = internalInteractionMode == InteractionMode.Camera
         executor.execute {
-            if (internalInteractionMode == InteractionMode.Camera) {
+            if (isCameraMode) {
                 appCore.mouseMove(AppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), AppCore.SHIFT_KEY)
             } else {
                 appCore.mouseWheel(deltaY, 0)
@@ -430,25 +428,18 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         if (isScrolling)
             stopScrolling()
 
-        currentSpan = detector.currentSpan
         isScaling = true
-
         return true
     }
 
     override fun onScaleEnd(detector: ScaleGestureDetector) {}
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
-        val previousSpan = currentSpan ?: return true
-        val currentSpan = detector.currentSpan
-
-        val delta = detector.currentSpan / previousSpan
-        // FIXME: 8 is a magic number
-        val deltaY = (1 - delta) * previousSpan / density / 8
-
-        callZoom(deltaY)
-
-        this.currentSpan = currentSpan
+        val focus = PointF(detector.focusX, detector.focusY).scaleBy(scaleFactor)
+        val scale = detector.scaleFactor
+        executor.execute {
+            appCore.pinchUpdate(focus, scale)
+        }
 
         return true
     }

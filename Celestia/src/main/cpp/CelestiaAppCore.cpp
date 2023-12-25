@@ -596,6 +596,13 @@ Java_space_celestia_celestia_AppCore_c_1joystickAxis(JNIEnv *env, jclass clazz,
 
 extern "C"
 JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1pinchUpdate(JNIEnv *env, jclass clazz, jlong ptr, jfloat x, jfloat y, jfloat scale) {
+    auto core = reinterpret_cast<CelestiaCore*>(ptr);
+    core->pinchUpdate(static_cast<float>(x), static_cast<float>(y), static_cast<float>(scale));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1runScript(JNIEnv *env, jclass clazz,
                                                              jlong ptr,
                                                              jstring path) {
