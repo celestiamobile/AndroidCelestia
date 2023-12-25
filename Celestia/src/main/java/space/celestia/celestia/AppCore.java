@@ -29,6 +29,7 @@ public class AppCore {
     public static final int MOUSE_BUTTON_RIGHT      = 0x04;
     public static final int SHIFT_KEY               = 0x08;
     public static final int CONTROL_KEY             = 0x10;
+    public static final int TOUCH                   = 0x40;
 
     public static final int JOYSTICK_AXIS_X         = 0;
     public static final int JOYSTICK_AXIS_Y         = 1;

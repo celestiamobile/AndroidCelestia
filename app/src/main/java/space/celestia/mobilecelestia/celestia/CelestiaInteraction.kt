@@ -109,6 +109,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
                         val current = self.currentPressedMouseButton
                         val modifier = event.keyModifier()
                         self.executor.execute {
+                            // Pointer captured do not pass the TOUCH modifier
                             self.appCore.mouseMove(current, point, modifier)
                         }
                     }
@@ -211,14 +212,18 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         override fun onCapturedPointer(view: View?, event: MotionEvent?): Boolean {
             val e = event ?: return true
             val v = view ?: return true
-            if (event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS) {
-                handleMouseButtonPress(v, e)
-                return true
-            } else if (event.actionMasked == MotionEvent.ACTION_BUTTON_RELEASE) {
-                handleMouseButtonRelease(v, e)
-                return true
-            } else if (event.actionMasked == MotionEvent.ACTION_MOVE) {
-                handleMouseButtonMove(v, e)
+            when (event.actionMasked) {
+                MotionEvent.ACTION_BUTTON_PRESS -> {
+                    handleMouseButtonPress(v, e)
+                    return true
+                }
+                MotionEvent.ACTION_BUTTON_RELEASE -> {
+                    handleMouseButtonRelease(v, e)
+                    return true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    handleMouseButtonMove(v, e)
+                }
             }
             return true
         }
@@ -336,7 +341,8 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
                     val modifier = event.keyModifier()
                     lastMousePoint = current
                     executor.execute {
-                        appCore.mouseMove(button, offset, modifier)
+                        // Mouse input but we do not support capturing
+                        appCore.mouseMove(button, offset, modifier.or(AppCore.TOUCH))
                     }
                     handled = true
                 }
@@ -483,11 +489,11 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             scrollingMouseButton = button
             executor.execute {
                 appCore.mouseButtonDown(button, originalPoint, 0)
-                appCore.mouseMove(button, offset, 0)
+                appCore.mouseMove(button, offset, AppCore.TOUCH)
             }
         } else {
             executor.execute {
-                appCore.mouseMove(button, offset, 0)
+                appCore.mouseMove(button, offset, AppCore.TOUCH)
             }
         }
         lastPoint = newPoint

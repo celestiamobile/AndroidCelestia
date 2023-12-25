@@ -401,6 +401,8 @@ static int convert_modifier_to_celestia_modifier(jint buttons, jint modifiers)
         cModifiers |= CelestiaCore::ShiftKey;
     if (modifiers & 0x10)
         cModifiers |= CelestiaCore::ControlKey;
+    if (modifiers & 0x40)
+        cModifiers |= CelestiaCore::Touch;
     return cModifiers;
 }
 
