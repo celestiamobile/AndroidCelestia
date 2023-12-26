@@ -5,6 +5,7 @@ set(CELESTIA_SRC_DIR "${CELESTIA_DIR}/src")
 set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/audiosession.cpp
         ${CELESTIA_SRC_DIR}/celestia/audiosession.h
+        ${CELESTIA_SRC_DIR}/celestia/catalogloader.h
         ${CELESTIA_SRC_DIR}/celestia/celestiacore.cpp
         ${CELESTIA_SRC_DIR}/celestia/celestiacore.h
         ${CELESTIA_SRC_DIR}/celestia/celestiastate.cpp
@@ -21,9 +22,16 @@ set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/helper.h
         ${CELESTIA_SRC_DIR}/celestia/hud.cpp
         ${CELESTIA_SRC_DIR}/celestia/hud.h
+        ${CELESTIA_SRC_DIR}/celestia/loaddso.cpp
+        ${CELESTIA_SRC_DIR}/celestia/loaddso.h
+        ${CELESTIA_SRC_DIR}/celestia/loadsso.cpp
+        ${CELESTIA_SRC_DIR}/celestia/loadsso.h
+        ${CELESTIA_SRC_DIR}/celestia/loadstars.cpp
+        ${CELESTIA_SRC_DIR}/celestia/loadstars.h
         ${CELESTIA_SRC_DIR}/celestia/miniaudiosession.cpp
         ${CELESTIA_SRC_DIR}/celestia/miniaudiosession.h
         ${CELESTIA_SRC_DIR}/celestia/moviecapture.h
+        ${CELESTIA_SRC_DIR}/celestia/progressnotifier.h
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.cpp
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.h
         ${CELESTIA_SRC_DIR}/celestia/textinput.cpp

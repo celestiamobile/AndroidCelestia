@@ -189,8 +189,8 @@ public class AppCore {
         c_joystickAxis(pointer, axis, amount);
     }
 
-    public void pinchUpdate(@NonNull PointF focus, float scale) {
-        c_pinchUpdate(pointer, focus.x, focus.y, scale);
+    public void pinchUpdate(@NonNull PointF focus, float scale, boolean zoomFOV) {
+        c_pinchUpdate(pointer, focus.x, focus.y, scale, zoomFOV);
     }
 
     public void runScript(@NonNull String scriptPath) { c_runScript(pointer, scriptPath); }
@@ -277,7 +277,7 @@ public class AppCore {
     private static native void c_joystickButtonDown(long ptr, int button);
     private static native void c_joystickButtonUp(long ptr, int button);
     private static native void c_joystickAxis(long ptr, int axis, float amount);
-    private static native void c_pinchUpdate(long ptr, float focusX, float focusY, float scale);
+    private static native void c_pinchUpdate(long ptr, float focusX, float focusY, float scale, boolean zoomFOV);
     private static native void c_runScript(long ptr, String path);
     private static native void c_runDemo(long ptr);
     private static native String c_getCurrentURL(long ptr);

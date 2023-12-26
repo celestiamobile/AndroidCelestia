@@ -441,10 +441,11 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     override fun onScaleEnd(detector: ScaleGestureDetector) {}
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
+        val isCameraMode = internalInteractionMode == InteractionMode.Camera
         val focus = PointF(detector.focusX, detector.focusY).scaleBy(scaleFactor)
         val scale = detector.scaleFactor
         executor.execute {
-            appCore.pinchUpdate(focus, scale)
+            appCore.pinchUpdate(focus, scale, isCameraMode)
         }
 
         return true

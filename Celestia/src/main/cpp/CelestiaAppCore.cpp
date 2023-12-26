@@ -17,7 +17,9 @@
 #include <celestia/celestiacore.h>
 #include <celengine/body.h>
 #include <celengine/glsupport.h>
+#include <celestia/configfile.h>
 #include <celestia/helper.h>
+#include <celestia/progressnotifier.h>
 #include <celutil/fsutils.h>
 #include <celutil/gettext.h>
 #include <celestia/url.h>
@@ -598,9 +600,9 @@ Java_space_celestia_celestia_AppCore_c_1joystickAxis(JNIEnv *env, jclass clazz,
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_AppCore_c_1pinchUpdate(JNIEnv *env, jclass clazz, jlong ptr, jfloat x, jfloat y, jfloat scale) {
+Java_space_celestia_celestia_AppCore_c_1pinchUpdate(JNIEnv *env, jclass clazz, jlong ptr, jfloat x, jfloat y, jfloat scale, jboolean zoom_fov) {
     auto core = reinterpret_cast<CelestiaCore*>(ptr);
-    core->pinchUpdate(static_cast<float>(x), static_cast<float>(y), static_cast<float>(scale));
+    core->pinchUpdate(static_cast<float>(x), static_cast<float>(y), static_cast<float>(scale), zoom_fov == JNI_TRUE);
 }
 
 extern "C"
