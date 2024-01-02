@@ -71,6 +71,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/bytes.h
         ${CELESTIA_SRC_DIR}/celutil/color.cpp
         ${CELESTIA_SRC_DIR}/celutil/color.h
+        ${CELESTIA_SRC_DIR}/celutil/dateformatter.cpp
+        ${CELESTIA_SRC_DIR}/celutil/dateformatter.h
         ${CELESTIA_SRC_DIR}/celutil/filetype.cpp
         ${CELESTIA_SRC_DIR}/celutil/filetype.h
         ${CELESTIA_SRC_DIR}/celutil/flag.h
@@ -102,6 +104,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/tzutil.h
         ${CELESTIA_SRC_DIR}/celutil/unicode.cpp
         ${CELESTIA_SRC_DIR}/celutil/unicode.h
+        ${CELESTIA_SRC_DIR}/celutil/uniquedel.h
         ${CELESTIA_SRC_DIR}/celutil/utf8.cpp
         ${CELESTIA_SRC_DIR}/celutil/utf8.h
         ${CELESTIA_SRC_DIR}/celutil/watcher.h
@@ -258,8 +261,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/constellation.h
         ${CELESTIA_SRC_DIR}/celengine/curveplot.cpp
         ${CELESTIA_SRC_DIR}/celengine/curveplot.h
-        ${CELESTIA_SRC_DIR}/celengine/dateformatter.cpp
-        ${CELESTIA_SRC_DIR}/celengine/dateformatter.h
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.cpp
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
         ${CELESTIA_SRC_DIR}/celengine/dsodb.cpp

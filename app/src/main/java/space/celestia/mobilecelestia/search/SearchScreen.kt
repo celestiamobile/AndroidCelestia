@@ -123,7 +123,7 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
             SearchResult(key = searchKey, results = searchResults.toList(), isSearching = isSearching) {
                 isSearchActive = false
                 isLoadingPage = true
-                scope.launch(viewModel.executor.asCoroutineDispatcher()) {
+                scope.launch {
                     val selection = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.findObject(it) }
                     isLoadingPage = false
                     if (selection.isEmpty)
