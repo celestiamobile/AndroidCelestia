@@ -20,6 +20,7 @@
 #include <celestia/configfile.h>
 #include <celestia/helper.h>
 #include <celestia/progressnotifier.h>
+#include <celutil/flag.h>
 #include <celutil/fsutils.h>
 #include <celutil/gettext.h>
 #include <celestia/url.h>
@@ -602,7 +603,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1pinchUpdate(JNIEnv *env, jclass clazz, jlong ptr, jfloat x, jfloat y, jfloat scale, jboolean zoom_fov) {
     auto core = reinterpret_cast<CelestiaCore*>(ptr);
-    core->pinchUpdate(static_cast<float>(x), static_cast<float>(y), static_cast<float>(scale), zoom_fov == JNI_TRUE);
+    core->pinchUpdate(static_cast<float>(x), static_cast<float>(y), static_cast<float>(scale), static_cast<bool>(zoom_fov));
 }
 
 extern "C"
@@ -854,7 +855,26 @@ FEATUREMETHODS(Linea)
 FEATUREMETHODS(Fluctus)
 FEATUREMETHODS(Farrum)
 FEATUREMETHODS(EruptiveCenter)
-FEATUREMETHODS(Other)extern "C"
+FEATUREMETHODS(Other)
+
+#define INTERACTIONMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
+Java_space_celestia_celestia_AppCore_c_1getEnable##flag (JNIEnv *env, jclass clazz, jlong pointer) { \
+    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    return celestia::util::is_set(core->getInteractionFlags(), CelestiaCore::InteractionFlags::flag) ? JNI_TRUE : JNI_FALSE; \
+} \
+extern "C" \
+JNIEXPORT void JNICALL \
+Java_space_celestia_celestia_AppCore_c_1setEnable##flag (JNIEnv *env, jclass clazz, jlong pointer, \
+                                                                        jboolean value) { \
+    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    auto flags = core->getInteractionFlags(); \
+    celestia::util::set_or_unset(flags, CelestiaCore::InteractionFlags::flag, static_cast<bool>(value));                                                                      \
+    core->setInteractionFlags(flags); \
+} \
+
+INTERACTIONMETHODS(ReverseWheel)
+INTERACTIONMETHODS(RayBasedDragging)
+INTERACTIONMETHODS(FocusZooming)
 
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setResolution(JNIEnv *env, jclass clazz, jlong pointer,

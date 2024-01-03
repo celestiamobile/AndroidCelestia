@@ -482,8 +482,6 @@ add_definitions(-DGL_ES)
 add_definitions(-DUSE_MINIAUDIO)
 add_definitions(-DCELX)
 add_definitions(-DUSE_ICU)
-add_definitions(-DENABLE_RAY_BASED_DRAGGING)
-add_definitions(-DENABLE_FOCUS_ZOOMING)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DEIGEN_NO_DEBUG)

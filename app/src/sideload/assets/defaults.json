@@ -83,5 +83,8 @@
     "TemperatureScale": 0,
     "ScriptSystemAccessPolicy": 0,
     "StarColors": 1,
-    "TintSaturation": 0.5
+    "TintSaturation": 0.5,
+    "EnableReverseWheel": 0,
+    "EnableRayBasedDragging": 1,
+    "EnableFocusZooming": 1
 }

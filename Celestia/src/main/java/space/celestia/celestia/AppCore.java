@@ -809,4 +809,19 @@ public class AppCore {
 
     private static native boolean c_getReferenceMarkEnabled(long ptr, String str);
     private static native void c_toggleReferenceMarkEnabled(long ptr, String str);
+
+    public boolean getEnableRayBasedDragging() { return c_getEnableRayBasedDragging(pointer); }
+    public void setEnableRayBasedDragging(boolean value) { c_setEnableRayBasedDragging(pointer, value); }
+    private static native void c_setEnableRayBasedDragging(long pointer, boolean value);
+    private native boolean c_getEnableRayBasedDragging(long pointer);
+
+    public boolean getEnableFocusZooming() { return c_getEnableFocusZooming(pointer); }
+    public void setEnableFocusZooming(boolean value) { c_setEnableFocusZooming(pointer, value); }
+    private static native void c_setEnableFocusZooming(long pointer, boolean value);
+    private native boolean c_getEnableFocusZooming(long pointer);
+
+    public boolean getEnableReverseWheel() { return c_getEnableReverseWheel(pointer); }
+    public void setEnableReverseWheel(boolean value) { c_setEnableReverseWheel(pointer, value); }
+    private static native void c_setEnableReverseWheel(long pointer, boolean value);
+    private native boolean c_getEnableReverseWheel(long pointer);
 }

@@ -377,7 +377,7 @@ void *CelestiaRenderer::threadCallback(void *self)
     {
         if (renderer->surface != EGL_NO_SURFACE && !renderer->engineStartedCalled)
         {
-            bool started = newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod) == JNI_TRUE;
+            bool started = static_cast<bool>(newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod));
             if (!started)
                 break;
             renderer->engineStartedCalled = true;
@@ -459,7 +459,7 @@ Java_space_celestia_celestia_Renderer_c_1start(JNIEnv *env, jobject thiz,
     LOG_INFO("Creating renderer thread");
 
     auto renderer = (CelestiaRenderer *)ptr;
-    renderer->enableMultisample = enable_multisample == JNI_TRUE;
+    renderer->enableMultisample = static_cast<bool>(enable_multisample);
 
     renderer->start();
 }
@@ -558,5 +558,5 @@ Java_space_celestia_celestia_Renderer_c_1setHasPendingTasks(JNIEnv *env, jobject
                                                             jlong pointer,
                                                             jboolean has_pending_tasks) {
     auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
-    renderer->setHasPendingTasks(has_pending_tasks == JNI_TRUE);
+    renderer->setHasPendingTasks(static_cast<bool>(has_pending_tasks));
 }

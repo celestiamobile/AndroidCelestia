@@ -1,7 +1,7 @@
 /*
  * SettingsCommonFragment.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2024-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -148,114 +148,130 @@ class SettingsCommonFragment : NavigationFragment.SubFragment() {
     @Composable
     private fun SettingEntry(item: SettingsItem) {
         val scope = rememberCoroutineScope()
-        if (item is SettingsSwitchItem) {
-            var on by remember {
-                mutableStateOf(appCore.getBooleanValueForPield(item.key))
-            }
-            when (item.representation) {
-                SettingsSwitchItem.Representation.Switch -> {
-                    SwitchRow(primaryText = item.name, checked = on, onCheckedChange = { newValue ->
-                        on = newValue
-                        if (!item.volatile)
-                            coreSettings[PreferenceManager.CustomKey(item.key)] = if (newValue) "1" else "0"
-                        scope.launch(executor.asCoroutineDispatcher()) {
-                            appCore.setBooleanValueForField(item.key, newValue)
-                        }
-                    })
+        when (item) {
+            is SettingsSwitchItem -> {
+                var on by remember {
+                    mutableStateOf(appCore.getBooleanValueForPield(item.key))
                 }
-                SettingsSwitchItem.Representation.Checkmark -> {
-                    CheckboxRow(primaryText = item.name, checked = on, onCheckedChange = { newValue ->
-                        on = newValue
-                        if (!item.volatile)
-                            coreSettings[PreferenceManager.CustomKey(item.key)] = if (newValue) "1" else "0"
-                        scope.launch(executor.asCoroutineDispatcher()) {
-                            appCore.setBooleanValueForField(item.key, newValue)
-                        }
-                    })
+                when (item.representation) {
+                    SettingsSwitchItem.Representation.Switch -> {
+                        SwitchRow(primaryText = item.name, secondaryText = item.subtitle, checked = on, onCheckedChange = { newValue ->
+                            on = newValue
+                            if (!item.volatile)
+                                coreSettings[PreferenceManager.CustomKey(item.key)] = if (newValue) "1" else "0"
+                            scope.launch(executor.asCoroutineDispatcher()) {
+                                appCore.setBooleanValueForField(item.key, newValue)
+                            }
+                        })
+                    }
+                    SettingsSwitchItem.Representation.Checkmark -> {
+                        CheckboxRow(primaryText = item.name, secondaryText = item.subtitle, checked = on, onCheckedChange = { newValue ->
+                            on = newValue
+                            if (!item.volatile)
+                                coreSettings[PreferenceManager.CustomKey(item.key)] = if (newValue) "1" else "0"
+                            scope.launch(executor.asCoroutineDispatcher()) {
+                                appCore.setBooleanValueForField(item.key, newValue)
+                            }
+                        })
+                    }
                 }
             }
-        } else if (item is SettingsSelectionSingleItem) {
-            var selected by remember {
-                val value = appCore.getIntValueForField(item.key)
-                mutableIntStateOf(
-                    if (item.options.any { it.first == value }) {
-                        value
-                    } else {
-                        item.defaultSelection
+
+            is SettingsSelectionSingleItem -> {
+                var selected by remember {
+                    val value = appCore.getIntValueForField(item.key)
+                    mutableIntStateOf(
+                        if (item.options.any { it.first == value }) {
+                            value
+                        } else {
+                            item.defaultSelection
+                        }
+                    )
+                }
+                if (item.showTitle) {
+                    TextRow(primaryText = item.name, secondaryText = item.subtitle)
+                }
+                for (option in item.options) {
+                    RadioButtonRow(primaryText = option.second, selected = option.first == selected) {
+                        selected = option.first
+                        coreSettings[PreferenceManager.CustomKey(item.key)] = option.first.toString()
+                        scope.launch(executor.asCoroutineDispatcher()) {
+                            appCore.setIntValueForField(item.key, option.first)
+                        }
+                    }
+                }
+            }
+
+            is SettingsPreferenceSwitchItem -> {
+                var on by remember {
+                    mutableStateOf(when (appSettings[item.key]) { "true" -> true "false" -> false else -> item.defaultOn })
+                }
+                SwitchRow(primaryText = item.name, secondaryText = item.subtitle, checked = on, onCheckedChange = { newValue ->
+                    on = newValue
+                    appSettings[item.key] = if (newValue) "true" else "false"
+                })
+            }
+
+            is SettingsPreferenceSelectionItem -> {
+                var selected by remember {
+                    mutableIntStateOf(appSettings[item.key]?.toIntOrNull() ?: item.defaultSelection)
+                }
+                TextRow(
+                    primaryText = item.name,
+                    secondaryText = item.options.firstOrNull { it.first == selected }?.second,
+                    modifier = Modifier.clickable {
+                        val activity = this.activity ?: return@clickable
+                        activity.showOptions("", options = item.options.map { it.second }.toTypedArray()) { index ->
+                            val value = item.options[index].first
+                            selected = value
+                            appSettings[item.key] = value.toString()
+                        }
                     }
                 )
             }
-            if (item.showTitle) {
-                TextRow(primaryText = item.name, secondaryText = item.subtitle)
-            }
-            for (option in item.options) {
-                RadioButtonRow(primaryText = option.second, selected = option.first == selected) {
-                    selected = option.first
-                    coreSettings[PreferenceManager.CustomKey(item.key)] = option.first.toString()
+
+            is SettingsActionItem -> {
+                TextRow(primaryText = item.name, modifier = Modifier.clickable {
                     scope.launch(executor.asCoroutineDispatcher()) {
-                        appCore.setIntValueForField(item.key, option.first)
+                        appCore.charEnter(item.action)
                     }
-                }
+                })
             }
-        } else if (item is SettingsPreferenceSwitchItem) {
-            var on by remember {
-                mutableStateOf(when (appSettings[item.key]) { "true" -> true "false" -> false else -> item.defaultOn })
-            }
-            SwitchRow(primaryText = item.name, secondaryText = item.subtitle, checked = on, onCheckedChange = { newValue ->
-                on = newValue
-                appSettings[item.key] = if (newValue) "true" else "false"
-            })
-        } else if (item is SettingsPreferenceSelectionItem) {
-            var selected by remember {
-                mutableIntStateOf(appSettings[item.key]?.toIntOrNull() ?: item.defaultSelection)
-            }
-            TextRow(
-                primaryText = item.name,
-                secondaryText = item.options.firstOrNull { it.first == selected }?.second,
-                modifier = Modifier.clickable {
-                    val activity = this.activity ?: return@clickable
-                    activity.showOptions("", options = item.options.map { it.second }.toTypedArray()) { index ->
-                        val value = item.options[index].first
-                        selected = value
-                        appSettings[item.key] = value.toString()
-                    }
-                }
-            )
-        } else if (item is SettingsActionItem) {
-            TextRow(primaryText = item.name, modifier = Modifier.clickable {
-                scope.launch(executor.asCoroutineDispatcher()) {
-                    appCore.charEnter(item.action)
-                }
-            })
-        } else if (item is SettingsUnknownTextItem) {
-            TextRow(primaryText = item.name, modifier = Modifier.clickable {
-                when (item.id) {
-                    settingUnmarkAllID -> {
-                        scope.launch(executor.asCoroutineDispatcher()) {
-                            appCore.simulation.universe.unmarkAll()
+
+            is SettingsUnknownTextItem -> {
+                TextRow(primaryText = item.name, modifier = Modifier.clickable {
+                    when (item.id) {
+                        settingUnmarkAllID -> {
+                            scope.launch(executor.asCoroutineDispatcher()) {
+                                appCore.simulation.universe.unmarkAll()
+                            }
                         }
                     }
-                }
-            })
-        } else if (item is SettingsSliderItem) {
-            var value by remember {
-                mutableFloatStateOf(appCore.getDoubleValueForField(item.key).toFloat())
+                })
             }
-            SliderRow(primaryText = item.name, value = value, valueRange = item.minValue.toFloat()..item.maxValue.toFloat(), onValueChange = { newValue ->
-                value = newValue
-                coreSettings[PreferenceManager.CustomKey(item.key)] = newValue.toString()
-                scope.launch(executor.asCoroutineDispatcher()) {
-                    appCore.setDoubleValueForField(item.key, newValue.toDouble())
+
+            is SettingsSliderItem -> {
+                var value by remember {
+                    mutableFloatStateOf(appCore.getDoubleValueForField(item.key).toFloat())
                 }
-            })
-        } else if (item is SettingsPreferenceSliderItem) {
-            var value by remember {
-                mutableFloatStateOf(appSettings[item.key]?.toFloat() ?: item.defaultValue.toFloat())
+                SliderRow(primaryText = item.name, value = value, valueRange = item.minValue.toFloat()..item.maxValue.toFloat(), onValueChange = { newValue ->
+                    value = newValue
+                    coreSettings[PreferenceManager.CustomKey(item.key)] = newValue.toString()
+                    scope.launch(executor.asCoroutineDispatcher()) {
+                        appCore.setDoubleValueForField(item.key, newValue.toDouble())
+                    }
+                })
             }
-            SliderRow(primaryText = item.name, secondaryText = item.subtitle, value = value, valueRange = item.minValue.toFloat()..item.maxValue.toFloat(), onValueChange = { newValue ->
-                value = newValue
-                appSettings[item.key] = newValue.toString()
-            })
+
+            is SettingsPreferenceSliderItem -> {
+                var value by remember {
+                    mutableFloatStateOf(appSettings[item.key]?.toFloat() ?: item.defaultValue.toFloat())
+                }
+                SliderRow(primaryText = item.name, secondaryText = item.subtitle, value = value, valueRange = item.minValue.toFloat()..item.maxValue.toFloat(), onValueChange = { newValue ->
+                    value = newValue
+                    appSettings[item.key] = newValue.toString()
+                })
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * SettingsModel.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2024-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -89,6 +89,9 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
     ShowEcliptic("Ecliptic Line"),
     ShowAutoMag("Auto Mag"),
     ShowSmoothLines("Smooth Lines"),
+    EnableReverseWheel("Reverse Mouse Wheel"),
+    EnableRayBasedDragging("Ray-Based Dragging"),
+    EnableFocusZooming("Focus Zooming"),
     // Int values
     TimeZone("Time Zone"),
     DateFormat("Date Format"),
@@ -179,6 +182,9 @@ enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.K
                 ShowEruptiveCenterLabels,
                 ShowOtherLabels,
                 ShowMarkers,
+                EnableReverseWheel,
+                EnableRayBasedDragging,
+                EnableFocusZooming,
             )
 
         val allIntCases: List<SettingsKey>
@@ -272,7 +278,8 @@ class SettingsSwitchItem(
     val key: String,
     private val displayName: String,
     val volatile: Boolean,
-    val representation: Representation = Representation.Checkmark
+    val representation: Representation = Representation.Checkmark,
+    val subtitle: String? = null
 ) : SettingsItem, Serializable {
     enum class Representation {
         Checkmark, Switch;
@@ -281,7 +288,7 @@ class SettingsSwitchItem(
     override val name: String
         get() = displayName
 
-    constructor(key: SettingsKey, representation: Representation = Representation.Checkmark) : this(key.valueString, key.displayName, false, representation)
+    constructor(key: SettingsKey, representation: Representation = Representation.Checkmark, subtitle: String? = null) : this(key.valueString, key.displayName, false, representation, subtitle)
 }
 
 class SettingsPreferenceSelectionItem(
@@ -555,10 +562,13 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         listOf(
             SettingsCommonItem.Section(
                 listOf(
+                    SettingsSwitchItem(SettingsKey.EnableReverseWheel, representation = SettingsSwitchItem.Representation.Switch),
+                    SettingsSwitchItem(SettingsKey.EnableRayBasedDragging, subtitle = CelestiaString("Dragging behavior based on change of pick rays instead of screen coordinates", ""), representation = SettingsSwitchItem.Representation.Switch),
+                    SettingsSwitchItem(SettingsKey.EnableFocusZooming, subtitle = CelestiaString("Zooming behavior keeping the original focus location on screen", ""), representation = SettingsSwitchItem.Representation.Switch),
                     SettingsPreferenceSliderItem(PreferenceManager.PredefinedKey.PickSensitivity, rawDisplayName = "Sensitivity", subtitle = CelestiaString("Sensitivity for object selection", ""), minValue = 1.0, maxValue = 20.0, defaultValue = 10.0),
                     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, rawDisplayName = "Context Menu", true, subtitle = CelestiaString("Context menu by long press or context click", "")),
                 ),
-                footer = CelestiaString("Configuration will take effect after a restart.", "")
+                footer = CelestiaString("Some configurations will take effect after a restart.", "")
             )
         )
     ),

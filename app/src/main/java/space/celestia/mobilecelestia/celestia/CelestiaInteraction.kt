@@ -133,7 +133,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             if (isCameraMode) {
                 appCore.mouseMove(AppCore.MOUSE_BUTTON_LEFT, PointF(0.0F, deltaY), AppCore.SHIFT_KEY)
             } else {
-                appCore.mouseWheel(deltaY, 0)
+                appCore.mouseWheel(if (appCore.enableReverseWheel) -deltaY else deltaY, 0)
             }
         }
     }
