@@ -236,6 +236,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/rendererfwd.h
+        ${CELESTIA_SRC_DIR}/celrender/gl/binder.cpp
+        ${CELESTIA_SRC_DIR}/celrender/gl/binder.h
         ${CELESTIA_SRC_DIR}/celrender/gl/buffer.cpp
         ${CELESTIA_SRC_DIR}/celrender/gl/buffer.h
         ${CELESTIA_SRC_DIR}/celrender/gl/vertexobject.cpp
