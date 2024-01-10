@@ -876,6 +876,7 @@ INTERACTIONMETHODS(ReverseWheel)
 INTERACTIONMETHODS(RayBasedDragging)
 INTERACTIONMETHODS(FocusZooming)
 
+extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setResolution(JNIEnv *env, jclass clazz, jlong pointer,
                                                                  jint value) {
