@@ -91,7 +91,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var pendingTarget: Selection? = null
     private var browserItems: ArrayList<BrowserItem> = arrayListOf()
     private var density: Float = 1f
+    private var fontScale: Float = 1f
     private var previousDensity: Float = 0f
+    private var previousFontScale: Float = 0f
     private var savedInsets = EdgeInsets()
     private var hasSetRenderer: Boolean = false
 
@@ -128,6 +130,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         super.onCreate(savedInstanceState)
 
         density = resources.displayMetrics.density
+        fontScale = resources.configuration.fontScale
 
         arguments?.let {
             pathToLoad = it.getString(ARG_DATA_DIR)
@@ -147,6 +150,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         if (savedInstanceState != null) {
             previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
+            previousFontScale = savedInstanceState.getFloat(KEY_PREVIOUS_FONT_SCALE, 0f)
             frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, Renderer.FRAME_60FPS)
             hasSetRenderer = savedInstanceState.getBoolean(ARG_HAS_SET_RENDERER, false)
             if (savedInstanceState.containsKey(ARG_INTERACTION_MODE)) {
@@ -156,6 +160,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        outState.putFloat(KEY_PREVIOUS_FONT_SCALE, fontScale)
         outState.putFloat(KEY_PREVIOUS_DENSITY, density)
         outState.putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
         outState.putInt(ARG_INTERACTION_MODE, interactionMode.button)
@@ -352,7 +357,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     private fun updateContentScale() {
-        if (density == previousDensity) return
+        if (density == previousDensity && fontScale == previousFontScale) return
 
         renderer.makeContextCurrent()
 
@@ -372,14 +377,15 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             boldFont = boldFont ?: preferredInstalledFont.second
         }
         if (normalFont != null) {
-            appCore.setFont(normalFont.path, normalFont.ttcIndex, 9)
-            appCore.setRendererFont(normalFont.path, normalFont.ttcIndex, 9, AppCore.RENDER_FONT_STYLE_NORMAL)
+            appCore.setFont(normalFont.path, normalFont.ttcIndex, (9 * fontScale).toInt())
+            appCore.setRendererFont(normalFont.path, normalFont.ttcIndex, (9 * fontScale).toInt(), AppCore.RENDER_FONT_STYLE_NORMAL)
         }
         if (boldFont != null) {
-            appCore.setTitleFont(boldFont.path, boldFont.ttcIndex, 15)
-            appCore.setRendererFont(boldFont.path, boldFont.ttcIndex, 15, AppCore.RENDER_FONT_STYLE_LARGE)
+            appCore.setTitleFont(boldFont.path, boldFont.ttcIndex, (15 * fontScale).toInt())
+            appCore.setRendererFont(boldFont.path, boldFont.ttcIndex, (15 * fontScale).toInt(), AppCore.RENDER_FONT_STYLE_LARGE)
         }
         previousDensity = density
+        previousFontScale = fontScale
     }
 
     private fun loadingFinished() = lifecycleScope.launch {
@@ -730,6 +736,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         private const val GROUP_BROWSER_ITEM = 7
         private const val GROUP_GET_INFO = 8
         private const val KEY_PREVIOUS_DENSITY = "density"
+        private const val KEY_PREVIOUS_FONT_SCALE = "fontscale"
 
         val availableMarkers: List<String>
             get() = listOf(
