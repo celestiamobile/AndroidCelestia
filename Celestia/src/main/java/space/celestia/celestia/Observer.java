@@ -20,7 +20,7 @@ public class Observer {
     public static final int COORDINATE_SYSTEM_PHASE_LOCK = 5;
     public static final int COORDINATE_SYSTEM_CHASE = 6;
 
-    private final long pointer;
+    protected final long pointer;
 
     protected Observer(long ptr) {
         pointer = ptr;

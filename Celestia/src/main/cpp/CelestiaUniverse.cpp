@@ -38,12 +38,13 @@ Java_space_celestia_celestia_Universe_c_1getDSOCatalog(JNIEnv *env, jclass clazz
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Universe_c_1getStarBrowser(JNIEnv *env, jclass clazz, jlong pointer,
-                                                        jint kind) {
+                                                        jint kind, jlong observer) {
     const jint KIND_NEAREST       = 0;
     const jint KIND_BRIGHTER      = 1;
     const jint KIND_BRIGHTEST     = 2;
     const jint KIND_WITH_PLANETS  = 3;
     auto u = reinterpret_cast<Universe *>(pointer);
+    auto o = reinterpret_cast<Observer *>(observer);
     auto b = new celestia::engine::StarBrowser(u);
     switch (kind)
     {
@@ -66,6 +67,8 @@ Java_space_celestia_celestia_Universe_c_1getStarBrowser(JNIEnv *env, jclass claz
     default:
         break;
     }
+    b->setPosition(o->getPosition());
+    b->setTime(o->getTime());
     return reinterpret_cast<jlong>(b);
 }
 
