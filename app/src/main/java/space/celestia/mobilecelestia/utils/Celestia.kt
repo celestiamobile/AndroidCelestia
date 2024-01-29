@@ -98,10 +98,10 @@ private fun AppCore.getOverviewForBody(body: Body): String {
         } else {
             unitTemplate = CelestiaString("%s days", "")
         }
-        lines.add(CelestiaString("Sidereal rotation period: %s", "").format(CelestiaString(unitTemplate, "").format(numberFormat.format(rotPeriod))))
+        lines.add(CelestiaString("Sidereal rotation period: %s", "").format(unitTemplate.format(numberFormat.format(rotPeriod))))
 
         if (dayLength != 0.0) {
-            lines.add(CelestiaString("Length of day: %s", "").format(CelestiaString(unitTemplate, "").format(numberFormat.format(dayLength))))
+            lines.add(CelestiaString("Length of day: %s", "").format(unitTemplate.format(numberFormat.format(dayLength))))
         }
     }
 

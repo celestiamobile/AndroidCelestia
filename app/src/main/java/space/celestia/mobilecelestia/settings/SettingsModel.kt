@@ -21,96 +21,180 @@ import java.io.Serializable
 
 const val settingUnmarkAllID = "UnmarkAll"
 
-enum class SettingsKey(private val rawDisplayName: String) : PreferenceManager.Key, Serializable {
+enum class SettingsKey : PreferenceManager.Key, Serializable {
     // Boolean values
-    ShowStars("Stars"),
-    ShowPlanets("Planets"),
-    ShowDwarfPlanets("Dwarf Planets"),
-    ShowMoons("Moons"),
-    ShowMinorMoons("Minor Moons"),
-    ShowAsteroids("Asteroids"),
-    ShowComets("Comets"),
-    ShowSpacecrafts("Spacecraft"),
-    ShowGalaxies("Galaxies"),
-    ShowNebulae("Nebulae"),
-    ShowGlobulars("Globulars"),
-    ShowOpenClusters("Open Clusters"),
-    ShowAtmospheres("Atmospheres"),
-    ShowCloudMaps("Clouds"),
-    ShowCloudShadows("Cloud Shadows"),
-    ShowNightMaps("Night Lights"),
-    ShowPlanetRings("Planet Rings"),
-    ShowRingShadows("Ring Shadows"),
-    ShowCometTails("Comet Tails"),
-    ShowEclipseShadows("Eclipse Shadows"),
-    ShowOrbits("Show Orbits"),
-    ShowFadingOrbits("Fading Orbits"),
-    ShowPartialTrajectories("Partial Trajectories"),
-    ShowStellarOrbits("Stars"),
-    ShowPlanetOrbits("Planets"),
-    ShowDwarfPlanetOrbits("Dwarf Planets"),
-    ShowMoonOrbits("Moons"),
-    ShowMinorMoonOrbits("Minor Moons"),
-    ShowAsteroidOrbits("Asteroids"),
-    ShowCometOrbits("Comets"),
-    ShowSpacecraftOrbits("Spacecraft"),
-    ShowCelestialSphere("Equatorial"),
-    ShowEclipticGrid("Ecliptic"),
-    ShowHorizonGrid("Horizontal"),
-    ShowGalacticGrid("Galactic"),
-    ShowDiagrams("Show Diagrams"),
-    ShowConstellationLabels("Show Labels"),
-    ShowLatinConstellationLabels("Show Labels in Latin"),
-    ShowBoundaries("Show Boundaries"),
-    ShowStarLabels("Stars"),
-    ShowPlanetLabels("Planets"),
-    ShowDwarfPlanetLabels("Dwarf Planets"),
-    ShowMoonLabels("Moons"),
-    ShowMinorMoonLabels("Minor Moons"),
-    ShowAsteroidLabels("Asteroids"),
-    ShowCometLabels("Comets"),
-    ShowSpacecraftLabels("Spacecraft"),
-    ShowGalaxyLabels("Galaxies"),
-    ShowNebulaLabels("Nebulae"),
-    ShowGlobularLabels("Globulars"),
-    ShowOpenClusterLabels("Open Clusters"),
-    ShowLocationLabels("Show Locations"),
-    ShowCityLabels("Cities"),
-    ShowObservatoryLabels("Observatories"),
-    ShowLandingSiteLabels("Landing Sites"),
-    ShowMonsLabels("Montes (Mountains)"),
-    ShowMareLabels("Maria (Seas)"),
-    ShowCraterLabels("Craters"),
-    ShowVallisLabels("Valles (Valleys)"),
-    ShowTerraLabels("Terrae (Land masses)"),
-    ShowEruptiveCenterLabels("Volcanoes"),
-    ShowOtherLabels("Other"),
-    ShowMarkers("Show Markers"),
-    ShowEcliptic("Ecliptic Line"),
-    ShowAutoMag("Auto Mag"),
-    ShowSmoothLines("Smooth Lines"),
-    EnableReverseWheel("Reverse Mouse Wheel"),
-    EnableRayBasedDragging("Ray-Based Dragging"),
-    EnableFocusZooming("Focus Zooming"),
+    ShowStars,
+    ShowPlanets,
+    ShowDwarfPlanets,
+    ShowMoons,
+    ShowMinorMoons,
+    ShowAsteroids,
+    ShowComets,
+    ShowSpacecrafts,
+    ShowGalaxies,
+    ShowNebulae,
+    ShowGlobulars,
+    ShowOpenClusters,
+    ShowAtmospheres,
+    ShowCloudMaps,
+    ShowCloudShadows,
+    ShowNightMaps,
+    ShowPlanetRings,
+    ShowRingShadows,
+    ShowCometTails,
+    ShowEclipseShadows,
+    ShowOrbits,
+    ShowFadingOrbits,
+    ShowPartialTrajectories,
+    ShowStellarOrbits,
+    ShowPlanetOrbits,
+    ShowDwarfPlanetOrbits,
+    ShowMoonOrbits,
+    ShowMinorMoonOrbits,
+    ShowAsteroidOrbits,
+    ShowCometOrbits,
+    ShowSpacecraftOrbits,
+    ShowCelestialSphere,
+    ShowEclipticGrid,
+    ShowHorizonGrid,
+    ShowGalacticGrid,
+    ShowDiagrams,
+    ShowConstellationLabels,
+    ShowLatinConstellationLabels,
+    ShowBoundaries,
+    ShowStarLabels,
+    ShowPlanetLabels,
+    ShowDwarfPlanetLabels,
+    ShowMoonLabels,
+    ShowMinorMoonLabels,
+    ShowAsteroidLabels,
+    ShowCometLabels,
+    ShowSpacecraftLabels,
+    ShowGalaxyLabels,
+    ShowNebulaLabels,
+    ShowGlobularLabels,
+    ShowOpenClusterLabels,
+    ShowLocationLabels,
+    ShowCityLabels,
+    ShowObservatoryLabels,
+    ShowLandingSiteLabels,
+    ShowMonsLabels,
+    ShowMareLabels,
+    ShowCraterLabels,
+    ShowVallisLabels,
+    ShowTerraLabels,
+    ShowEruptiveCenterLabels,
+    ShowOtherLabels,
+    ShowMarkers,
+    ShowEcliptic,
+    ShowAutoMag,
+    ShowSmoothLines,
+    EnableReverseWheel,
+    EnableRayBasedDragging,
+    EnableFocusZooming,
     // Int values
-    TimeZone("Time Zone"),
-    DateFormat("Date Format"),
-    Resolution("Texture Resolution"),
-    StarStyle("Star Style"),
-    HudDetail("Info Display"),
-    MeasurementSystem("Measure Units"),
-    TemperatureScale("Temperature Scale"),
-    ScriptSystemAccessPolicy("Script System Access Policy"),
-    StarColors("Star Colors"),
+    TimeZone,
+    DateFormat,
+    Resolution,
+    StarStyle,
+    HudDetail,
+    MeasurementSystem,
+    TemperatureScale,
+    ScriptSystemAccessPolicy,
+    StarColors,
     // Double values
-    FaintestVisible("Faintest Stars"),
-    AmbientLightLevel("Ambient Light"),
-    GalaxyBrightness("Galaxy Brightness"),
-    MinimumFeatureSize("Minimum Labeled Feature Size"),
-    TintSaturation("Tinted Illumination Saturation");
+    FaintestVisible,
+    AmbientLightLevel,
+    GalaxyBrightness,
+    MinimumFeatureSize,
+    TintSaturation;
 
     val displayName: String
-        get() = CelestiaString(rawDisplayName, "")
+        get() = when(this) {
+            ShowStars -> CelestiaString("Stars", "")
+            ShowPlanets -> CelestiaString("Planets", "")
+            ShowDwarfPlanets -> CelestiaString("Dwarf Planets", "")
+            ShowMoons -> CelestiaString("Moons", "")
+            ShowMinorMoons -> CelestiaString("Minor Moons", "")
+            ShowAsteroids -> CelestiaString("Asteroids", "")
+            ShowComets -> CelestiaString("Comets", "")
+            ShowSpacecrafts -> CelestiaString("Spacecraft", "")
+            ShowGalaxies -> CelestiaString("Galaxies", "")
+            ShowNebulae -> CelestiaString("Nebulae", "")
+            ShowGlobulars -> CelestiaString("Globulars", "")
+            ShowOpenClusters -> CelestiaString("Open Clusters", "")
+            ShowAtmospheres -> CelestiaString("Atmospheres", "")
+            ShowCloudMaps -> CelestiaString("Clouds", "")
+            ShowCloudShadows -> CelestiaString("Cloud Shadows", "")
+            ShowNightMaps -> CelestiaString("Night Lights", "")
+            ShowPlanetRings -> CelestiaString("Planet Rings", "")
+            ShowRingShadows -> CelestiaString("Ring Shadows", "")
+            ShowCometTails -> CelestiaString("Comet Tails", "")
+            ShowEclipseShadows -> CelestiaString("Eclipse Shadows", "")
+            ShowOrbits -> CelestiaString("Show Orbits", "")
+            ShowFadingOrbits -> CelestiaString("Fading Orbits", "")
+            ShowPartialTrajectories -> CelestiaString("Partial Trajectories", "")
+            ShowStellarOrbits -> CelestiaString("Stars", "")
+            ShowPlanetOrbits -> CelestiaString("Planets", "")
+            ShowDwarfPlanetOrbits -> CelestiaString("Dwarf Planets", "")
+            ShowMoonOrbits -> CelestiaString("Moons", "")
+            ShowMinorMoonOrbits -> CelestiaString("Minor Moons", "")
+            ShowAsteroidOrbits -> CelestiaString("Asteroids", "")
+            ShowCometOrbits -> CelestiaString("Comets", "")
+            ShowSpacecraftOrbits -> CelestiaString("Spacecraft", "")
+            ShowCelestialSphere -> CelestiaString("Equatorial", "")
+            ShowEclipticGrid -> CelestiaString("Ecliptic", "")
+            ShowHorizonGrid -> CelestiaString("Horizontal", "")
+            ShowGalacticGrid -> CelestiaString("Galactic", "")
+            ShowDiagrams -> CelestiaString("Show Diagrams", "")
+            ShowConstellationLabels -> CelestiaString("Show Labels", "")
+            ShowLatinConstellationLabels -> CelestiaString("Show Labels in Latin", "")
+            ShowBoundaries -> CelestiaString("Show Boundaries", "")
+            ShowStarLabels -> CelestiaString("Stars", "")
+            ShowPlanetLabels -> CelestiaString("Planets", "")
+            ShowDwarfPlanetLabels -> CelestiaString("Dwarf Planets", "")
+            ShowMoonLabels -> CelestiaString("Moons", "")
+            ShowMinorMoonLabels -> CelestiaString("Minor Moons", "")
+            ShowAsteroidLabels -> CelestiaString("Asteroids", "")
+            ShowCometLabels -> CelestiaString("Comets", "")
+            ShowSpacecraftLabels -> CelestiaString("Spacecraft", "")
+            ShowGalaxyLabels -> CelestiaString("Galaxies", "")
+            ShowNebulaLabels -> CelestiaString("Nebulae", "")
+            ShowGlobularLabels -> CelestiaString("Globulars", "")
+            ShowOpenClusterLabels -> CelestiaString("Open Clusters", "")
+            ShowLocationLabels -> CelestiaString("Show Locations", "")
+            ShowCityLabels -> CelestiaString("Cities", "")
+            ShowObservatoryLabels -> CelestiaString("Observatories", "")
+            ShowLandingSiteLabels -> CelestiaString("Landing Sites", "")
+            ShowMonsLabels -> CelestiaString("Montes (Mountains)", "")
+            ShowMareLabels -> CelestiaString("Maria (Seas)", "")
+            ShowCraterLabels -> CelestiaString("Craters", "")
+            ShowVallisLabels -> CelestiaString("Valles (Valleys)", "")
+            ShowTerraLabels -> CelestiaString("Terrae (Land masses)", "")
+            ShowEruptiveCenterLabels -> CelestiaString("Volcanoes", "")
+            ShowOtherLabels -> CelestiaString("Other", "")
+            ShowMarkers -> CelestiaString("Show Markers", "")
+            ShowEcliptic -> CelestiaString("Ecliptic Line", "")
+            ShowAutoMag -> CelestiaString("Auto Mag", "")
+            ShowSmoothLines -> CelestiaString("Smooth Lines", "")
+            EnableReverseWheel -> CelestiaString("Reverse Mouse Wheel", "")
+            EnableRayBasedDragging -> CelestiaString("Ray-Based Dragging", "")
+            EnableFocusZooming -> CelestiaString("Focus Zooming", "")
+            TimeZone -> CelestiaString("Time Zone", "")
+            DateFormat -> CelestiaString("Date Format", "")
+            Resolution -> CelestiaString("Texture Resolution", "")
+            StarStyle -> CelestiaString("Star Style", "")
+            HudDetail -> CelestiaString("Info Display", "")
+            MeasurementSystem -> CelestiaString("Measure Units", "")
+            TemperatureScale -> CelestiaString("Temperature Scale", "")
+            ScriptSystemAccessPolicy -> CelestiaString("Script System Access Policy", "")
+            StarColors -> CelestiaString("Star Colors", "")
+            FaintestVisible -> CelestiaString("Faintest Stars", "")
+            AmbientLightLevel -> CelestiaString("Ambient Light", "")
+            GalaxyBrightness -> CelestiaString("Galaxy Brightness", "")
+            MinimumFeatureSize -> CelestiaString("Minimum Labeled Feature Size", "")
+            TintSaturation -> CelestiaString("Tinted Illumination Saturation", "")
+        }
 
     companion object {
         val allBooleanCases: List<SettingsKey>
@@ -244,29 +328,29 @@ class SettingsSliderItem(
     val key: String = internalKey.valueString
 
     override val name: String
-        get() = CelestiaString(internalKey.displayName, "")
+        get() = internalKey.displayName
 }
 
 class SettingsPreferenceSwitchItem(
     val key: PreferenceManager.PredefinedKey,
-    private val rawDisplayName: String,
+    private val displayName: String,
     val defaultOn: Boolean = false,
     val subtitle: String? = null
 ) : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString(rawDisplayName, "")
+        get() = displayName
 }
 
 class SettingsPreferenceSliderItem(
     val key: PreferenceManager.PredefinedKey,
-    private val rawDisplayName: String,
+    private val displayName: String,
     val subtitle: String? = null,
     val minValue: Double = 0.0,
     val maxValue: Double = 1.0,
     val defaultValue: Double = 0.0
 ) : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString(rawDisplayName, "")
+        get() = displayName
 }
 
 class SettingsLanguageItem : SettingsItem, Serializable {
@@ -435,7 +519,7 @@ class SettingsCurrentTimeItem : SettingsItem {
 
 private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
-        CelestiaString(SettingsKey.TimeZone.displayName, ""),
+        SettingsKey.TimeZone.displayName,
         listOf(
             SettingsSelectionSingleItem(key = SettingsKey.TimeZone, options = listOf(
                 Pair(0, CelestiaString("Local Time", "")),
@@ -444,7 +528,7 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
         )
     ),
     SettingsCommonItem.create(
-        CelestiaString(SettingsKey.DateFormat.displayName, ""),
+        SettingsKey.DateFormat.displayName,
         listOf(
             SettingsSelectionSingleItem(key = SettingsKey.DateFormat, options = listOf(
                 Pair(0, CelestiaString("Default", "")),
@@ -455,7 +539,7 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     ),
     SettingsCurrentTimeItem(),
     SettingsCommonItem.create(
-        CelestiaString(SettingsKey.MeasurementSystem.displayName, ""),
+        SettingsKey.MeasurementSystem.displayName,
         listOf(
             SettingsSelectionSingleItem(key = SettingsKey.MeasurementSystem, options = listOf(
                 Pair(0, CelestiaString("Metric", "")),
@@ -469,7 +553,7 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
         )
     ),
     SettingsCommonItem.create(
-        CelestiaString(SettingsKey.HudDetail.displayName, ""),
+        SettingsKey.HudDetail.displayName,
         listOf(
             SettingsSelectionSingleItem(key = SettingsKey.HudDetail, options = listOf(
                 Pair(0, CelestiaString("None", "")),
@@ -505,7 +589,7 @@ class SettingsRefreshRateItem : SettingsItem, Serializable {
 
 private val staticRendererItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
-        CelestiaString(SettingsKey.Resolution.displayName, ""),
+        SettingsKey.Resolution.displayName,
         listOf(
             SettingsSelectionSingleItem(key = SettingsKey.Resolution, options = listOf(
                 Pair(0, CelestiaString("Low", "")),
@@ -515,7 +599,7 @@ private val staticRendererItems: List<SettingsItem> = listOf(
         )
     ),
     SettingsCommonItem(
-        CelestiaString(SettingsKey.StarStyle.displayName, ""),
+        SettingsKey.StarStyle.displayName,
         listOf(
             SettingsCommonItem.Section(
                 listOf(
@@ -565,8 +649,8 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
                     SettingsSwitchItem(SettingsKey.EnableReverseWheel, representation = SettingsSwitchItem.Representation.Switch),
                     SettingsSwitchItem(SettingsKey.EnableRayBasedDragging, subtitle = CelestiaString("Dragging behavior based on change of pick rays instead of screen coordinates", ""), representation = SettingsSwitchItem.Representation.Switch),
                     SettingsSwitchItem(SettingsKey.EnableFocusZooming, subtitle = CelestiaString("Zooming behavior keeping the original focus location on screen", ""), representation = SettingsSwitchItem.Representation.Switch),
-                    SettingsPreferenceSliderItem(PreferenceManager.PredefinedKey.PickSensitivity, rawDisplayName = "Sensitivity", subtitle = CelestiaString("Sensitivity for object selection", ""), minValue = 1.0, maxValue = 20.0, defaultValue = 10.0),
-                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, rawDisplayName = "Context Menu", true, subtitle = CelestiaString("Context menu by long press or context click", "")),
+                    SettingsPreferenceSliderItem(PreferenceManager.PredefinedKey.PickSensitivity, displayName = CelestiaString("Sensitivity", ""), subtitle = CelestiaString("Sensitivity for object selection", ""), minValue = 1.0, maxValue = 20.0, defaultValue = 10.0),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, displayName = CelestiaString("Context Menu", ""), true, subtitle = CelestiaString("Context menu by long press or context click", "")),
                 ),
                 footer = CelestiaString("Some configurations will take effect after a restart.", "")
             )
@@ -594,8 +678,8 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
             ),
             SettingsCommonItem.Section(
                 listOf(
-                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertX, rawDisplayName = "Invert Horizontally", false),
-                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertY, rawDisplayName = "Invert Vertically", false),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertX, displayName = CelestiaString("Invert Horizontally", ""), false),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertY, displayName = CelestiaString("Invert Vertically", ""), false),
                 ),
                 header = CelestiaString("Thumbsticks", ""),
             )

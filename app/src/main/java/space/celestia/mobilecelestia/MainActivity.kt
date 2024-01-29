@@ -1057,7 +1057,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             }
             is MarkItem -> {
-                val markers = CelestiaFragment.availableMarkers
+                val markers = CelestiaFragment.getAvailableMarkers()
                 showOptions(CelestiaString("Mark", ""), markers.toTypedArray()) { newIndex ->
                     lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                         if (newIndex >= Universe.MARKER_COUNT) {

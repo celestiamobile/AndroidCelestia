@@ -37,18 +37,17 @@ enum class CelestiaAction(val value: Int) : Serializable {
 
     val title: String
         get() {
-            val orig = when (this) {
-                GoTo -> "Go"
-                GoToSurface -> "Land"
-                PlayPause -> "Resume/Pause"
-                CurrentTime -> "Current Time"
-                SyncOrbit -> "Sync Orbit"
-                CancelScript -> "Cancel Script"
-                Home -> "Home (Sol)"
-                Reverse -> "Reverse Time"
+            return when (this) {
+                GoTo -> CelestiaString("Go", "")
+                GoToSurface -> CelestiaString("Land", "")
+                PlayPause -> CelestiaString("Resume/Pause", "")
+                CurrentTime -> CelestiaString("Current Time", "")
+                SyncOrbit -> CelestiaString("Sync Orbit", "")
+                CancelScript -> CelestiaString("Cancel Script", "")
+                Home -> CelestiaString("Home (Sol)", "")
+                Reverse -> CelestiaString("Reverse Time", "")
                 else -> this.toString()
             }
-            return CelestiaString(orig, "")
         }
 
     companion object {

@@ -111,7 +111,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             onProgressViewClick()
         }
         goToButton = view.findViewById(R.id.go_to_button)
-        goToButton.text = CelestiaString(if (item.type == "script") "Run" else "Go", "")
+        goToButton.text = if (item.type == "script") CelestiaString("Run", "") else CelestiaString("Go", "")
         goToButton.visibility = View.GONE
         progressIndicator = view.findViewById(R.id.progress_indicator)
 

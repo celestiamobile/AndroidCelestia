@@ -47,25 +47,6 @@ enum class HelpAction {
     RunDemo;
 }
 
-private val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
-    DescriptionItem(
-        CelestiaString("Tap the mode button on the sidebar to switch between object mode and camera mode.", ""), R.drawable.tutorial_switch_mode),
-    DescriptionItem(
-        CelestiaString("In object mode, drag to rotate around an object.\n\nPinch to zoom in/out on an object.", ""), R.drawable.tutorial_mode_object),
-    DescriptionItem(
-        CelestiaString("In camera mode, drag to move field of view.\n\nPinch to zoom in/out field of view.", ""), R.drawable.tutorial_mode_camera)
-) }
-private val staticHelpURLItems: List<URLItem> by lazy { listOf(
-    URLItem(CelestiaString("Mouse/Keyboard Controls", ""), "celguide://guide?guide=BE1B5023-46B6-1F10-F15F-3B3F02F30300"),
-    URLItem(CelestiaString("Use Add-ons and Scripts", ""), "celguide://guide?guide=D1A96BFA-00BB-0089-F361-10DD886C8A4F"),
-    URLItem(CelestiaString("Scripts and URLs", ""), "celguide://guide?guide=A0AB3F01-E616-3C49-0934-0583D803E9D0")
-) }
-private val staticHelpActionItems: List<ActionItem> by lazy {
-    listOf(
-        ActionItem(CelestiaString("Run Demo", ""), HelpAction.RunDemo),
-    )
-}
-
 class HelpFragment : Fragment() {
     private var listener: Listener? = null
 
@@ -101,6 +82,24 @@ class HelpFragment : Fragment() {
 
     @Composable
     private fun MainScreen() {
+        val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
+            DescriptionItem(
+                CelestiaString("Tap the mode button on the sidebar to switch between object mode and camera mode.", ""), R.drawable.tutorial_switch_mode),
+            DescriptionItem(
+                CelestiaString("In object mode, drag to rotate around an object.\n\nPinch to zoom in/out on an object.", ""), R.drawable.tutorial_mode_object),
+            DescriptionItem(
+                CelestiaString("In camera mode, drag to move field of view.\n\nPinch to zoom in/out field of view.", ""), R.drawable.tutorial_mode_camera)
+        ) }
+        val staticHelpURLItems: List<URLItem> by lazy { listOf(
+            URLItem(CelestiaString("Mouse/Keyboard Controls", ""), "celguide://guide?guide=BE1B5023-46B6-1F10-F15F-3B3F02F30300"),
+            URLItem(CelestiaString("Use Add-ons and Scripts", ""), "celguide://guide?guide=D1A96BFA-00BB-0089-F361-10DD886C8A4F"),
+            URLItem(CelestiaString("Scripts and URLs", ""), "celguide://guide?guide=A0AB3F01-E616-3C49-0934-0583D803E9D0")
+        ) }
+        val staticHelpActionItems: List<ActionItem> by lazy {
+            listOf(
+                ActionItem(CelestiaString("Run Demo", ""), HelpAction.RunDemo),
+            )
+        }
         val buttonModifier = Modifier.fillMaxWidth().padding(
             vertical = dimensionResource(id = R.dimen.list_text_gap_vertical),
             horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)
@@ -129,7 +128,7 @@ class HelpFragment : Fragment() {
                 FilledTonalButton(modifier = buttonModifier, onClick = {
                     listener?.onHelpURLSelected(it.url)
                 }) {
-                    Text(text = CelestiaString(it.title, ""))
+                    Text(text = it.title)
                 }
             }
 
@@ -137,7 +136,7 @@ class HelpFragment : Fragment() {
                 FilledTonalButton(modifier = buttonModifier, onClick = {
                     listener?.onHelpActionSelected(it.action)
                 }) {
-                    Text(text = CelestiaString(it.title, ""))
+                    Text(text = it.title)
                 }
             }
         }

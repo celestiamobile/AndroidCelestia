@@ -510,6 +510,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             }
         }
         val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", ""))
+        val availableMarkers = getAvailableMarkers()
         availableMarkers.withIndex().forEach {
             markMenu.add(GROUP_MARK, it.index, Menu.NONE, it.value)
         }
@@ -541,7 +542,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             }
         } else if (item.groupId == GROUP_MARK) {
             lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                if (item.itemId == availableMarkers.size) {
+                if (item.itemId >= Universe.MARKER_COUNT) {
                     appCore.simulation.universe.unmark(selection)
                 } else {
                     appCore.simulation.universe.mark(selection, item.itemId)
@@ -738,13 +739,24 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         private const val KEY_PREVIOUS_DENSITY = "density"
         private const val KEY_PREVIOUS_FONT_SCALE = "fontscale"
 
-        val availableMarkers: List<String>
-            get() = listOf(
-                "Diamond", "Triangle", "Square", "Filled Square",
-                "Plus", "X", "Left Arrow", "Right Arrow",
-                "Up Arrow", "Down Arrow", "Circle", "Disk",
-                "Crosshair", "Unmark"
-            ).map { CelestiaString(it, "") }
+        fun getAvailableMarkers(): List<String> {
+            return listOf(
+                CelestiaString("Diamond", ""),
+                CelestiaString("Triangle", ""),
+                CelestiaString("Square", ""),
+                CelestiaString("Filled Square", ""),
+                CelestiaString("Plus", ""),
+                CelestiaString("X", ""),
+                CelestiaString("Left Arrow", ""),
+                CelestiaString("Right Arrow", ""),
+                CelestiaString("Up Arrow", ""),
+                CelestiaString("Down Arrow", ""),
+                CelestiaString("Circle", ""),
+                CelestiaString("Disk", ""),
+                CelestiaString("Crosshair", ""),
+                CelestiaString("Unmark", ""),
+            )
+        }
 
         private const val TAG = "CelestiaFragment"
 

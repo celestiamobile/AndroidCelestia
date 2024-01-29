@@ -53,25 +53,24 @@ enum class ToolbarAction : Serializable {
 
     val title: String
         get() {
-            val orig = when (this) {
-                Time -> "Time Control"
-                Script -> "Script Control"
-                Camera -> "Camera Control"
-                Browse -> "Star Browser"
-                Favorite -> "Favorites"
-                Setting -> "Settings"
-                Home -> "Home (Sol)"
-                Event -> "Eclipse Finder"
-                Addons -> "Installed Add-ons"
-                Download -> "Get Add-ons"
-                Paperplane -> "Go to Object"
-                Speedometer -> "Speed Control"
-                NewsArchive -> "News Archive"
-                Feedback -> "Send Feedback"
-                CelestiaPlus -> "Celestia PLUS"
+            return when (this) {
+                Time -> CelestiaString("Time Control", "")
+                Script -> CelestiaString("Script Control", "")
+                Camera -> CelestiaString("Camera Control", "")
+                Browse -> CelestiaString("Star Browser", "")
+                Favorite -> CelestiaString("Favorites", "")
+                Setting -> CelestiaString("Settings", "")
+                Home -> CelestiaString("Home (Sol)", "")
+                Event -> CelestiaString("Eclipse Finder", "")
+                Addons -> CelestiaString("Installed Add-ons", "")
+                Download -> CelestiaString("Get Add-ons", "")
+                Paperplane -> CelestiaString("Go to Object", "")
+                Speedometer -> CelestiaString("Speed Control", "")
+                NewsArchive -> CelestiaString("News Archive", "")
+                Feedback -> CelestiaString("Send Feedback", "")
+                CelestiaPlus -> CelestiaString("Celestia PLUS", "")
                 else -> this.toString()
             }
-            return CelestiaString(orig, "")
         }
 
     val imageResource: Int

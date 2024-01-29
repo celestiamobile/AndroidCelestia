@@ -162,7 +162,19 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                 OutlinedTextField(value = distanceString, onValueChange = {
                     distanceString = it
                 }, isError = !isDistanceValid, modifier = Modifier.weight(1.0f))
-                OptionSelect(options = distanceUnits.map { CelestiaString(it.name, "") }, selectedIndex = distanceUnits.indexOf(distanceUnit) , selectionChange = {
+                OptionSelect(options = distanceUnits.map {
+                    when(it) {
+                        GoToLocation.DistanceUnit.radii -> {
+                            CelestiaString("au", "")
+                        }
+                        GoToLocation.DistanceUnit.km -> {
+                            CelestiaString("km", "")
+                        }
+                        GoToLocation.DistanceUnit.au -> {
+                            CelestiaString("radii", "")
+                        }
+                    }
+                }, selectedIndex = distanceUnits.indexOf(distanceUnit) , selectionChange = {
                     distanceUnit = distanceUnits[it]
                 })
             }
