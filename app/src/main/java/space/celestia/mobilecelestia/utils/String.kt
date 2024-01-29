@@ -1,7 +1,7 @@
 /*
  * String.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2024-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,6 +17,11 @@ import java.text.NumberFormat
 @Suppress("FunctionName")
 fun CelestiaString(key: String, @Suppress("UNUSED_PARAMETER") comment: String): String {
     return AppCore.getLocalizedString(key)
+}
+
+@Suppress("FunctionName")
+fun CelestiaString(key: String, context: String, @Suppress("UNUSED_PARAMETER") comment: String): String {
+    return AppCore.getLocalizedString(key, context)
 }
 
 fun String.toDoubleOrNull(numberFormat: NumberFormat): Double? {

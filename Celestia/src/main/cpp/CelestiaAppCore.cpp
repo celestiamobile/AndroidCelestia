@@ -25,6 +25,7 @@
 #include <celutil/gettext.h>
 #include <celestia/url.h>
 #include <unicode/uloc.h>
+#include <fmt/format.h>
 
 #include <android/keycodes.h>
 
@@ -691,9 +692,44 @@ Java_space_celestia_celestia_AppCore_c_1getLocalizedString(JNIEnv *env,
                                                                       jstring domain) {
     const char *c_str = env->GetStringUTFChars(string, nullptr);
     const char *c_dom = env->GetStringUTFChars(domain, nullptr);
-    jstring localized = env->NewStringUTF(dgettext(c_dom, c_str));
+    jstring localized;
+    if (strlen(c_str) == 0)
+        localized = env->NewStringUTF("");
+    else
+        localized = env->NewStringUTF(dgettext(c_dom, c_str));
     env->ReleaseStringUTFChars(string, c_str);
     env->ReleaseStringUTFChars(domain, c_dom);
+    return localized;
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_celestia_AppCore_c_1getLocalizedStringContext(JNIEnv *env,
+                                                           jclass clazz,
+                                                           jstring string,
+                                                           jstring context,
+                                                           jstring domain) {
+    const char *c_str = env->GetStringUTFChars(string, nullptr);
+    const char *c_dom = env->GetStringUTFChars(domain, nullptr);
+    const char *c_con = env->GetStringUTFChars(context, nullptr);
+    jstring localized;
+    if (strlen(c_str) == 0)
+    {
+        localized = env->NewStringUTF("");
+    }
+    else
+    {
+        std::string auxStr = fmt::format("{}\004{}", c_con, c_str);
+        const char *aux = auxStr.c_str();
+        const char *translation = dgettext(c_dom, aux);
+        if (translation == aux)
+            localized = env->NewStringUTF(c_str);
+        else
+            localized = env->NewStringUTF(translation);
+    }
+    env->ReleaseStringUTFChars(string, c_str);
+    env->ReleaseStringUTFChars(domain, c_dom);
+    env->ReleaseStringUTFChars(context, c_con);
     return localized;
 }
 

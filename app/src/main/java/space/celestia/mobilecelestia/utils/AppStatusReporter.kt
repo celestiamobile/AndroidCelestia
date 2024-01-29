@@ -47,7 +47,7 @@ class AppStatusReporter : ProgressWatcher {
     }
 
     override fun onCelestiaProgress(progress: String) {
-        updateStatus(String.format(AppCore.getLocalizedString("Loading: %s"), progress))
+        updateStatus(String.format(CelestiaString("Loading: %s", ""), progress))
     }
 
     fun updateState(state: State) {

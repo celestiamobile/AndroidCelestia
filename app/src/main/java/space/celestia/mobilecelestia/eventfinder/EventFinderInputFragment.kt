@@ -80,7 +80,7 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
     private fun MainScreen() {
         var startTime by rememberSaveable { mutableStateOf(Date(Date().time - DEFAULT_SEARCHING_INTERVAL)) }
         var endTime by rememberSaveable { mutableStateOf(Date()) }
-        var objectName by rememberSaveable { mutableStateOf(AppCore.getLocalizedString("Earth", "celestia-data")) }
+        var objectName by rememberSaveable { mutableStateOf(AppCore.getLocalizedStringDomain("Earth", "celestia-data")) }
         var objectPath by rememberSaveable { mutableStateOf("Sol/Earth") }
         val formatter by remember { mutableStateOf(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())) }
 
@@ -141,8 +141,8 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
                 TextRow(primaryText = CelestiaString("Object", ""), secondaryText = objectName, modifier = Modifier.clickable {
                     val ac = activity ?: return@clickable
                     val objects = listOf(
-                        Pair(AppCore.getLocalizedString("Earth", "celestia-data"), "Sol/Earth"),
-                        Pair(AppCore.getLocalizedString("Jupiter", "celestia-data"), "Sol/Jupiter"),
+                        Pair(AppCore.getLocalizedStringDomain("Earth", "celestia-data"), "Sol/Earth"),
+                        Pair(AppCore.getLocalizedStringDomain("Jupiter", "celestia-data"), "Sol/Jupiter"),
                     )
                     val other = CelestiaString("Other", "")
                     ac.showOptions(

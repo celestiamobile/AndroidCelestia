@@ -230,8 +230,10 @@ public class AppCore {
     public static @NonNull String getLanguage() { return c_getLanguage(); };
     public static void setLocaleDirectoryPath(@NonNull String localeDirectoryPath, @NonNull String locale) { c_setLocaleDirectoryPath(localeDirectoryPath, locale); }
     public static void setUpLocale() { c_setUpLocale(); }
-    public static @NonNull String getLocalizedString(@NonNull String string) { return getLocalizedString(string, "celestia_ui"); }
-    public static @NonNull String getLocalizedString(@NonNull String string, @NonNull String domain) { return c_getLocalizedString(string, domain); }
+    public static @NonNull String getLocalizedString(@NonNull String string) { return c_getLocalizedString(string, "celestia_ui"); }
+    public static @NonNull String getLocalizedString(@NonNull String string, @NonNull String context) { return c_getLocalizedStringContext(string, context, "celestia_ui"); }
+
+    public static @NonNull String getLocalizedStringDomain(@NonNull String string, @NonNull String domain) { return c_getLocalizedString(string, domain); }
     public static @NonNull String getLocalizedFilename(@NonNull String filename) { return c_getLocalizedFilename(filename); }
     public Simulation getSimulation() {
         if (simulation == null)
@@ -299,6 +301,7 @@ public class AppCore {
     private static native void c_setLocaleDirectoryPath(String path, String locale);
     private static native void c_setUpLocale();
     private static native String c_getLocalizedString(String string, String domain);
+    private static native String c_getLocalizedStringContext(String string, String context, String domain);
     private static native String c_getLocalizedFilename(String filename);
 
     private static native String c_getRenderInfo(long ptr);
