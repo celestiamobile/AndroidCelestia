@@ -90,7 +90,7 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Installed", "")
+        title = CelestiaString("Installed", "Title for the list of installed add-ons")
     }
 
     override fun onAttach(context: Context) {
@@ -126,7 +126,7 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment() {
                 Box(modifier = Modifier
                     .fillMaxSize()
                     .systemBarsPadding(), contentAlignment = Alignment.Center) {
-                    EmptyHint(text = CelestiaString("Enhance Celestia with online add-ons", ""), actionText = CelestiaString("Get Add-ons", ""), actionHandler = {
+                    EmptyHint(text = CelestiaString("Enhance Celestia with online add-ons", ""), actionText = CelestiaString("Get Add-ons", "Open webpage for downloading add-ons"), actionHandler = {
                         listener?.onOpenAddonDownload()
                     })
                 }

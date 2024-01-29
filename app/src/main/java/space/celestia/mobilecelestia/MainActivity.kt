@@ -514,7 +514,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun celestiaLoadingFailed() {
-        appStatusReporter.updateStatus(CelestiaString("Loading Celestia failed…", ""))
+        appStatusReporter.updateStatus(CelestiaString("Loading Celestia failed…", "Celestia loading failed"))
         lifecycleScope.launch {
             removeCelestiaFragment()
         }
@@ -534,7 +534,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun copyAssetIfNeeded() {
-        appStatusReporter.updateStatus(CelestiaString("Copying data…", ""))
+        appStatusReporter.updateStatus(CelestiaString("Copying data…", "Copying default data from APK"))
         if (appSettings[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
             // When version name does not match, copy the asset again
             copyAssetsAndRemoveOldAssets()
@@ -705,7 +705,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val scriptOrURL = scriptOrURLPath
         if (scriptOrURL != null) {
             val isURL = scriptOrURL.startsWith("cel://")
-            showAlert(if (isURL) CelestiaString("Open URL?", "") else CelestiaString("Run script?", "")) {
+            showAlert(if (isURL) CelestiaString("Open URL?", "Request user consent to open a URL") else CelestiaString("Run script?", "Request user consent to run a script")) {
                 openCelestiaURL(scriptOrURL)
             }
             cleanup()
@@ -1047,7 +1047,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val surfaces = ArrayList<String>()
                 surfaces.add(CelestiaString("Default", ""))
                 surfaces.addAll(alternateSurfaces)
-                showOptions(CelestiaString("Alternate Surfaces", ""), surfaces.toTypedArray()) { index ->
+                showOptions(CelestiaString("Alternate Surfaces", "Alternative textures to display"), surfaces.toTypedArray()) { index ->
                     lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                         if (index == 0)
                             appCore.simulation.activeObserver.displayedSurface = ""
@@ -1058,7 +1058,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             is MarkItem -> {
                 val markers = CelestiaFragment.getAvailableMarkers()
-                showOptions(CelestiaString("Mark", ""), markers.toTypedArray()) { newIndex ->
+                showOptions(CelestiaString("Mark", "Mark an object"), markers.toTypedArray()) { newIndex ->
                     lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                         if (newIndex >= Universe.MARKER_COUNT) {
                             appCore.simulation.universe.unmark(item)
@@ -1252,7 +1252,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
             val bookmark = appCore.currentBookmark
             if (bookmark == null) {
-                showAlert(CelestiaString("Cannot add object", ""))
+                showAlert(CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
                 return
             }
             frag.add(FavoriteBookmarkItem(bookmark))
@@ -1318,7 +1318,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun renameFavoriteItem(item: MutableFavoriteBaseItem) {
-        showTextInput(CelestiaString("Rename", ""), item.title) { text ->
+        showTextInput(CelestiaString("Rename", "Rename a favorite item (currently bookmark)"), item.title) { text ->
             val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
             if (frag is FavoriteFragment) {
                 frag.rename(item, text)
@@ -1355,7 +1355,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
         val finder = EclipseFinder(body)
-        val alert = showLoading(CelestiaString("Calculating…", "")) {
+        val alert = showLoading(CelestiaString("Calculating…", "Calculating for eclipses")) {
             finder.abort()
         } ?: return
         lifecycleScope.launch {
@@ -1611,7 +1611,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } else {
             null
         }
-        if (!sendEmail(listOfNotNull(purchaseTokenFile), CelestiaString("Feature suggestion for Celestia", ""), CelestiaString("Please describe the feature you want to see in Celestia.", ""))) {
+        if (!sendEmail(listOfNotNull(purchaseTokenFile), CelestiaString("Feature suggestion for Celestia", "Default email title for feature suggestion"), CelestiaString("Please describe the feature you want to see in Celestia.", "Default email body for feature suggestion"))) {
             reportBugSuggestFeatureFallback()
         }
     }
@@ -1703,7 +1703,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             crashInfoFile,
             purchaseTokenFile
         )
-        if (!sendEmail(files,  CelestiaString("Bug report for Celestia", ""), CelestiaString("Please describe the issue and repro steps, if known.", ""))) {
+        if (!sendEmail(files,  CelestiaString("Bug report for Celestia", "Default email title for bug report"), CelestiaString("Please describe the issue and repro steps, if known.", "Default email body for bug report"))) {
             reportBugSuggestFeatureFallback()
         }
     }
@@ -1773,14 +1773,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 InstantAction(CelestiaAction.Stop),
                 InstantAction(CelestiaAction.ReverseSpeed),
                 GroupAction(
-                    contentDescription = CelestiaString("Speed Presets", ""),
+                    contentDescription = CelestiaString("Speed Presets", "Action to show a list of presets in speed"),
                     actions = listOf(
-                        GroupActionItem(CelestiaString("1 km/s", ""), CelestiaContinuosAction.F2),
-                        GroupActionItem(CelestiaString("1000 km/s", ""), CelestiaContinuosAction.F3),
+                        GroupActionItem(CelestiaString("1 km/s", "Speed unit"), CelestiaContinuosAction.F2),
+                        GroupActionItem(CelestiaString("1000 km/s", "Speed unit"), CelestiaContinuosAction.F3),
                         GroupActionItem(CelestiaString("c (lightspeed)", ""), CelestiaContinuosAction.F4),
-                        GroupActionItem(CelestiaString("10c", ""), CelestiaContinuosAction.F5),
-                        GroupActionItem(CelestiaString("1 AU/s", ""), CelestiaContinuosAction.F6),
-                        GroupActionItem(CelestiaString("1 ly/s", ""), CelestiaContinuosAction.F7),
+                        GroupActionItem(CelestiaString("10c", "Speed unit"), CelestiaContinuosAction.F5),
+                        GroupActionItem(CelestiaString("1 AU/s", "Speed unit"), CelestiaContinuosAction.F6),
+                        GroupActionItem(CelestiaString("1 ly/s", "Speed unit"), CelestiaContinuosAction.F7),
                     )
                 )
             )
@@ -1814,7 +1814,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showShare() {
-        showOptions("", arrayOf(CelestiaString("Image", ""), CelestiaString("URL", ""))) { which ->
+        showOptions("", arrayOf(CelestiaString("Image", "Sharing option, image"), CelestiaString("URL", "Sharing option, URL"))) { which ->
             when (which) {
                 1 -> {
                     shareURL()
@@ -1846,7 +1846,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (success) {
             shareFile(file, "image/png")
         } else {
-            showToast(CelestiaString("Unable to generate image.", ""), Toast.LENGTH_SHORT)
+            showToast(CelestiaString("Unable to generate image.", "Failed to generate an image for sharing"), Toast.LENGTH_SHORT)
         }
     }
 

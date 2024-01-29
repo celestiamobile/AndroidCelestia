@@ -94,7 +94,7 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Language", "")
+        title = CelestiaString("Language", "Display language setting")
     }
 
     @Composable
@@ -136,7 +136,7 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
         LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = WindowInsets.systemBars.asPaddingValues()) {
             item {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-                TextRow(primaryText = CelestiaString("Current Language", ""), secondaryText = getLocalizedLanguageName(currentLanguage()))
+                TextRow(primaryText = CelestiaString("Current Language", "Current display language"), secondaryText = getLocalizedLanguageName(currentLanguage()))
             }
 
             if (availableLanguageCodes.isNotEmpty()) {
@@ -164,9 +164,9 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
                     currentOverrideLanguage = null
                     setOverrideLanguage(null)
                 }) {
-                    Text(text = CelestiaString("Reset to Default", ""))
+                    Text(text = CelestiaString("Reset to Default", "Reset celestia.cfg, data directory location"))
                 }
-                Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
+                Footer(text = CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
             }
         }

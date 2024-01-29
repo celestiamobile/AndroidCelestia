@@ -113,7 +113,7 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
                 ), onClick = {
                 onButtonClick()
             }) {
-                Text(text = CelestiaString("Go", ""))
+                Text(text = CelestiaString("Go", "Go to an object"))
             }
         }
     }

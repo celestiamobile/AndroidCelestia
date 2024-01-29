@@ -97,7 +97,7 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
             modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
         ) {
             item {
-                TextRow(primaryText = CelestiaString("Start Time", ""), secondaryText = formatter.format(startTime), modifier = Modifier.clickable {
+                TextRow(primaryText = CelestiaString("Start Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(startTime), modifier = Modifier.clickable {
                     val ac = activity ?: return@clickable
                     val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss")
                     ac.showDateInput(
@@ -107,13 +107,13 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
                         ).format(format), format
                     ) { date ->
                         if (date == null) {
-                            ac.showAlert(CelestiaString("Unrecognized time string.", ""))
+                            ac.showAlert(CelestiaString("Unrecognized time string.", "String not in correct format"))
                             return@showDateInput
                         }
                         startTime = date
                     }
                 })
-                TextRow(primaryText = CelestiaString("End Time", ""), secondaryText = formatter.format(endTime), modifier = Modifier.clickable {
+                TextRow(primaryText = CelestiaString("End Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(endTime), modifier = Modifier.clickable {
                     val ac = activity ?: return@clickable
                     val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss")
                     ac.showDateInput(
@@ -123,7 +123,7 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
                         ).format(format), format
                     ) { date ->
                         if (date == null) {
-                            ac.showAlert(CelestiaString("Unrecognized time string.", ""))
+                            ac.showAlert(CelestiaString("Unrecognized time string.", "String not in correct format"))
                             return@showDateInput
                         }
                         endTime = date
@@ -138,21 +138,21 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
             }
 
             item {
-                TextRow(primaryText = CelestiaString("Object", ""), secondaryText = objectName, modifier = Modifier.clickable {
+                TextRow(primaryText = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"), secondaryText = objectName, modifier = Modifier.clickable {
                     val ac = activity ?: return@clickable
                     val objects = listOf(
                         Pair(AppCore.getLocalizedStringDomain("Earth", "celestia-data"), "Sol/Earth"),
                         Pair(AppCore.getLocalizedStringDomain("Jupiter", "celestia-data"), "Sol/Jupiter"),
                     )
-                    val other = CelestiaString("Other", "")
+                    val other = CelestiaString("Other", "Other location labels; Android/iOS, Other objects to choose from in Eclipse Finder")
                     ac.showOptions(
-                        CelestiaString("Please choose an object.", ""),
+                        CelestiaString("Please choose an object.", "In eclipse finder, choose an object to find eclipse wth"),
                         objects.map { it.first }.toTypedArray() + other
                     ) { index ->
                         if (index >= objects.size) {
                             // User choose other, show text input for the object name
                             ac.showTextInput(
-                                CelestiaString("Please enter an object name.", ""),
+                                CelestiaString("Please enter an object name.", "In Go to; Android/iOS, Enter the name of an object in Eclipse Finder"),
                                 objectName
                             ) { name ->
                                 objectName = name
@@ -174,7 +174,7 @@ class EventFinderInputFragment : NavigationFragment.SubFragment() {
                 ), onClick = {
                     listener?.onSearchForEvent(objectPath, startTime, endTime)
                 }) {
-                    Text(text = CelestiaString("Find", ""))
+                    Text(text = CelestiaString("Find", "Find (eclipses)"))
                 }
             }
         }

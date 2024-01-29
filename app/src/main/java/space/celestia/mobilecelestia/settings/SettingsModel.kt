@@ -111,14 +111,14 @@ enum class SettingsKey : PreferenceManager.Key, Serializable {
 
     val displayName: String
         get() = when(this) {
-            ShowStars -> CelestiaString("Stars", "")
+            ShowStars -> CelestiaString("Stars", "Tab for stars in Star Browser")
             ShowPlanets -> CelestiaString("Planets", "")
             ShowDwarfPlanets -> CelestiaString("Dwarf Planets", "")
             ShowMoons -> CelestiaString("Moons", "")
             ShowMinorMoons -> CelestiaString("Minor Moons", "")
             ShowAsteroids -> CelestiaString("Asteroids", "")
             ShowComets -> CelestiaString("Comets", "")
-            ShowSpacecrafts -> CelestiaString("Spacecraft", "")
+            ShowSpacecrafts -> CelestiaString("Spacecraft", "Plural")
             ShowGalaxies -> CelestiaString("Galaxies", "")
             ShowNebulae -> CelestiaString("Nebulae", "")
             ShowGlobulars -> CelestiaString("Globulars", "")
@@ -134,49 +134,49 @@ enum class SettingsKey : PreferenceManager.Key, Serializable {
             ShowOrbits -> CelestiaString("Show Orbits", "")
             ShowFadingOrbits -> CelestiaString("Fading Orbits", "")
             ShowPartialTrajectories -> CelestiaString("Partial Trajectories", "")
-            ShowStellarOrbits -> CelestiaString("Stars", "")
+            ShowStellarOrbits -> CelestiaString("Stars", "Tab for stars in Star Browser")
             ShowPlanetOrbits -> CelestiaString("Planets", "")
             ShowDwarfPlanetOrbits -> CelestiaString("Dwarf Planets", "")
             ShowMoonOrbits -> CelestiaString("Moons", "")
             ShowMinorMoonOrbits -> CelestiaString("Minor Moons", "")
             ShowAsteroidOrbits -> CelestiaString("Asteroids", "")
             ShowCometOrbits -> CelestiaString("Comets", "")
-            ShowSpacecraftOrbits -> CelestiaString("Spacecraft", "")
-            ShowCelestialSphere -> CelestiaString("Equatorial", "")
-            ShowEclipticGrid -> CelestiaString("Ecliptic", "")
-            ShowHorizonGrid -> CelestiaString("Horizontal", "")
-            ShowGalacticGrid -> CelestiaString("Galactic", "")
-            ShowDiagrams -> CelestiaString("Show Diagrams", "")
-            ShowConstellationLabels -> CelestiaString("Show Labels", "")
-            ShowLatinConstellationLabels -> CelestiaString("Show Labels in Latin", "")
-            ShowBoundaries -> CelestiaString("Show Boundaries", "")
-            ShowStarLabels -> CelestiaString("Stars", "")
+            ShowSpacecraftOrbits -> CelestiaString("Spacecraft", "Plural")
+            ShowCelestialSphere -> CelestiaString("Equatorial", "Grids")
+            ShowEclipticGrid -> CelestiaString("Ecliptic", "Grids")
+            ShowHorizonGrid -> CelestiaString("Horizontal", "Grids")
+            ShowGalacticGrid -> CelestiaString("Galactic", "Grids")
+            ShowDiagrams -> CelestiaString("Show Diagrams", "Show constellation diagrams")
+            ShowConstellationLabels -> CelestiaString("Show Labels", "Constellation labels")
+            ShowLatinConstellationLabels -> CelestiaString("Show Labels in Latin", "Constellation labels in Latin")
+            ShowBoundaries -> CelestiaString("Show Boundaries", "Show constellation boundaries")
+            ShowStarLabels -> CelestiaString("Stars", "Tab for stars in Star Browser")
             ShowPlanetLabels -> CelestiaString("Planets", "")
             ShowDwarfPlanetLabels -> CelestiaString("Dwarf Planets", "")
             ShowMoonLabels -> CelestiaString("Moons", "")
             ShowMinorMoonLabels -> CelestiaString("Minor Moons", "")
             ShowAsteroidLabels -> CelestiaString("Asteroids", "")
             ShowCometLabels -> CelestiaString("Comets", "")
-            ShowSpacecraftLabels -> CelestiaString("Spacecraft", "")
+            ShowSpacecraftLabels -> CelestiaString("Spacecraft", "Plural")
             ShowGalaxyLabels -> CelestiaString("Galaxies", "")
             ShowNebulaLabels -> CelestiaString("Nebulae", "")
             ShowGlobularLabels -> CelestiaString("Globulars", "")
             ShowOpenClusterLabels -> CelestiaString("Open Clusters", "")
             ShowLocationLabels -> CelestiaString("Show Locations", "")
             ShowCityLabels -> CelestiaString("Cities", "")
-            ShowObservatoryLabels -> CelestiaString("Observatories", "")
-            ShowLandingSiteLabels -> CelestiaString("Landing Sites", "")
-            ShowMonsLabels -> CelestiaString("Montes (Mountains)", "")
-            ShowMareLabels -> CelestiaString("Maria (Seas)", "")
-            ShowCraterLabels -> CelestiaString("Craters", "")
-            ShowVallisLabels -> CelestiaString("Valles (Valleys)", "")
-            ShowTerraLabels -> CelestiaString("Terrae (Land masses)", "")
-            ShowEruptiveCenterLabels -> CelestiaString("Volcanoes", "")
-            ShowOtherLabels -> CelestiaString("Other", "")
+            ShowObservatoryLabels -> CelestiaString("Observatories", "Location labels")
+            ShowLandingSiteLabels -> CelestiaString("Landing Sites", "Location labels")
+            ShowMonsLabels -> CelestiaString("Montes (Mountains)", "Location labels")
+            ShowMareLabels -> CelestiaString("Maria (Seas)", "Location labels")
+            ShowCraterLabels -> CelestiaString("Craters", "Location labels")
+            ShowVallisLabels -> CelestiaString("Valles (Valleys)", "Location labels")
+            ShowTerraLabels -> CelestiaString("Terrae (Land masses)", "Location labels")
+            ShowEruptiveCenterLabels -> CelestiaString("Volcanoes", "Location labels")
+            ShowOtherLabels -> CelestiaString("Other", "Other location labels; Android/iOS, Other objects to choose from in Eclipse Finder")
             ShowMarkers -> CelestiaString("Show Markers", "")
             ShowEcliptic -> CelestiaString("Ecliptic Line", "")
-            ShowAutoMag -> CelestiaString("Auto Mag", "")
-            ShowSmoothLines -> CelestiaString("Smooth Lines", "")
+            ShowAutoMag -> CelestiaString("Auto Mag", "Auto mag for star display")
+            ShowSmoothLines -> CelestiaString("Smooth Lines", "Smooth lines for rendering")
             EnableReverseWheel -> CelestiaString("Reverse Mouse Wheel", "")
             EnableRayBasedDragging -> CelestiaString("Ray-Based Dragging", "")
             EnableFocusZooming -> CelestiaString("Focus Zooming", "")
@@ -184,15 +184,15 @@ enum class SettingsKey : PreferenceManager.Key, Serializable {
             DateFormat -> CelestiaString("Date Format", "")
             Resolution -> CelestiaString("Texture Resolution", "")
             StarStyle -> CelestiaString("Star Style", "")
-            HudDetail -> CelestiaString("Info Display", "")
-            MeasurementSystem -> CelestiaString("Measure Units", "")
+            HudDetail -> CelestiaString("Info Display", "HUD display")
+            MeasurementSystem -> CelestiaString("Measure Units", "Measurement system")
             TemperatureScale -> CelestiaString("Temperature Scale", "")
-            ScriptSystemAccessPolicy -> CelestiaString("Script System Access Policy", "")
+            ScriptSystemAccessPolicy -> CelestiaString("Script System Access Policy", "Policy for managing lua script's access to the system")
             StarColors -> CelestiaString("Star Colors", "")
-            FaintestVisible -> CelestiaString("Faintest Stars", "")
-            AmbientLightLevel -> CelestiaString("Ambient Light", "")
-            GalaxyBrightness -> CelestiaString("Galaxy Brightness", "")
-            MinimumFeatureSize -> CelestiaString("Minimum Labeled Feature Size", "")
+            FaintestVisible -> CelestiaString("Faintest Stars", "Control the faintest star that Celestia should display")
+            AmbientLightLevel -> CelestiaString("Ambient Light", "In setting")
+            GalaxyBrightness -> CelestiaString("Galaxy Brightness", "Render parameter")
+            MinimumFeatureSize -> CelestiaString("Minimum Labeled Feature Size", "Minimum feature size that we should display a label for")
             TintSaturation -> CelestiaString("Tinted Illumination Saturation", "")
         }
 
@@ -299,21 +299,21 @@ enum class SettingsKey : PreferenceManager.Key, Serializable {
 }
 
 private val gameControllerRemapOptions = listOf(
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE, CelestiaString("None", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER, CelestiaString("Travel Faster", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER, CelestiaString("Travel Slower", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_STOP_SPEED, CelestiaString("Stop", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_REVERSE_SPEED, CelestiaString("Reverse Travel Direction", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_REVERSE_ORIENTATION, CelestiaString("Reverse Observer Orientation", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_TAP_CENTER, CelestiaString("Tap Center", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE, CelestiaString("None", "Empty HUD display")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER, CelestiaString("Travel Faster", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER, CelestiaString("Travel Slower", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_STOP_SPEED, CelestiaString("Stop", "Interupt the process of finding eclipse/Set traveling speed to 0")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_REVERSE_SPEED, CelestiaString("Reverse Travel Direction", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_REVERSE_ORIENTATION, CelestiaString("Reverse Observer Orientation", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_TAP_CENTER, CelestiaString("Tap Center", "Game controller action")),
     Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_GO_TO, CelestiaString("Go to Object", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ESC, CelestiaString("Esc", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP, CelestiaString("Pitch Up", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN, CelestiaString("Pitch Down", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_YAW_LEFT, CelestiaString("Yaw Left", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_YAW_RIGHT, CelestiaString("Yaw Right", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT, CelestiaString("Roll Left", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT, CelestiaString("Roll Right", "")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ESC, CelestiaString("Esc", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP, CelestiaString("Pitch Up", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN, CelestiaString("Pitch Down", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_YAW_LEFT, CelestiaString("Yaw Left", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_YAW_RIGHT, CelestiaString("Yaw Right", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT, CelestiaString("Roll Left", "Game controller action")),
+    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT, CelestiaString("Roll Right", "Game controller action")),
 )
 
 interface SettingsItem {
@@ -355,7 +355,7 @@ class SettingsPreferenceSliderItem(
 
 class SettingsLanguageItem : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString("Language", "")
+        get() = CelestiaString("Language", "Display language setting")
 }
 
 class SettingsSwitchItem(
@@ -458,7 +458,7 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
         SettingsSwitchItem(SettingsKey.ShowLatinConstellationLabels, SettingsSwitchItem.Representation.Checkmark),
         SettingsSwitchItem(SettingsKey.ShowBoundaries, SettingsSwitchItem.Representation.Checkmark),
     )),
-    SettingsCommonItem.create(CelestiaString("Object Labels", ""), listOf(
+    SettingsCommonItem.create(CelestiaString("Object Labels", "Labels"), listOf(
         SettingsSwitchItem(SettingsKey.ShowStarLabels),
         SettingsSwitchItem(SettingsKey.ShowPlanetLabels),
         SettingsSwitchItem(SettingsKey.ShowDwarfPlanetLabels),
@@ -472,7 +472,7 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
         SettingsSwitchItem(SettingsKey.ShowGlobularLabels),
         SettingsSwitchItem(SettingsKey.ShowOpenClusterLabels)
     )),
-    SettingsCommonItem(CelestiaString("Locations", ""), listOf(
+    SettingsCommonItem(CelestiaString("Locations", "Location labels to display"), listOf(
         SettingsCommonItem.Section(listOf(
             SettingsSwitchItem(SettingsKey.ShowLocationLabels, SettingsSwitchItem.Representation.Switch),
             SettingsSliderItem(SettingsKey.MinimumFeatureSize, 0.0, 99.0),
@@ -492,19 +492,19 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
     )),
     SettingsCommonItem.create(CelestiaString("Markers", ""), listOf(
         SettingsSwitchItem(SettingsKey.ShowMarkers, SettingsSwitchItem.Representation.Switch),
-        SettingsUnknownTextItem(CelestiaString("Unmark All", ""), settingUnmarkAllID)
+        SettingsUnknownTextItem(CelestiaString("Unmark All", "Unmark all objects"), settingUnmarkAllID)
     )),
     SettingsCommonItem(
-        CelestiaString("Reference Vectors", ""),
+        CelestiaString("Reference Vectors", "Reference vectors for an object"),
         listOf(
             SettingsCommonItem.Section(
                 listOf(
-                    SettingsSwitchItem("ShowBodyAxes", CelestiaString("Show Body Axes", ""), true),
-                    SettingsSwitchItem("ShowFrameAxes", CelestiaString("Show Frame Axes", ""), true),
-                    SettingsSwitchItem("ShowSunDirection", CelestiaString("Show Sun Direction", ""), true),
-                    SettingsSwitchItem("ShowVelocityVector", CelestiaString("Show Velocity Vector", ""), true),
-                    SettingsSwitchItem("ShowPlanetographicGrid", CelestiaString("Show Planetographic Grid", ""), true),
-                    SettingsSwitchItem("ShowTerminator", CelestiaString("Show Terminator", ""), true)
+                    SettingsSwitchItem("ShowBodyAxes", CelestiaString("Show Body Axes", "Reference vector"), true),
+                    SettingsSwitchItem("ShowFrameAxes", CelestiaString("Show Frame Axes", "Reference vector"), true),
+                    SettingsSwitchItem("ShowSunDirection", CelestiaString("Show Sun Direction", "Reference vector"), true),
+                    SettingsSwitchItem("ShowVelocityVector", CelestiaString("Show Velocity Vector", "Reference vector"), true),
+                    SettingsSwitchItem("ShowPlanetographicGrid", CelestiaString("Show Planetographic Grid", "Reference vector"), true),
+                    SettingsSwitchItem("ShowTerminator", CelestiaString("Show Terminator", "Reference vector"), true)
                 ),
                 footer = CelestiaString("Reference vectors are only visible for the current selected solar system object.", "")
             )
@@ -542,13 +542,13 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
         SettingsKey.MeasurementSystem.displayName,
         listOf(
             SettingsSelectionSingleItem(key = SettingsKey.MeasurementSystem, options = listOf(
-                Pair(0, CelestiaString("Metric", "")),
-                Pair(1, CelestiaString("Imperial", "")),
+                Pair(0, CelestiaString("Metric", "Metric measurement system")),
+                Pair(1, CelestiaString("Imperial", "Imperial measurement system")),
             ), displayName = SettingsKey.MeasurementSystem.displayName, defaultSelection = 0, showTitle = false),
             SettingsSelectionSingleItem(key = SettingsKey.TemperatureScale, options = listOf(
-                Pair(0, CelestiaString("Kelvin", "")),
-                Pair(1, CelestiaString("Celsius", "")),
-                Pair(2, CelestiaString("Fahrenheit", "")),
+                Pair(0, CelestiaString("Kelvin", "Temperature scale")),
+                Pair(1, CelestiaString("Celsius", "Temperature scale")),
+                Pair(2, CelestiaString("Fahrenheit", "Temperature scale")),
             ), displayName = SettingsKey.TemperatureScale.displayName, defaultSelection = 0, showTitle = true)
         )
     ),
@@ -556,9 +556,9 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
         SettingsKey.HudDetail.displayName,
         listOf(
             SettingsSelectionSingleItem(key = SettingsKey.HudDetail, options = listOf(
-                Pair(0, CelestiaString("None", "")),
-                Pair(1, CelestiaString("Terse", "")),
-                Pair(2, CelestiaString("Verbose", "")),
+                Pair(0, CelestiaString("None", "Empty HUD display")),
+                Pair(1, CelestiaString("Terse", "Terse HUD display")),
+                Pair(2, CelestiaString("Verbose", "Verbose HUD display")),
             ), displayName = SettingsKey.HudDetail.displayName, defaultSelection = 1, showTitle = false),
         )
     ),
@@ -567,7 +567,7 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
 
 class SettingsDataLocationItem : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString("Data Location", "")
+        get() = CelestiaString("Data Location", "Title for celestia.cfg, data location setting")
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -578,13 +578,13 @@ class SettingsFontItem : SettingsItem, Serializable {
 
 class SettingsToolbarItem : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString("Toolbar", "")
+        get() = CelestiaString("Toolbar", "Toolbar customization entry in Settings")
 }
 
 
 class SettingsRefreshRateItem : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString("Frame Rate", "")
+        get() = CelestiaString("Frame Rate", "Frame rate of simulation")
 }
 
 private val staticRendererItems: List<SettingsItem> = listOf(
@@ -592,9 +592,9 @@ private val staticRendererItems: List<SettingsItem> = listOf(
         SettingsKey.Resolution.displayName,
         listOf(
             SettingsSelectionSingleItem(key = SettingsKey.Resolution, options = listOf(
-                Pair(0, CelestiaString("Low", "")),
-                Pair(1, CelestiaString("Medium", "")),
-                Pair(2, CelestiaString("High", "")),
+                Pair(0, CelestiaString("Low", "Low resolution")),
+                Pair(1, CelestiaString("Medium", "Medium resolution")),
+                Pair(2, CelestiaString("High", "High resolution")),
             ), displayName = SettingsKey.Resolution.displayName, defaultSelection = 1, showTitle = false)
         )
     ),
@@ -604,22 +604,22 @@ private val staticRendererItems: List<SettingsItem> = listOf(
             SettingsCommonItem.Section(
                 listOf(
                     SettingsSelectionSingleItem(key = SettingsKey.StarStyle, options = listOf(
-                        Pair(0, CelestiaString("Fuzzy Points", "")),
-                        Pair(1, CelestiaString("Points", "")),
-                        Pair(2, CelestiaString("Scaled Discs", "")),
+                        Pair(0, CelestiaString("Fuzzy Points", "Star style")),
+                        Pair(1, CelestiaString("Points", "Star style")),
+                        Pair(2, CelestiaString("Scaled Discs", "Star style")),
                     ), displayName = SettingsKey.StarStyle.displayName, defaultSelection = 0),
                     SettingsSelectionSingleItem(key = SettingsKey.StarColors, options = listOf(
-                        Pair(0, CelestiaString("Classic Colors", "")),
-                        Pair(1, CelestiaString("Blackbody D65", "")),
-                        Pair(2, CelestiaString("Blackbody (Solar Whitepoint)", "")),
-                        Pair(3, CelestiaString("Blackbody (Vega Whitepoint)", "")),
+                        Pair(0, CelestiaString("Classic Colors", "Star colors option")),
+                        Pair(1, CelestiaString("Blackbody D65", "Star colors option")),
+                        Pair(2, CelestiaString("Blackbody (Solar Whitepoint)", "Star colors option")),
+                        Pair(3, CelestiaString("Blackbody (Vega Whitepoint)", "Star colors option")),
                     ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 1),
                     SettingsSliderItem(SettingsKey.TintSaturation, 0.0, 1.0),
                 ), footer = CelestiaString("Tinted illumination saturation setting is only effective with Blackbody star colors.", "")
             )
         )
     ),
-    SettingsCommonItem(CelestiaString("Render Parameters", ""), listOf(
+    SettingsCommonItem(CelestiaString("Render Parameters", "Render parameters in setting"), listOf(
         SettingsCommonItem.Section(listOf(
             SettingsSwitchItem(SettingsKey.ShowSmoothLines, SettingsSwitchItem.Representation.Switch),
         )),
@@ -631,71 +631,71 @@ private val staticRendererItems: List<SettingsItem> = listOf(
         )),
     )),
     SettingsRefreshRateItem(),
-    SettingsCommonItem(CelestiaString("Advanced", ""), listOf(
+    SettingsCommonItem(CelestiaString("Advanced", "Advanced setting items"), listOf(
         SettingsCommonItem.Section(listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI", true),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
-        ),  footer =  CelestiaString("Configuration will take effect after a restart.", ""))
+        ),  footer =  CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
     )),
     SettingsRenderInfoItem()
 )
 
 private val staticAdvancedItems: List<SettingsItem> = listOf(
     SettingsCommonItem(
-        CelestiaString("Interaction", ""),
+        CelestiaString("Interaction", "Settings for interaction"),
         listOf(
             SettingsCommonItem.Section(
                 listOf(
                     SettingsSwitchItem(SettingsKey.EnableReverseWheel, representation = SettingsSwitchItem.Representation.Switch),
                     SettingsSwitchItem(SettingsKey.EnableRayBasedDragging, subtitle = CelestiaString("Dragging behavior based on change of pick rays instead of screen coordinates", ""), representation = SettingsSwitchItem.Representation.Switch),
                     SettingsSwitchItem(SettingsKey.EnableFocusZooming, subtitle = CelestiaString("Zooming behavior keeping the original focus location on screen", ""), representation = SettingsSwitchItem.Representation.Switch),
-                    SettingsPreferenceSliderItem(PreferenceManager.PredefinedKey.PickSensitivity, displayName = CelestiaString("Sensitivity", ""), subtitle = CelestiaString("Sensitivity for object selection", ""), minValue = 1.0, maxValue = 20.0, defaultValue = 10.0),
-                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, displayName = CelestiaString("Context Menu", ""), true, subtitle = CelestiaString("Context menu by long press or context click", "")),
+                    SettingsPreferenceSliderItem(PreferenceManager.PredefinedKey.PickSensitivity, displayName = CelestiaString("Sensitivity", "Setting for sensitivity for selecting an object"), subtitle = CelestiaString("Sensitivity for object selection", "Notes for the sensitivity setting"), minValue = 1.0, maxValue = 20.0, defaultValue = 10.0),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, displayName = CelestiaString("Context Menu", "Settings for whether context menu is enabled"), true, subtitle = CelestiaString("Context menu by long press or context click", "Description for how a context menu is triggered")),
                 ),
                 footer = CelestiaString("Some configurations will take effect after a restart.", "")
             )
         )
     ),
     SettingsCommonItem(
-        CelestiaString("Game Controller", ""),
+        CelestiaString("Game Controller", "Settings for game controller"),
         listOf(
             SettingsCommonItem.Section(
                 listOf(
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapA, displayName = CelestiaString("A / X", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapB, displayName = CelestiaString("B / Circle", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapX, displayName = CelestiaString("X / Square", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapY, displayName = CelestiaString("Y / Triangle", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadUp, displayName = CelestiaString("D-pad Up", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadDown, displayName = CelestiaString("D-pad Down", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadLeft, displayName = CelestiaString("D-pad Left", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadRight, displayName = CelestiaString("D-pad Right", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLB, displayName = CelestiaString("LB / L1", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLT, displayName = CelestiaString("LT / L2", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRB, displayName = CelestiaString("RB / R1", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRT, displayName = CelestiaString("RT / R2", ""), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapA, displayName = CelestiaString("A / X", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapB, displayName = CelestiaString("B / Circle", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapX, displayName = CelestiaString("X / Square", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapY, displayName = CelestiaString("Y / Triangle", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadUp, displayName = CelestiaString("D-pad Up", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadDown, displayName = CelestiaString("D-pad Down", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadLeft, displayName = CelestiaString("D-pad Left", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadRight, displayName = CelestiaString("D-pad Right", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLB, displayName = CelestiaString("LB / L1", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLT, displayName = CelestiaString("LT / L2", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRB, displayName = CelestiaString("RB / R1", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRT, displayName = CelestiaString("RT / R2", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT),
                 ),
-                header = CelestiaString("Buttons", ""),
+                header = CelestiaString("Buttons", "Settings for game controller buttons"),
             ),
             SettingsCommonItem.Section(
                 listOf(
-                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertX, displayName = CelestiaString("Invert Horizontally", ""), false),
-                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertY, displayName = CelestiaString("Invert Vertically", ""), false),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertX, displayName = CelestiaString("Invert Horizontally", "Invert game controller thumbstick axis horizontally"), false),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertY, displayName = CelestiaString("Invert Vertically", "Invert game controller thumbstick axis vertically"), false),
                 ),
-                header = CelestiaString("Thumbsticks", ""),
+                header = CelestiaString("Thumbsticks", "Settings for game controller thumbsticks"),
             )
         )
     ),
     SettingsDataLocationItem(),
     SettingsCommonItem(
-        CelestiaString("Security", ""),
+        CelestiaString("Security", "Security settings title"),
         listOf(
             SettingsCommonItem.Section(
                 listOf(
                     SettingsSelectionSingleItem(key = SettingsKey.ScriptSystemAccessPolicy, options = listOf(
-                        Pair(0, CelestiaString("Ask", "")),
-                        Pair(1, CelestiaString("Allow", "")),
-                        Pair(2, CelestiaString("Deny", "")),
-                    ), displayName = SettingsKey.ScriptSystemAccessPolicy.displayName, defaultSelection = 0, showTitle = true, subtitle = CelestiaString("Lua scripts' access to the file system", ""))
+                        Pair(0, CelestiaString("Ask", "Script system access policy option")),
+                        Pair(1, CelestiaString("Allow", "Script system access policy option")),
+                        Pair(2, CelestiaString("Deny", "Script system access policy option")),
+                    ), displayName = SettingsKey.ScriptSystemAccessPolicy.displayName, defaultSelection = 0, showTitle = true, subtitle = CelestiaString("Lua scripts' access to the file system", "Note for Script System Access Policy"))
                 ),
             )
         )
@@ -704,12 +704,12 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
 
 class SettingsRenderInfoItem : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString("Render Info", "")
+        get() = CelestiaString("Render Info", "Information about renderer")
 }
 
 class SettingsAboutItem : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString("About", "")
+        get() = CelestiaString("About", "About Celstia...")
 }
 
 class SettingsUnknownTextItem(override val name: String, val id: String) : SettingsItem, Serializable
@@ -718,10 +718,10 @@ class SettingsActionItem(override val name: String, val action: Int): SettingsIt
 
 private val staticOtherItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
-        CelestiaString("Debug", ""),
+        CelestiaString("Debug", "Debug menu"),
         listOf(
-            SettingsActionItem(CelestiaString("Toggle FPS Display", ""), 0x60),
-            SettingsActionItem(CelestiaString("Toggle Console Display", ""), 0x7E)
+            SettingsActionItem(CelestiaString("Toggle FPS Display", "Toggle FPS display on overlay"), 0x60),
+            SettingsActionItem(CelestiaString("Toggle Console Display", "Toggle console log display on overlay"), 0x7E)
         )
     ),
     SettingsAboutItem()
@@ -736,15 +736,15 @@ val celestiaPlusSettingSection: List<CommonSectionV2<SettingsItem>> by lazy {
     if (items.isEmpty()) {
         listOf()
     } else {
-        listOf(CommonSectionV2(items, CelestiaString("Celestia PLUS", "")))
+        listOf(CommonSectionV2(items, CelestiaString("Celestia PLUS", "Name for the subscription service")))
     }
 }
 
 val mainSettingSectionsBeforePlus: List<CommonSectionV2<SettingsItem>> = listOf(
-    CommonSectionV2(staticDisplayItems, CelestiaString("Display", "")),
-    CommonSectionV2(staticTimeAndRegionItems, CelestiaString("Time & Region", "")),
-    CommonSectionV2(staticRendererItems, CelestiaString("Renderer", "")),
-    CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "")),
+    CommonSectionV2(staticDisplayItems, CelestiaString("Display", "Display settings")),
+    CommonSectionV2(staticTimeAndRegionItems, CelestiaString("Time & Region", "time and region related settings")),
+    CommonSectionV2(staticRendererItems, CelestiaString("Renderer", "In settings")),
+    CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "Advanced setting items")),
 )
 
 val mainSettingSectionsAfterPlus: List<CommonSectionV2<SettingsItem>> = listOf(

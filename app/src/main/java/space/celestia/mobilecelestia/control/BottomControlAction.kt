@@ -54,25 +54,25 @@ class InstantAction(val action: CelestiaAction): Serializable, BottomControlActi
     override val contentDescription: String?
         get() = when (action) {
             CelestiaAction.Faster -> {
-                CelestiaString("Faster", "")
+                CelestiaString("Faster", "Make time go faster")
             }
             CelestiaAction.Slower -> {
-                CelestiaString("Slower", "")
+                CelestiaString("Slower", "Make time go more slowly")
             }
             CelestiaAction.PlayPause -> {
-                CelestiaString("Resume or Pause", "")
+                CelestiaString("Resume or Pause", "Resume or pause time/script")
             }
             CelestiaAction.CancelScript -> {
-                CelestiaString("Stop", "")
+                CelestiaString("Stop", "Interupt the process of finding eclipse/Set traveling speed to 0")
             }
             CelestiaAction.Reverse -> {
-                CelestiaString("Reverse", "")
+                CelestiaString("Reverse", "Reverse time or travel direction")
             }
             CelestiaAction.ReverseSpeed -> {
-                CelestiaString("Reverse", "")
+                CelestiaString("Reverse", "Reverse time or travel direction")
             }
             CelestiaAction.Stop -> {
-                CelestiaString("Stop", "")
+                CelestiaString("Stop", "Interupt the process of finding eclipse/Set traveling speed to 0")
             }
             else -> {
                 null
@@ -97,10 +97,10 @@ class ContinuousAction(val action: CelestiaContinuosAction): Serializable, Botto
     override val contentDescription: String?
         get() = when (action) {
             CelestiaContinuosAction.TravelFaster -> {
-                CelestiaString("Faster", "")
+                CelestiaString("Faster", "Make time go faster")
             }
             CelestiaContinuosAction.TravelSlower -> {
-                CelestiaString("Slower", "")
+                CelestiaString("Slower", "Make time go more slowly")
             }
             else -> {
                 null

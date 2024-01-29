@@ -108,9 +108,9 @@ class SubscriptionManagerFragment: Fragment() {
     @Composable
     private fun ErrorText(text: String?, modifier: Modifier = Modifier, retry: () -> Unit) {
         EmptyHint(
-            text = text ?: CelestiaString("We encountered an error.", ""),
+            text = text ?: CelestiaString("We encountered an error.", "Error loading the subscription page"),
             modifier = modifier,
-            actionText = CelestiaString("Refresh", ""),
+            actionText = CelestiaString("Refresh", "Button to refresh this list"),
             actionHandler = retry
         )
     }
@@ -168,7 +168,7 @@ class SubscriptionManagerFragment: Fragment() {
                     val subscriptionValue = subscriptionResult?.subscription
                     needsRefreshing = false
                     if (subscriptionResult == null || subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscriptionValue == null || purchaseManager.subscriptionStatus is PurchaseManager.SubscriptionStatus.Error) {
-                        errorText = CelestiaString("We encountered an error.", "")
+                        errorText = CelestiaString("We encountered an error.", "Error loading the subscription page")
                         subscription = null
                     } else {
                         errorText = null
@@ -196,7 +196,7 @@ class SubscriptionManagerFragment: Fragment() {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
 
                 Text(
-                    text = CelestiaString("Celestia PLUS", ""),
+                    text = CelestiaString("Celestia PLUS", "Name for the subscription service"),
                     color = MaterialTheme.colorScheme.onBackground,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -222,12 +222,12 @@ class SubscriptionManagerFragment: Fragment() {
     @Composable
     private fun FeatureList() {
         val features = arrayListOf(
-            Pair(R.drawable.plus_feature_latest_update, CelestiaString("Get latest add-ons, updates, and trending add-ons.", "")),
-            Pair(R.drawable.plus_feature_feedback, CelestiaString("Receive timely feedback on feature requests and bug reports.", "")),
-            Pair(R.drawable.plus_feature_support, CelestiaString("Support the developer community and keep the project going.", ""))
+            Pair(R.drawable.plus_feature_latest_update, CelestiaString("Get latest add-ons, updates, and trending add-ons.", "Benefits of Celestia PLUS")),
+            Pair(R.drawable.plus_feature_feedback, CelestiaString("Receive timely feedback on feature requests and bug reports.", "Benefits of Celestia PLUS")),
+            Pair(R.drawable.plus_feature_support, CelestiaString("Support the developer community and keep the project going.", "Benefits of Celestia PLUS"))
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            features.add(0, Pair(R.drawable.plus_feature_customize, CelestiaString("Customize the visual appearance of Celestia.", "")))
+            features.add(0, Pair(R.drawable.plus_feature_customize, CelestiaString("Customize the visual appearance of Celestia.", "Benefits of Celestia PLUS")))
         }
 
         Column(modifier = Modifier
@@ -298,31 +298,31 @@ class SubscriptionManagerFragment: Fragment() {
                     token = null
                     canAction = true
                     actionButtonHidden = false
-                    actionTitle = CelestiaString("Get", "")
+                    actionTitle = CelestiaString("Get", "Purchase subscription service")
                 }
                 is PurchaseManager.SubscriptionStatus.Good.Pending -> {
                     token = status.purchaseToken
                     canAction = false
                     actionButtonHidden = false
-                    actionTitle = CelestiaString("Get", "")
+                    actionTitle = CelestiaString("Get", "Purchase subscription service")
                 }
                 is PurchaseManager.SubscriptionStatus.Good.NotAcknowledged -> {
                     token = status.purchaseToken
                     canAction = false
                     actionButtonHidden = false
-                    actionTitle = CelestiaString("Get", "")
+                    actionTitle = CelestiaString("Get", "Purchase subscription service")
                 }
                 is PurchaseManager.SubscriptionStatus.Good.Acknowledged -> {
                     token = status.purchaseToken
                     canAction = false
                     actionButtonHidden = false
-                    actionTitle = CelestiaString("Change", "")
+                    actionTitle = CelestiaString("Change", "Change subscription service")
                 }
                 is PurchaseManager.SubscriptionStatus.Good.NotVerified -> {
                     token = status.purchaseToken
                     canAction = true
                     actionButtonHidden = false
-                    actionTitle = CelestiaString("Change", "")
+                    actionTitle = CelestiaString("Change", "Change subscription service")
                 }
                 is PurchaseManager.SubscriptionStatus.Good.Verified -> {
                     token = status.purchaseToken
@@ -330,11 +330,11 @@ class SubscriptionManagerFragment: Fragment() {
                     canAction = currentPlan != plan.type
                     actionButtonHidden = !canAction
                     if (currentPlan == null) {
-                        actionTitle = CelestiaString("Change", "")
+                        actionTitle = CelestiaString("Change", "Change subscription service")
                     } else if (currentPlan.level < plan.type.level) {
-                        actionTitle = CelestiaString("Upgrade", "")
+                        actionTitle = CelestiaString("Upgrade", "Upgrade subscription service")
                     } else  if (currentPlan.level > plan.type.level) {
-                        actionTitle = CelestiaString("Downgrade", "")
+                        actionTitle = CelestiaString("Downgrade", "Downgrade subscription service")
                     } else {
                         actionTitle = ""
                     }
@@ -386,8 +386,8 @@ class SubscriptionManagerFragment: Fragment() {
             )) {
             Column {
                 Text(text = when (plan.type) {
-                    PurchaseManager.PlanType.Yearly -> CelestiaString("Yearly", "")
-                    PurchaseManager.PlanType.Monthly -> CelestiaString("Monthly", "")
+                    PurchaseManager.PlanType.Yearly -> CelestiaString("Yearly", "Yearly subscription")
+                    PurchaseManager.PlanType.Monthly -> CelestiaString("Monthly", "Monthly subscription")
                 }, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
                 Text(text = plan.formattedPrice, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyMedium)

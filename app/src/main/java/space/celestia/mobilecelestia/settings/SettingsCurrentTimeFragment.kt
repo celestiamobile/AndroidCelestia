@@ -103,13 +103,13 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment() {
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-            TextRow(primaryText = CelestiaString("Select Time", ""), secondaryText = formatter.format(currentTime.value), modifier = Modifier.clickable(onClick = {
+            TextRow(primaryText = CelestiaString("Select Time", "Select simulation time"), secondaryText = formatter.format(currentTime.value), modifier = Modifier.clickable(onClick = {
                 onPickTime()
             }))
-            TextRow(primaryText = CelestiaString("Julian Day", ""), secondaryText = displayNumberFormat.format(currentJulianDay.value), modifier = Modifier.clickable {
+            TextRow(primaryText = CelestiaString("Julian Day", "Select time via entering Julian day"), secondaryText = displayNumberFormat.format(currentJulianDay.value), modifier = Modifier.clickable {
                 onPickJulianDay()
             })
-            TextRow(primaryText = CelestiaString("Set to Current Time", ""), modifier = Modifier.clickable(onClick = {
+            TextRow(primaryText = CelestiaString("Set to Current Time", "Set simulation time to device"), modifier = Modifier.clickable(onClick = {
                 onSyncWithCurrentTime()
             }))
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
@@ -132,7 +132,7 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment() {
             val self = weakSelf.get() ?: return@showDateInput
             val innerActivity = self.activity ?: return@showDateInput
             if (date == null) {
-                innerActivity.showAlert(CelestiaString("Unrecognized time string.", ""))
+                innerActivity.showAlert(CelestiaString("Unrecognized time string.", "String not in correct format"))
                 return@showDateInput
             }
             self.lifecycleScope.launch {
@@ -149,12 +149,12 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment() {
         val numberFormat = NumberFormat.getNumberInstance()
         numberFormat.isGroupingUsed = false
         val weakSelf = WeakReference(this)
-        activity.showTextInput(title = CelestiaString("Please enter Julian day.", "")) { julianDayString ->
+        activity.showTextInput(title = CelestiaString("Please enter Julian day.", "In time settings, enter Julian day for the simulation")) { julianDayString ->
             val self = weakSelf.get() ?: return@showTextInput
             val innerActivity = self.activity ?: return@showTextInput
             val value = julianDayString.toDoubleOrNull(numberFormat)
             if (value == null) {
-                innerActivity.showAlert(CelestiaString("Invalid Julian day string.", ""))
+                innerActivity.showAlert(CelestiaString("Invalid Julian day string.", "The input of julian day is not valid"))
                 return@showTextInput
             }
             self.lifecycleScope.launch {

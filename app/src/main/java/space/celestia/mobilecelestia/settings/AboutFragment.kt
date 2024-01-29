@@ -75,7 +75,7 @@ class AboutFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("About", "")
+        title = CelestiaString("About", "About Celstia...")
     }
 
     @Composable
@@ -153,28 +153,28 @@ class AboutFragment : NavigationFragment.SubFragment() {
         ))
 
         // Authors
-        getInfo("CelestiaResources/AUTHORS", CelestiaString("Authors", ""))?.let {
+        getInfo("CelestiaResources/AUTHORS", CelestiaString("Authors", "Authors for Celestia"))?.let {
             array.add(it)
         }
 
         // Translators
-        getInfo("CelestiaResources/TRANSLATORS", CelestiaString("Translators", ""))?.let {
+        getInfo("CelestiaResources/TRANSLATORS", CelestiaString("Translators", "Translators for Celestia"))?.let {
             array.add(it)
         }
 
         // Links
         array.add(
             listOf(
-                ActionItem(CelestiaString("Development", ""),"https://celestia.mobi/help/development"),
-                ActionItem(CelestiaString("Third Party Dependencies", ""), "https://celestia.mobi/help/dependencies"),
-                ActionItem(CelestiaString("Privacy Policy and Service Agreement", ""), "https://celestia.mobi/privacy")
+                ActionItem(CelestiaString("Development", "URL for Development wiki"),"https://celestia.mobi/help/development"),
+                ActionItem(CelestiaString("Third Party Dependencies", "URL for Third Party Dependencies wiki"), "https://celestia.mobi/help/dependencies"),
+                ActionItem(CelestiaString("Privacy Policy and Service Agreement", "Privacy Policy and Service Agreement"), "https://celestia.mobi/privacy")
             )
         )
 
         array.add(
             listOf(
                 ActionItem(CelestiaString("Official Website", ""), "https://celestia.mobi"),
-                ActionItem(CelestiaString("About Celestia", ""), "https://celestia.mobi/about")
+                ActionItem(CelestiaString("About Celestia", "System menu item"), "https://celestia.mobi/about")
             )
         )
 

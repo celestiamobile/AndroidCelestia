@@ -119,13 +119,13 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Data Location", "")
+        title = CelestiaString("Data Location", "Title for celestia.cfg, data location setting")
     }
 
     private fun showWrongPathProvided() {
         val activity = this.activity ?: return
         val expectedParent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) activity.externalMediaDirs.firstOrNull() else activity.getExternalFilesDir(null)
-        activity.showAlert(CelestiaString("Unable to resolve path", ""), CelestiaString("Please ensure that you have selected a path under %s.", "").format(expectedParent?.absolutePath ?: ""))
+        activity.showAlert(CelestiaString("Unable to resolve path", "Custom config/data directory path have to be under a specific path"), CelestiaString("Please ensure that you have selected a path under %s.", "Custom config/data directory path have to be under a specific path").format(expectedParent?.absolutePath ?: ""))
     }
 
     private fun launchDataDirectoryPicker() {
@@ -168,10 +168,10 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             }
             item {
-                TextRow(primaryText = CelestiaString("Config File", ""), secondaryText = if (customConfigFilePath.value == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable {
+                TextRow(primaryText = CelestiaString("Config File", "celestia.cfg"), secondaryText = if (customConfigFilePath.value == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable {
                     launchConfigFilePicker()
                 })
-                TextRow(primaryText = CelestiaString("Data Directory", ""), secondaryText = if (customDataDirPath.value == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable {
+                TextRow(primaryText = CelestiaString("Data Directory", "Directory to load data from"), secondaryText = if (customDataDirPath.value == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable {
                     launchDataDirectoryPicker()
                 })
             }
@@ -187,9 +187,9 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
                     customConfigFilePath.value = null
                     customDataDirPath.value = null
                 }) {
-                    Text(text = CelestiaString("Reset to Default", ""))
+                    Text(text = CelestiaString("Reset to Default", "Reset celestia.cfg, data directory location"))
                 }
-                Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
+                Footer(text = CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
             }
         }

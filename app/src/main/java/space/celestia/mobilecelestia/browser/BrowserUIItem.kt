@@ -37,7 +37,7 @@ private fun Universe.createSolBrowserRoot(): BrowserItem? {
     return BrowserItem(
         starCatalog.getStarName(
             sol
-        ), CelestiaString("Solar System", ""), sol, this
+        ), CelestiaString("Solar System", "Tab for solar system in Star Browser"), sol, this
     )
 }
 
@@ -95,7 +95,7 @@ private fun Universe.createStarBrowserRoot(observer: Observer): BrowserItem {
     val brightest = brightestStars
     if (brightest != null)
         hashMap[brightest.name] = brightest
-    return BrowserItem(CelestiaString("Stars", ""), null, hashMap)
+    return BrowserItem(CelestiaString("Stars", "Tab for stars in Star Browser"), null, hashMap)
 }
 
 fun Universe.starBrowserRoot(observer: Observer): BrowserItem {
@@ -149,7 +149,7 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
         CelestiaString(
             "Deep Sky Objects",
             ""
-        ), CelestiaString("DSOs", ""), results
+        ), CelestiaString("DSOs", "Tab for deep sky objects in Star Browser"), results
     )
 }
 

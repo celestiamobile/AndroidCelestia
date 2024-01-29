@@ -94,12 +94,12 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-            StepperRow(name = CelestiaString("Pitch", ""), minusAction = CameraControlAction.Pitch0, plusAction = CameraControlAction.Pitch1, modifier = internalViewModifier)
-            StepperRow(name = CelestiaString("Yaw", ""), minusAction = CameraControlAction.Yaw0, plusAction = CameraControlAction.Yaw1, modifier = internalViewModifier)
-            StepperRow(name = CelestiaString("Roll", ""), minusAction = CameraControlAction.Roll0, plusAction = CameraControlAction.Roll1, modifier = internalViewModifier)
+            StepperRow(name = CelestiaString("Pitch", "Camera control"), minusAction = CameraControlAction.Pitch0, plusAction = CameraControlAction.Pitch1, modifier = internalViewModifier)
+            StepperRow(name = CelestiaString("Yaw", "Camera control"), minusAction = CameraControlAction.Yaw0, plusAction = CameraControlAction.Yaw1, modifier = internalViewModifier)
+            StepperRow(name = CelestiaString("Roll", "Camera control"), minusAction = CameraControlAction.Roll0, plusAction = CameraControlAction.Roll1, modifier = internalViewModifier)
             Footer(text = CelestiaString("Long press on stepper to change orientation.", ""))
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-            StepperRow(name = CelestiaString("Zoom (Distance)", ""), minusAction = CameraControlAction.ZoomOut, plusAction = CameraControlAction.ZoomIn, modifier = internalViewModifier)
+            StepperRow(name = CelestiaString("Zoom (Distance)", "Zoom in/out in Camera Control, this changes the relative distance to the object"), minusAction = CameraControlAction.ZoomOut, plusAction = CameraControlAction.ZoomIn, modifier = internalViewModifier)
             Footer(text = CelestiaString("Long press on stepper to zoom in/out.", ""))
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = {
@@ -109,7 +109,7 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
             FilledTonalButton(modifier = internalViewModifier, onClick = {
                 listener?.onCameraActionClicked(CameraControlAction.Reverse)
             }) {
-                Text(text = CelestiaString("Reverse Direction", ""))
+                Text(text = CelestiaString("Reverse Direction", "Reverse camera direction, reverse travel direction"))
             }
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
         }
@@ -118,7 +118,7 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Camera Control", "")
+        title = CelestiaString("Camera Control", "Observer control")
     }
 
     override fun onAttach(context: Context) {

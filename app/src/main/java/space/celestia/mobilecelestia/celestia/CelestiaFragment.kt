@@ -401,14 +401,14 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private fun setUpInteractions() {
         // Set up control buttons
         val buttonMap = hashMapOf(
-            ToolbarSettingFragment.ToolbarAction.Mode to CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", ""), interactionMode == CelestiaInteraction.InteractionMode.Camera),
+            ToolbarSettingFragment.ToolbarAction.Mode to CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), interactionMode == CelestiaInteraction.InteractionMode.Camera),
             ToolbarSettingFragment.ToolbarAction.ZoomIn to CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
             ToolbarSettingFragment.ToolbarAction.ZoomOut to CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
-            ToolbarSettingFragment.ToolbarAction.Info to CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "")),
+            ToolbarSettingFragment.ToolbarAction.Info to CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
             ToolbarSettingFragment.ToolbarAction.Search to CelestiaTapButton(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
-            ToolbarSettingFragment.ToolbarAction.Menu to CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "")),
-            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", "")),
-            ToolbarSettingFragment.ToolbarAction.Go to CelestiaTapButton(R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", ""))
+            ToolbarSettingFragment.ToolbarAction.Menu to CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "Menu button")),
+            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
+            ToolbarSettingFragment.ToolbarAction.Go to CelestiaTapButton(R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", "Go to an object"))
         )
         val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
         val actions = ArrayList(if (hasCelestiaPlus) appSettings.toolbarItems ?: ToolbarSettingFragment.ToolbarAction.defaultItems else ToolbarSettingFragment.ToolbarAction.defaultItems)
@@ -467,7 +467,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         fun createSubMenu(menu: Menu, browserItem: BrowserItem) {
             val obj = browserItem.`object`
             if (obj != null) {
-                menu.add(GROUP_BROWSER_ITEM_GO, browserItems.size, Menu.NONE, CelestiaString("Go", ""))
+                menu.add(GROUP_BROWSER_ITEM_GO, browserItems.size, Menu.NONE, CelestiaString("Go", "Go to an object"))
                 browserItems.add(browserItem)
             }
 
@@ -479,7 +479,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
 
         menu.setHeaderTitle(appCore.simulation.universe.getNameForSelection(selection))
-        menu.add(GROUP_GET_INFO, 0, Menu.NONE, CelestiaString("Get Info", ""))
+        menu.add(GROUP_GET_INFO, 0, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object"))
 
         CelestiaAction.allActions.withIndex().forEach {
             menu.add(GROUP_ACTION, it.index, Menu.NONE, it.value.title)
@@ -502,14 +502,14 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         if (obj is Body) {
             val alternateSurfaces = obj.alternateSurfaceNames
             if (alternateSurfaces.size > 0) {
-                val subMenu = menu.addSubMenu(GROUP_ALT_SURFACE_TOP, 0, Menu.NONE, CelestiaString("Alternate Surfaces", ""))
+                val subMenu = menu.addSubMenu(GROUP_ALT_SURFACE_TOP, 0, Menu.NONE, CelestiaString("Alternate Surfaces", "Alternative textures to display"))
                 subMenu.add(GROUP_ALT_SURFACE, 0, Menu.NONE, CelestiaString("Default", ""))
                 alternateSurfaces.withIndex().forEach {
                     subMenu.add(GROUP_ALT_SURFACE, it.index + 1, Menu.NONE, it.value)
                 }
             }
         }
-        val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", ""))
+        val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", "Mark an object"))
         val availableMarkers = getAvailableMarkers()
         availableMarkers.withIndex().forEach {
             markMenu.add(GROUP_MARK, it.index, Menu.NONE, it.value)
@@ -662,12 +662,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             CelestiaControlAction.ToggleModeToCamera -> {
                 interactionMode = CelestiaInteraction.InteractionMode.Camera
                 viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
-                activity?.showToast(CelestiaString("Switched to camera mode", ""), Toast.LENGTH_SHORT)
+                activity?.showToast(CelestiaString("Switched to camera mode", "Move/zoom camera FOV"), Toast.LENGTH_SHORT)
             }
             CelestiaControlAction.ToggleModeToObject -> {
                 interactionMode = CelestiaInteraction.InteractionMode.Object
                 viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
-                activity?.showToast(CelestiaString("Switched to object mode", ""), Toast.LENGTH_SHORT)
+                activity?.showToast(CelestiaString("Switched to object mode", "Move/zoom on an object"), Toast.LENGTH_SHORT)
             }
             else -> {}
         }
@@ -741,20 +741,20 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         fun getAvailableMarkers(): List<String> {
             return listOf(
-                CelestiaString("Diamond", ""),
-                CelestiaString("Triangle", ""),
-                CelestiaString("Square", ""),
-                CelestiaString("Filled Square", ""),
-                CelestiaString("Plus", ""),
-                CelestiaString("X", ""),
-                CelestiaString("Left Arrow", ""),
-                CelestiaString("Right Arrow", ""),
-                CelestiaString("Up Arrow", ""),
-                CelestiaString("Down Arrow", ""),
-                CelestiaString("Circle", ""),
-                CelestiaString("Disk", ""),
-                CelestiaString("Crosshair", ""),
-                CelestiaString("Unmark", ""),
+                CelestiaString("Diamond", "Marker"),
+                CelestiaString("Triangle", "Marker"),
+                CelestiaString("Square", "Marker"),
+                CelestiaString("Filled Square", "Marker"),
+                CelestiaString("Plus", "Marker"),
+                CelestiaString("X", "Marker"),
+                CelestiaString("Left Arrow", "Marker"),
+                CelestiaString("Right Arrow", "Marker"),
+                CelestiaString("Up Arrow", "Marker"),
+                CelestiaString("Down Arrow", "Marker"),
+                CelestiaString("Circle", "Marker"),
+                CelestiaString("Disk", "Marker"),
+                CelestiaString("Crosshair", "Marker"),
+                CelestiaString("Unmark", "Unmark an object"),
             )
         }
 

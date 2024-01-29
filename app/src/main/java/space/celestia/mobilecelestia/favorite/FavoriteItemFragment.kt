@@ -108,7 +108,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
         var items: List<NavigationFragment.BarButtonItem> = listOf()
         if (favoriteItem is MutableFavoriteBaseItem) {
             items = listOf(
-                NavigationFragment.BarButtonItem(MENU_ITEM_ADD, CelestiaString("Add", ""), R.drawable.ic_add)
+                NavigationFragment.BarButtonItem(MENU_ITEM_ADD, CelestiaString("Add", "Add a new item (bookmark)"), R.drawable.ic_add)
             )
         }
         rightNavigationBarItems = items
@@ -230,7 +230,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
                     .weight(1.0f)
                     .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical),))
                 if (isDraggable) {
-                    Icon(imageVector = Icons.Default.Menu, contentDescription = CelestiaString("Drag Handle", ""), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier
+                    Icon(imageVector = Icons.Default.Menu, contentDescription = CelestiaString("Drag Handle", "Accessibility description for the drag handle for reorder"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier
                         .dragContainerForDragHandle(dragDropState = dragDropState, key = item)
                         .padding(
                             dimensionResource(id = R.dimen.list_item_action_icon_padding)

@@ -102,7 +102,7 @@ class RenderInfoFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Render Info", "")
+        title = CelestiaString("Render Info", "Information about renderer")
     }
 
     companion object {

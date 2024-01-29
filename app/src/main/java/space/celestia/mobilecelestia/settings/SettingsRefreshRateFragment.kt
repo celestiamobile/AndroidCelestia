@@ -77,7 +77,7 @@ class SettingsRefreshRateFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Frame Rate", "")
+        title = CelestiaString("Frame Rate", "Frame rate of simulation")
     }
 
     override fun onAttach(context: Context) {

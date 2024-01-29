@@ -108,7 +108,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 setContent {
                     Mdc3Theme {
                         Box(modifier = Modifier.fillMaxSize().systemBarsPadding(), contentAlignment = Alignment.Center) {
-                            EmptyHint(text = CelestiaString("WebView is not available.", ""))
+                            EmptyHint(text = CelestiaString("WebView is not available.", "WebView component is missing or disabled"))
                         }
                     }
                 }

@@ -86,12 +86,12 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                         Tab(selected = selectedTabIndex == 0, onClick = {
                             selectedTabIndex = 0
                         }) {
-                            Text(text = CelestiaString("Normal", ""), modifier = tabTitleModifier)
+                            Text(text = CelestiaString("Normal", "Normal font style"), modifier = tabTitleModifier)
                         }
                         Tab(selected = selectedTabIndex == 1, onClick = {
                             selectedTabIndex = 1
                         }) {
-                            Text(text = CelestiaString("Bold", ""), modifier = tabTitleModifier)
+                            Text(text = CelestiaString("Bold", "Bold font style"), modifier = tabTitleModifier)
                         }
                     }
                 }
@@ -129,7 +129,7 @@ class FontSettingFragment : SubscriptionBackingFragment() {
                     }
                 }
                 item {
-                    Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
+                    Footer(text = CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
                 }
             }

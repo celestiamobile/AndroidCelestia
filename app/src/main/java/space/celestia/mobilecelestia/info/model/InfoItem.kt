@@ -38,13 +38,13 @@ enum class CelestiaAction(val value: Int) : Serializable {
     val title: String
         get() {
             return when (this) {
-                GoTo -> CelestiaString("Go", "")
-                GoToSurface -> CelestiaString("Land", "")
+                GoTo -> CelestiaString("Go", "Go to an object")
+                GoToSurface -> CelestiaString("Land", "Go to surface of an object")
                 PlayPause -> CelestiaString("Resume/Pause", "")
                 CurrentTime -> CelestiaString("Current Time", "")
                 SyncOrbit -> CelestiaString("Sync Orbit", "")
                 CancelScript -> CelestiaString("Cancel Script", "")
-                Home -> CelestiaString("Home (Sol)", "")
+                Home -> CelestiaString("Home (Sol)", "Home object, sun.")
                 Reverse -> CelestiaString("Reverse Time", "")
                 else -> this.toString()
             }
@@ -87,21 +87,21 @@ class InfoNormalActionItem(val item: CelestiaAction) : InfoActionItem {
 }
 class InfoSelectActionItem : InfoActionItem {
     override val title: String
-        get() = CelestiaString("Select", "")
+        get() = CelestiaString("Select", "Select an object")
 }
 class InfoWebActionItem : InfoActionItem {
     override val title: String
-        get() = CelestiaString("Web Info", "")
+        get() = CelestiaString("Web Info", "Web info for an object")
 }
 class SubsystemActionItem : InfoActionItem {
     override val title: String
-        get() = CelestiaString("Subsystem", "")
+        get() = CelestiaString("Subsystem", "Subsystem of an object (e.g. planetarium system)")
 }
 class AlternateSurfacesItem : InfoActionItem {
     override val title: String
-        get() = CelestiaString("Alternate Surfaces", "")
+        get() = CelestiaString("Alternate Surfaces", "Alternative textures to display")
 }
 class MarkItem : InfoActionItem {
     override val title: String
-        get() = CelestiaString("Mark", "")
+        get() = CelestiaString("Mark", "Mark an object")
 }

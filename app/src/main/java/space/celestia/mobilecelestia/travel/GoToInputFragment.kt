@@ -142,22 +142,22 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             .nestedScroll(nestedScrollInterop)
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
-            Header(text = CelestiaString("Object", ""))
+            Header(text = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"))
             ObjectNameAutoComplete(executor = executor, core = appCore, name = objectName, path = objectPath, modifier = textViewModifier, inputUpdated = {
                 objectName = it
             }, objectPathUpdated = {
                 objectPath = it
             })
-            Header(text = CelestiaString("Coordinates", ""))
+            Header(text = CelestiaString("Coordinates", "Longitude and latitude (in Go to)"))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
-                OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "")) }, onValueChange = {
+                OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "Coordinates")) }, onValueChange = {
                     latitudeString = it
                 }, isError = !isLatitudeValid, modifier = Modifier.weight(1.0f))
-                OutlinedTextField(value = longitudeString, label = { Text(text = CelestiaString("Longitude", "")) }, onValueChange = {
+                OutlinedTextField(value = longitudeString, label = { Text(text = CelestiaString("Longitude", "Coordinates")) }, onValueChange = {
                     longitudeString = it
                 }, isError = !isLongitudeValid, modifier = Modifier.weight(1.0f))
             }
-            Header(text = CelestiaString("Distance", ""))
+            Header(text = CelestiaString("Distance", "Distance to the object (in Go to)"))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
                 OutlinedTextField(value = distanceString, onValueChange = {
                     distanceString = it
@@ -165,13 +165,13 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                 OptionSelect(options = distanceUnits.map {
                     when(it) {
                         GoToLocation.DistanceUnit.radii -> {
-                            CelestiaString("au", "")
+                            CelestiaString("au", "Astronomical unit")
                         }
                         GoToLocation.DistanceUnit.km -> {
-                            CelestiaString("km", "")
+                            CelestiaString("km", "Unit")
                         }
                         GoToLocation.DistanceUnit.au -> {
-                            CelestiaString("radii", "")
+                            CelestiaString("radii", "In Go to, specify the distance based on the object radius")
                         }
                     }
                 }, selectedIndex = distanceUnits.indexOf(distanceUnit) , selectionChange = {
@@ -195,7 +195,7 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                     listener?.onGoToObject(GoToData(objectName, objectPath, longitude = longitude.toFloat(), latitude = latitude.toFloat(), distance = distance, distanceUnit = distanceUnit))
                 }
             ) {
-                Text(text = CelestiaString("Go", ""))
+                Text(text = CelestiaString("Go", "Go to an object"))
             }
         }
     }

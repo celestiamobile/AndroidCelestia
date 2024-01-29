@@ -37,7 +37,7 @@ fun AppCore.getOverviewForSelection(selection: Selection): String {
             getOverviewForDSO(obj)
         }
         else -> {
-            CelestiaString("No overview available.", "")
+            CelestiaString("No overview available.", "No overview for an object")
         }
     }
 }
@@ -54,22 +54,22 @@ private fun AppCore.getOverviewForBody(body: Body): String {
     numberFormat.isGroupingUsed = true
     radiusString = if (measurementSystem == AppCore.MEASUREMENT_SYSTEM_IMPERIAL) {
         if (radius >= oneMiInKm) {
-            CelestiaString("%s mi", "").format(numberFormat.format((radius / oneMiInKm).toInt()))
+            CelestiaString("%s mi", "Unit mile").format(numberFormat.format((radius / oneMiInKm).toInt()))
         } else {
-            CelestiaString("%s ft", "").format(numberFormat.format((radius / oneFtInKm).toInt()))
+            CelestiaString("%s ft", "Unit foot").format(numberFormat.format((radius / oneFtInKm).toInt()))
         }
     } else {
         if (radius >= 1) {
-            CelestiaString("%s km", "").format(numberFormat.format(radius.toInt()))
+            CelestiaString("%s km", "Unit kilometer").format(numberFormat.format(radius.toInt()))
         } else {
-            CelestiaString("%s m", "").format(numberFormat.format((radius * 1000).toInt()))
+            CelestiaString("%s m", "Unit meter").format(numberFormat.format((radius * 1000).toInt()))
         }
     }
 
     lines.add(if (body.isEllipsoid) {
         CelestiaString("Equatorial radius: %s", "").format(radiusString)
     } else {
-        CelestiaString("Size: %s", "").format(radiusString)
+        CelestiaString("Size: %s", "Size of an object").format(radiusString)
     })
 
     val time = simulation.time
@@ -106,11 +106,11 @@ private fun AppCore.getOverviewForBody(body: Body): String {
     }
 
     if (body.hasRings()) {
-        lines.add(CelestiaString("Has rings", ""))
+        lines.add(CelestiaString("Has rings", "Indicate that an object has rings"))
     }
 
     if (body.hasAtmosphere()) {
-        lines.add(CelestiaString("Has atmosphere", ""))
+        lines.add(CelestiaString("Has atmosphere", "Indicate that an object has atmosphere"))
     }
 
     val timeline = body.timeline
@@ -119,10 +119,10 @@ private fun AppCore.getOverviewForBody(body: Body): String {
         val endTime = timeline.getPhase(timeline.phaseCount - 1).endTime
         val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
         if (!startTime.isInfinite()) {
-            lines.add(CelestiaString("Start time: %s", "").format(formatter.format(Utils.createDateFromJulianDay(startTime))))
+            lines.add(CelestiaString("Start time: %s", "Template for the start time of a body, usually a spacecraft").format(formatter.format(Utils.createDateFromJulianDay(startTime))))
         }
         if (!endTime.isInfinite()) {
-            lines.add(CelestiaString("End time: %s", "").format(formatter.format(Utils.createDateFromJulianDay(endTime))))
+            lines.add(CelestiaString("End time: %s", "Template for the end time of a body, usually a spacecraft").format(formatter.format(Utils.createDateFromJulianDay(endTime))))
         }
     }
 
@@ -144,10 +144,10 @@ private fun AppCore.getOverviewForStar(star: Star): String {
     numberFormat.isGroupingUsed = true
 
     val hms = DMS(sph.x)
-    lines.add(CelestiaString("RA: %sh %sm %ss", "").format(numberFormat.format(hms.hmsHours), numberFormat.format(hms.hmsMinutes), numberFormat.format(hms.hmsSeconds)))
+    lines.add(CelestiaString("RA: %sh %sm %ss", "Equatorial coordinate").format(numberFormat.format(hms.hmsHours), numberFormat.format(hms.hmsMinutes), numberFormat.format(hms.hmsSeconds)))
 
     val dms = DMS(sph.y)
-    lines.add(CelestiaString("DEC: %s° %s′ %s″", "").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
+    lines.add(CelestiaString("DEC: %s° %s′ %s″", "Equatorial coordinate").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     return lines.joinToString(separator = "\n")
 }
@@ -166,19 +166,19 @@ private fun getOverviewForDSO(dso: DSO): String {
     numberFormat.isGroupingUsed = true
 
     val hms = DMS(sph.x)
-    lines.add(CelestiaString("RA: %sh %sm %ss", "").format(numberFormat.format(hms.hmsHours), numberFormat.format(hms.hmsMinutes), numberFormat.format(hms.hmsSeconds)))
+    lines.add(CelestiaString("RA: %sh %sm %ss", "Equatorial coordinate").format(numberFormat.format(hms.hmsHours), numberFormat.format(hms.hmsMinutes), numberFormat.format(hms.hmsSeconds)))
 
     var dms = DMS(sph.y)
-    lines.add(CelestiaString("DEC: %s° %s′ %s″", "").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
+    lines.add(CelestiaString("DEC: %s° %s′ %s″", "Equatorial coordinate").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     val galPos = Utils.equatorialToGalactic(eqPos)
     sph = Utils.rectToSpherical(galPos)
 
     dms = DMS(sph.x)
-    lines.add(CelestiaString("L: %s° %s′ %s″", "").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
+    lines.add(CelestiaString("L: %s° %s′ %s″", "Galactic coordinates").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     dms = DMS(sph.y)
-    lines.add(CelestiaString("B: %s° %s′ %s″", "").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
+    lines.add(CelestiaString("B: %s° %s′ %s″", "Galactic coordinates").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     return lines.joinToString(separator = "\n")
 }

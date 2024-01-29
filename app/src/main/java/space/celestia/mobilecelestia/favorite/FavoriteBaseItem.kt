@@ -25,7 +25,7 @@ enum class FavoriteItemAction {
         get() {
             return when (this) {
                 Delete -> CelestiaString("Delete", "")
-                Rename -> CelestiaString("Rename", "")
+                Rename -> CelestiaString("Rename", "Rename a favorite item (currently bookmark)")
                 Share -> CelestiaString("Share", "")
             }
         }
@@ -69,7 +69,7 @@ class FavoriteRoot : FavoriteBaseItem {
             FavoriteTypeItem(FavoriteType.Destination)
         )
     override val title: String
-        get() = CelestiaString("Favorites", "")
+        get() = CelestiaString("Favorites", "Favorites (currently bookmarks and scripts)")
     override val isLeaf: Boolean
         get() = false
     override val hasFullPageRepresentation: Boolean
@@ -94,7 +94,7 @@ class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
             CelestiaString("Scripts", "")
         }
         FavoriteType.Destination -> {
-            CelestiaString("Destinations", "")
+            CelestiaString("Destinations", "A list of destinations in guide")
         }
     }
     override val isLeaf: Boolean
@@ -184,5 +184,5 @@ fun updateCurrentDestinations(destinations: List<Destination>) {
 }
 
 private var currentScripts: List<Script> = listOf()
-private var currentBookmarkRoot: BookmarkNode = BookmarkNode(CelestiaString("Bookmarks", "") , "", arrayListOf())
+private var currentBookmarkRoot: BookmarkNode = BookmarkNode(CelestiaString("Bookmarks", "URL bookmarks") , "", arrayListOf())
 private var currentDestinations: List<Destination> = listOf()

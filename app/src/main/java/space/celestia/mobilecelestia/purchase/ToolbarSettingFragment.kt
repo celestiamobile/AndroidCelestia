@@ -79,14 +79,14 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
         val title: String
             get() {
                 return when (this) {
-                    Mode -> CelestiaString("Toggle Interaction Mode", "")
-                    Info -> CelestiaString("Get Info", "")
+                    Mode -> CelestiaString("Toggle Interaction Mode", "Touch interaction mode")
+                    Info -> CelestiaString("Get Info", "Action for getting info about current selected object")
                     Search -> CelestiaString("Search", "")
-                    Menu -> CelestiaString("Menu", "")
-                    Hide -> CelestiaString("Hide", "")
+                    Menu -> CelestiaString("Menu", "Menu button")
+                    Hide -> CelestiaString("Hide", "Action to hide the tool overlay")
                     ZoomIn -> CelestiaString("Zoom In", "")
                     ZoomOut -> CelestiaString("Zoom Out", "")
-                    Go -> CelestiaString("Go", "")
+                    Go -> CelestiaString("Go", "Go to an object")
                 }
             }
 
@@ -134,7 +134,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("Toolbar", "")
+        title = CelestiaString("Toolbar", "Toolbar customization entry in Settings")
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -194,9 +194,9 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)))
                     Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f).padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
                     if (isDraggable) {
-                        Icon(imageVector = Icons.Default.Menu, contentDescription = CelestiaString("Drag Handle", ""), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
+                        Icon(imageVector = Icons.Default.Menu, contentDescription = CelestiaString("Drag Handle", "Accessibility description for the drag handle for reorder"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
                     } else {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = CelestiaString("Add Button", ""), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.clip(CircleShape).clickable {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = CelestiaString("Add Button", "Accessibility description for an add button"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.clip(CircleShape).clickable {
                             if (!list.contains(item)) {
                                 list = list.toMutableList().apply {
                                     add(item)
@@ -243,9 +243,9 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     list = ToolbarAction.defaultItems
                     viewModel.appSettings.toolbarItems = null
                 }) {
-                    Text(text = CelestiaString("Reset to Default", ""))
+                    Text(text = CelestiaString("Reset to Default", "Reset celestia.cfg, data directory location"))
                 }
-                Footer(text = CelestiaString("Configuration will take effect after a restart.", ""))
+                Footer(text = CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
             }
         }
     }

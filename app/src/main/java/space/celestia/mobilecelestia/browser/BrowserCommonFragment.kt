@@ -125,7 +125,7 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
             if (!item.children.isEmpty()) {
                 if (hasMainObject) {
                     item {
-                        Header(text = CelestiaString("Subsystem", ""))
+                        Header(text = CelestiaString("Subsystem", "Subsystem of an object (e.g. planetarium system)"))
                     }
                 }
 

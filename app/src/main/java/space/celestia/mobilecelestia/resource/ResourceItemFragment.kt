@@ -111,7 +111,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             onProgressViewClick()
         }
         goToButton = view.findViewById(R.id.go_to_button)
-        goToButton.text = if (item.type == "script") CelestiaString("Run", "") else CelestiaString("Go", "")
+        goToButton.text = if (item.type == "script") CelestiaString("Run", "Run a script") else CelestiaString("Go", "Go to an object")
         goToButton.visibility = View.GONE
         progressIndicator = view.findViewById(R.id.progress_indicator)
 
@@ -213,7 +213,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         // Already downloading, allow user to cancel
         if (dm.isDownloading(item.id)) {
-            activity.showAlert(CelestiaString("Do you want to cancel this task?", "")) {
+            activity.showAlert(CelestiaString("Do you want to cancel this task?", "Prompt to ask to cancel downloading an add-on")) {
                 dm.cancel(item.id)
                 currentState = ResourceItemState.None
                 updateUI()
@@ -268,7 +268,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             ResourceItemState.None -> {
                 progressIndicator.visibility = View.GONE
                 progressIndicator.progress = 0
-                statusButton.text = CelestiaString("Install", "")
+                statusButton.text = CelestiaString("Install", "Install an add-on")
             }
             ResourceItemState.Downloading -> {
                 progressIndicator.visibility = View.VISIBLE
@@ -277,7 +277,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             ResourceItemState.Installed -> {
                 progressIndicator.visibility = View.GONE
                 progressIndicator.progress = 0
-                statusButton.text = CelestiaString("Uninstall", "")
+                statusButton.text = CelestiaString("Uninstall", "Uninstall an add-on")
             }
         }
 

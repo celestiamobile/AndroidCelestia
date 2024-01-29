@@ -90,13 +90,13 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
             .nestedScroll(nestedScrollInterop)
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
-            Header(text = CelestiaString("Coordinate System", ""))
+            Header(text = CelestiaString("Coordinate System", "Used in Flight Mode"))
             OptionSelect(options = coordinateSystems.map { it.second }, selectedIndex = selectedCoordinateIndex, selectionChange = {
                 selectedCoordinateIndex = it
             }, modifier = internalViewModifier)
 
             if (selectedCoordinateSystem != Observer.COORDINATE_SYSTEM_UNIVERSAL) {
-                Header(text = CelestiaString("Reference Object", ""))
+                Header(text = CelestiaString("Reference Object", "Used in Flight Mode"))
                 ObjectNameAutoComplete(executor = executor, core = appCore, name = referenceObjectName, path = referenceObjectPath, inputUpdated = {
                     referenceObjectName = it
                 }, objectPathUpdated = {
@@ -106,7 +106,7 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
             }
 
             if (selectedCoordinateSystem == Observer.COORDINATE_SYSTEM_PHASE_LOCK) {
-                Header(text = CelestiaString("Target Object", ""))
+                Header(text = CelestiaString("Target Object", "Used in Flight Mode"))
                 ObjectNameAutoComplete(executor = executor, core = appCore, name = targetObjectName, path = targetObjectPath, inputUpdated = {
                     targetObjectName = it
                 }, objectPathUpdated = {
@@ -116,7 +116,7 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
             }
 
             val infoText = CelestiaString("Flight mode decides how you move around in Celestia. Learn more…", "")
-            val infoLinkText = CelestiaString("Learn more…", "")
+            val infoLinkText = CelestiaString("Learn more…", "Text for the link in Flight mode decides how you move around in Celestia. Learn more…")
             FooterLink(text = infoText, linkText = infoLinkText, link = "https://celestia.mobi/help/flight-mode?lang=${AppCore.getLanguage()}", action = { link ->
                 listener?.onObserverModeLearnMoreClicked(link)
             })
@@ -162,10 +162,10 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
 
     companion object {
         private val coordinateSystems = listOf(
-            Pair(Observer.COORDINATE_SYSTEM_UNIVERSAL, CelestiaString("Free Flight", "")),
+            Pair(Observer.COORDINATE_SYSTEM_UNIVERSAL, CelestiaString("Free Flight", "Flight mode, coordinate system")),
             Pair(Observer.COORDINATE_SYSTEM_ECLIPTICAL, CelestiaString("Follow", "")),
             Pair(Observer.COORDINATE_SYSTEM_BODY_FIXED, CelestiaString("Sync Orbit", "")),
-            Pair(Observer.COORDINATE_SYSTEM_PHASE_LOCK, CelestiaString("Phase Lock", "")),
+            Pair(Observer.COORDINATE_SYSTEM_PHASE_LOCK, CelestiaString("Phase Lock", "Flight mode, coordinate system")),
             Pair(Observer.COORDINATE_SYSTEM_CHASE, CelestiaString("Chase", "")),
         )
 
