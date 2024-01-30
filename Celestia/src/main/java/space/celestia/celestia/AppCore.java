@@ -228,7 +228,7 @@ public class AppCore {
 
     // Locale
     public static @NonNull String getLanguage() { return c_getLanguage(); };
-    public static void setLocaleDirectoryPath(@NonNull String localeDirectoryPath, @NonNull String locale) { c_setLocaleDirectoryPath(localeDirectoryPath, locale); }
+    public static void setLocaleDirectoryPath(@NonNull String localeDirectoryPath, @NonNull String locale, @NonNull String country) { c_setLocaleDirectoryPath(localeDirectoryPath, locale, country); }
     public static void setUpLocale() { c_setUpLocale(); }
     public static @NonNull String getLocalizedString(@NonNull String string) { return c_getLocalizedString(string, "celestia_ui"); }
     public static @NonNull String getLocalizedString(@NonNull String string, @NonNull String context) { return c_getLocalizedStringContext(string, context, "celestia_ui"); }
@@ -298,7 +298,7 @@ public class AppCore {
 
     // Locale
     private static native String c_getLanguage();
-    private static native void c_setLocaleDirectoryPath(String path, String locale);
+    private static native void c_setLocaleDirectoryPath(String path, String locale, String country);
     private static native void c_setUpLocale();
     private static native String c_getLocalizedString(String string, String domain);
     private static native String c_getLocalizedStringContext(String string, String context, String domain);

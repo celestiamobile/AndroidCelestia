@@ -657,15 +657,36 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setLocaleDirectoryPath(JNIEnv *env,
                                                                           jclass clazz,
                                                                           jstring path,
-                                                                          jstring locale) {
+                                                                          jstring locale,
+                                                                          jstring country) {
     // Set environment variable since NDK does not support locale
     const char *str = env->GetStringUTFChars(locale, nullptr);
+    const char *str_cont = env->GetStringUTFChars(country, nullptr);
+
     setenv("LANG", str, true);
 
+    std::string loc = str;
     UErrorCode status = U_ZERO_ERROR;
-    uloc_setDefault(str, &status);
+    if (loc.find("_") == std::string::npos)
+    {
+        std::string code = str_cont;
+        if (code.size() == 2)
+        {
+            std::string fullLoc = fmt::format("{}_{}", loc, code);
+            uloc_setDefault(fullLoc.c_str(), &status);
+        }
+        else
+        {
+            uloc_setDefault(str, &status);
+        }
+    }
+    else
+    {
+        uloc_setDefault(str, &status);
+    }
 
     env->ReleaseStringUTFChars(locale, str);
+    env->ReleaseStringUTFChars(country, str_cont);
     str = env->GetStringUTFChars(path, nullptr);
     bindtextdomain("celestia", str);
     bind_textdomain_codeset("celestia", "UTF-8");

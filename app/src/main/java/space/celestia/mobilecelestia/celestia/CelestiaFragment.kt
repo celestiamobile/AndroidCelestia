@@ -311,8 +311,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         AppCore.initGL()
         AppCore.chdir(data)
 
+        val countryCode = Locale.getDefault().country
+
         // Set up locale
-        AppCore.setLocaleDirectoryPath("$data/locale", languageOverride)
+        AppCore.setLocaleDirectoryPath("$data/locale", languageOverride, countryCode)
 
         // Reading config, data
         if (!appCore.startSimulation(cfg, addonDirs, appStatusReporter)) {
@@ -324,7 +326,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
                 if (fallbackConfigPath != cfg || fallbackDataPath != data) {
                     lis.celestiaFragmentLoadingFromFallback()
                     AppCore.chdir(fallbackDataPath)
-                    AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride)
+                    AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride, countryCode)
                     if (!appCore.startSimulation(fallbackConfigPath, addonDirs, appStatusReporter)) {
                         appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
                         return false
