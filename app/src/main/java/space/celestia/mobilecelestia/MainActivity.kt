@@ -1,7 +1,7 @@
 /*
  * MainActivity.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2024-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -280,9 +280,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         @Suppress("ClickableViewAccessibility")
         findViewById<View>(R.id.interaction_filter).setOnTouchListener { _, _ ->
-            if (interactionBlocked) { return@setOnTouchListener true }
-            // Pass through
-            return@setOnTouchListener false
+            return@setOnTouchListener interactionBlocked
         }
 
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
@@ -1419,9 +1417,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (drawerLayout.isDrawerOpen(GravityCompat.END))
             return false
         // check bottom sheet
-        if (findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
-            return false
-        return true
+        return findViewById<View>(R.id.bottom_sheet_overlay).visibility != View.VISIBLE
     }
 
     override fun celestiaFragmentLoadingFromFallback() {
@@ -1962,8 +1958,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "69"
-        // 69: 1.6.6 Dev, Data update (commit 27d9de37632a384f0d6395aecbdd0c39f38e847f)
+        private const val CURRENT_DATA_VERSION = "70"
+        // 70: 1.6.8, Localization update, data update (commit c9c4f80722c4afbc5e0d57f12ba7b70a04f9df1d)
+        // 69: 1.6.6, Data update (commit 27d9de37632a384f0d6395aecbdd0c39f38e847f)
         // 67: 1.6.4, Localization update, data update (commit 06887c4ddf0c953cc493eb834cf253b1ba6d790b)
         // 63: 1.6.3, Localization update, data update (commit 321e0da37081a7e615f0698d534056f75b638f96)
         // 60: 1.6.1, Data update (commit 3a9eeb95cff1de78374643cab92fb9fe7db4f2c4)
