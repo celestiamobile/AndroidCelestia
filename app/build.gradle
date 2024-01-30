@@ -151,7 +151,7 @@ dependencies {
     androidTestImplementation composeBom
 
     implementation "androidx.compose.ui:ui"
-    implementation "androidx.compose.material3:material3"
+    implementation "androidx.compose.material3:material3-android:1.2.0-rc01"
 
     playImplementation "com.android.billingclient:billing-ktx:6.1.0"
 
