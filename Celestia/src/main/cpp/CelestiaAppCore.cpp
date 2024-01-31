@@ -665,14 +665,29 @@ Java_space_celestia_celestia_AppCore_c_1setLocaleDirectoryPath(JNIEnv *env,
 
     setenv("LANG", str, true);
 
-    std::string loc = str;
+    std::string uloc = str;
+    bool shouldAppendCountryCode = false;
     UErrorCode status = U_ZERO_ERROR;
-    if (loc.find("_") == std::string::npos)
+    if (uloc == "zh_CN")
+    {
+        uloc = "zh_Hans";
+        shouldAppendCountryCode = true;
+    }
+    else if (uloc == "zh_TW")
+    {
+        uloc = "zh_Hant";
+        shouldAppendCountryCode = true;
+    }
+    else
+    {
+        shouldAppendCountryCode = uloc.find("_") == std::string::npos;
+    }
+    if (shouldAppendCountryCode)
     {
         std::string code = str_cont;
         if (code.size() == 2)
         {
-            std::string fullLoc = fmt::format("{}_{}", loc, code);
+            std::string fullLoc = fmt::format("{}_{}", uloc, code);
             uloc_setDefault(fullLoc.c_str(), &status);
         }
         else
