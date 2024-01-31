@@ -86,5 +86,20 @@
     "TintSaturation": 0.5,
     "EnableReverseWheel": 0,
     "EnableRayBasedDragging": 1,
-    "EnableFocusZooming": 1
+    "EnableFocusZooming": 1,
+    "ShowDwarfPlanets": 1,
+    "ShowAsteroids": 1,
+    "ShowMinorMoons": 1,
+    "ShowComets": 1,
+    "ShowGlobulars": 1,
+    "ShowPlanetRings": 1,
+    "ShowDwarfPlanetLabels": 0,
+    "ShowMinorMoonOrbits": 0,
+    "ShowPartialTrajectories": 0,
+    "ShowGlobularLabels": 0,
+    "ShowDwarfPlanetOrbits": 0,
+    "ShowMinorMoonLabels": 0,
+    "ShowEruptiveCenterLabels": 1,
+    "ShowMoons": 1,
+    "ShowSpacecrafts": 1
 }
