@@ -2031,6 +2031,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private val supportedScriptTypes = listOf("cel", "celx")
 
         init {
+            System.loadLibrary("ziputils")
             System.loadLibrary("nativecrashhandler")
             System.loadLibrary("celestia")
             AppCore.setUpLocale()

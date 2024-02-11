@@ -23,6 +23,7 @@
 -keepattributes SourceFile,LineNumberTable
 
 -keep class space.celestia.celestia.**{*;}
+-keep class space.celestia.ziputils.**{*;}
 
 -keepclassmembers class * implements java.io.Serializable {
     static final long serialVersionUID;

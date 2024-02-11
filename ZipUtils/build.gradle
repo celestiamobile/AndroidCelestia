@@ -6,18 +6,36 @@ plugins {
 android {
     compileSdkVersion constants.compileSdkVersion
     buildToolsVersion constants.buildToolsVersion
+    ndkVersion constants.ndkVersion
 
     defaultConfig {
         minSdkVersion constants.minSdkVersion
         targetSdkVersion constants.targetSdkVersion
 
         consumerProguardFiles "consumer-rules.pro"
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            ndk {
+                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            version constants.cmakeVersion
+            path "src/main/cpp/CMakeLists.txt"
         }
     }
 
@@ -30,18 +48,10 @@ android {
         jvmTarget = '17'
     }
 
-    namespace 'space.celestia.celestiafoundation'
+    namespace 'space.celestia.ziputils'
 }
 
 dependencies {
-    implementation "androidx.core:core-ktx:$core_ktx_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
-    implementation "com.google.code.gson:gson:$gson_version"
-    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
-
-    implementation project(path: ':ZipUtils')
-
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
