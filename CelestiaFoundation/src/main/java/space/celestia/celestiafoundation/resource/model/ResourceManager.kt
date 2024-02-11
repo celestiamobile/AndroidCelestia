@@ -17,9 +17,9 @@ import android.os.Build
 import android.util.Log
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
-import net.lingala.zip4j.ZipFile
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import space.celestia.ziputils.ZipUtils
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -36,10 +36,6 @@ fun <P, R> CoroutineScope.executeAsyncTask(
         withContext(Dispatchers.Main) { onProgressUpdate(it) }
     }
     withContext(Dispatchers.Main) { onPostExecute(result) }
-}
-
-private fun unzip(zipFile: File, destination: File) {
-    ZipFile(zipFile).extractAll(destination.absolutePath)
 }
 
 class ResourceManager {
@@ -138,16 +134,16 @@ class ResourceManager {
                 }
             }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val collator = Collator.getInstance()
             if (collator is RuleBasedCollator) {
                 collator.numericCollation = true
             }
-            return items.sortedWith(compareBy(collator) {
+            items.sortedWith(compareBy(collator) {
                 it.name
             })
         } else {
-            return items.sortedWith(compareBy { it.name })
+            items.sortedWith(compareBy { it.name })
         }
     }
 
@@ -198,7 +194,12 @@ class ResourceManager {
                     }
                 }
                 publishProgress(Progress(State.Downloaded, 0, 0))
-                unzip(destination, unzipDestination)
+                if (!unzipDestination.exists() && !unzipDestination.mkdir()) {
+                    return@executeAsyncTask false
+                }
+                if (!ZipUtils.unzip(destination.path, unzipDestination.path)) {
+                    return@executeAsyncTask false
+                }
                 // We also save a `description.json` just in case for future use
                 try {
                     val writer = FileWriter(File(unzipDestination, "description.json"))
