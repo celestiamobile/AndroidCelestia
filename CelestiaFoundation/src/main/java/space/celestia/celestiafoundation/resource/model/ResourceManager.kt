@@ -19,6 +19,7 @@ import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import space.celestia.ziputils.ZipExceptionContext
 import space.celestia.ziputils.ZipUtils
 import java.io.File
 import java.io.FileReader
@@ -42,6 +43,15 @@ class ResourceManager {
     private var listeners = arrayListOf<Listener>()
     private var tasks = hashMapOf<String, Job>()
 
+    sealed class ErrorContext {
+        data object Cancelled: ErrorContext()
+        data object Download: ErrorContext()
+        data object ZipError: ErrorContext()
+        class CreateDirectory(contextPath: String): ErrorContext()
+        class OpenFile(contextPath: String): ErrorContext()
+        class WriteFile(contextPath: String): ErrorContext()
+    }
+
     private val parentJob = Job()
 
     var addonDirectory: String? = null
@@ -57,7 +67,7 @@ class ResourceManager {
         fun onProgressUpdate(identifier: String, progress: Float)
         fun onFileDownloaded(identifier: String)
         fun onFileUnzipped(identifier: String)
-        fun onResourceFetchError(identifier: String)
+        fun onResourceFetchError(identifier: String, errorContext: ErrorContext)
     }
 
     fun addListener(listener: Listener) {
@@ -161,6 +171,11 @@ class ResourceManager {
         tasks.remove(identifier)?.cancel()
     }
 
+    private sealed class Result {
+        data object Success: Result()
+        class Failure(val errorContext: ErrorContext): Result()
+    }
+
     @Suppress("BlockingMethodInNonBlockingContext")
     fun download(item: ResourceItem, destination: File) {
         val unzipDestination = contextDirectory(item)
@@ -172,7 +187,7 @@ class ResourceManager {
                 val response = call.execute()
                 val body = response.body
                 if (!response.isSuccessful || body == null) {
-                    return@executeAsyncTask false
+                    return@executeAsyncTask Result.Success
                 }
 
                 val totalLength = body.contentLength()
@@ -188,36 +203,53 @@ class ResourceManager {
 
                             // Check if user has canceled
                             if (!coroutineContext.isActive)
-                                return@executeAsyncTask false
+                                return@executeAsyncTask Result.Failure(errorContext = ErrorContext.Cancelled)
                             bytes = input.read(buffer)
                         }
                     }
                 }
                 publishProgress(Progress(State.Downloaded, 0, 0))
-                if (!unzipDestination.exists() && !unzipDestination.mkdir()) {
-                    return@executeAsyncTask false
-                }
-                if (!ZipUtils.unzip(destination.path, unzipDestination.path)) {
-                    return@executeAsyncTask false
-                }
-                // We also save a `description.json` just in case for future use
-                try {
-                    val writer = FileWriter(File(unzipDestination, "description.json"))
-                    writer.use {
-                        val gson = GsonBuilder().create()
-                        gson.toJson(item, it)
-                    }
-                } catch (ignored: Throwable) {}
             } catch (e: Throwable) {
                 e.printStackTrace()
-                return@executeAsyncTask false
+                return@executeAsyncTask Result.Failure(errorContext = ErrorContext.Download)
             }
-            return@executeAsyncTask true
-        }, onPostExecute = { result: Boolean ->
-            if (result)
-                reference.get()?.onUnzipFinished(item.id)
-            else
-                reference.get()?.onResourceFetchingFailed(item.id)
+
+            try {
+                if (!unzipDestination.exists() && !unzipDestination.mkdir()) {
+                    return@executeAsyncTask Result.Failure(errorContext = ErrorContext.CreateDirectory(unzipDestination.path))
+                }
+            } catch (e: Throwable) {
+                return@executeAsyncTask Result.Failure(errorContext = ErrorContext.CreateDirectory(unzipDestination.path))
+            }
+
+            val errorContext = ZipUtils.unzip(destination.path, unzipDestination.path)
+            if (errorContext != null) {
+                return@executeAsyncTask when (errorContext.code) {
+                    ZipExceptionContext.ZIP_ERROR -> Result.Failure(errorContext = ErrorContext.ZipError)
+                    ZipExceptionContext.CREATE_DIRECTORY_ERROR -> Result.Failure(errorContext = ErrorContext.CreateDirectory(errorContext.contextPath ?: ""))
+                    ZipExceptionContext.OPEN_FILE_ERROR -> Result.Failure(errorContext = ErrorContext.OpenFile(errorContext.contextPath ?: ""))
+                    ZipExceptionContext.WRITE_FILE_ERROR -> Result.Failure(errorContext = ErrorContext.WriteFile(errorContext.contextPath ?: ""))
+                    else -> Result.Failure(errorContext = ErrorContext.ZipError)
+                }
+            }
+            // We also save a `description.json` just in case for future use
+            try {
+                val writer = FileWriter(File(unzipDestination, "description.json"))
+                writer.use {
+                    val gson = GsonBuilder().create()
+                    gson.toJson(item, it)
+                }
+            } catch (ignored: Throwable) {}
+            return@executeAsyncTask Result.Success
+        }, onPostExecute = { result: Result ->
+            when (result) {
+                is Result.Success -> {
+                    reference.get()?.onUnzipFinished(item.id)
+                }
+                is Result.Failure -> {
+                    reference.get()?.onResourceFetchingFailed(item.id, result.errorContext)
+                }
+            }
         }, onProgressUpdate = { progress: Progress ->
             if (progress.state == State.Downloading)
                 reference.get()?.onProgressUpdate(item.id, progress.finished, progress.total)
@@ -232,9 +264,9 @@ class ResourceManager {
             listener.onProgressUpdate(identifier, progress)
     }
 
-    private fun callListenerErrorCallback(identifier: String) {
+    private fun callListenerErrorCallback(identifier: String, errorContext: ErrorContext) {
         for (listener in listeners)
-            listener.onResourceFetchError(identifier)
+            listener.onResourceFetchError(identifier, errorContext)
     }
 
     private fun callListenerDownloadSuccessCallback(identifier: String) {
@@ -257,10 +289,10 @@ class ResourceManager {
         callListenerProgressCallback(identifier, bytesWritten.toFloat() / max(totalBytes, 1).toFloat())
     }
 
-    private fun onResourceFetchingFailed(identifier: String) {
+    private fun onResourceFetchingFailed(identifier: String, errorContext: ErrorContext) {
         Log.d(TAG, "Resource fetch failed")
         tasks.remove(identifier)
-        callListenerErrorCallback(identifier)
+        callListenerErrorCallback(identifier, errorContext)
     }
 
     private fun onUnzipFinished(identifier: String) {

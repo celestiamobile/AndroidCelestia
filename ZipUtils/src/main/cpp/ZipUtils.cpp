@@ -1,13 +1,12 @@
-/*
- * ZipUtils.cpp
- *
- * Copyright (C) 2024-present, Celestia Development Team
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- */
+//
+// ZipUtils.cpp
+//
+// Copyright (C) 2024-present, Celestia Development Team
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
 
 #include <android/log.h>
 
@@ -20,9 +19,26 @@
 #include <vector>
 
 extern "C"
-JNIEXPORT jboolean JNICALL
+JNIEXPORT jobject JNICALL
 Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_path,
                                             jstring destination_folder_path) {
+
+    const jint ZIP_ERROR = 1;
+    const jint CREATE_DIRECTORY_ERROR = 2;
+    const jint OPEN_FILE_ERROR = 3;
+    const jint WRITE_FILE_ERROR = 4;
+
+    static jclass exceptionContextClass = nullptr;
+    static jmethodID exceptionContextInitMethod = nullptr;
+
+    if (exceptionContextClass == nullptr)
+    {
+        jclass clz = env->FindClass("space/celestia/ziputils/ZipExceptionContext");
+        exceptionContextClass = static_cast<jclass>(env->NewGlobalRef(static_cast<jobject>(clz)));
+        exceptionContextInitMethod = env->GetMethodID(exceptionContextClass, "<init>","(ILjava/lang/String;)V");
+        env->DeleteLocalRef(clz);
+    }
+
     const char *c_sourcePath = env->GetStringUTFChars(source_path, nullptr);
     const char *c_destPath = env->GetStringUTFChars(destination_folder_path, nullptr);
     std::string source = c_sourcePath;
@@ -32,11 +48,10 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
 
     auto archive = zip_open(source.c_str(), 0, nullptr);
     if (!archive)
-        return JNI_FALSE;
+        return env->NewObject(exceptionContextClass, exceptionContextInitMethod, ZIP_ERROR, static_cast<jobject>(nullptr));
 
     zip_file_t *currentEntry = nullptr;
-    bool hasZipError = false;
-    bool hasSystemError = false;
+    jobject errorContext = nullptr;
 
     for (zip_int64_t i = 0; i < zip_get_num_entries(archive, 0); i += 1)
     {
@@ -44,7 +59,7 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
         struct zip_stat st;
         if (zip_stat_index(archive, i, 0, &st) != 0)
         {
-            hasZipError = true;
+            errorContext = env->NewObject(exceptionContextClass, exceptionContextInitMethod, ZIP_ERROR, static_cast<jobject>(nullptr));
             break;
         }
 
@@ -72,7 +87,9 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
 
                 if (ec)
                 {
-                    hasSystemError = true;
+                    jstring jpath = env->NewStringUTF(currentDirectory.string().c_str());
+                    errorContext = env->NewObject(exceptionContextClass, exceptionContextInitMethod, CREATE_DIRECTORY_ERROR, jpath);
+                    env->DeleteLocalRef(jpath);
                     break;
                 }
 
@@ -81,14 +98,16 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
                     bool success = std::filesystem::create_directory(currentDirectory, ec);
                     if (!success || ec)
                     {
-                        hasSystemError = true;
+                        jstring jpath = env->NewStringUTF(currentDirectory.string().c_str());
+                        errorContext = env->NewObject(exceptionContextClass, exceptionContextInitMethod, CREATE_DIRECTORY_ERROR, jpath);
+                        env->DeleteLocalRef(jpath);
                         break;
                     }
                 }
             }
         }
 
-        if (hasSystemError)
+        if (errorContext != nullptr)
             break;
 
         if (!isRegularFile)
@@ -97,14 +116,17 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
         currentEntry = zip_fopen_index(archive, i, 0);
         if (!currentEntry)
         {
-            hasZipError = true;
+            errorContext = env->NewObject(exceptionContextClass, exceptionContextInitMethod, ZIP_ERROR, static_cast<jobject>(nullptr));
             break;
         }
 
-        std::ofstream file(currentDirectory / name.filename());
+        std::filesystem::path filePath = currentDirectory / name.filename();
+        std::ofstream file(filePath);
         if (!file.good())
         {
-            hasSystemError = true;
+            jstring jpath = env->NewStringUTF(filePath.string().c_str());
+            errorContext = env->NewObject(exceptionContextClass, exceptionContextInitMethod, OPEN_FILE_ERROR, jpath);
+            env->DeleteLocalRef(jpath);
             break;
         }
 
@@ -117,13 +139,15 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
             auto bytesRead = zip_fread(currentEntry, buffer, bufferSize);
             if (bytesRead < 0)
             {
-                hasZipError = true;
+                errorContext = env->NewObject(exceptionContextClass, exceptionContextInitMethod, ZIP_ERROR, static_cast<jobject>(nullptr));
                 break;
             }
 
             if (!file.write(buffer, bytesRead).good())
             {
-                hasSystemError = true;
+                jstring jpath = env->NewStringUTF(filePath.string().c_str());
+                errorContext = env->NewObject(exceptionContextClass, exceptionContextInitMethod, WRITE_FILE_ERROR, jpath);
+                env->DeleteLocalRef(jpath);
                 break;
             }
 
@@ -132,7 +156,7 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
         zip_fclose(currentEntry);
         currentEntry = nullptr;
 
-        if (hasSystemError || hasZipError)
+        if (errorContext != nullptr)
             break;
     }
 
@@ -141,5 +165,5 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
         zip_fclose(currentEntry);
     zip_close(archive);
 
-    return !hasSystemError && !hasZipError;
+    return errorContext;
 }

@@ -227,12 +227,23 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         updateUI()
     }
 
-    override fun onResourceFetchError(identifier: String) {
+    override fun onResourceFetchError(identifier: String, errorContext: ResourceManager.ErrorContext) {
         if (identifier != item.id) { return }
 
         currentState = ResourceItemState.None
         updateUI()
-        activity?.showAlert(CelestiaString("Failed to download or install this add-on.", ""))
+        val activity = this.activity ?: return
+
+        val message = when (errorContext) {
+            ResourceManager.ErrorContext.Cancelled -> null
+            ResourceManager.ErrorContext.ZipError -> CelestiaString("Error unzipping add-on", "")
+            ResourceManager.ErrorContext.Download -> CelestiaString("Error downloading add-on", "")
+            is ResourceManager.ErrorContext.CreateDirectory -> CelestiaString("Error creating directory for add-on", "")
+            is ResourceManager.ErrorContext.OpenFile -> CelestiaString("Error opening file for saving add-on", "")
+            is ResourceManager.ErrorContext.WriteFile -> CelestiaString("Error writing data file for add-on", "")
+        }
+        if (message != null)
+            activity.showAlert(title = CelestiaString("Failed to download or install this add-on.", ""), message = message)
     }
 
     override fun onFileDownloaded(identifier: String) {
