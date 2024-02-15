@@ -180,8 +180,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         if (!hasSetRenderer) {
             appCore.setRenderer(renderer)
-            renderer.setEngineStartedListener {
-                loadCelestia()
+            renderer.setEngineStartedListener { samples ->
+                loadCelestia(samples)
             }
             hasSetRenderer = true
         }
@@ -296,7 +296,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun loadCelestia(): Boolean {
+    private fun loadCelestia(samples: Int): Boolean {
         val data = pathToLoad
         val cfg = cfgToLoad
         val addonDirs = addonDirsToLoad.toTypedArray()

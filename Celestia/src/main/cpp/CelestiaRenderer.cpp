@@ -77,6 +77,7 @@ public:
     EGLContext context = EGL_NO_CONTEXT;
     EGLConfig config {};
     EGLint format {};
+    int sampleCount { 0 };
 
     static JavaVM *jvm;
     static jmethodID flushTasksMethod;
@@ -147,6 +148,10 @@ bool CelestiaRenderer::initialize()
                 destroy();
                 return false;
             }
+
+            EGLint numSamples;
+            if (eglGetConfigAttrib(display, config, EGL_SAMPLES, &numSamples) && numSamples > 1)
+                sampleCount = numSamples;
         } else {
             if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs)) {
                 LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
@@ -377,7 +382,7 @@ void *CelestiaRenderer::threadCallback(void *self)
     {
         if (renderer->surface != EGL_NO_SURFACE && !renderer->engineStartedCalled)
         {
-            bool started = static_cast<bool>(newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod));
+            bool started = static_cast<bool>(newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod, static_cast<jint>(renderer->sampleCount)));
             if (!started)
                 break;
             renderer->engineStartedCalled = true;
@@ -431,7 +436,7 @@ Java_space_celestia_celestia_Renderer_c_1initialize(JNIEnv *env, jobject thiz, j
     auto renderer = (CelestiaRenderer *)ptr;
     renderer->javaObject = env->NewGlobalRef(thiz);
     jclass clazz = env->GetObjectClass(thiz);
-    CelestiaRenderer::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "()Z");
+    CelestiaRenderer::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(I)Z");
     CelestiaRenderer::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
 
     env->GetJavaVM(&CelestiaRenderer::jvm);

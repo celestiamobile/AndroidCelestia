@@ -102,17 +102,17 @@ public class Renderer implements AutoCloseable {
     }
 
     public interface EngineStartedListener {
-        boolean onEngineStarted();
+        boolean onEngineStarted(int samples);
     }
 
     public void setEngineStartedListener(EngineStartedListener engineStartedListener) {
         this.engineStartedListener = engineStartedListener;
     }
 
-    private boolean engineStarted() {
+    private boolean engineStarted(int samples) {
         boolean result = false;
         if (engineStartedListener != null)
-            result = engineStartedListener.onEngineStarted();
+            result = engineStartedListener.onEngineStarted(samples);
         engineStartedListener = null;
         return result;
     }
