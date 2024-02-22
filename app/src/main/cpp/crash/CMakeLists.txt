@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-set(THIRD_PARTY_LIB_DIR "${CMAKE_SOURCE_DIR}/libs")
-set(THIRD_PARTY_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
+set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../../../../../dependencies")
+set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
+set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
 
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(
-        ${THIRD_PARTY_INCLUDE_DIR}/breakpad
+        ${THIRD_PARTY_INCLUDE_DIR}/breakpad/breakpad
 )
 
 add_library(breakpad STATIC IMPORTED)
