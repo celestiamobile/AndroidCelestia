@@ -106,6 +106,10 @@ android {
             dimension "distribution"
             assetPacks = []
         }
+        unofficial {
+            dimension "distribution"
+            assetPacks = []
+        }
         play {
             dimension "distribution"
             assetPacks = [":base_assets"]
@@ -140,8 +144,10 @@ dependencies {
     implementation project(path: ':CelestiaFoundation')
 
     def appCenterSdkVersion = '5.0.4'
-    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
-    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
+    playImplementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
+    playImplementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
+    sideloadImplementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
+    sideloadImplementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"

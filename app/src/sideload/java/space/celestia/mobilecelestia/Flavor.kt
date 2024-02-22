@@ -1,0 +1,1 @@
+../../../../../play/java/space/celestia/mobilecelestia/Flavor.kt

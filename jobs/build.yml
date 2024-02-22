@@ -69,9 +69,9 @@ jobs:
     displayName: 'Download Dependencies'
 
   - script: |
-      sed -i 's/APPCENTER-APP-ID/$(appCenterSecret)/g' app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
+      sed -i 's/APPCENTER-APP-ID/$(appCenterSecret)/g' app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
       echo "New Content:"
-      cat app/src/main/java/space/celestia/mobilecelestia/MainActivity.kt
+      cat app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
     workingDirectory: '$(System.DefaultWorkingDirectory)/AndroidCelestia'
     displayName: 'Replace AppCenter Placeholders'
 
