@@ -46,10 +46,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
-import com.microsoft.appcenter.crashes.model.ErrorReport
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -210,18 +206,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         Log.d(TAG, "Creating MainActivity")
 
-        if (!AppCenter.isConfigured()) {
-            AppCenter.start(
-                application, "APPCENTER-APP-ID",
-                Analytics::class.java, Crashes::class.java
-            )
-
-            Crashes.getMinidumpDirectory().thenAccept { path ->
-                if (path != null) {
-                    CrashHandler.setupNativeCrashesListener(path)
-                }
-            }
-        }
+        setUpFlavor()
 
         // One time migration of language to system per app language support
         val language = appSettings[PreferenceManager.PredefinedKey.Language]
@@ -1648,12 +1633,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         return false
     }
 
-    private suspend fun getLastCrashAsync() = suspendCoroutine<ErrorReport?>  { cont ->
-        Crashes.getLastSessionCrashReport().thenAccept { errorReport ->
-            cont.resume(errorReport)
-        }
-    }
-
     private fun reportBug() = lifecycleScope.launch {
         val directory = File(cacheDir, "feedback")
         if (!directory.exists())
@@ -1669,14 +1648,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val url = appCore.currentURL
             return@withContext Triple(renderInfo, url, success)
         }
-        val crashReport = getLastCrashAsync()
+        val crashReportId = getLastCrashReportId()
         val screenshotFile = if (celestiaInfo.third) proposedScreenshotFile else null
         val renderInfoFile = writeTextToFileWithName(celestiaInfo.first, parentDirectory, "renderinfo.txt")
         val urlInfoFile = writeTextToFileWithName(celestiaInfo.second, parentDirectory, "urlinfo.txt")
         val addons =
             resourceManager.installedResourcesAsync().joinToString("\n") { "${it.name}/${it.id}" }
         val addonInfoFile = writeTextToFileWithName(addons, parentDirectory, "addoninfo.txt")
-        val crashInfoFile = if (crashReport != null) writeTextToFileWithName(crashReport.id, parentDirectory, "crashinfo.txt") else null
+        val crashInfoFile = if (crashReportId != null) writeTextToFileWithName(crashReportId, parentDirectory, "crashinfo.txt") else null
         val purchaseToken = purchaseManager.purchaseToken()
         val purchaseTokenFile: File? = if (purchaseToken != null) {
             writeTextToFileWithName(purchaseToken, parentDirectory, "purchasetoken.txt")
