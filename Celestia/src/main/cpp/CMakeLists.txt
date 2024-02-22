@@ -471,7 +471,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaFont.cpp
         )
 
-set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/dependency/android")
+set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../../../../dependencies")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
 set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
 
