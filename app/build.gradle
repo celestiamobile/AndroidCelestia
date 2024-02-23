@@ -27,7 +27,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
 
     defaultConfig {
@@ -145,9 +145,9 @@ dependencies {
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
-    implementation "androidx.hilt:hilt-navigation-compose:1.1.0"
+    implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
 
-    def composeBom = platform('androidx.compose:compose-bom:2024.02.00')
+    def composeBom = platform('androidx.compose:compose-bom:2024.02.01')
     implementation composeBom
     androidTestImplementation composeBom
 
