@@ -1,0 +1,27 @@
+Celestia is a real-time 3D astronomy software program.
+
+The program allows users to virtually travel through the universe and explore celestial objects that have been catalogued.
+
+Celestia also doubles as a planetarium, but the user is not restricted to the Earth's surface.
+
+<b>Note:</b>
+F-Droid version of Celestia is unofficial and may be slow to update or miss some functions.
+
+Additionally, F-Droid and official versions are not interchangeable and must be fully removed before installing another one.
+
+<b>Features:</b>
+Celestia displays data from the Hipparcos Catalogue of 118322 stars and the Tycho-2 Catalogue, which contains over 2 million stars.
+
+Celestia uses the VSOP87 theory of planetary orbits to provide a solar and lunar eclipse finder and to display the orbital paths of planets, dwarf planets, moons, asteroids, comets, artificial satellites, and spacecraft.
+
+Using the installed catalogues, the names of celestial objects can be displayed, including artificial satellites. The names and locations of Earth features such as continents, mountains, seas, oceans, and cities can also be displayed. Surface features on other celestial objects such as craters, basins and canyons can be shown as well.
+
+Celestia allows users to navigate at different speeds, and allow users to orbit stars, planets, moons, and other space objects, track space objects such as spacecraft, asteroids, and comets as they fly by, or travel to and/or fly through galaxies. Light time delay is an optional function.
+
+The time simulated by Celestia can be set to any time 2 billion years forward or backward from the present, although planetary orbits are only accurate within a few thousand years of the present day.
+
+Celestia simulates the appearance of atmospheres on planets and moons, planetshine on orbiting satellites, and miscellaneous planetary details such as sunrise and sunset. Information about the objects that Celestia draws can also be displayed, such as temperature, distance from observer, radius, rotational period, luminosity, and more.
+
+Celestia can be extended with new objects, and has support for third-party, user-created add-ons available for installation, both fictional and realistic. Add-ons can be downloaded through an in-app browser.
+
+Android version of Celestia offers native touch controls and gamepad controls as well.
