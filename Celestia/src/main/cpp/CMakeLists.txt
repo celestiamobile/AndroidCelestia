@@ -494,7 +494,7 @@ include_directories(
         ${CELESTIA_SRC_DIR}
         ${THIRD_PARTY_INCLUDE_DIR}
         ${THIRD_PARTY_INCLUDE_DIR}/cspice
-        ${THIRD_PARTY_INCLUDE_DIR}/lua
+        ${THIRD_PARTY_INCLUDE_DIR}/luajit
         ${THIRD_PARTY_INCLUDE_DIR}/eigen3
         ${THIRD_PARTY_INCLUDE_DIR}/gettext
         ${THIRD_PARTY_INCLUDE_DIR}/jpeg
@@ -510,8 +510,8 @@ include_directories(
 add_library(cspice STATIC IMPORTED)
 set_target_properties(cspice PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/cspice.a)
 
-add_library(lua STATIC IMPORTED)
-set_target_properties(lua PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/liblua.a)
+add_library(luajit STATIC IMPORTED)
+set_target_properties(luajit PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libluajit.a)
 
 add_library(fmt STATIC IMPORTED)
 set_target_properties(fmt PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libfmt.a)
@@ -562,7 +562,7 @@ target_link_libraries(
         gettext
         jpeg
         freetype
-        lua
+        luajit
         libpng
         cspice
         meshoptimizer
