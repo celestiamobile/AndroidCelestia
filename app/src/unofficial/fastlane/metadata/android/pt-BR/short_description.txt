@@ -1,1 +1,1 @@
-Planetário 3D
+../../../../../play/fastlane/metadata/pt-BR/short_description.txt

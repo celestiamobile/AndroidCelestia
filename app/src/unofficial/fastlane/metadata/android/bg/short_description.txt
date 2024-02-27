@@ -1,1 +1,1 @@
-3D планетариум
+../../../../../play/fastlane/metadata/bg/short_description.txt

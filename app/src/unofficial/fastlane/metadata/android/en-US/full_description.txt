@@ -1,5 +1,7 @@
 Celestia — real-time 3D visualization of space
 
+Note: this is an unofficial version of Celestia. It may be slow to update or miss some features.
+
 3D Space Simulator | Celestia lets you explore our universe in three dimensions.
 
 Celestia simulates many different types of celestial objects. From planets and moons to star clusters and galaxies, you can visit every object in the expandable database and view it from any point in space and time. The position and movement of solar system objects is calculated accurately in real time at any rate desired.

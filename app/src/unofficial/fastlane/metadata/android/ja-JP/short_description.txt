@@ -1,1 +1,1 @@
-3Dプラネタリウム
+../../../../../play/fastlane/metadata/ja-JP/short_description.txt
