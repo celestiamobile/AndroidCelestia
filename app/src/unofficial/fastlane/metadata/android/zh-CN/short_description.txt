@@ -1,1 +1,1 @@
-3D天文馆
+../../../../../play/fastlane/metadata/zh-CN/short_description.txt

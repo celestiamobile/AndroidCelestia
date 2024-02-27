@@ -1,1 +1,1 @@
-Celestia
+../../../../../play/fastlane/metadata/ru-RU/title.txt

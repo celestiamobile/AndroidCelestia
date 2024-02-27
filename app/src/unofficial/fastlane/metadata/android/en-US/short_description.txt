@@ -1,1 +1,1 @@
-3D interactive planetarium
+../../../../../play/fastlane/metadata/en-US/short_description.txt

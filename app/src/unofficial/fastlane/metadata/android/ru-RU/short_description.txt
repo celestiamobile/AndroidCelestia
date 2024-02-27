@@ -1,1 +1,1 @@
-3D планетарий
+../../../../../play/fastlane/metadata/ru-RU/short_description.txt
