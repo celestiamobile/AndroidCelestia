@@ -9,6 +9,7 @@ jobs:
     appCenterSecret: ${{ parameters.appCenterSecret }}
     appCenterToken: ${{ parameters.appCenterToken }}
     appCenterProject: ${{ parameters.appCenterProject }}
+    contentCommitHash: ${{ '8241b5d3891df24e398ce329f7cf09a252370546' }}
 
   steps:
   - checkout: Celestia
@@ -47,7 +48,7 @@ jobs:
 
   - script: |
       cd CelestiaContent
-      git checkout 8241b5d3891df24e398ce329f7cf09a252370546
+      git checkout $(contentCommitHash)
     displayName: 'Checkout Content'
 
   - script: |
