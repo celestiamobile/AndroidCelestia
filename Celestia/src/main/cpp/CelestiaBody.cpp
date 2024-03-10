@@ -15,8 +15,8 @@
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_Body_c_1getType(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto body = (Body *)pointer;
-    return body->getClassification();
+    auto body = reinterpret_cast<Body *>(pointer);
+    return static_cast<jint>(body->getClassification());
 }
 
 extern "C"
