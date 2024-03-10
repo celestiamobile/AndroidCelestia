@@ -142,34 +142,34 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass 
             string name = body->getName(true).c_str();
             auto jitem = make_pair((jlong)body, name);
 
-            int bodyClass  = body->getClassification();
+            auto bodyClass  = body->getClassification();
 
             switch (bodyClass)
             {
-                case Body::Invisible:
-                case Body::Diffuse:
-                case Body::Component:
+                case BodyClassification::Invisible:
+                case BodyClassification::Diffuse:
+                case BodyClassification::Component:
                     continue;
-                case Body::Planet:
+                case BodyClassification::Planet:
                     planets[name] = jitem;
                     break;
-                case Body::DwarfPlanet:
+                case BodyClassification::DwarfPlanet:
                     dwarfPlanets[name] = jitem;
                     break;
-                case Body::Moon:
-                case Body::MinorMoon:
-                    if (body->getRadius() < 100.0f || Body::MinorMoon == bodyClass)
+                case BodyClassification::Moon:
+                case BodyClassification::MinorMoon:
+                    if (body->getRadius() < 100.0f || BodyClassification::MinorMoon == bodyClass)
                         minorMoons[name] = jitem;
                     else
                         topLevel[name] = jitem;
                     break;
-                case Body::Asteroid:
+                case BodyClassification::Asteroid:
                     asteroids[name] = jitem;
                     break;
-                case Body::Comet:
+                case BodyClassification::Comet:
                     comets[name] = jitem;
                     break;
-                case Body::Spacecraft:
+                case BodyClassification::Spacecraft:
                     spacecrafts[name] = jitem;
                     break;
                 default:
@@ -238,27 +238,27 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
             string name = body->getName(true).c_str();
             auto jitem = make_pair((jlong)body, name);
 
-            int bodyClass  = body->getClassification();
+            auto bodyClass  = body->getClassification();
 
-            if (bodyClass==Body::Asteroid) bodyClass = Body::Moon;
+            if (bodyClass == BodyClassification::Asteroid) bodyClass = BodyClassification::Moon;
 
             switch (bodyClass)
             {
-                case Body::Invisible:
-                case Body::Diffuse:
-                case Body::Component:
+                case BodyClassification::Invisible:
+                case BodyClassification::Diffuse:
+                case BodyClassification::Component:
                     continue;
-                case Body::Moon:
-                case Body::MinorMoon:
-                    if (body->getRadius() < 100.0f || Body::MinorMoon == bodyClass)
+                case BodyClassification::Moon:
+                case BodyClassification::MinorMoon:
+                    if (body->getRadius() < 100.0f || BodyClassification::MinorMoon == bodyClass)
                         minorMoons[name] = jitem;
                     else
                         topLevel[name] = jitem;
                     break;
-                case Body::Comet:
+                case BodyClassification::Comet:
                     comets[name] = jitem;
                     break;
-                case Body::Spacecraft:
+                case BodyClassification::Spacecraft:
                     spacecrafts[name] = jitem;
                     break;
                 default:

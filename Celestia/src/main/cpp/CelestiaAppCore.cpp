@@ -238,7 +238,7 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
         return JNI_FALSE;
 
     // start with default values
-    constexpr int DEFAULT_ORBIT_MASK = Body::Planet | Body::Moon | Body::Stellar;
+    constexpr auto DEFAULT_ORBIT_MASK = BodyClassification::Planet | BodyClassification::Moon | BodyClassification::Stellar;
     constexpr int DEFAULT_LABEL_MODE = 2176;
     constexpr float DEFAULT_AMBIENT_LIGHT_LEVEL = 0.1f;
     constexpr float DEFAULT_VISUAL_MAGNITUDE = 8.0f;
@@ -865,15 +865,17 @@ LABELMETHODS(I18nConstellation)
 
 #define ORBITMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag##Orbits (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = (CelestiaCore *)pointer; \
-    return (jboolean)(((core->getRenderer()->getOrbitMask() & Body::flag) == 0) ? JNI_FALSE : JNI_TRUE); \
+    auto core = reinterpret_cast<CelestiaCore *>(pointer); \
+    return celestia::util::is_set(core->getRenderer()->getOrbitMask(), BodyClassification::flag) ? JNI_TRUE : JNI_FALSE; \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setShow##flag##Orbits (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = (CelestiaCore *)pointer; \
-    core->getRenderer()->setOrbitMask((int)bit_mask_value_update(value, Body::flag, core->getRenderer()->getOrbitMask())); \
+    auto core = reinterpret_cast<CelestiaCore *>(pointer); \
+    auto flags = core->getRenderer()->getOrbitMask();            \
+    celestia::util::set_or_unset(flags, BodyClassification::flag, static_cast<bool>(value)); \
+    core->getRenderer()->setOrbitMask(flags); \
 } \
 
 ORBITMETHODS(Planet)
