@@ -286,7 +286,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
             create_browser_item_and_add(j, _("Spacecraft"), BROWSER_ITEM_TYPE_BODY, spacecrafts);
     }
 
-    auto locations = b->getLocations();
+    auto locations = GetBodyFeaturesManager()->getLocations(b);
     if (locations.has_value() && !locations->empty())
     {
         std::map<string, pair<jlong, string>> locationsMap;

@@ -84,6 +84,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/greek.h
         ${CELESTIA_SRC_DIR}/celutil/indexlist.h
         ${CELESTIA_SRC_DIR}/celutil/intrusiveptr.h
+        ${CELESTIA_SRC_DIR}/celutil/localeutil.cpp
+        ${CELESTIA_SRC_DIR}/celutil/localeutil.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
         ${CELESTIA_SRC_DIR}/celutil/ranges.h
@@ -269,8 +271,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
         ${CELESTIA_SRC_DIR}/celengine/dsodb.cpp
         ${CELESTIA_SRC_DIR}/celengine/dsodb.h
-        ${CELESTIA_SRC_DIR}/celengine/dsoname.cpp
-        ${CELESTIA_SRC_DIR}/celengine/dsoname.h
         ${CELESTIA_SRC_DIR}/celengine/dsooctree.cpp
         ${CELESTIA_SRC_DIR}/celengine/dsooctree.h
         ${CELESTIA_SRC_DIR}/celengine/dsorenderer.cpp

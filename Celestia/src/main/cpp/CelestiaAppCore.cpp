@@ -23,6 +23,7 @@
 #include <celutil/flag.h>
 #include <celutil/fsutils.h>
 #include <celutil/gettext.h>
+#include <celutil/localeutil.h>
 #include <celestia/url.h>
 #include <unicode/uloc.h>
 #include <fmt/format.h>
@@ -716,8 +717,12 @@ Java_space_celestia_celestia_AppCore_c_1setLocaleDirectoryPath(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setUpLocale(JNIEnv *env, jclass clazz) {
-    setlocale(LC_ALL, "");
-    setlocale(LC_NUMERIC, "C");
+    static bool isLocaleSet = false;
+    if (isLocaleSet)
+        return;
+
+    isLocaleSet = true;
+    celestia::util::InitLocale();
 }
 
 extern "C"
