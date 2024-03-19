@@ -25,10 +25,20 @@ for directory in 'data' 'extras' 'extras-standard' 'models' 'textures' 'warp';do
     fi
 done
 
-for file in "celestia.cfg" "controls.txt" "demo.cel" "guide.cel" "start.cel" "COPYING" "AUTHORS" "TRANSLATORS";do
+for file in "controls.txt" "demo.cel" "guide.cel" "start.cel" "COPYING" "AUTHORS" "TRANSLATORS";do
     f=$CELESTIA_REPO_ROOT/$file
     if [ ! -f $CELESTIA_ROOT/$file ] || [ $f -nt $CELESTIA_ROOT/$file ];then
         echo "cp $f $CELESTIA_ROOT/$file"
         cp $f $CELESTIA_ROOT/$file
     fi
 done
+
+cp $CELESTIA_REPO_ROOT/celestia.cfg.in $CELESTIA_ROOT/celestia.cfg
+TO_REPLACE="@CELCFG_EXTRAS_DIRS@"
+NEW_STRING=""
+
+if [ "$(uname)" = "Darwin" ]; then
+    sed -i '' -e "s#${TO_REPLACE}#${NEW_STRING}#g" $CELESTIA_ROOT/celestia.cfg
+else
+    sed -i "s#${TO_REPLACE}#${NEW_STRING}#g" $CELESTIA_ROOT/celestia.cfg
+fi
