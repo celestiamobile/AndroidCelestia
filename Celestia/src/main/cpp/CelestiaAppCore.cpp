@@ -722,7 +722,7 @@ Java_space_celestia_celestia_AppCore_c_1setUpLocale(JNIEnv *env, jclass clazz) {
         return;
 
     isLocaleSet = true;
-    celestia::util::InitLocale();
+    CelestiaCore::initLocale();
 }
 
 extern "C"

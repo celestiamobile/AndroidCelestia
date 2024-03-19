@@ -84,7 +84,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/greek.h
         ${CELESTIA_SRC_DIR}/celutil/indexlist.h
         ${CELESTIA_SRC_DIR}/celutil/intrusiveptr.h
-        ${CELESTIA_SRC_DIR}/celutil/localeutil.cpp
         ${CELESTIA_SRC_DIR}/celutil/localeutil.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
