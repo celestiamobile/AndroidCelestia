@@ -17,7 +17,7 @@ buildscript {
     ext.core_appcompat_version = '1.6.1'
     ext.material_version = '1.11.0'
     ext.kotlinx_coroutines_version = '1.8.0'
-    ext.hilt_version = '2.51'
+    ext.hilt_version = '2.51.1'
     ext.lifecycle_version = '2.7.0'
     ext.okhttp_version = '4.12.0'
     ext.gson_version = '2.10.1'
@@ -54,5 +54,5 @@ allprojects {
 
 tasks.register('clean', Delete) {
     delete "$rootProject.projectDir/app/src/main/assets/CelestiaResources"
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }
