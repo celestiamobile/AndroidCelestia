@@ -64,7 +64,6 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
-        ${CELESTIA_SRC_DIR}/celutil/arrayvector.h
         ${CELESTIA_SRC_DIR}/celutil/binaryread.h
         ${CELESTIA_SRC_DIR}/celutil/binarywrite.h
         ${CELESTIA_SRC_DIR}/celutil/blockarray.h
@@ -83,7 +82,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/greek.cpp
         ${CELESTIA_SRC_DIR}/celutil/greek.h
         ${CELESTIA_SRC_DIR}/celutil/indexlist.h
-        ${CELESTIA_SRC_DIR}/celutil/intrusiveptr.h
         ${CELESTIA_SRC_DIR}/celutil/localeutil.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
@@ -239,6 +237,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celrender/rendererfwd.h
         ${CELESTIA_SRC_DIR}/celrender/ringrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/ringrenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/skygridrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/skygridrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/gl/binder.cpp
         ${CELESTIA_SRC_DIR}/celrender/gl/binder.h
         ${CELESTIA_SRC_DIR}/celrender/gl/buffer.cpp
@@ -359,7 +359,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/shared.h
         ${CELESTIA_SRC_DIR}/celengine/simulation.cpp
         ${CELESTIA_SRC_DIR}/celengine/simulation.h
-        ${CELESTIA_SRC_DIR}/celengine/skygrid.cpp
         ${CELESTIA_SRC_DIR}/celengine/skygrid.h
         ${CELESTIA_SRC_DIR}/celengine/solarsys.cpp
         ${CELESTIA_SRC_DIR}/celengine/solarsys.h
@@ -494,6 +493,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}
         ${CELESTIA_SRC_DIR}
         ${THIRD_PARTY_INCLUDE_DIR}
+        ${THIRD_PARTY_INCLUDE_DIR}/boost
         ${THIRD_PARTY_INCLUDE_DIR}/cspice
         ${THIRD_PARTY_INCLUDE_DIR}/luajit
         ${THIRD_PARTY_INCLUDE_DIR}/eigen3
