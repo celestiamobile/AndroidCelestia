@@ -165,13 +165,13 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                 OptionSelect(options = distanceUnits.map {
                     when(it) {
                         GoToLocation.DistanceUnit.radii -> {
-                            CelestiaString("au", "Astronomical unit")
+                            CelestiaString("radii", "In Go to, specify the distance based on the object radius")
                         }
                         GoToLocation.DistanceUnit.km -> {
                             CelestiaString("km", "Unit")
                         }
                         GoToLocation.DistanceUnit.au -> {
-                            CelestiaString("radii", "In Go to, specify the distance based on the object radius")
+                            CelestiaString("au", "Astronomical unit")
                         }
                     }
                 }, selectedIndex = distanceUnits.indexOf(distanceUnit) , selectionChange = {
