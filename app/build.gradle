@@ -27,7 +27,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
+        kotlinCompilerExtensionVersion = "1.5.12"
     }
 
     defaultConfig {
@@ -123,7 +123,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "androidx.appcompat:appcompat:$core_appcompat_version"
     implementation "androidx.core:core-ktx:$core_ktx_version"
-    implementation "androidx.activity:activity-ktx:1.8.2"
+    implementation "androidx.activity:activity-ktx:1.9.0"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
     implementation "androidx.recyclerview:recyclerview:1.3.2"
 
@@ -133,8 +133,8 @@ dependencies {
 
     implementation "com.google.android.material:material:$material_version"
     implementation "com.google.code.gson:gson:$gson_version"
-    implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.squareup.retrofit2:retrofit:2.11.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.11.0"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
     implementation "androidx.webkit:webkit:1.10.0"
@@ -153,14 +153,14 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
     implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
 
-    def composeBom = platform('androidx.compose:compose-bom:2024.04.00')
+    def composeBom = platform('androidx.compose:compose-bom:2024.04.01')
     implementation composeBom
     androidTestImplementation composeBom
 
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.material3:material3-android"
 
-    playImplementation "com.android.billingclient:billing-ktx:6.2.0"
+    playImplementation "com.android.billingclient:billing-ktx:6.2.1"
 
     testImplementation "junit:junit:4.13.2"
     androidTestImplementation "androidx.test.ext:junit:1.1.5"

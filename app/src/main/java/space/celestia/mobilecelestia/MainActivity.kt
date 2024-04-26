@@ -563,13 +563,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
     }
 
-    private fun handleIntent(intent: Intent?) {
-        val uri = intent?.data ?: return
+    private fun handleIntent(intent: Intent) {
+        val uri = intent.data ?: return
 
         showToast(CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT)
         if (uri.scheme == "content") {
