@@ -27,7 +27,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.12"
+        kotlinCompilerExtensionVersion = "1.5.13"
     }
 
     defaultConfig {
@@ -129,7 +129,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
-    implementation "androidx.fragment:fragment-ktx:1.6.2"
+    implementation "androidx.fragment:fragment-ktx:1.7.0"
 
     implementation "com.google.android.material:material:$material_version"
     implementation "com.google.code.gson:gson:$gson_version"
@@ -137,7 +137,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:2.11.0"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
-    implementation "androidx.webkit:webkit:1.10.0"
+    implementation "androidx.webkit:webkit:1.11.0"
 
     implementation project(path: ':LinkPreview')
     implementation project(path: ':Celestia')
@@ -153,7 +153,7 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
     implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
 
-    def composeBom = platform('androidx.compose:compose-bom:2024.04.01')
+    def composeBom = platform('androidx.compose:compose-bom:2024.05.00')
     implementation composeBom
     androidTestImplementation composeBom
 

@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="517"
+    android:versionCode="518"
     android:versionName="1.7.1">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
