@@ -1,7 +1,7 @@
 /*
  * CelestiaInteraction.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2024-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,7 +20,6 @@ import android.os.Build
 import android.util.Log
 import android.view.*
 import androidx.annotation.RequiresApi
-import androidx.core.view.GestureDetectorCompat
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.utils.PreferenceManager
@@ -65,7 +64,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private val scaleGestureDetector = ScaleGestureDetector(context, this)
-    private val gestureDetector = GestureDetectorCompat(context, this)
+    private val gestureDetector = GestureDetector(context, this)
     var pointerCaptureListener: Any? = null
 
     var isReady = false
