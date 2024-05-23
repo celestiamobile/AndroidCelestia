@@ -121,7 +121,7 @@ Java_space_celestia_ziputils_ZipUtils_unzip(JNIEnv *env, jclass, jstring source_
         }
 
         std::filesystem::path filePath = currentDirectory / name.filename();
-        std::ofstream file(filePath);
+        std::ofstream file(filePath, std::ios::binary);
         if (!file.good())
         {
             jstring jpath = env->NewStringUTF(filePath.string().c_str());
