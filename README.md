@@ -4,6 +4,15 @@
 
 This is the repo that hosts Celestia for Android, a real-time space simulation that lets you experience our universe in three dimensions.
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/space.celestia.mobilecelestia/)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+     alt="Get it on Google Play"
+     height="80">](https://play.google.com/store/apps/details?id=space.celestia.mobilecelestia)
+
+Or download the latest APK from the [Releases Section](https://github.com/celestiamobile/AndroidCelestia/releases/latest).
+
 ## License
 
 This program is free software; you can redistribute it and/or modify it under
