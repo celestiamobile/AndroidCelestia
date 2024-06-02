@@ -478,7 +478,6 @@ set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
 set(CMAKE_CXX_STANDARD 17)
 
 add_definitions(-DENABLE_NLS)
-add_definitions(-DHAVE_MESHOPTIMIZER)
 add_definitions(-DUSE_SPICE)
 add_definitions(-DGL_ES)
 add_definitions(-DUSE_MINIAUDIO)
