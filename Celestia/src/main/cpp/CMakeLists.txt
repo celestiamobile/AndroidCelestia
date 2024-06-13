@@ -356,6 +356,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/selection.h
         ${CELESTIA_SRC_DIR}/celengine/shadermanager.cpp
         ${CELESTIA_SRC_DIR}/celengine/shadermanager.h
+        ${CELESTIA_SRC_DIR}/celengine/shadowmap.h
         ${CELESTIA_SRC_DIR}/celengine/shared.h
         ${CELESTIA_SRC_DIR}/celengine/simulation.cpp
         ${CELESTIA_SRC_DIR}/celengine/simulation.h
@@ -372,6 +373,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/star.h
         ${CELESTIA_SRC_DIR}/celengine/stardb.cpp
         ${CELESTIA_SRC_DIR}/celengine/stardb.h
+        ${CELESTIA_SRC_DIR}/celengine/stardbbuilder.cpp
+        ${CELESTIA_SRC_DIR}/celengine/stardbbuilder.h
         ${CELESTIA_SRC_DIR}/celengine/starname.cpp
         ${CELESTIA_SRC_DIR}/celengine/starname.h
         ${CELESTIA_SRC_DIR}/celengine/staroctree.cpp
