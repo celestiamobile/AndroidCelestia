@@ -1197,6 +1197,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo) {
+        openAddonCategory(categoryInfo)
+    }
+
     override fun onCameraActionClicked(action: CameraControlAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.reverseObserverOrientation() }
     }
@@ -1874,6 +1878,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    private fun openAddonCategory(info: BrowserPredefinedItem.CategoryInfo) {
+        val baseURL = if (info.isLeaf) "https://celestia.mobi/resources/category" else "https://celestia.mobi/resources/categories"
+        var builder = Uri.parse(baseURL)
+            .buildUpon()
+            .appendQueryParameter("lang", language)
+            .appendQueryParameter("platform", "android")
+            .appendQueryParameter("theme", "dark")
+        if (info.isLeaf)
+            builder = builder.appendQueryParameter("category", info.id)
+        else
+            builder = builder.appendQueryParameter("parent", info.id)
+        if (purchaseManager.canUseInAppPurchase())
+            builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
+        lifecycleScope.launch {
+            showBottomSheetFragment(CommonWebNavigationFragment.newInstance(builder.build()))
+        }
+    }
+
     private fun showGoTo(data: GoToInputFragment.GoToData? = null) = lifecycleScope.launch {
         val inputData = data ?: GoToInputFragment.GoToData(
             objectName = AppCore.getLocalizedStringDomain("Earth", "celestia-data"),
@@ -1937,8 +1959,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "78"
-        // 78: 1.7.2 Dev, Localization update data update (commit 55bab7d6ecda4d7c53537daa37d6217cb2a76be8)
+        private const val CURRENT_DATA_VERSION = "79"
+        // 79: 1.7.2 Dev, Localization update data update (commit e5bd02a55ce7e27ada7759c75428d57f64c8f47e)
         // 76: 1.7.1, Localization update data update (commit 4910ab33dad753673e1983a0493ef9230450391c)
         // 75: 1.7.0, Localization update data update (commit 6b9417781a6beb0ded8a1116c60c93c478830a2e)
         // 72: 1.6.8, Localization update, data update (commit 8241b5d3891df24e398ce329f7cf09a252370546)

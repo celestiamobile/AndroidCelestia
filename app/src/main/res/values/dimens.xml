@@ -109,4 +109,6 @@
 
     <dimen name="search_bar_padding_vertical">8dp</dimen>
     <dimen name="search_bar_padding_horizontal">16dp</dimen>
+
+    <dimen name="card_content_padding">16dp</dimen>
 </resources>

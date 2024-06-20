@@ -9,7 +9,7 @@ jobs:
     appCenterSecret: ${{ parameters.appCenterSecret }}
     appCenterToken: ${{ parameters.appCenterToken }}
     appCenterProject: ${{ parameters.appCenterProject }}
-    contentCommitHash: ${{ '55bab7d6ecda4d7c53537daa37d6217cb2a76be8' }}
+    contentCommitHash: ${{ 'e5bd02a55ce7e27ada7759c75428d57f64c8f47e' }}
 
   steps:
   - checkout: Celestia

@@ -19,10 +19,14 @@ import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,6 +44,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Header
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.TeachingCard
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
 
@@ -113,6 +118,7 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
                 .background(color = MaterialTheme.colorScheme.background)
         ) {
             var hasMainObject = false
+            var hasItems = false
             if (item.`object` != null) {
                 item {
                     TextRow(primaryText = item.name, modifier = Modifier.clickable {
@@ -120,9 +126,10 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
                     })
                 }
                 hasMainObject = true
+                hasItems = true
             }
 
-            if (!item.children.isEmpty()) {
+            if (item.children.isNotEmpty()) {
                 if (hasMainObject) {
                     item {
                         Header(text = CelestiaString("Subsystem", "Subsystem of an object (e.g. planetarium system)"))
@@ -130,9 +137,28 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
                 }
 
                 items(item.children) { item ->
-                    TextRow(primaryText = item.name, accessoryResource = if (!item.children.isEmpty()) R.drawable.accessory_full_disclosure else 0, modifier = Modifier.clickable {
-                        listener?.onBrowserItemSelected(BrowserUIItem(item, item.children.isEmpty()))
+                    TextRow(primaryText = item.name, accessoryResource = if (item.children.isNotEmpty() || item.`object` == null) R.drawable.accessory_full_disclosure else 0, modifier = Modifier.clickable {
+                        listener?.onBrowserItemSelected(BrowserUIItem(item, item.`object` != null && item.children.isEmpty()))
                     })
+                }
+
+                hasItems = true
+            }
+
+            if (item is BrowserPredefinedItem) {
+                val categoryInfo = item.categoryInfo
+                if (categoryInfo != null) {
+                    item {
+                        if (hasItems) {
+                            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+                        }
+                        TeachingCard(title = CelestiaString("Enhance Celestia with online add-ons", ""), actionButtonTitle = CelestiaString("Get Add-ons", "Open webpage for downloading add-ons"), action = {
+                            listener?.onBrowserAddonCategoryRequested(categoryInfo)
+                        }, modifier = Modifier.fillMaxWidth().padding(
+                            horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
+                            vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
+                        ))
+                    }
                 }
             }
         }
@@ -140,6 +166,7 @@ class BrowserCommonFragment : NavigationFragment.SubFragment() {
 
     interface Listener {
         fun onBrowserItemSelected(item: BrowserUIItem)
+        fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo)
     }
 
     companion object {
