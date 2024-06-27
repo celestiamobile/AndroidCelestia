@@ -14,6 +14,7 @@ plugins {
     id 'kotlin-android'
     id 'dagger.hilt.android.plugin'
     id "org.jetbrains.kotlin.kapt"
+    id "org.jetbrains.kotlin.plugin.compose" version "$kotlin_version"
 }
 
 android {
@@ -24,10 +25,6 @@ android {
     buildFeatures {
         compose true
         buildConfig true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     defaultConfig {
@@ -129,7 +126,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
-    implementation "androidx.fragment:fragment-ktx:1.8.0"
+    implementation "androidx.fragment:fragment-ktx:1.8.1"
 
     implementation "com.google.android.material:material:$material_version"
     implementation "com.google.code.gson:gson:$gson_version"
