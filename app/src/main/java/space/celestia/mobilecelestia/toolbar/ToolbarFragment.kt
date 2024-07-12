@@ -69,7 +69,10 @@ enum class ToolbarAction : Serializable {
                 NewsArchive -> CelestiaString("News Archive", "Archive for updates and featured content")
                 Feedback -> CelestiaString("Send Feedback", "")
                 CelestiaPlus -> CelestiaString("Celestia PLUS", "Name for the subscription service")
-                else -> this.toString()
+                Share -> CelestiaString("Share", "")
+                Search -> CelestiaString("Search", "")
+                Help -> CelestiaString("Help", "")
+                Exit -> CelestiaString("Exit", "")
             }
         }
 
