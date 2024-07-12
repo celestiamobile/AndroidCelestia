@@ -1,0 +1,32 @@
+diff --git a/android/values-zh-rCN/strings.xml b/android/values-zh-rCN/strings.xml
+index 6c03140..8c1269f 100644
+--- a/android/values-zh-rCN/strings.xml
++++ b/android/values-zh-rCN/strings.xml
+@@ -10,11 +10,13 @@
+   -->
+ 
+ <resources>
+-    <string name="app_name">Celestia</string>
++    <string name="app_name">天际遨游</string>
+     <string name="celestia_language">zh_CN</string>
+     <string name="privacy_policy_alert_decline_button_title">暂不同意</string>
+     <string name="privacy_policy_alert_show_policy_button_title">查看协议</string>
+     <string name="privacy_policy_alert_title">隐私政策与服务协议</string>
+     <string name="privacy_policy_alert_detail">请您务必仔细阅读，充分理解服务协议和隐私政策各条款。如果您同意，请点击下方的\"同意\"按钮。</string>
+     <string name="privacy_policy_alert_accept_button_title">同意</string>
+-</resources>
+\ No newline at end of file
++    <string name="exit_celestia_alert_title">退出天际遨游</string>
++    <string name="exit_celestia_alert_message">确认需要退出？</string>
++</resources>
+diff --git a/android/values/strings.xml b/android/values/strings.xml
+index eb222a9..742e351 100644
+--- a/android/values/strings.xml
++++ b/android/values/strings.xml
+@@ -17,4 +17,6 @@
+     <string name="privacy_policy_alert_show_policy_button_title">View Policy</string>
+     <string name="privacy_policy_alert_accept_button_title">Agree</string>
+     <string name="privacy_policy_alert_decline_button_title">Not Now</string>
++    <string name="exit_celestia_alert_title">Exit Celestia</string>
++    <string name="exit_celestia_alert_message">Are you sure you want to exit?</string>
+ </resources>
