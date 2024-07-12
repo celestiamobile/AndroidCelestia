@@ -1,0 +1,20 @@
+diff --git a/android/values-zh-rCN/strings.xml b/android/values-zh-rCN/strings.xml
+index 38ac787..b0197ce 100644
+--- a/android/values-zh-rCN/strings.xml
++++ b/android/values-zh-rCN/strings.xml
+@@ -10,7 +10,7 @@
+   -->
+ 
+ <resources>
+-    <string name="app_name">Celestia</string>
++    <string name="app_name">天际遨游</string>
+     <string name="celestia_language">zh_CN</string>
+     <string name="privacy_policy_alert_decline_button_title">暂不同意</string>
+     <string name="privacy_policy_alert_show_policy_button_title">查看协议</string>
+@@ -53,4 +53,4 @@
+     <plurals name="subscription_offer_price_template_per_day_multiple">
+         <item quantity="other">每$2$d天 %1$s</item>
+     </plurals>
+-</resources>
+\ No newline at end of file
++</resources>

@@ -92,6 +92,11 @@ jobs:
           cd CelestiaContent
           git checkout ${{ env.CONTENT_COMMIT_HASH }}
 
+      - name: Apply Localization Patch
+        run: |
+          cd CelestiaLocalization
+          git apply ../AndroidCelestia/huawei.patch --ignore-whitespace --whitespace=nowarn
+
       - name: Running imagemagick
         run: sh $GITHUB_WORKSPACE/AndroidCelestia/app/downsize_textures.sh
 
