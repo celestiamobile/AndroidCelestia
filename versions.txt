@@ -1,4 +1,4 @@
-Celestia=6fa42b0
-CelestiaContent=4910ab3
-CelestiaLocalization=40c229b
+Celestia=9beb96a
+CelestiaContent=5fdfe4e
+CelestiaLocalization=cb13c3b
 apple-android=4c44691
