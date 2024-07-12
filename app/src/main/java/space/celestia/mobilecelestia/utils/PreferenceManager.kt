@@ -48,6 +48,8 @@ class PreferenceManager(context: Context, name: String) {
         ControllerRemapDpadDown,
         ControllerInvertX,
         ControllerInvertY,
+        ControllerEnableLeftThumbstick,
+        ControllerEnableRightThumbstick,
         ContextMenu,
         PickSensitivity,
         NormalFontPath,

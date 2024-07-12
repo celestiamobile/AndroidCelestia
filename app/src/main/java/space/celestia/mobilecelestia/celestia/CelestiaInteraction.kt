@@ -700,17 +700,23 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
         // Calculate the horizontal distance to move by
         // using the input value combined from these physical controls:
-        // the left control stick, hat axis, or the right control stick.
-        var x: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
-        x += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
-        x += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
+        // the left control stick and the right control stick.
+        var x = 0f
+        var y = 0f
+        if (appSettings[PreferenceManager.PredefinedKey.ControllerEnableLeftThumbstick] != "false") {
+            x += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
+            y += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
+        }
 
         // Calculate the vertical distance to move by
         // using the input value combined from these physical controls:
-        // the left control stick, hat switch, or the right control stick.
-        var y: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
-        y += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y, historyPos)
-        y += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
+        // the left control stick and the right control stick.
+        if (appSettings[PreferenceManager.PredefinedKey.ControllerEnableRightThumbstick] != "false") {
+            x += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
+            y += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
+        }
+
+        if (x == 0f && y == 0f) return
 
         val shouldInvertX = appSettings[PreferenceManager.PredefinedKey.ControllerInvertX] == "true"
         val shouldInvertY = appSettings[PreferenceManager.PredefinedKey.ControllerInvertY] == "true"

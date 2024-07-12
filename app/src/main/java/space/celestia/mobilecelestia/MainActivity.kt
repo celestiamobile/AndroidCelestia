@@ -190,6 +190,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var bottomSheetCommitIds = arrayListOf<Int>()
     private var initialURLCheckPerformed = false
+    private var isAskingForExit = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
@@ -480,10 +481,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     frag.popLast()
                 } else if (self.canPopBottomSheetFragment()) {
                     self.popBottomSheetFragment()
-                } else {
+                } else if (frag != null || drawerLayout.isDrawerOpen(GravityCompat.END)) {
                     self.lifecycleScope.launch {
                         self.hideOverlay(true)
                     }
+                } else if (!self.isAskingForExit) {
+                    self.isAskingForExit = true
+                    self.showAlert(CelestiaString("Exit Celestia", "Alert title for the exit triggered by back button"), CelestiaString("Are you sure you want to exit?", "Alert content for the exit triggered by back button"), handler = {
+                        self.isAskingForExit = false
+                        self.finishAndRemoveTask()
+                        exitProcess(0)
+                    }, cancelHandler = {
+                        self.isAskingForExit = false
+                    })
                 }
             }
         })
@@ -1968,8 +1978,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "81"
-        // 81: 1.7.4, Data update (commit 9f85700c021c0ef084c209a6e32b176bf95524d6)
+        private const val CURRENT_DATA_VERSION = "83"
+        // 83: 1.7.6, Localization update data update (commit 9f85700c021c0ef084c209a6e32b176bf95524d6)
         // 80: 1.7.2, Localization update data update (commit 5fdfe4e2fdda392920bd24d8d89d08f81b6f99df)
         // 76: 1.7.1, Localization update data update (commit 4910ab33dad753673e1983a0493ef9230450391c)
         // 75: 1.7.0, Localization update data update (commit 6b9417781a6beb0ded8a1116c60c93c478830a2e)

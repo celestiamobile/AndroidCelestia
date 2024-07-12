@@ -678,6 +678,8 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
             ),
             SettingsCommonItem.Section(
                 listOf(
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerEnableLeftThumbstick, displayName = CelestiaString("Enable Left Thumbstick", "Setting item to control whether left thumbstick should be enabled"), true),
+                    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerEnableRightThumbstick, displayName = CelestiaString("Enable Right Thumbstick", "Setting item to control whether right thumbstick should be enabled"), true),
                     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertX, displayName = CelestiaString("Invert Horizontally", "Invert game controller thumbstick axis horizontally"), false),
                     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ControllerInvertY, displayName = CelestiaString("Invert Vertically", "Invert game controller thumbstick axis vertically"), false),
                 ),
