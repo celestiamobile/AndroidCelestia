@@ -536,6 +536,10 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             return false
         }
 
+        // Ignore Back button action
+        if (event.keyCode == KeyEvent.KEYCODE_BACK)
+            return false
+
         if (event.action == KeyEvent.ACTION_UP)
             return onKeyUp(keyCode, event)
         else if (event.action == KeyEvent.ACTION_DOWN)

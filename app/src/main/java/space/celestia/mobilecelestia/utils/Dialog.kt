@@ -114,7 +114,7 @@ fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): Al
     return builder.show()
 }
 
-fun Activity.showAlert(title: String, message: String? = null, handler: (() -> Unit)? = null) {
+fun Activity.showAlert(title: String, message: String? = null, handler: (() -> Unit)? = null, cancelHandler: (() -> Unit)? = null) {
     if (isFinishing || isDestroyed)
         return
 
@@ -126,9 +126,14 @@ fun Activity.showAlert(title: String, message: String? = null, handler: (() -> U
         if (handler != null)
             handler()
     }
-    if (handler != null) {
+    if (handler != null || cancelHandler != null) {
         builder.setNegativeButton(CelestiaString("Cancel", "")) { dialog, _ ->
             dialog.cancel()
+        }
+    }
+    if (cancelHandler != null) {
+        builder.setOnCancelListener {
+            cancelHandler()
         }
     }
     builder.show()
