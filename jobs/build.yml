@@ -52,6 +52,11 @@ jobs:
     displayName: 'Checkout Content'
 
   - script: |
+      cd CelestiaLocalization
+      git apply ../AndroidCelestia/huawei.patch --ignore-whitespace --whitespace=nowarn
+    displayName: 'Apply Localization Patch'
+
+  - script: |
       sh $(System.DefaultWorkingDirectory)/AndroidCelestia/app/run_gperf.sh $(System.DefaultWorkingDirectory)/Celestia
     displayName: 'Running gperf'
 
