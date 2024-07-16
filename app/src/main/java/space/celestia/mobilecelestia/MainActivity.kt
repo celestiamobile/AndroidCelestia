@@ -226,7 +226,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             builder.setTitle(R.string.privacy_policy_alert_title)
             builder.setMessage(R.string.privacy_policy_alert_detail)
             builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
-                openURL("https://celestia.mobi/privacy")
+                val baseURL = "https://celestia.mobi/privacy"
+                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", "zh_CN").build()
+                openURI(uri)
                 finishAndRemoveTask()
                 exitProcess(0)
             }
@@ -1331,8 +1333,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
-    override fun onAboutURLSelected(url: String) {
-        openURL(url)
+    override fun onAboutURLSelected(url: String, localizable: Boolean) {
+        var uri = Uri.parse(url)
+        if (localizable)
+            uri = uri.buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
+        openURI(uri)
     }
 
     override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
@@ -1416,7 +1421,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun openURL(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        openURI(Uri.parse(url))
+    }
+
+    private fun openURI(uri: Uri) {
+        val intent = Intent(Intent.ACTION_VIEW, uri)
         val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
         if (ai != null && ai.exported)
             startActivity(intent)

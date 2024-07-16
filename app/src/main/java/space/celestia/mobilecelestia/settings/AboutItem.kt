@@ -13,6 +13,6 @@ package space.celestia.mobilecelestia.settings
 
 sealed class AboutItem
 class VersionItem(val versionName: String) : AboutItem()
-class ActionItem(val title: String, val url: String) : AboutItem()
+class ActionItem(val title: String, val url: String, val localizable: Boolean) : AboutItem()
 class TitleItem(val title: String) : AboutItem()
 class DetailItem(val detail: String) : AboutItem()

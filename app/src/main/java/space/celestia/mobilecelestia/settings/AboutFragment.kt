@@ -94,7 +94,7 @@ class AboutFragment : NavigationFragment.SubFragment() {
                     when (item) {
                         is ActionItem -> {
                             TextRow(primaryText = item.title, primaryTextColor = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable {
-                                listener?.onAboutURLSelected(item.url)
+                                listener?.onAboutURLSelected(item.url, localizable = item.localizable)
                             })
                         }
                         is VersionItem -> {
@@ -134,7 +134,7 @@ class AboutFragment : NavigationFragment.SubFragment() {
                 vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
             )) {
             Text(text = "苏ICP备2023039249号-4A", color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodySmall, modifier = Modifier.clickable {
-                listener?.onAboutURLSelected("https://beian.miit.gov.cn")
+                listener?.onAboutURLSelected("https://beian.miit.gov.cn", localizable = false)
             })
         }
     }
@@ -165,16 +165,16 @@ class AboutFragment : NavigationFragment.SubFragment() {
         // Links
         array.add(
             listOf(
-                ActionItem(CelestiaString("Development", "URL for Development wiki"),"https://celestia.mobi/help/development"),
-                ActionItem(CelestiaString("Third Party Dependencies", "URL for Third Party Dependencies wiki"), "https://celestia.mobi/help/dependencies"),
-                ActionItem(CelestiaString("Privacy Policy and Service Agreement", "Privacy Policy and Service Agreement"), "https://celestia.mobi/privacy")
+                ActionItem(CelestiaString("Development", "URL for Development wiki"),"https://celestia.mobi/help/development", localizable = false),
+                ActionItem(CelestiaString("Third Party Dependencies", "URL for Third Party Dependencies wiki"), "https://celestia.mobi/help/dependencies", localizable = true),
+                ActionItem(CelestiaString("Privacy Policy and Service Agreement", "Privacy Policy and Service Agreement"), "https://celestia.mobi/privacy", localizable = true)
             )
         )
 
         array.add(
             listOf(
-                ActionItem(CelestiaString("Official Website", ""), "https://celestia.mobi"),
-                ActionItem(CelestiaString("About Celestia", "System menu item"), "https://celestia.mobi/about")
+                ActionItem(CelestiaString("Official Website", ""), "https://celestia.mobi", localizable = true),
+                ActionItem(CelestiaString("About Celestia", "System menu item"), "https://celestia.mobi/about", localizable = true)
             )
         )
 
@@ -208,7 +208,7 @@ class AboutFragment : NavigationFragment.SubFragment() {
     }
 
     interface Listener {
-        fun onAboutURLSelected(url: String)
+        fun onAboutURLSelected(url: String, localizable: Boolean)
     }
 
     companion object {
