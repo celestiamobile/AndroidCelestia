@@ -270,6 +270,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
         ${CELESTIA_SRC_DIR}/celengine/dsodb.cpp
         ${CELESTIA_SRC_DIR}/celengine/dsodb.h
+        ${CELESTIA_SRC_DIR}/celengine/dsodbbuilder.cpp
+        ${CELESTIA_SRC_DIR}/celengine/dsodbbuilder.h
         ${CELESTIA_SRC_DIR}/celengine/dsooctree.cpp
         ${CELESTIA_SRC_DIR}/celengine/dsooctree.h
         ${CELESTIA_SRC_DIR}/celengine/dsorenderer.cpp
@@ -315,6 +317,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/name.h
         ${CELESTIA_SRC_DIR}/celengine/nebula.cpp
         ${CELESTIA_SRC_DIR}/celengine/nebula.h
+        ${CELESTIA_SRC_DIR}/celengine/octreebuilder.h
         ${CELESTIA_SRC_DIR}/celengine/objectrenderer.h
         ${CELESTIA_SRC_DIR}/celengine/observer.cpp
         ${CELESTIA_SRC_DIR}/celengine/observer.h
