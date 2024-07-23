@@ -190,6 +190,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var bottomSheetCommitIds = arrayListOf<Int>()
     private var initialURLCheckPerformed = false
+    private var isAskingForExit = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
@@ -480,10 +481,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     frag.popLast()
                 } else if (self.canPopBottomSheetFragment()) {
                     self.popBottomSheetFragment()
-                } else {
+                } else if (frag != null || drawerLayout.isDrawerOpen(GravityCompat.END)) {
                     self.lifecycleScope.launch {
                         self.hideOverlay(true)
                     }
+                } else if (!self.isAskingForExit) {
+                    self.isAskingForExit = true
+                    self.showAlert(self.getString(R.string.exit_celestia_alert_title), self.getString(R.string.exit_celestia_alert_message), handler = {
+                        self.isAskingForExit = false
+                        self.finishAndRemoveTask()
+                        exitProcess(0)
+                    }, cancelHandler = {
+                        self.isAskingForExit = false
+                    })
                 }
             }
         })
