@@ -11,6 +11,7 @@
 
 #include "CelestiaSelection.h"
 #include <celengine/body.h>
+#include <celengine/observer.h>
 #include <celengine/starbrowser.h>
 #include <celengine/universe.h>
 #include <celutil/gettext.h>
