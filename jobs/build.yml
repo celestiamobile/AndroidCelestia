@@ -153,6 +153,7 @@ jobs:
       mkdir -p symbols
       cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
       cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/Celestia/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
+      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/ZipUtils/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
       cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/native_symbol_tables/release/out/* symbols
       cd symbols
       zip -vr symbols.zip * -x "*.DS_Store"
