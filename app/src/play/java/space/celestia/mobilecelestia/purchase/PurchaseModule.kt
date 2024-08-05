@@ -3,6 +3,7 @@ package space.celestia.mobilecelestia.purchase
 import android.content.Context
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import dagger.Module
@@ -34,7 +35,7 @@ class PurchaseModule {
                     self.onPurchasesUpdated(p0, p1)
                 }
             })
-            .enablePendingPurchases()
+            .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
             .build()
         purchaseManager.billingClient = billingClient
         purchaseManager.connectToService()
