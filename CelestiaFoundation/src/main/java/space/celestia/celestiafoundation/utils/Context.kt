@@ -32,7 +32,7 @@ private val Context.packageInfo: PackageInfo?
 val Context.versionName: String
     get() {
         val pi = packageInfo ?: return "1.0"
-        return pi.versionName
+        return pi.versionName ?: "1.0"
     }
 
 val Context.versionCode: Long
