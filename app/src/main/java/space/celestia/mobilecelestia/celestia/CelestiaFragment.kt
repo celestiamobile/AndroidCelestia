@@ -419,9 +419,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         controlView.buttons = actions.mapNotNull { buttonMap[it] }
 
         glView.isReady = true
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isContextMenuEnabled) {
+        if (isContextMenuEnabled)
             glView.isContextClickable = true
-        }
         viewInteraction.isReady = true
         @Suppress("ClickableViewAccessibility")
         glView.setOnTouchListener { v, event ->
