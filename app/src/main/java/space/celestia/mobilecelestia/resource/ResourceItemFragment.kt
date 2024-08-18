@@ -196,7 +196,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         // Already installed, offer an option for uninstalling
         if (dm.isInstalled(item)) {
-            activity.showAlert(CelestiaString("Do you want to uninstall this add-on?", "")) {
+            activity.showAlert(CelestiaString("Do you want to uninstall this add-on?", ""), handler = {
                 var success = false
                 try {
                     success = dm.uninstall(item)
@@ -207,17 +207,17 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
                     activity.showAlert(CelestiaString("Unable to uninstall add-on.", ""))
                 }
                 updateUI()
-            }
+            })
             return
         }
 
         // Already downloading, allow user to cancel
         if (dm.isDownloading(item.id)) {
-            activity.showAlert(CelestiaString("Do you want to cancel this task?", "Prompt to ask to cancel downloading an add-on")) {
+            activity.showAlert(CelestiaString("Do you want to cancel this task?", "Prompt to ask to cancel downloading an add-on"), handler = {
                 dm.cancel(item.id)
                 currentState = ResourceItemState.None
                 updateUI()
-            }
+            })
             return
         }
 

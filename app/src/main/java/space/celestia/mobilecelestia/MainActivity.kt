@@ -690,9 +690,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val scriptOrURL = scriptOrURLPath
         if (scriptOrURL != null) {
             val isURL = scriptOrURL.startsWith("cel://")
-            showAlert(if (isURL) CelestiaString("Open URL?", "Request user consent to open a URL") else CelestiaString("Run script?", "Request user consent to run a script")) {
+            showAlert(if (isURL) CelestiaString("Open URL?", "Request user consent to open a URL") else CelestiaString("Run script?", "Request user consent to run a script"), handler = {
                 openCelestiaURL(scriptOrURL)
-            }
+            })
             cleanup()
             return
         }
