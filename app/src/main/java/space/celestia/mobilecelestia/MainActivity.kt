@@ -100,6 +100,7 @@ import java.lang.ref.WeakReference
 import java.net.URL
 import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -405,6 +406,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 copyAssetIfNeeded()
+                if (!isActive) return@launch
+                val migrationResult = migrateData()
+                if (migrationResult != null) {
+                    appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = null
+                    appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = null
+                }
                 if (!isActive) return@launch
                 createAddonFolder()
                 if (!isActive) return@launch
@@ -866,18 +873,80 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         return mapOf()
     }
 
+    private fun migrateData(): Boolean? {
+        val sourcePath = appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory]
+        val targetPath = appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory]
+        if (sourcePath == null || targetPath == null)
+            return null
+
+        Log.i(TAG, "Perform data migration")
+
+        val sourceDirectory = File(sourcePath, CELESTIA_ROOT_FOLDER_NAME)
+        val targetDirectory = File(targetPath, CELESTIA_ROOT_FOLDER_NAME)
+        if (!sourceDirectory.exists() || !sourceDirectory.isDirectory) {
+            // No need to migrate
+            Log.i(TAG, "Nothing needs to be migrated")
+            return true
+        }
+
+        if (targetDirectory.exists()) {
+            if (!targetDirectory.deleteRecursively()) {
+                // We are in a bad state here since we cannot delete the target directory
+                Log.e(TAG, "Unable to delete target directory")
+                return false
+            }
+        } else {
+            val parentDirectory = targetDirectory.parentFile
+            if (parentDirectory != null && !parentDirectory.exists()) {
+                // Create parent and other intermediate directories if needed
+                if (!parentDirectory.mkdirs()) {
+                    Log.e(TAG, "Unable to create parent or intermediate directory for the target directory")
+                    return false
+                }
+            }
+        }
+
+        if (!sourceDirectory.copyRecursively(targetDirectory)) {
+            Log.e(TAG, "Failed to copy data for migration")
+            if (targetDirectory.exists()) {
+                targetDirectory.deleteRecursively()
+            }
+            return false
+        } else {
+            // Successfully migrated, delete original
+            Log.i(TAG, "Migration successful")
+            sourceDirectory.deleteRecursively()
+            return true
+        }
+    }
+
+
     private fun createAddonFolder() {
-        val addonDirs = listOf(getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME), File(externalMediaDirs.firstOrNull(), CELESTIA_EXTRA_FOLDER_NAME)).mapNotNull { it }
-        addonPaths = createDirectoriesIfNeeded(addonDirs)
-        val scriptDirs = listOf(getExternalFilesDir(CELESTIA_SCRIPT_FOLDER_NAME), File(externalMediaDirs.firstOrNull(), CELESTIA_SCRIPT_FOLDER_NAME)).mapNotNull { it }
-        extraScriptPaths = createDirectoriesIfNeeded(scriptDirs)
+        val dataAddonDir = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
+        val dataScriptDir = getExternalFilesDir(CELESTIA_SCRIPT_FOLDER_NAME)
+
+        val mediaAddonDir: File?
+        val mediaScriptDir: File?
+        val mediaDir = externalMediaDirs.firstOrNull()
+        if (mediaDir != null) {
+            mediaAddonDir = File(mediaDir, CELESTIA_EXTRA_FOLDER_NAME)
+            mediaScriptDir = File(mediaDir, CELESTIA_SCRIPT_FOLDER_NAME)
+        } else {
+            mediaAddonDir = null
+            mediaScriptDir = null
+        }
+
+        val addonDirs = if (appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] == "true") listOf(mediaAddonDir, dataAddonDir) else listOf(mediaScriptDir, dataScriptDir)
+        val scriptDirs = if (appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] == "true") listOf(mediaScriptDir, dataScriptDir) else listOf(dataScriptDir, mediaScriptDir)
+        addonPaths = createDirectoriesIfNeeded(addonDirs.mapNotNull { it })
+        extraScriptPaths = createDirectoriesIfNeeded(scriptDirs.mapNotNull { it })
     }
 
     private fun createDirectoriesIfNeeded(dirs: List<File>): List<String> {
         val availablePaths = ArrayList<String>()
         for (dir in dirs) {
             try {
-                if (dir.exists() || dir.mkdir()) {
+                if (dir.exists() || dir.mkdirs()) {
                     availablePaths.add(dir.absolutePath)
                 }
             } catch (ignored: Throwable) {}
@@ -1978,8 +2047,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "83"
-        // 83: 1.7.6, Localization update data update (commit 9f85700c021c0ef084c209a6e32b176bf95524d6)
+        private const val CURRENT_DATA_VERSION = "84"
+        // 84: 1.7.7, Localization update data update (commit 9f85700c021c0ef084c209a6e32b176bf95524d6)
         // 80: 1.7.2, Localization update data update (commit 5fdfe4e2fdda392920bd24d8d89d08f81b6f99df)
         // 76: 1.7.1, Localization update data update (commit 4910ab33dad753673e1983a0493ef9230450391c)
         // 75: 1.7.0, Localization update data update (commit 6b9417781a6beb0ded8a1116c60c93c478830a2e)
@@ -2026,8 +2095,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // 10: 1.0
         // < 10: 1.0 Beta X
 
-        private const val CELESTIA_EXTRA_FOLDER_NAME = "CelestiaResources/extras"
-        private const val CELESTIA_SCRIPT_FOLDER_NAME = "CelestiaResources/scripts"
+        private const val CELESTIA_ROOT_FOLDER_NAME = "CelestiaResources"
+        private const val CELESTIA_EXTRA_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/extras"
+        private const val CELESTIA_SCRIPT_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/scripts"
 
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
         private const val MENU_VISIBLE_TAG = "menu_visible"

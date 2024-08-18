@@ -56,7 +56,10 @@ class PreferenceManager(context: Context, name: String) {
         NormalFontIndex,
         BoldFontPath,
         BoldFontIndex,
-        ToolbarItems
+        ToolbarItems,
+        MigrationSourceDirectory,
+        MigrationTargetDirectory,
+        UseMediaDirForAddons,
         ;
 
         override val valueString: String
@@ -79,10 +82,13 @@ class PreferenceManager(context: Context, name: String) {
         et = sp.edit()
     }
 
-    fun stopEditing() {
-        if (et == null)
-            throw RuntimeException("No current editing context when calling stop.")
-        et!!.apply()
+    fun stopEditing(writeImmediatelly: Boolean = false) {
+        val editor = et ?: throw RuntimeException("No current editing context when calling stop.")
+        if (writeImmediatelly) {
+            editor.commit()
+        } else {
+            editor.apply()
+        }
     }
 
     @SuppressLint("CommitPrefEdits")

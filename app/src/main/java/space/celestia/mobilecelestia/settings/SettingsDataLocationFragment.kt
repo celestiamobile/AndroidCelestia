@@ -51,8 +51,10 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.RealPathUtils
 import space.celestia.mobilecelestia.utils.showAlert
+import space.celestia.mobilecelestia.utils.showOptions
 import java.lang.ref.WeakReference
 import javax.inject.Inject
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
@@ -154,6 +156,36 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
         activity.showAlert(CelestiaString("Unsupported action.", ""))
     }
 
+    private fun showMigration() {
+        val activity = this.activity ?: return
+        val dataDir = activity.getExternalFilesDir(null)
+        val mediaDir = activity.externalMediaDirs.firstOrNull()
+        if (dataDir == null || mediaDir == null){
+            activity.showAlert(CelestiaString("Cannot change add-on directory", "Alert content when user cannot change add-on directory"))
+            return
+        }
+        activity.showOptions(CelestiaString("Migrate Add-on Data", "Action to migrate data where the add-on is downloaded"), options = arrayOf(
+            String.format(CelestiaString("Migrate to %s", "Option to migrate add-on data to a directory. %s is the target directory"), "Android/data"),
+            String.format(CelestiaString("Migrate to %s", "Option to migrate add-on data to a directory. %s is the target directory"), "Android/media")
+        )) { index ->
+            activity.showAlert(CelestiaString("Migrate Add-on Data", "Action to migrate data where the add-on is downloaded"), message = CelestiaString("Celestia will exit and perform migration the next time it is opened. Target directory will be replaced with content in the current directory. The current directory will be cleared after the content is copied. Future add-ons will be downloaded to the target directory. This operation cannot be undone, so please ensure you make a backup before you proceed.", ""), handler = {
+                appSettings.startEditing()
+                if (index == 0) {
+                    appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = mediaDir.absolutePath
+                    appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = dataDir.absolutePath
+                    appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] = "false"
+                } else {
+                    appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = dataDir.absolutePath
+                    appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = mediaDir.absolutePath
+                    appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] = "true"
+                }
+                appSettings.stopEditing(writeImmediatelly = true)
+                activity.finishAndRemoveTask()
+                exitProcess(0)
+            })
+        }
+    }
+
     @Composable
     private fun MainScreen() {
         val internalViewModifier = Modifier
@@ -175,6 +207,13 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
                     launchDataDirectoryPicker()
                 })
             }
+
+            item {
+                TextRow(primaryText = CelestiaString("Migrate Add-on Data", "Action to migrate data where the add-on is downloaded"), modifier = Modifier.clickable {
+                    showMigration()
+                })
+            }
+
             item {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                 Separator()
