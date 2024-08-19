@@ -920,7 +920,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-
     private fun createAddonFolder() {
         val dataAddonDir = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
         val dataScriptDir = getExternalFilesDir(CELESTIA_SCRIPT_FOLDER_NAME)
@@ -936,7 +935,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             mediaScriptDir = null
         }
 
-        val addonDirs = if (appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] == "true") listOf(mediaAddonDir, dataAddonDir) else listOf(mediaScriptDir, dataScriptDir)
+        val addonDirs = if (appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] == "true") listOf(mediaAddonDir, dataAddonDir) else listOf(dataAddonDir, mediaAddonDir)
         val scriptDirs = if (appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] == "true") listOf(mediaScriptDir, dataScriptDir) else listOf(dataScriptDir, mediaScriptDir)
         addonPaths = createDirectoriesIfNeeded(addonDirs.mapNotNull { it })
         extraScriptPaths = createDirectoriesIfNeeded(scriptDirs.mapNotNull { it })
