@@ -4,8 +4,9 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.core.os.BundleCompat
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.common.Poppable
 
-class CommonWebNavigationFragment: NavigationFragment() {
+class CommonWebNavigationFragment: NavigationFragment(), Poppable {
     private lateinit var uri: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,19 +21,14 @@ class CommonWebNavigationFragment: NavigationFragment() {
 
     override fun canPop(): Boolean {
         val currentTop = top
-        if (currentTop is CommonWebFragment && currentTop.canGoBack()) {
-            return true
-        }
-        return super.canPop()
+        return currentTop is CommonWebFragment && currentTop.canGoBack()
     }
 
     override fun popLast() {
         val currentTop = top
         if (currentTop is CommonWebFragment && currentTop.canGoBack()) {
             currentTop.goBack()
-            return
         }
-        super.popLast()
     }
 
     companion object {

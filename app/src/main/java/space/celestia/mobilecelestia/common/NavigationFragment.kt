@@ -21,8 +21,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.appbar.AppBarLayout
 import space.celestia.mobilecelestia.R
+import java.lang.ref.WeakReference
 
-abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClickListener {
+abstract class NavigationFragment: Fragment(), Toolbar.OnMenuItemClickListener {
     interface NavigationBarItem: Parcelable
 
     class BarButtonItem(val id: Int, val title: String?, val icon: Int? = null, val enabled: Boolean = true, val checked: Boolean? = null): NavigationBarItem {
@@ -237,6 +238,18 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
     val top: SubFragment?
         get() = childFragmentManager.findFragmentById(R.id.fragment_container) as? SubFragment
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val weakSelf = WeakReference(this)
+        childFragmentManager.addOnBackStackChangedListener {
+            val self = weakSelf.get() ?: return@addOnBackStackChangedListener
+            val backEntryCount = self.childFragmentManager.backStackEntryCount
+            if (backEntryCount < self.commitIds.size - 1)
+                self.poppedToIndex(backEntryCount)
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -375,12 +388,12 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
         return top?.menuItemClicked(groupId, id) ?: true
     }
 
-    override fun canPop(): Boolean {
+    private fun canPop(): Boolean {
         if (!isAdded) return false
         return commitIds.size > 1
     }
 
-    override fun popLast() {
+    private fun popLast() {
         if (canPop()) {
             popFragment()
         }
@@ -393,6 +406,10 @@ abstract class NavigationFragment: Fragment(), Poppable, Toolbar.OnMenuItemClick
 
     fun popFragmentToIndex(index: Int) {
         childFragmentManager.popBackStackImmediate(commitIds[index + 1], FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        poppedToIndex(index)
+    }
+
+    fun poppedToIndex(index: Int) {
         if (index == 0) {
             // no more return
             toolbar.navigationIcon = null

@@ -41,7 +41,7 @@ fun Fragment.replace(fragment: Fragment, containerID: Int): Int? {
         trans = trans.hide(current).remove(current)
     }
     trans.add(containerID, fragment)
-    return trans.commitAllowingStateLoss()
+    return trans.setPrimaryNavigationFragment(fragment).commitAllowingStateLoss()
 }
 
 interface Poppable {

@@ -44,7 +44,7 @@ interface BrowserRootFragment {
 }
 
 @AndroidEntryPoint
-class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBarView.OnItemSelectedListener {
+class BrowserFragment : Fragment(), BrowserRootFragment, NavigationBarView.OnItemSelectedListener {
     private var currentPath = ""
     private var selectedItemIndex = 0
     private lateinit var loadingIndicator: CircularProgressIndicator
@@ -186,16 +186,6 @@ class BrowserFragment : Fragment(), Poppable, BrowserRootFragment, NavigationBar
     override fun showInfo(selection: Selection) {
         val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
         navigationFragment.pushFragment(InfoFragment.newInstance(selection, true))
-    }
-
-    override fun canPop(): Boolean {
-        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return false
-        return navigationFragment.canPop()
-    }
-
-    override fun popLast() {
-        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
-        navigationFragment.popLast()
     }
 
     private fun loadRootBrowserItems() = lifecycleScope.launch {

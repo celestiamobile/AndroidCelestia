@@ -1549,7 +1549,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
         val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
         if (fragment != null) {
-            supportFragmentManager.beginTransaction().hide(fragment).remove(fragment)
+            supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).setPrimaryNavigationFragment(null)
                 .commitAllowingStateLoss()
         }
     }
@@ -2010,6 +2010,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val id = supportFragmentManager
             .beginTransaction()
             .add(R.id.bottom_sheet, fragment, BOTTOM_SHEET_ROOT_FRAGMENT_TAG)
+            .setPrimaryNavigationFragment(fragment)
             .commitAllowingStateLoss()
         showView(true, R.id.bottom_sheet_card, false)
     }
