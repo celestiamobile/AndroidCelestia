@@ -130,7 +130,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         if (savedInstanceState == null) {
             val uri = URLHelper.buildInAppAddonURI(item.id, language)
-            replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item)), R.id.webview_container)
+            replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item)), R.id.webview_container, false)
         }
 
         if (Date().time - lastUpdateDate.time > UPDATE_INTERVAL_MILLISECONDS) {

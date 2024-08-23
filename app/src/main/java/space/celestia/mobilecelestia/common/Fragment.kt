@@ -32,7 +32,7 @@ fun Fragment.push(fragment: Fragment, containerID: Int): Int? {
         .commitAllowingStateLoss()
 }
 
-fun Fragment.replace(fragment: Fragment, containerID: Int): Int? {
+fun Fragment.replace(fragment: Fragment, containerID: Int, useAsPrimaryNavigation: Boolean): Int? {
     if (!isAdded) return null
 
     val current = childFragmentManager.findFragmentById(containerID)
@@ -40,8 +40,10 @@ fun Fragment.replace(fragment: Fragment, containerID: Int): Int? {
     if (current != null) {
         trans = trans.hide(current).remove(current)
     }
-    trans.add(containerID, fragment)
-    return trans.setPrimaryNavigationFragment(fragment).commitAllowingStateLoss()
+    trans = trans.add(containerID, fragment)
+    if (useAsPrimaryNavigation)
+        trans = trans.setPrimaryNavigationFragment(fragment)
+    return trans.commitAllowingStateLoss()
 }
 
 interface Poppable {

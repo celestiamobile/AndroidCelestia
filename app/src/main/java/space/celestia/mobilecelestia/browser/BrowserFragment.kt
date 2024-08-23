@@ -173,7 +173,7 @@ class BrowserFragment : Fragment(), BrowserRootFragment, NavigationBarView.OnIte
     private fun replaceItem(browserItem: BrowserItem) {
         currentPath = browserItem.name
         browserMap[currentPath] = browserItem
-        replace(BrowserNavigationFragment.newInstance(currentPath), R.id.navigation_container)
+        replace(BrowserNavigationFragment.newInstance(currentPath), R.id.navigation_container, true)
     }
 
     override fun pushItem(browserItem: BrowserItem) {

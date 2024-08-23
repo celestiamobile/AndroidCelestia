@@ -301,7 +301,7 @@ abstract class NavigationFragment: Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun replaceFragment(fragment: SubFragment) {
-        val commitId = replace(fragment, R.id.fragment_container) ?: return
+        val commitId = replace(fragment, R.id.fragment_container, true) ?: return
         commitIds = arrayListOf(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false, fragment.showNavigationBar)
         appBar.setExpanded(true)

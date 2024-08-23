@@ -239,7 +239,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 if (fallbackContainer.isVisible) return
                 val fragment = createFallbackFragment()
                 if (fragment != null) {
-                    replace(fragment, R.id.fallback)
+                    replace(fragment, R.id.fallback, false)
                     fallbackContainer.isVisible = true
                     webView?.isVisible = false
                     bottomSafeArea.isVisible = false
