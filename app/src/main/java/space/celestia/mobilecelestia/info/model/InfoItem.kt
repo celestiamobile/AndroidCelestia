@@ -46,7 +46,15 @@ enum class CelestiaAction(val value: Int) : Serializable {
                 CancelScript -> CelestiaString("Cancel Script", "")
                 Home -> CelestiaString("Home (Sol)", "Home object, sun.")
                 Reverse -> CelestiaString("Reverse Time", "")
-                else -> this.toString()
+                Center -> CelestiaString("Center", "Center an object")
+                Slower -> CelestiaString("Slower", "Make time go more slowly")
+                Faster -> CelestiaString("Faster", "Make time go faster")
+                Lock -> CelestiaString("Lock", "")
+                Chase -> CelestiaString("Chase", "")
+                Track -> CelestiaString("Track", "Track an object")
+                Follow -> CelestiaString("Follow", "")
+                Stop -> CelestiaString("Stop", "Interupt the process of finding eclipse/Set traveling speed to 0")
+                ReverseSpeed -> CelestiaString("Reverse Direction", "Reverse camera direction, reverse travel direction")
             }
         }
 
