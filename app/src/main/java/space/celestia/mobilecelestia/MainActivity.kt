@@ -189,7 +189,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var latestNewsID: String? = null
 
-    private var bottomSheetCommitIds = arrayListOf<Int>()
     private var initialURLCheckPerformed = false
     private var isAskingForExit = false
 
@@ -297,7 +296,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
             val menuVisible = savedState.getBoolean(MENU_VISIBLE_TAG, false)
             val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
-            bottomSheetCommitIds = savedState.getIntegerArrayList(ARG_COMMIT_IDS) ?: arrayListOf()
             initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
 
             findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
@@ -340,7 +338,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         outState.putBoolean(MENU_VISIBLE_TAG, drawerLayout.isDrawerOpen(GravityCompat.END))
         outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
-        outState.putIntegerArrayList(ARG_COMMIT_IDS, bottomSheetCommitIds)
         outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
         super.onSaveInstanceState(outState)
     }
@@ -486,8 +483,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val frag = self.supportFragmentManager.findFragmentById(R.id.bottom_sheet)
                 if (frag is Poppable && frag.canPop()) {
                     frag.popLast()
-                } else if (self.canPopBottomSheetFragment()) {
-                    self.popBottomSheetFragment()
                 } else if (frag != null || drawerLayout.isDrawerOpen(GravityCompat.END)) {
                     self.lifecycleScope.launch {
                         self.hideOverlay(true)
@@ -1556,17 +1551,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (fragment != null) {
             supportFragmentManager.beginTransaction().hide(fragment).remove(fragment)
                 .commitAllowingStateLoss()
-            bottomSheetCommitIds = arrayListOf()
         }
-    }
-
-    private fun canPopBottomSheetFragment(): Boolean {
-        return bottomSheetCommitIds.size > 1
-    }
-
-    private fun popBottomSheetFragment() {
-        supportFragmentManager.popBackStackImmediate(bottomSheetCommitIds[bottomSheetCommitIds.size - 1], FragmentManager.POP_BACK_STACK_INCLUSIVE)
-        bottomSheetCommitIds.removeLast()
     }
 
     private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean) {
@@ -2026,7 +2011,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .beginTransaction()
             .add(R.id.bottom_sheet, fragment, BOTTOM_SHEET_ROOT_FRAGMENT_TAG)
             .commitAllowingStateLoss()
-        bottomSheetCommitIds = arrayListOf(id)
         showView(true, R.id.bottom_sheet_card, false)
     }
 
@@ -2102,7 +2086,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val MENU_VISIBLE_TAG = "menu_visible"
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 
-        private const val ARG_COMMIT_IDS = "commit-ids"
         private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 
