@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -64,6 +65,8 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
     @Inject
     lateinit var resourceAPI: ResourceAPIService
+
+    private var onBackPressedCallback: OnBackPressedCallback? = null
 
     interface Listener {
         fun onExternalWebLinkClicked(url: String)
@@ -187,6 +190,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 weakSelf.get()?.initialLoadFinished = true
                 loadingIndicator.isVisible = false
                 self.leftNavigationBarItem  = if (wv.canGoBack()) NavigationFragment.BarButtonItem(MENU_ITEM_BACK_BUTTON, null, R.drawable.ic_action_arrow_back) else null
+                self.onBackPressedCallback?.isEnabled = !self.isHidden && self.canGoBack()
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -293,6 +297,31 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         } else {
             null
         }
+
+        if (onBackPressedCallback == null) {
+            val weakSelf = WeakReference(this)
+            val backPressedCallback = object: OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val self = weakSelf.get() ?: return
+                    if (self.canGoBack())
+                        self.goBack()
+                }
+            }
+            requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
+            onBackPressedCallback = backPressedCallback
+        }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+
+        onBackPressedCallback?.isEnabled = !hidden && canGoBack()
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        onBackPressedCallback?.isEnabled = false
     }
 
     override fun onAttach(context: Context) {
@@ -313,6 +342,12 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             webViewState = bundle
         }
         super.onDestroyView()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        onBackPressedCallback?.remove()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

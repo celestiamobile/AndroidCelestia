@@ -31,7 +31,6 @@ import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
-import space.celestia.mobilecelestia.common.Poppable
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.celestiafoundation.utils.getSerializableValue

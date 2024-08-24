@@ -481,9 +481,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             override fun handleOnBackPressed() {
                 val self = weakSelf.get() ?: return
                 val frag = self.supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-                if (frag is Poppable && frag.canPop()) {
-                    frag.popLast()
-                } else if (frag != null || drawerLayout.isDrawerOpen(GravityCompat.END)) {
+                if (frag != null || drawerLayout.isDrawerOpen(GravityCompat.END)) {
                     self.lifecycleScope.launch {
                         self.hideOverlay(true)
                     }

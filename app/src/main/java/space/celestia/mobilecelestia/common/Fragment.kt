@@ -45,8 +45,3 @@ fun Fragment.replace(fragment: Fragment, containerID: Int, useAsPrimaryNavigatio
         trans = trans.setPrimaryNavigationFragment(fragment)
     return trans.commitAllowingStateLoss()
 }
-
-interface Poppable {
-    fun canPop(): Boolean
-    fun popLast()
-}
