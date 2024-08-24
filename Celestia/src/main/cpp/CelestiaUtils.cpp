@@ -14,50 +14,11 @@
 #include <celengine/observer.h>
 
 extern "C"
-JNIEXPORT jintArray JNICALL
-Java_space_celestia_celestia_Utils_getJulianDayComponents(JNIEnv *env,
-                                                                     jclass clazz,
-                                                                     jdouble julian_day) {
-    celestia::astro::Date astroDate = celestia::astro::TDBtoUTC(julian_day);
-    jint date[8] = { 0 };
-
-    int year = astroDate.year;
-    int era = 1;
-    if (year < 1)
-    {
-        era  = 0;
-        year = 1 - year;
-    }
-
-    date[0] = era;
-    date[1] = year;
-    date[2] = astroDate.month;
-    date[3] = astroDate.day;
-    date[4] = astroDate.hour;
-    date[5] = astroDate.minute;
-    date[6] = (int)floor(astroDate.seconds);
-    date[7] = (int)((astroDate.seconds - date[6]) * 1000);
-    jintArray array = env->NewIntArray(8);
-    env->SetIntArrayRegion(array, 0, 8, date);
-    return array;
-}
-
-extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Utils_getJulianDay(JNIEnv *env, jclass clazz,
-                                                           jint era, jint year, jint month,
-                                                           jint day, jint hour, jint minute,
-                                                           jint second, jint millisecond) {
-    if (era < 1) year = 1 - year;
-    celestia::astro::Date astroDate(year, month, day);
-    astroDate.hour    = hour;
-    astroDate.minute  = minute;
-    astroDate.seconds = second;
-
-    astroDate.seconds += millisecond / (double)1000;
-
-    double jd = celestia::astro::UTCtoTDB(astroDate);
-    return jd;
+                                                jlong milli_seconds_from_epoch) {
+    static auto epoch = celestia::astro::Date(1970, 1, 1);
+    return celestia::astro::UTCtoTDB(epoch + static_cast<double>(milli_seconds_from_epoch) / 86400.0 / 1000.0);
 }
 
 extern "C"
@@ -104,4 +65,12 @@ extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Utils_AUToKilometers(JNIEnv *env, jclass clazz, jdouble au) {
     return celestia::astro::AUtoKilometers(au);
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_space_celestia_celestia_Utils_getMilliSecondsFromEpochFromJulianDay(JNIEnv *env, jclass clazz,
+                                                                         jdouble julian_day) {
+    static auto epoch = celestia::astro::Date(1970, 1, 1);
+    return static_cast<jlong>((celestia::astro::TDBtoUTC(julian_day) - epoch) * 86400.0 * 1000.0);
 }

@@ -14,12 +14,10 @@ package space.celestia.celestia;
 import androidx.annotation.NonNull;
 
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 public class Utils {
-    public static native double getJulianDay(int era, int year, int month, int day, int hour, int minute, int second, int millisecond);
-    public static native int[] getJulianDayComponents(double julianDay);
+    public static native double getJulianDay(long milliSecondsFromEpoch);
+    public static native long getMilliSecondsFromEpochFromJulianDay(double julianDay);
 
     public static native @NonNull
     Vector celToJ2000Ecliptic(@NonNull Vector cel);
@@ -32,17 +30,6 @@ public class Utils {
     public static native double AUToKilometers(double au);
 
     public static Date createDateFromJulianDay(Double julianDay) {
-        int[] compos = Utils.getJulianDayComponents(julianDay);
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeZone(TimeZone.getTimeZone("GMT"));
-        gc.set(GregorianCalendar.ERA, compos[0]);
-        gc.set(GregorianCalendar.YEAR, compos[1]);
-        gc.set(GregorianCalendar.MONTH, compos[2] - 1);
-        gc.set(GregorianCalendar.DAY_OF_MONTH, compos[3]);
-        gc.set(GregorianCalendar.HOUR_OF_DAY, compos[4]);
-        gc.set(GregorianCalendar.MINUTE, compos[5]);
-        gc.set(GregorianCalendar.SECOND, compos[6]);
-        gc.set(GregorianCalendar.MILLISECOND, compos[7]);
-        return gc.getTime();
+        return new Date(getMilliSecondsFromEpochFromJulianDay(julianDay));
     }
 }
