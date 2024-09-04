@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="553"
+    android:versionCode="554"
     android:versionName="1.7.7">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />

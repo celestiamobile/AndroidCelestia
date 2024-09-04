@@ -1145,7 +1145,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (location == "context" && contextDirectory == null) return
 
         val scriptFile: File
-        val scriptFileName = name ?: "${UUID.randomUUID()}.${type}"
+        val scriptFileName = "${name ?: UUID.randomUUID()}.${type}"
         scriptFile = if (location == "context") {
             File(contextDirectory, scriptFileName)
         } else {
