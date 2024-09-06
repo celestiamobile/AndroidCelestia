@@ -43,7 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
@@ -270,19 +270,21 @@ class SubscriptionManagerFragment: Fragment() {
     @Composable
     private fun PlanList(productDetails: ProductDetails, plans: List<PurchaseManager.Plan>, status: PurchaseManager.SubscriptionStatus.Good) {
         val weakSelf = WeakReference(this)
-        val text: String
-        when (status) {
+        val text: String = when (status) {
             is PurchaseManager.SubscriptionStatus.Good.None -> {
-                text = CelestiaString("Choose one of the plans below to get Celestia PLUS", "")
+                CelestiaString("Choose one of the plans below to get Celestia PLUS", "")
             }
+
             is PurchaseManager.SubscriptionStatus.Good.Pending -> {
-                text = CelestiaString("Your purchase is pending", "")
+                CelestiaString("Your purchase is pending", "")
             }
+
             is PurchaseManager.SubscriptionStatus.Good.NotAcknowledged -> {
-                text = CelestiaString("We are processing your purchase", "")
+                CelestiaString("We are processing your purchase", "")
             }
+
             is PurchaseManager.SubscriptionStatus.Good.Acknowledged, is PurchaseManager.SubscriptionStatus.Good.NotVerified, is PurchaseManager.SubscriptionStatus.Good.Verified -> {
-                text = CelestiaString("Congratulations, you are a Celestia PLUS user", "")
+                CelestiaString("Congratulations, you are a Celestia PLUS user", "")
             }
         }
         Text(text = text, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
@@ -329,14 +331,14 @@ class SubscriptionManagerFragment: Fragment() {
                     val currentPlan = status.plan
                     canAction = currentPlan != plan.type
                     actionButtonHidden = !canAction
-                    if (currentPlan == null) {
-                        actionTitle = CelestiaString("Change", "Change subscription service")
+                    actionTitle = if (currentPlan == null) {
+                        CelestiaString("Change", "Change subscription service")
                     } else if (currentPlan.level < plan.type.level) {
-                        actionTitle = CelestiaString("Upgrade", "Upgrade subscription service")
+                        CelestiaString("Upgrade", "Upgrade subscription service")
                     } else  if (currentPlan.level > plan.type.level) {
-                        actionTitle = CelestiaString("Downgrade", "Downgrade subscription service")
+                        CelestiaString("Downgrade", "Downgrade subscription service")
                     } else {
-                        actionTitle = ""
+                        ""
                     }
                 }
             }

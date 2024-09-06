@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -81,58 +82,82 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
     }
     val scope = rememberCoroutineScope()
     Scaffold(topBar = {
-        SearchBar(query = searchKey, onQueryChange = {
-            searchKey = it
-            isSearching = true
-            scope.launch {
-                val result = if (it.isEmpty()) listOf<String>() else withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.completionForText(it, 100) }
-                if (searchKey == it) {
-                    searchResults = result
-                    isSearching = false
+        SearchBar(
+            inputField = {
+                SearchBarDefaults.InputField(
+                    query = searchKey,
+                    onQueryChange = {
+                        searchKey = it
+                        isSearching = true
+                        scope.launch {
+                            val result = if (it.isEmpty()) listOf<String>() else withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.completionForText(it, 100) }
+                            if (searchKey == it) {
+                                searchResults = result
+                                isSearching = false
+                            }
+                        }
+                    },
+                    onSearch = {
+                        isSearchActive = false
+                        if (searchKey.isNotEmpty() && searchResults.isEmpty()) {
+                            isLoadingPage = true
+                            scope.launch {
+                                val selection = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.findObject(searchKey) }
+                                isLoadingPage = false
+                                if (selection.isEmpty)
+                                    objectNotFoundHandler()
+                                else
+                                    currentSelection = selection
+                            }
+                        }
+                    },
+                    expanded = isSearchActive,
+                    onExpandedChange = {
+                        isSearchActive = it
+                    },
+                    placeholder = {
+                        Text(text = CelestiaString("Search", ""))
+                    },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                    },
+                )
+            },
+            expanded = isSearchActive,
+            onExpandedChange = {
+                isSearchActive = it
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = if (!isSearchActive) dimensionResource(
+                        id = R.dimen.search_bar_padding_horizontal
+                    ) else 0.dp,
+                    vertical = if (!isSearchActive) dimensionResource(
+                        id = R.dimen.search_bar_padding_vertical
+                    ) else 0.dp
+                ),
+            content = {
+                SearchResult(
+                    key = searchKey,
+                    results = searchResults.toList(),
+                    isSearching = isSearching
+                ) {
+                    isSearchActive = false
+                    isLoadingPage = true
+                    scope.launch {
+                        val selection = withContext(viewModel.executor.asCoroutineDispatcher()) {
+                            viewModel.appCore.simulation.findObject(it)
+                        }
+                        isLoadingPage = false
+                        if (selection.isEmpty)
+                            objectNotFoundHandler()
+                        else
+                            currentSelection = selection
+                    }
                 }
-            }
-        }, onSearch = {
-            isSearchActive = false
-            if (searchKey.isNotEmpty() && searchResults.isEmpty()) {
-                isLoadingPage = true
-                scope.launch {
-                    val selection = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.findObject(searchKey) }
-                    isLoadingPage = false
-                    if (selection.isEmpty)
-                        objectNotFoundHandler()
-                    else
-                        currentSelection = selection
-                }
-            }
-        }, active = isSearchActive, onActiveChange = {
-            isSearchActive = it
-        }, leadingIcon = {
-            Icon(imageVector = Icons.Default.Search, contentDescription = null)
-        }, placeholder = {
-            Text(text = CelestiaString("Search", ""))
-        }, modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = if (!isSearchActive) dimensionResource(
-                    id = R.dimen.search_bar_padding_horizontal
-                ) else 0.dp,
-                vertical = if (!isSearchActive) dimensionResource(
-                    id = R.dimen.search_bar_padding_vertical
-                ) else 0.dp
-            )) {
-            SearchResult(key = searchKey, results = searchResults.toList(), isSearching = isSearching) {
-                isSearchActive = false
-                isLoadingPage = true
-                scope.launch {
-                    val selection = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.findObject(it) }
-                    isLoadingPage = false
-                    if (selection.isEmpty)
-                        objectNotFoundHandler()
-                    else
-                        currentSelection = selection
-                }
-            }
-        }
+            },
+        )
     }) { paddingValues ->
         SearchContent(selection = currentSelection, isLoadingPage = isLoadingPage, linkHandler = linkHandler, actionHandler = actionHandler, paddingValues = paddingValues)
     }

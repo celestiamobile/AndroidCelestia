@@ -1,20 +1,18 @@
 package space.celestia.mobilecelestia.compose
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
 import space.celestia.mobilecelestia.R
-import java.net.URL
 
 @Composable
 fun Footer(text: String, modifier: Modifier = Modifier) {
@@ -55,7 +53,9 @@ fun FooterLink(text: String, linkText: String, link: String, action: (String) ->
             start = startIndex,
             end = endIndex
         )
-        addStringAnnotation(tag = "URL", annotation = link, start = startIndex, end = endIndex)
+        addLink(LinkAnnotation.Clickable(tag = "URL", linkInteractionListener = { _ ->
+            action(link)
+        }), start = startIndex, end = endIndex)
     }
     Box(modifier = modifier.padding(
         start = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
@@ -63,9 +63,6 @@ fun FooterLink(text: String, linkText: String, link: String, action: (String) ->
         end = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
         bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
     )) {
-        ClickableText(text = annotatedString, onClick = {
-            val url = annotatedString.getStringAnnotations("URL", it, it).firstOrNull() ?: return@ClickableText
-            action(url.item)
-        })
+        BasicText(annotatedString)
     }
 }

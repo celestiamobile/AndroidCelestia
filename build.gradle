@@ -18,7 +18,7 @@ buildscript {
     ext.material_version = '1.12.0'
     ext.kotlinx_coroutines_version = '1.8.1'
     ext.hilt_version = '2.52'
-    ext.lifecycle_version = '2.8.3'
+    ext.lifecycle_version = '2.8.5'
     ext.okhttp_version = '4.12.0'
     ext.gson_version = '2.11.0'
 

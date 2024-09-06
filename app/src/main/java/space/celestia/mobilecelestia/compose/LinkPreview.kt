@@ -1,23 +1,23 @@
 package space.celestia.mobilecelestia.compose
 
 import android.annotation.SuppressLint
-                    import android.graphics.BitmapFactory
-                    import android.view.LayoutInflater
-                    import androidx.compose.runtime.*
-                    import androidx.compose.ui.Modifier
-                    import androidx.compose.ui.platform.LocalLifecycleOwner
-                    import androidx.compose.ui.viewinterop.AndroidView
-                    import androidx.lifecycle.Lifecycle
-                    import androidx.lifecycle.LifecycleEventObserver
-                    import kotlinx.coroutines.Dispatchers
-                    import kotlinx.coroutines.withContext
-                    import okhttp3.OkHttpClient
-                    import okhttp3.Request
-                    import space.celestia.mobilecelestia.R
-                    import space.celestia.ui.linkpreview.LPLinkView
-                    import space.celestia.ui.linkpreview.LPLinkViewData
-                    import space.celestia.ui.linkpreview.LPMetadataProvider
-                    import java.net.URL
+import android.graphics.BitmapFactory
+import android.view.LayoutInflater
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import space.celestia.mobilecelestia.R
+import space.celestia.ui.linkpreview.LPLinkView
+import space.celestia.ui.linkpreview.LPLinkViewData
+import space.celestia.ui.linkpreview.LPMetadataProvider
+import java.net.URL
 
 private enum class FetchState {
     Successful, Failed, Fetching, None
