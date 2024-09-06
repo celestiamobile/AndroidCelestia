@@ -56,11 +56,6 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
         current.reload()
     }
 
-    fun rename(item: MutableFavoriteBaseItem, newName: String) {
-        item.rename(newName)
-        current.reload()
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Listener) {

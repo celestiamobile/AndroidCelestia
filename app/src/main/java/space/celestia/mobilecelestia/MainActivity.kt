@@ -1377,12 +1377,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun renameFavoriteItem(item: MutableFavoriteBaseItem) {
+    override fun renameFavoriteItem(item: MutableFavoriteBaseItem, completion: (String) -> Unit) {
         showTextInput(CelestiaString("Rename", "Rename a favorite item (currently bookmark)"), item.title) { text ->
-            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-            if (frag is FavoriteFragment) {
-                frag.rename(item, text)
-            }
+            item.rename(text)
+            completion(text)
         }
     }
 

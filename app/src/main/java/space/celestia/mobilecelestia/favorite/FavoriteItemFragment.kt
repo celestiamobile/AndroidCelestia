@@ -185,6 +185,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
     @Composable
     private fun Item(item: FavoriteBaseItem, index: Int, dragDropState: DragDropState, isDraggable: Boolean) {
         var showMenu by remember { mutableStateOf(false) }
+        var title by remember { mutableStateOf(item.title) }
         var rowModifier = Modifier
             .fillMaxWidth()
             .padding(
@@ -216,7 +217,9 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
                             listener?.deleteFavoriteItem(index)
                         }
                         FavoriteItemAction.Rename -> {
-                            listener?.renameFavoriteItem(item)
+                            listener?.renameFavoriteItem(item) { newName ->
+                                title = newName
+                            }
                         }
                         FavoriteItemAction.Share -> {
                             listener?.shareFavoriteItem(item)
@@ -226,7 +229,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
             }
         }) {
             Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
-                Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier
+                Text(title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier
                     .weight(1.0f)
                     .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical),))
                 if (isDraggable) {
@@ -251,7 +254,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
     interface Listener {
         fun onFavoriteItemSelected(item: FavoriteBaseItem)
         fun deleteFavoriteItem(index: Int)
-        fun renameFavoriteItem(item: MutableFavoriteBaseItem)
+        fun renameFavoriteItem(item: MutableFavoriteBaseItem, completion: (String) -> Unit)
         fun addFavoriteItem(item: MutableFavoriteBaseItem)
         fun shareFavoriteItem(item: MutableFavoriteBaseItem)
         fun moveFavoriteItem(fromIndex: Int, toIndex: Int)
