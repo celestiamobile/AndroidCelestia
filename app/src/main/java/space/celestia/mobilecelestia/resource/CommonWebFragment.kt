@@ -348,6 +348,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         super.onDestroy()
 
         onBackPressedCallback?.remove()
+        onBackPressedCallback = null
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -192,6 +192,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var initialURLCheckPerformed = false
     private var isAskingForExit = false
 
+    private var onBackPressedCallback: OnBackPressedCallback? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
         appStatusReporter = factory.getAppStatusReporter()
@@ -344,6 +346,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onDestroy() {
         appStatusReporter.unregister(this)
+        onBackPressedCallback?.remove()
+        onBackPressedCallback = null
 
         Log.d(TAG, "Destroying MainActivity")
 
@@ -476,27 +480,41 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .commitAllowingStateLoss()
         }
 
-        val weakSelf = WeakReference(this)
-        onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val self = weakSelf.get() ?: return
-                val frag = self.supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-                if (frag != null || drawerLayout.isDrawerOpen(GravityCompat.END)) {
-                    self.lifecycleScope.launch {
-                        self.hideOverlay(true)
+        if (onBackPressedCallback == null) {
+            val weakSelf = WeakReference(this)
+            val backPressedCallback = object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val self = weakSelf.get() ?: return
+                    val frag = self.supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+                    if (frag != null || self.drawerLayout.isDrawerOpen(GravityCompat.END)) {
+                        self.lifecycleScope.launch {
+                            self.hideOverlay(true)
+                        }
+                    } else if (!self.isAskingForExit) {
+                        self.isAskingForExit = true
+                        self.showAlert(
+                            CelestiaString(
+                                "Exit Celestia",
+                                "Alert title for the exit triggered by back button"
+                            ),
+                            CelestiaString(
+                                "Are you sure you want to exit?",
+                                "Alert content for the exit triggered by back button"
+                            ),
+                            handler = {
+                                self.isAskingForExit = false
+                                self.finishAndRemoveTask()
+                                exitProcess(0)
+                            },
+                            cancelHandler = {
+                                self.isAskingForExit = false
+                            })
                     }
-                } else if (!self.isAskingForExit) {
-                    self.isAskingForExit = true
-                    self.showAlert(CelestiaString("Exit Celestia", "Alert title for the exit triggered by back button"), CelestiaString("Are you sure you want to exit?", "Alert content for the exit triggered by back button"), handler = {
-                        self.isAskingForExit = false
-                        self.finishAndRemoveTask()
-                        exitProcess(0)
-                    }, cancelHandler = {
-                        self.isAskingForExit = false
-                    })
                 }
             }
-        })
+            onBackPressedDispatcher.addCallback(backPressedCallback)
+            onBackPressedCallback = backPressedCallback
+        }
 
         resourceManager.addonDirectory = addonPaths.firstOrNull()
         resourceManager.scriptDirectory = extraScriptPaths.firstOrNull()
