@@ -535,8 +535,8 @@ Java_space_celestia_celestia_AppCore_c_1keyDownWithModifers(JNIEnv *env,
                                                                        jint key, jint modifiers) {
     auto core = (CelestiaCore *)ptr;
     int cModifiers = convert_modifier_to_celestia_modifier(0, modifiers);
-    if (input < CelestiaCore::KeyCount && (input < AKEYCODE_NUMPAD_0 || input > AKEYCODE_NUMPAD_9))
-        core->charEntered(input, cModifiers);
+    if (input < CelestiaCore::KeyCount)
+        core->charEntered(static_cast<char>(input), cModifiers);
     core->keyDown(convert_key_code_to_celestia_key(input, key), cModifiers);
 }
 

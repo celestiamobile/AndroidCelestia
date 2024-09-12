@@ -17,8 +17,15 @@ import android.content.res.Resources
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Build
+import android.text.method.MetaKeyKeyListener
 import android.util.Log
-import android.view.*
+import android.view.GestureDetector
+import android.view.InputDevice
+import android.view.KeyCharacterMap
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
+import android.view.View
 import androidx.annotation.RequiresApi
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.common.CelestiaExecutor
@@ -65,6 +72,8 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
     private val scaleGestureDetector = ScaleGestureDetector(context, this)
     private val gestureDetector = GestureDetector(context, this)
+    private var metaState: Long = 0
+
     var pointerCaptureListener: Any? = null
 
     var isReady = false
@@ -632,17 +641,43 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        metaState = MetaKeyKeyListener.handleKeyDown(metaState, keyCode, event)
+        var input = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(metaState))
+        metaState = MetaKeyKeyListener.adjustMetaAfterKeypress(metaState)
+
         if (!canAcceptKeyEvents()) return false
 
-        var input = event.unicodeChar
+        var specialInput = false
         if ((event.metaState and KeyEvent.META_CTRL_ON) != 0) {
-            if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
+            if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
                 input = (keyCode - KeyEvent.KEYCODE_A) + 1
+                specialInput = true
+            }
         }
-        when (keyCode) {
-            KeyEvent.KEYCODE_ESCAPE -> input = 27
-            KeyEvent.KEYCODE_FORWARD_DEL -> input = 127
-            KeyEvent.KEYCODE_DEL -> input = 8
+
+        if (!specialInput) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_ESCAPE -> {
+                    input = 27
+                    specialInput = true
+                }
+
+                KeyEvent.KEYCODE_FORWARD_DEL -> {
+                    input = 127
+                    specialInput = true
+                }
+
+                KeyEvent.KEYCODE_DEL -> {
+                    input = 8
+                    specialInput = true
+                }
+            }
+        }
+
+        if (!specialInput) {
+            if ((input and KeyCharacterMap.COMBINING_ACCENT) != 0) {
+                input = input and KeyCharacterMap.COMBINING_ACCENT
+            }
         }
 
         executor.execute {
@@ -652,6 +687,8 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        metaState = MetaKeyKeyListener.handleKeyUp(metaState, keyCode, event)
+
         executor.execute {
             appCore.keyUp(event.unicodeChar, keyCode, 0)
         }
