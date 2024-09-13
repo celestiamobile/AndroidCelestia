@@ -241,6 +241,10 @@ public class AppCore {
         return simulation;
     }
 
+    public static void log(@NonNull String string) {
+        c_log(string);
+    }
+
     public @NonNull String getRenderInfo() {
         return c_getRenderInfo(pointer);
     }
@@ -293,6 +297,8 @@ public class AppCore {
 
     private static native boolean c_initGL();
     private static native void c_chdir(String path);
+
+    private static native void c_log(String string);
 
     private static native List<Destination> c_getDestinations(long ptr);
 

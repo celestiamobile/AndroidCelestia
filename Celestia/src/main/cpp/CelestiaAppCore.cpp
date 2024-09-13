@@ -24,6 +24,7 @@
 #include <celutil/fsutils.h>
 #include <celutil/gettext.h>
 #include <celutil/localeutil.h>
+#include <celutil/logger.h>
 #include <celestia/url.h>
 #include <unicode/uloc.h>
 #include <fmt/format.h>
@@ -391,6 +392,16 @@ Java_space_celestia_celestia_AppCore_c_1chdir(JNIEnv *env, jclass clazz,
     chdir(c_str);
     env->ReleaseStringUTFChars(path, c_str);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1log(JNIEnv *env, jclass clazz,
+                                              jstring string) {
+    const char *c_str = env->GetStringUTFChars(string, nullptr);
+    celestia::util::GetLogger()->warn(c_str);
+    env->ReleaseStringUTFChars(string, c_str);
+}
+
 
 static int convert_modifier_to_celestia_modifier(jint buttons, jint modifiers)
 {

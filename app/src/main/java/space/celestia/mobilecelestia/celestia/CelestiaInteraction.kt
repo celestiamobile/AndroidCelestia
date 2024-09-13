@@ -642,7 +642,8 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
     private fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         metaState = MetaKeyKeyListener.handleKeyDown(metaState, keyCode, event)
-        var input = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(metaState))
+        val originalInput = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(metaState))
+        var input = originalInput
         metaState = MetaKeyKeyListener.adjustMetaAfterKeypress(metaState)
 
         if (!canAcceptKeyEvents()) return false
@@ -680,7 +681,9 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             }
         }
 
+        val logString = "Key Code: ${keyCode} Input: ${input}, ${originalInput} Unicode Char: ${event.unicodeChar} Unicode Char without MetaState: ${event.getUnicodeChar(0)} Event MetaState: ${event.metaState} Overall MetaState: ${event.metaState}\n"
         executor.execute {
+            AppCore.log(logString)
             appCore.keyDown(input, keyCode, event.keyModifier())
         }
         return true
