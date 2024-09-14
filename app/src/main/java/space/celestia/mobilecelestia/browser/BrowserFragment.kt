@@ -120,14 +120,6 @@ class BrowserFragment : Fragment(), BrowserRootFragment, NavigationBarView.OnIte
         loadingIndicator = view.findViewById(R.id.loading_indicator)
         browserContainer = view.findViewById(R.id.browser_container)
         navigation = view.findViewById(R.id.navigation)
-
-        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.navigation_container)) { _, insets ->
-            // Consume bottom insets because we have a bottom bar now
-            // TODO: the suggested replacement for the deprecated methods does not work
-            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(insets.systemWindowInsetLeft , insets.systemWindowInsetTop, insets.systemWindowInsetRight, 0))
-            return@setOnApplyWindowInsetsListener builder.build()
-        }
-
         return view
     }
 

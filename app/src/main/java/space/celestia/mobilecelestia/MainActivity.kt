@@ -274,16 +274,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        ViewCompat.setOnApplyWindowInsetsListener(drawerLayout) { _, insets ->
-            // TODO: the suggested replacement for the deprecated methods does not work
-            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(if (isRTL) insets.systemWindowInsetLeft else 0 , insets.systemWindowInsetTop, if (isRTL) 0 else insets.systemWindowInsetRight, insets.systemWindowInsetBottom))
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawer)) { _, insets ->
+            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(if (isRTL) systemBarInsets.left else 0 , systemBarInsets.top, if (isRTL) 0 else systemBarInsets.right, systemBarInsets.bottom))
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
         val bottomSheetContainer = findViewById<FrameLayout>(R.id.bottom_sheet)
         ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
-            // TODO: the suggested replacement for the deprecated methods does not work
-            val builder = WindowInsetsCompat.Builder(insets).setSystemWindowInsets(Insets.of(0, 0, 0, insets.systemWindowInsetBottom))
+            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
             return@setOnApplyWindowInsetsListener builder.build()
         }
         findViewById<FrameLayout>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -369,10 +369,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun updateConfiguration(configuration: Configuration, windowInsets: WindowInsetsCompat?) {
         val isRTL = configuration.layoutDirection == LayoutDirection.RTL
 
+        val hasRegularHorizontalSpace =  configuration.screenWidthDp > SheetLayout.sheetMaxFullWidthDp
+
         val safeInsets = EdgeInsets(
-            EdgeInsets(windowInsets),
+            windowInsets,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RoundedCorners(windowInsets) else RoundedCorners(0, 0, 0, 0),
-            configuration
+            hasRegularHorizontalSpace
         )
 
         val safeInsetStart = if (isRTL) safeInsets.right else safeInsets.left
@@ -391,6 +393,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
         bottomSheetContainer.edgeInsets = safeInsets
+        bottomSheetContainer.useLandscapeLayout = hasRegularHorizontalSpace
         bottomSheetContainer.requestLayout()
 
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)

@@ -17,8 +17,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -34,6 +38,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -88,6 +93,7 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
         val scroll = rememberScrollState(0)
         val nestedScrollInterop = rememberNestedScrollInteropConnection()
         Column(modifier = Modifier
+            .fillMaxSize()
             .nestedScroll(nestedScrollInterop)
             .padding(
                 start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
@@ -95,15 +101,20 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
             ),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            SelectionContainer(modifier = Modifier
-                .verticalScroll(scroll)
-                .weight(1.0f)
-                .fillMaxWidth()
-                .padding(
-                    top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),
-                )
-            ) {
-                Text(text = item?.description ?: "", color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyLarge)
+            Box(modifier = Modifier.weight(1.0f).fillMaxWidth()) {
+                SelectionContainer(
+                    modifier = Modifier
+                        .verticalScroll(scroll)
+                        .padding(
+                            top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),
+                        )
+                ) {
+                    Text(
+                        text = item?.description ?: "",
+                        color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
             FilledTonalButton(modifier = Modifier
                 .fillMaxWidth()

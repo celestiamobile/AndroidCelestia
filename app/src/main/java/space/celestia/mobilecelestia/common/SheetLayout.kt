@@ -18,7 +18,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.customview.widget.ViewDragHelper
-import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
@@ -29,6 +28,7 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
     private var capturedViewY: Int? = null
 
     var edgeInsets: EdgeInsets = EdgeInsets()
+    var useLandscapeLayout = false
 
     init {
         val callback = object: ViewDragHelper.Callback() {
@@ -52,7 +52,8 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
             }
 
             override fun clampViewPositionVertical(child: View, top: Int, dy: Int): Int {
-                return min(max(top, max(height - ceil(sheetMaxHeightRatio * height).toInt(), edgeInsets.top)), (height - sheetHandleHeight * resources.displayMetrics.density - edgeInsets.bottom).toInt())
+                val maxHeight = ((height - edgeInsets.top - edgeInsets.bottom) * sheetMaxHeightRatio).toInt()
+                return min(max(top, max(height - maxHeight - edgeInsets.bottom, edgeInsets.top)), (height - sheetHandleHeight * resources.displayMetrics.density - edgeInsets.bottom).toInt())
             }
         }
         dragHelper = ViewDragHelper.create(this, callback)
@@ -90,7 +91,7 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
         val containerWidth = resolveSizeAndState(0, widthMeasureSpec, 0)
         val containerHeight = resolveSizeAndState(0, heightMeasureSpec, 0)
         val density = resources.displayMetrics.density
-        val shouldNotOccupyFullWidth = (containerWidth / density) > sheetMaxFullWidthDp
+        val shouldNotOccupyFullWidth = useLandscapeLayout
 
         for (i in 0 until childCount) {
             val child = getChildAt(i)
@@ -99,7 +100,7 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
                 continue
 
             val childWidth = if (shouldNotOccupyFullWidth) calculateChildWidth(containerWidth, density) else (containerWidth - edgeInsets.left - edgeInsets.right)
-            val childHeight = min(containerHeight - edgeInsets.top, ceil(containerHeight * sheetMaxHeightRatio).toInt())
+            val childHeight = min(containerHeight - edgeInsets.top, edgeInsets.bottom + ((containerHeight - edgeInsets.top - edgeInsets.bottom) * sheetMaxHeightRatio).toInt())
             child.measure(MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.EXACTLY))
         }
         setMeasuredDimension(containerWidth, containerHeight)
@@ -112,14 +113,14 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
         val containerWidth = right - left
         val containerHeight = bottom - top
 
-        val shouldNotOccupyFullWidth = (containerWidth / density) > sheetMaxFullWidthDp
+        val shouldNotOccupyFullWidth = useLandscapeLayout
 
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             if (child.visibility == GONE)
                 continue
 
-            val sheetHeight = min(containerHeight - edgeInsets.top, ceil(containerHeight * sheetMaxHeightRatio).toInt())
+            val sheetHeight = min(containerHeight - edgeInsets.top, edgeInsets.bottom + ((containerHeight - edgeInsets.top - edgeInsets.bottom) * sheetMaxHeightRatio).toInt())
 
             var y = containerHeight - sheetHeight
             if (child == capturedView) {
@@ -149,14 +150,13 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
         return max(widthLowerBound, min(widthUpperBound, sheetStandardWidthDp * density)).toInt()
     }
 
-    private companion object {
-        const val TAG = "SheetLayout"
-        const val sheetPaddingNonFullWidthDp = 16
-        const val sheetStandardWidthDp = 320
-        const val sheetMinWidthRatio = 0.3f
-        const val sheetMaxWidthRatio = 0.5f
-        const val sheetMaxHeightRatio = 0.9
-        const val sheetHandleHeight = 30
+    companion object {
+        private const val sheetPaddingNonFullWidthDp = 16
+        private const val sheetStandardWidthDp = 320
+        private const val sheetMinWidthRatio = 0.3f
+        private const val sheetMaxWidthRatio = 0.5f
+        private const val sheetMaxHeightRatio = 0.9
+        private const val sheetHandleHeight = 30
         const val sheetMaxFullWidthDp = 600
     }
 }
