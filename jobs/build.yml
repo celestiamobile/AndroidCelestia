@@ -27,8 +27,8 @@ jobs:
     displayName: 'Install Dependencies'
 
   - script: |
-      npm install -g appcenter-cli
-    displayName: 'Install AppCenter-CLI'
+      curl -sL https://sentry.io/get-cli/ | sh
+    displayName: 'Install Sentry-CLI'
 
   - script: |
       cd Celestia
@@ -70,11 +70,58 @@ jobs:
     displayName: 'Download Dependencies'
 
   - script: |
-      sed -i 's/APPCENTER-APP-ID/$(appCenterSecret)/g' app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+      TO_REPLACE="SENTRY-DSN"
+      NEW_STRING=$(SENTRY-DSN)
+      sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+
+      BUNDLE_UUID=`uuidgen`
+      FLAVOR_BUNDLE_UUID=`uuidgen`
+      CELESTIA_BUNDLE_UUID=`uuidgen`
+      CELESTIA_FOUNDATION_BUNDLE_UUID=`uuidgen`
+      LINK_PREVIEW_BUNDLE_UUID=`uuidgen`
+      ZIP_UTILS_BUNDLE_UUID=`uuidgen`
+      PROGUARD_UUID=`uuidgen`
+
+      TO_REPLACE="FLAVOR_BUNDLE_UUID"
+      NEW_STRING=$FLAVOR_BUNDLE_UUID
+      sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+
+      TO_REPLACE="CELESTIA_BUNDLE_UUID"
+      NEW_STRING=$CELESTIA_BUNDLE_UUID
+      sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+
+      TO_REPLACE="CELESTIA_FOUNDATION_BUNDLE_UUID"
+      NEW_STRING=$CELESTIA_FOUNDATION_BUNDLE_UUID
+      sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+
+      TO_REPLACE="LINK_PREVIEW_BUNDLE_UUID"
+      NEW_STRING=$LINK_PREVIEW_BUNDLE_UUID
+      sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+
+      TO_REPLACE="ZIP_UTILS_BUNDLE_UUID"
+      NEW_STRING=$ZIP_UTILS_BUNDLE_UUID
+      sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+
+      TO_REPLACE="BUNDLE_UUID"
+      NEW_STRING=$BUNDLE_UUID
+      sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+
+      TO_REPLACE="PROGUARD_UUID"
+      NEW_STRING=$PROGUARD_UUID
+      sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+
+      echo "##vso[task.setvariable variable=BundleUuid]$BUNDLE_UUID"
+      echo "##vso[task.setvariable variable=FlavorBundleUuid]$FLAVOR_BUNDLE_UUID"
+      echo "##vso[task.setvariable variable=CelestiaBundleUuid]$CELESTIA_BUNDLE_UUID"
+      echo "##vso[task.setvariable variable=CelestiaFoundationBundleUuid]$CELESTIA_FOUNDATION_BUNDLE_UUID"
+      echo "##vso[task.setvariable variable=LinkPreviewBundleUuid]$LINK_PREVIEW_BUNDLE_UUID"
+      echo "##vso[task.setvariable variable=ZipUtilsBundleUuid]$ZIP_UTILS_BUNDLE_UUID"
+      echo "##vso[task.setvariable variable=ProguardUuid]$PROGUARD_UUID"
+
       echo "New Content:"
       cat app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
     workingDirectory: '$(System.DefaultWorkingDirectory)/AndroidCelestia'
-    displayName: 'Replace AppCenter Placeholders'
+    displayName: 'Replace Sentry Placeholders'
 
   - task: JavaToolInstaller@0
     inputs:
@@ -150,34 +197,55 @@ jobs:
     displayName: 'Publish Build Artifacts'
 
   - script: |
-      mkdir -p symbols
-      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
-      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/Celestia/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
-      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/ZipUtils/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
-      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/intermediates/native_symbol_tables/release/out/* symbols
-      cd symbols
-      zip -vr symbols.zip * -x "*.DS_Store"
-      appcenter crashes upload-symbols --breakpad symbols.zip --app $(appCenterProject) --token $(appCenterToken) --disable-telemetry --debug
+      echo "##vso[task.setvariable variable=Flavor]sideload"
+      echo "##vso[task.setvariable variable=FlavorTask]sideloadRelease"
+    displayName: 'Set Variables (Sideload)'
+    condition: eq( variables['outputFormat'], 'apk' )
+
+  - script: |
+      echo "##vso[task.setvariable variable=Flavor]play"
+      echo "##vso[task.setvariable variable=FlavorTask]playRelease"
+    displayName: 'Set Variables (Play)'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - script: |
+      export SENTRY_ORG=celestia-vs
+      export SENTRY_PROJECT=android
+      export SENTRY_AUTH_TOKEN=$(SENTRY_AUTH_TOKEN)
+      export VERSION_CODE=`grep versionCode app/src/main/AndroidManifest.xml | cut -d\" -f2`
+      export VERSION_NAME=`grep versionName app/src/main/AndroidManifest.xml | cut -d\" -f2`
+      mkdir bundle
+
+      sentry-cli debug-files bundle-jvm --output bundle --debug-id $(BundleUuid) app/src/main/java
+      sentry-cli debug-files bundle-jvm --output bundle --debug-id $(FlavorBundleUuid) app/src/$(Flavor)/java
+      sentry-cli debug-files bundle-jvm --output bundle --debug-id $(CelestiaBundleUuid) Celestia/src/main/java
+      sentry-cli debug-files bundle-jvm --output bundle --debug-id $(CelestiaFoundationBundleUuid) CelestiaFoundation/src/main/java
+      sentry-cli debug-files bundle-jvm --output bundle --debug-id $(LinkPreviewBundleUuid) LinkPreview/src/main/java
+      sentry-cli debug-files bundle-jvm --output bundle --debug-id $(ZipUtilsBundleUuid) ZipUtils/src/main/java
+      sentry-cli debug-files upload --type jvm bundle
+      sentry-cli upload-proguard --uuid $(ProguardUuid) app/build/outputs/mapping/$(FlavorTask)/mapping.txt --app-id space.celestia.mobilecelestia --version $VERSION_NAME --version-code $VERSION_CODE
+      sentry-cli debug-files upload --include-sources Celestia/build/intermediates/cxx/RelWithDebInfo/
+      sentry-cli debug-files upload --include-sources ZipUtils/build/intermediates/cxx/RelWithDebInfo/
+
+      mkdir symbols
+      cp -r Celestia/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
+      cp -r ZipUtils/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
+
+      mkdir mapping
+      cp app/build/outputs/mapping/$(FlavorTask)/mapping.txt mapping
+    workingDirectory: '$(System.DefaultWorkingDirectory)/AndroidCelestia'
     displayName: 'Upload Symbols'
 
   - task: PublishBuildArtifacts@1
     inputs:
-      PathtoPublish: 'symbols/symbols.zip'
+      PathtoPublish: '$(System.DefaultWorkingDirectory)/AndroidCelestia/symbols'
       ArtifactName: '$(outputFormat)-symbols'
       publishLocation: 'Container'
     displayName: 'Publish Symbols'
 
-  - script: |
-      export VERSION_CODE=`grep versionCode $(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml | cut -d\" -f2`
-      export VERSION_NAME=`grep versionName $(system.defaultWorkingDirectory)/AndroidCelestia/app/src/main/AndroidManifest.xml | cut -d\" -f2`
-      mkdir -p mapping
-      cp -r $(system.defaultWorkingDirectory)/AndroidCelestia/app/build/outputs/mapping/**/mapping.txt mapping
-      appcenter crashes upload-mappings --mapping mapping/mapping.txt --version-name $VERSION_NAME --version-code $VERSION_CODE --app $(appCenterProject) --token $(appCenterToken) --disable-telemetry --debug
-    displayName: 'Upload Mapping'
-
   - task: PublishBuildArtifacts@1
     inputs:
-      PathtoPublish: 'mapping/mapping.txt'
+      PathtoPublish: '$(System.DefaultWorkingDirectory)/AndroidCelestia/mapping/mapping.txt'
       ArtifactName: '$(outputFormat)-mapping'
       publishLocation: 'Container'
     displayName: 'Publish Mapping'

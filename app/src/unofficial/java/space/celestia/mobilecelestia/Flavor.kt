@@ -11,5 +11,4 @@
 
 package space.celestia.mobilecelestia
 
-fun MainActivity.setUpFlavor() {}
-fun MainActivity.getLastCrashReportId(): String? { return null }
+fun CelestiaApplication.setUpFlavor() {}

@@ -11,30 +11,21 @@
 
 package space.celestia.mobilecelestia
 
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
-import space.celestia.mobilecelestia.utils.CrashHandler
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import io.sentry.android.core.SentryAndroid
 
-fun MainActivity.setUpFlavor() {
-    if (!AppCenter.isConfigured()) {
-        AppCenter.start(
-            application, "APPCENTER-APP-ID",
-            Analytics::class.java, Crashes::class.java
-        )
-
-        Crashes.getMinidumpDirectory().thenAccept { path ->
-            if (path != null) {
-                CrashHandler.setupNativeCrashesListener(path)
-            }
-        }
-    }
-}
-
-suspend fun MainActivity.getLastCrashReportId(): String? = suspendCoroutine { cont ->
-    Crashes.getLastSessionCrashReport().thenAccept { errorReport ->
-        cont.resume(errorReport?.id)
+fun CelestiaApplication.setUpFlavor() {
+    SentryAndroid.init(this) { options ->
+        options.dsn = "SENTRY-DSN"
+        options.isDebug = BuildConfig.DEBUG
+        options.enableTracing = false
+        options.isAttachScreenshot = false
+        options.isAttachViewHierarchy = false
+        options.addBundleId("BUNDLE_UUID")
+        options.addBundleId("FLAVOR_BUNDLE_UUID")
+        options.addBundleId("CELESTIA_BUNDLE_UUID")
+        options.addBundleId("CELESTIA_FOUNDATION_BUNDLE_UUID")
+        options.addBundleId("LINK_PREVIEW_BUNDLE_UUID")
+        options.addBundleId("ZIP_UTILS_BUNDLE_UUID")
+        options.proguardUuid = "PROGUARD_UUID"
     }
 }

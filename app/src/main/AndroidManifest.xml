@@ -136,6 +136,8 @@
                 android:name="autoStoreLocales"
                 android:value="true" />
         </service>
+
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
     </application>
 
     <queries>
