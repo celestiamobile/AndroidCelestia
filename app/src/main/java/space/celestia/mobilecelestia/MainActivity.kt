@@ -209,8 +209,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         Log.d(TAG, "Creating MainActivity")
 
-        setUpFlavor()
-
         // One time migration of language to system per app language support
         val language = appSettings[PreferenceManager.PredefinedKey.Language]
         if (language != null) {
@@ -1741,14 +1739,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val url = appCore.currentURL
             return@withContext Triple(renderInfo, url, success)
         }
-        val crashReportId = getLastCrashReportId()
         val screenshotFile = if (celestiaInfo.third) proposedScreenshotFile else null
         val renderInfoFile = writeTextToFileWithName(celestiaInfo.first, parentDirectory, "renderinfo.txt")
         val urlInfoFile = writeTextToFileWithName(celestiaInfo.second, parentDirectory, "urlinfo.txt")
         val addons =
             resourceManager.installedResourcesAsync().joinToString("\n") { "${it.name}/${it.id}" }
         val addonInfoFile = writeTextToFileWithName(addons, parentDirectory, "addoninfo.txt")
-        val crashInfoFile = if (crashReportId != null) writeTextToFileWithName(crashReportId, parentDirectory, "crashinfo.txt") else null
         val purchaseToken = purchaseManager.purchaseToken()
         val purchaseTokenFile: File? = if (purchaseToken != null) {
             writeTextToFileWithName(purchaseToken, parentDirectory, "purchasetoken.txt")
@@ -1768,7 +1764,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             urlInfoFile,
             addonInfoFile,
             systemInfoFile,
-            crashInfoFile,
             purchaseTokenFile
         )
         if (!sendEmail(files,  CelestiaString("Bug report for Celestia", "Default email title for bug report"), CelestiaString("Please describe the issue and repro steps, if known.", "Default email body for bug report"))) {
@@ -2126,7 +2121,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         init {
             System.loadLibrary("ziputils")
-            System.loadLibrary("nativecrashhandler")
             System.loadLibrary("celestia")
             AppCore.setUpLocale()
         }

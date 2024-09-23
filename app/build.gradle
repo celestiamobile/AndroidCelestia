@@ -39,12 +39,6 @@ android {
         targetSdkVersion constants.targetSdkVersion
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        externalNativeBuild {
-            cmake {
-                arguments "-DANDROID_STL=c++_shared"
-            }
-        }
     }
 
     buildTypes {
@@ -65,13 +59,6 @@ android {
 
     kotlinOptions {
         jvmTarget = '17'
-    }
-
-    externalNativeBuild {
-        cmake {
-            version constants.cmakeVersion
-            path "src/main/cpp/crash/CMakeLists.txt"
-        }
     }
 
     tasks.register('copyLocalizedFiles', Exec) {
@@ -147,11 +134,9 @@ dependencies {
     implementation project(path: ':Celestia')
     implementation project(path: ':CelestiaFoundation')
 
-    def appCenterSdkVersion = '5.0.4'
-    playImplementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
-    playImplementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
-    sideloadImplementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
-    sideloadImplementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
+    def sentry_version = '7.14.0'
+    playImplementation "io.sentry:sentry-android:$sentry_version"
+    sideloadImplementation "io.sentry:sentry-android:$sentry_version"
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
