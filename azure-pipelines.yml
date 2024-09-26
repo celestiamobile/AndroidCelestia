@@ -30,9 +30,6 @@ stages:
   - template: jobs/build.yml
     parameters:
       outputFormat: apk
-      appCenterSecret: $(APPCENTER_SECRET_SIDELOAD)
-      appCenterToken: $(APP_CENTER_TOKEN_SIDELOAD)
-      appCenterProject: CelestiaProject/Celestia-5
 
 - stage: Build_AAB
   displayName: 'Build AAB'
@@ -41,6 +38,3 @@ stages:
   - template: jobs/build.yml
     parameters:
       outputFormat: aab
-      appCenterSecret: $(APPCENTER_SECRET)
-      appCenterToken: $(APP_CENTER_TOKEN)
-      appCenterProject: CelestiaProject/Celestia-1

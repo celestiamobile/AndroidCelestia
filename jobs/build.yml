@@ -6,9 +6,6 @@ jobs:
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
-    appCenterSecret: ${{ parameters.appCenterSecret }}
-    appCenterToken: ${{ parameters.appCenterToken }}
-    appCenterProject: ${{ parameters.appCenterProject }}
     contentCommitHash: ${{ '9f85700c021c0ef084c209a6e32b176bf95524d6' }}
 
   steps:
