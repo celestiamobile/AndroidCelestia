@@ -40,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -148,7 +149,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                 items.add(ToolbarAction.Menu)
             mutableStateOf(items.toList())
         }
-        val otherItems = ToolbarAction.availableItems.filterNot { list.contains(it) }
+        val otherItems by remember { derivedStateOf { ToolbarAction.availableItems.filterNot { list.contains(it) } } }
 
         val listState = rememberLazyListState()
         val dragDropState = rememberDragDropState(listState) { fromIndex, toIndex ->
