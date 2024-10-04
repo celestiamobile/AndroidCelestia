@@ -74,3 +74,9 @@ Java_space_celestia_celestia_Utils_getMilliSecondsFromEpochFromJulianDay(JNIEnv 
     static auto epoch = celestia::astro::Date(1970, 1, 1);
     return static_cast<jlong>((celestia::astro::TDBtoUTC(julian_day) - epoch) * 86400.0 * 1000.0);
 }
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_degFromRad(JNIEnv *env, jclass clazz, jdouble rad) {
+    return static_cast<jdouble>(celestia::math::radToDeg(static_cast<double>(rad)));
+}

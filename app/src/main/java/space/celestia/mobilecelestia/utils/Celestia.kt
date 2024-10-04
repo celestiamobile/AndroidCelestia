@@ -143,10 +143,10 @@ private fun AppCore.getOverviewForStar(star: Star): String {
     numberFormat.maximumFractionDigits = 2
     numberFormat.isGroupingUsed = true
 
-    val hms = DMS(sph.x)
+    val hms = DMS(Utils.degFromRad(sph.x))
     lines.add(CelestiaString("RA: %sh %sm %ss", "Equatorial coordinate").format(numberFormat.format(hms.hmsHours), numberFormat.format(hms.hmsMinutes), numberFormat.format(hms.hmsSeconds)))
 
-    val dms = DMS(sph.y)
+    val dms = DMS(Utils.degFromRad(sph.y))
     lines.add(CelestiaString("DEC: %s° %s′ %s″", "Equatorial coordinate").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     return lines.joinToString(separator = "\n")
@@ -165,19 +165,19 @@ private fun getOverviewForDSO(dso: DSO): String {
     numberFormat.maximumFractionDigits = 2
     numberFormat.isGroupingUsed = true
 
-    val hms = DMS(sph.x)
+    val hms = DMS(Utils.degFromRad(sph.x))
     lines.add(CelestiaString("RA: %sh %sm %ss", "Equatorial coordinate").format(numberFormat.format(hms.hmsHours), numberFormat.format(hms.hmsMinutes), numberFormat.format(hms.hmsSeconds)))
 
-    var dms = DMS(sph.y)
+    var dms = DMS(Utils.degFromRad(sph.y))
     lines.add(CelestiaString("DEC: %s° %s′ %s″", "Equatorial coordinate").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     val galPos = Utils.equatorialToGalactic(eqPos)
     sph = Utils.rectToSpherical(galPos)
 
-    dms = DMS(sph.x)
+    dms = DMS(Utils.degFromRad(sph.x))
     lines.add(CelestiaString("L: %s° %s′ %s″", "Galactic coordinates").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
-    dms = DMS(sph.y)
+    dms = DMS(Utils.degFromRad(sph.y))
     lines.add(CelestiaString("B: %s° %s′ %s″", "Galactic coordinates").format(numberFormat.format(dms.degrees), numberFormat.format(dms.minutes), numberFormat.format(dms.seconds)))
 
     return lines.joinToString(separator = "\n")
