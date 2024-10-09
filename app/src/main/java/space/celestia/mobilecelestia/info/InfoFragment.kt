@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.os.BundleCompat
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Selection
@@ -42,7 +43,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            selection = Selection(it.getLong(ARG_OBJECT_POINTER), it.getInt(ARG_OBJECT_TYPE))
+            selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)!!
             embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION, false)
         }
     }
@@ -95,16 +96,14 @@ class InfoFragment : NavigationFragment.SubFragment() {
     }
 
     companion object {
-        const val ARG_OBJECT_POINTER = "object"
-        const val ARG_OBJECT_TYPE = "type"
+        const val ARG_OBJECT = "object"
         const val ARG_EMBEDDED_IN_NAVIGATION = "embedded-in-navigation"
 
         @JvmStatic
         fun newInstance(selection: Selection, embeddedInNavigation: Boolean = false) =
             InfoFragment().apply {
                 arguments = Bundle().apply {
-                    this.putLong(ARG_OBJECT_POINTER, selection.objectPointer)
-                    this.putInt(ARG_OBJECT_TYPE, selection.type)
+                    this.putParcelable(ARG_OBJECT, selection)
                     this.putBoolean(ARG_EMBEDDED_IN_NAVIGATION, embeddedInNavigation)
                 }
             }

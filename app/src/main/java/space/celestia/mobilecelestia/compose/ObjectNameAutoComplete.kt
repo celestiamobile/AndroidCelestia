@@ -15,26 +15,28 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Completion
+import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import java.lang.ref.WeakReference
 
 @SuppressLint("InflateParams")
 @Composable
-fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: String, modifier: Modifier = Modifier, path: String, inputUpdated: (String) -> Unit, objectPathUpdated: (String) -> Unit) {
+fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: String, modifier: Modifier = Modifier, selection: Selection, inputUpdated: (String) -> Unit, selectionUpdated: (Selection) -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     var savedCompletions by rememberSaveable {
-        mutableStateOf(listOf<String>())
+        mutableStateOf(listOf<Completion>())
     }
     var savedName by rememberSaveable {
         mutableStateOf(name)
     }
-    var savedPath by rememberSaveable {
-        mutableStateOf(path)
+    var savedObject by rememberSaveable {
+        mutableStateOf(selection)
     }
 
-    class StringArrayAdapter(context: Context, var content: List<String> = listOf()): ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line) {
-        fun updateContent(content: List<String>) {
+    class StringArrayAdapter(context: Context, var content: List<Completion> = listOf()): ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line) {
+        fun updateContent(content: List<Completion>) {
             this.content = content
         }
 
@@ -43,7 +45,7 @@ fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: Stri
         }
 
         override fun getItem(position: Int): String {
-            return content[position]
+            return content[position].name
         }
     }
 
@@ -57,13 +59,17 @@ fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: Stri
         val autoCompleteAction: (String) -> Unit = { text ->
             savedName = text
             inputUpdated(savedName)
-            objectPathUpdated(savedName)
             coroutineScope.launch {
                 val strongView = weakView.get() ?: return@launch
-                val completions = if (text.isEmpty()) listOf<String>() else withContext(executor.asCoroutineDispatcher()) {
-                    core.simulation.completionForText(text, 10)
+                val results = if (text.isEmpty()) Pair(listOf(), Selection()) else withContext(executor.asCoroutineDispatcher()) {
+                    val completions = core.simulation.completionForText(text, 10)
+                    val fullMatch = core.simulation.findObject(text)
+                    return@withContext Pair(completions, fullMatch)
                 }
                 if (text != savedName) return@launch
+                val completions = results.first
+                val fullMatch = results.second
+                selectionUpdated(fullMatch)
                 if (savedCompletions != completions) {
                     savedCompletions = completions
                     adapter.updateContent(completions)
@@ -90,15 +96,9 @@ fun ObjectNameAutoComplete(executor: CelestiaExecutor, core: AppCore, name: Stri
         }
         autoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
             if (position >= 0 && position < adapter.count) {
-                val result = adapter.getItem(position)
-                val lastSeparator = savedName.lastIndexOf('/')
-                val objectPath: String = if (lastSeparator != -1) {
-                    savedName.substring(startIndex = 0, endIndex = lastSeparator + 1) + result
-                } else {
-                    result
-                }
-                savedPath = objectPath
-                objectPathUpdated(objectPath)
+                val selected = savedCompletions[position].selection
+                savedObject = selected
+                selectionUpdated(selected)
             }
         }
         return@AndroidView view

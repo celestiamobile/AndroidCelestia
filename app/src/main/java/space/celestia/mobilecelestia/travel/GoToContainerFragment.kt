@@ -12,6 +12,8 @@
 package space.celestia.mobilecelestia.travel
 
 import android.os.Bundle
+import androidx.core.os.BundleCompat
+import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.celestiafoundation.utils.getSerializableValue
 
@@ -20,36 +22,32 @@ class GoToContainerFragment : NavigationFragment() {
         get() = requireNotNull(_goToData)
     private var _goToData: GoToInputFragment.GoToData? = null
 
+    private val selection: Selection
+        get() = requireNotNull(_selection)
+    private var _selection: Selection? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (_goToData == null) {
-            if (savedInstanceState != null) {
-                _goToData = savedInstanceState.getSerializableValue(ARG_DATA, GoToInputFragment.GoToData::class.java)
-            } else {
-                arguments?.let {
-                    _goToData = it.getSerializableValue(ARG_DATA, GoToInputFragment.GoToData::class.java)
-                }
-            }
+        arguments?.let {
+            _selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)
+            _goToData = it.getSerializableValue(ARG_DATA, GoToInputFragment.GoToData::class.java)
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(ARG_DATA, goToData)
-        super.onSaveInstanceState(outState)
-    }
-
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return GoToInputFragment.newInstance(goToData)
+        return GoToInputFragment.newInstance(goToData, selection)
     }
 
     companion object {
         private const val ARG_DATA = "data"
+        private const val ARG_OBJECT = "object"
 
         @JvmStatic
-        fun newInstance(goToData: GoToInputFragment.GoToData) =
+        fun newInstance(goToData: GoToInputFragment.GoToData, selection: Selection) =
             GoToContainerFragment().apply {
                 arguments = Bundle().apply {
+                    putParcelable(ARG_OBJECT, selection)
                     putSerializable(ARG_DATA, goToData)
                 }
             }

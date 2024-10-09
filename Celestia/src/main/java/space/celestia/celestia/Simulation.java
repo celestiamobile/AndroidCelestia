@@ -28,7 +28,7 @@ public class Simulation {
         c_setSelection(pointer, selection);
     }
 
-    public @NonNull List<String> completionForText(@NonNull String text, int limit) {
+    public @NonNull List<Completion> completionForText(@NonNull String text, int limit) {
         return c_completionForText(pointer, text, limit);
     }
 
@@ -91,7 +91,7 @@ public class Simulation {
     private static native Selection c_getSelection(long pointer);
     private static native void c_setSelection(long pointer, Selection selection);
     private static native long c_getUniverse(long pointer);
-    private static native List<String> c_completionForText(long pointer, String text, int limit);
+    private static native List<Completion> c_completionForText(long pointer, String text, int limit);
     private static native Selection c_findObject(long pointer, String name);
     private static native void c_reverseObserverOrientation(long pointer);
     private static native double c_getTime(long pointer);

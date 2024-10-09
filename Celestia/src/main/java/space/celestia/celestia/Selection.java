@@ -11,9 +11,12 @@
 
 package space.celestia.celestia;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.Nullable;
 
-public class Selection {
+public class Selection implements Parcelable {
     private final static int SELECTION_TYPE_NIL             = 0;
     private final static int SELECTION_TYPE_STAR            = 1;
     private final static int SELECTION_TYPE_BODY            = 2;
@@ -63,6 +66,31 @@ public class Selection {
     public Selection(@Nullable AstroObject object) {
         this(object, typeForObject(object));
     }
+
+    @Override
+    public int describeContents(){
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(getObjectPointer());
+        dest.writeInt(getObjectType());
+    }
+
+    public static final Creator<Selection> CREATOR = new Creator<>() {
+        @Override
+        public Selection createFromParcel(Parcel in) {
+            long objectPointer = in.readLong();
+            int objectType = in.readInt();
+            return new Selection(objectPointer, objectType);
+        }
+
+        @Override
+        public Selection[] newArray(int size) {
+            return new Selection[size];
+        }
+    };
 
     private static int typeForObject(AstroObject object) {
         if (object == null) {

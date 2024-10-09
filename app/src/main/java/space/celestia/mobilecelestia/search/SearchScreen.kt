@@ -48,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.celestia.celestia.Completion
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.EmptyHint
@@ -66,7 +67,7 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
         mutableStateOf("")
     }
     var searchResults by rememberSaveable {
-        mutableStateOf(listOf<String>())
+        mutableStateOf(listOf<Completion>())
     }
     var isSearchActive by rememberSaveable {
         mutableStateOf(false)
@@ -90,7 +91,7 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
                         searchKey = it
                         isSearching = true
                         scope.launch {
-                            val result = if (it.isEmpty()) listOf<String>() else withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.completionForText(it, 100) }
+                            val result = if (it.isEmpty()) listOf<Completion>() else withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.completionForText(it, 100) }
                             if (searchKey == it) {
                                 searchResults = result
                                 isSearching = false
@@ -146,14 +147,11 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
                     isSearchActive = false
                     isLoadingPage = true
                     scope.launch {
-                        val selection = withContext(viewModel.executor.asCoroutineDispatcher()) {
-                            viewModel.appCore.simulation.findObject(it)
-                        }
                         isLoadingPage = false
-                        if (selection.isEmpty)
+                        if (it.isEmpty)
                             objectNotFoundHandler()
                         else
-                            currentSelection = selection
+                            currentSelection = it
                     }
                 }
             },
@@ -180,7 +178,7 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkHan
 }
 
 @Composable
-private fun SearchResult(key: String, results: List<String>, isSearching: Boolean, selectionHandler: (String) -> Unit) {
+private fun SearchResult(key: String, results: List<Completion>, isSearching: Boolean, selectionHandler: (Selection) -> Unit) {
     if (results.isEmpty() && isSearching) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -202,14 +200,8 @@ private fun SearchResult(key: String, results: List<String>, isSearching: Boolea
                 .background(color = MaterialTheme.colorScheme.background)
         ) {
             items(results) {
-                TextRow(primaryText = it, modifier = Modifier.clickable {
-                    val lastSeparator = key.lastIndexOf('/')
-                    val name = if (lastSeparator != -1) {
-                        key.substring(startIndex = 0, endIndex = lastSeparator + 1) + it
-                    } else {
-                        it
-                    }
-                    selectionHandler(name)
+                TextRow(primaryText = it.name, modifier = Modifier.clickable {
+                    selectionHandler(it.selection)
                 })
             }
         }

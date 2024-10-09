@@ -55,6 +55,10 @@ extern jmethodID selectionGetObjectPointerMethodID;
 extern jmethodID selectionGetObjectTypeMethodID;
 extern jmethodID selectionInitMethodID;
 
+// completion
+extern jclass completionClz;
+extern jmethodID completionInitMethodID;
+
 extern pthread_key_t javaEnvKey;
 }
 

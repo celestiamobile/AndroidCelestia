@@ -72,17 +72,17 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
         var referenceObjectName by remember {
             mutableStateOf("")
         }
-        var referenceObjectPath by remember {
-            mutableStateOf("")
+        var referenceObject by remember {
+            mutableStateOf(Selection())
         }
         var targetObjectName by remember {
             mutableStateOf("")
         }
         var selectedCoordinateIndex by remember {
-            mutableStateOf(0)
+            mutableIntStateOf(0)
         }
-        var targetObjectPath by remember {
-            mutableStateOf("")
+        var targetObject by remember {
+            mutableStateOf(Selection())
         }
         val selectedCoordinateSystem = coordinateSystems[selectedCoordinateIndex].first
         val nestedScrollInterop = rememberNestedScrollInteropConnection()
@@ -97,20 +97,20 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
 
             if (selectedCoordinateSystem != Observer.COORDINATE_SYSTEM_UNIVERSAL) {
                 Header(text = CelestiaString("Reference Object", "Used in Flight Mode"))
-                ObjectNameAutoComplete(executor = executor, core = appCore, name = referenceObjectName, path = referenceObjectPath, inputUpdated = {
+                ObjectNameAutoComplete(executor = executor, core = appCore, name = referenceObjectName, selection = referenceObject, inputUpdated = {
                     referenceObjectName = it
-                }, objectPathUpdated = {
-                    referenceObjectPath = it
+                }, selectionUpdated = {
+                    referenceObject = it
                 }, modifier = internalViewModifier)
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             }
 
             if (selectedCoordinateSystem == Observer.COORDINATE_SYSTEM_PHASE_LOCK) {
                 Header(text = CelestiaString("Target Object", "Used in Flight Mode"))
-                ObjectNameAutoComplete(executor = executor, core = appCore, name = targetObjectName, path = targetObjectPath, inputUpdated = {
+                ObjectNameAutoComplete(executor = executor, core = appCore, name = targetObjectName, selection = targetObject, inputUpdated = {
                     targetObjectName = it
-                }, objectPathUpdated = {
-                    targetObjectPath = it
+                }, selectionUpdated = {
+                    targetObject = it
                 }, modifier = internalViewModifier)
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             }
@@ -122,7 +122,7 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
             })
 
             FilledTonalButton(modifier = internalViewModifier, onClick = {
-                applyObserverMode(referenceObjectPath = referenceObjectPath, targetObjectPath = targetObjectPath, coordinateSystem = selectedCoordinateSystem)
+                applyObserverMode(referenceObject = referenceObject, targetObject = targetObject, coordinateSystem = selectedCoordinateSystem)
             }) {
                 Text(text = CelestiaString("OK", ""))
             }
@@ -136,10 +136,8 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
         title = CelestiaString("Flight Mode", "")
     }
 
-    private fun applyObserverMode(referenceObjectPath: String, targetObjectPath: String, coordinateSystem: Int) = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-        val ref = if (referenceObjectPath.isEmpty()) Selection() else appCore.simulation.findObject(referenceObjectPath)
-        val target = if (targetObjectPath.isEmpty()) Selection() else appCore.simulation.findObject(targetObjectPath)
-        appCore.simulation.activeObserver.setFrame(coordinateSystem, ref, target)
+    private fun applyObserverMode(referenceObject: Selection, targetObject: Selection, coordinateSystem: Int) = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+        appCore.simulation.activeObserver.setFrame(coordinateSystem, referenceObject, targetObject)
     }
 
     override fun onAttach(context: Context) {

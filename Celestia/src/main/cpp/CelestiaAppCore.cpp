@@ -69,6 +69,9 @@ jmethodID selectionGetObjectPointerMethodID = nullptr;
 jmethodID selectionGetObjectTypeMethodID = nullptr;
 jmethodID selectionInitMethodID = nullptr;
 
+jclass completionClz = nullptr;
+jmethodID completionInitMethodID = nullptr;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -121,6 +124,9 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     selectionGetObjectPointerMethodID = env->GetMethodID(selectionClz, "getObjectPointer", "()J");
     selectionGetObjectTypeMethodID = env->GetMethodID(selectionClz, "getObjectType", "()I");
     selectionInitMethodID = env->GetMethodID(selectionClz, "<init>", "(JI)V");
+
+    completionClz = (jclass)env->NewGlobalRef(env->FindClass("space/celestia/celestia/Completion"));
+    completionInitMethodID = env->GetMethodID(completionClz, "<init>", "(Ljava/lang/String;Lspace/celestia/celestia/Selection;)V");
 
     return JNI_VERSION_1_6;
 }

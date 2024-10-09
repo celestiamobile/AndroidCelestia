@@ -42,7 +42,7 @@ JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass clazz, jlong pointer, jstring text, jint limit) {
     auto sim = reinterpret_cast<Simulation *>(pointer);
     const char *str = env->GetStringUTFChars(text, nullptr);
-    std::vector<std::string> results;
+    std::vector<celestia::engine::Completion> results;
     sim->getObjectCompletion(results, str, true);
     env->ReleaseStringUTFChars(text, str);
     jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)results.size());
@@ -50,9 +50,14 @@ Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass
     for (const auto& result : results) {
         if (count > limit)
             break;
-        jstring resultString = env->NewStringUTF(result.c_str());
-        env->CallBooleanMethod(arrayObject, alaMethodID, resultString);
-        env->DeleteLocalRef(resultString);
+
+        auto selection = selectionAsJavaSelection(env, result.getSelection());
+        auto name = env->NewStringUTF(result.getName().c_str());
+        auto completion = env->NewObject(completionClz, completionInitMethodID, name, selection);
+        env->DeleteLocalRef(selection);
+        env->DeleteLocalRef(name);
+        env->CallBooleanMethod(arrayObject, alaMethodID, completion);
+        env->DeleteLocalRef(completion);
         count += 1;
     }
     return arrayObject;

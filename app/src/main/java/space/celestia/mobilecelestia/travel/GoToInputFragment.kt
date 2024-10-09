@@ -37,9 +37,11 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
+import androidx.core.os.BundleCompat
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.GoToLocation
+import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
@@ -56,13 +58,16 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class GoToInputFragment : NavigationFragment.SubFragment() {
-    class GoToData(var objectName: String, var objectPath: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: GoToLocation.DistanceUnit) :
+    class GoToData(var objectName: String, var longitude: Float, var latitude: Float, var distance: Double, var distanceUnit: GoToLocation.DistanceUnit) :
         Serializable
 
     private var listener: Listener? = null
     private val goToData: GoToData
         get() = requireNotNull(_goToData)
     private var _goToData: GoToData? = null
+    private val selection: Selection
+        get() = requireNotNull(_selection)
+    private var _selection: Selection? = null
 
     private lateinit var displayNumberFormat: NumberFormat
     private lateinit var parseNumberFormat: NumberFormat
@@ -76,10 +81,9 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (_goToData == null) {
-            arguments?.let {
-                _goToData = it.getSerializableValue(ARG_DATA, GoToData::class.java)
-            }
+        arguments?.let {
+            _selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)
+            _goToData = it.getSerializableValue(ARG_DATA, GoToData::class.java)
         }
     }
 
@@ -99,19 +103,19 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    MainScreen(goToData)
+                    MainScreen(goToData, selection)
                 }
             }
         }
     }
 
     @Composable
-    fun MainScreen(initialData: GoToData) {
+    fun MainScreen(initialData: GoToData, selection: Selection) {
         var objectName by remember {
             mutableStateOf(initialData.objectName)
         }
-        var objectPath by remember {
-            mutableStateOf(initialData.objectPath)
+        var selectedObject by remember {
+            mutableStateOf(selection)
         }
         var longitudeString by rememberSaveable {
             mutableStateOf(displayNumberFormat.format(initialData.longitude))
@@ -143,10 +147,10 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
             .verticalScroll(state = rememberScrollState(), enabled = true)
             .systemBarsPadding()) {
             Header(text = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"))
-            ObjectNameAutoComplete(executor = executor, core = appCore, name = objectName, path = objectPath, modifier = textViewModifier, inputUpdated = {
+            ObjectNameAutoComplete(executor = executor, core = appCore, name = objectName, selection = selectedObject, modifier = textViewModifier, inputUpdated = {
                 objectName = it
-            }, objectPathUpdated = {
-                objectPath = it
+            }, selectionUpdated = {
+                selectedObject = it
             })
             Header(text = CelestiaString("Coordinates", "Longitude and latitude (in Go to)"))
             Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
@@ -192,7 +196,7 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
                     val longitude = currentLongitudeValue ?: return@FilledTonalButton
                     val latitude = currentLatitudeValue ?: return@FilledTonalButton
                     val distance = currentDistanceValue ?: return@FilledTonalButton
-                    listener?.onGoToObject(GoToData(objectName, objectPath, longitude = longitude.toFloat(), latitude = latitude.toFloat(), distance = distance, distanceUnit = distanceUnit))
+                    listener?.onGoToObject(GoToData(objectName, longitude = longitude.toFloat(), latitude = latitude.toFloat(), distance = distance, distanceUnit = distanceUnit), selectedObject)
                 }
             ) {
                 Text(text = CelestiaString("Go", "Go to an object"))
@@ -221,11 +225,12 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
     }
 
     interface Listener {
-        fun onGoToObject(goToData: GoToData)
+        fun onGoToObject(goToData: GoToData, selection: Selection)
     }
 
     companion object {
         private const val ARG_DATA = "data"
+        private const val ARG_OBJECT = "object"
 
         private val distanceUnits = listOf(
             GoToLocation.DistanceUnit.radii,
@@ -234,9 +239,10 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
         )
 
         @JvmStatic
-        fun newInstance(goToData: GoToData) =
+        fun newInstance(goToData: GoToData, selection: Selection) =
             GoToInputFragment().apply {
                 arguments = Bundle().apply {
+                    putParcelable(ARG_OBJECT, selection)
                     putSerializable(ARG_DATA, goToData)
                 }
             }

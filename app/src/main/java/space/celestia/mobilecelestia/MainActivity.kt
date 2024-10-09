@@ -1980,20 +1980,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun showGoTo(data: GoToInputFragment.GoToData? = null) = lifecycleScope.launch {
-        val inputData = data ?: GoToInputFragment.GoToData(
-            objectName = AppCore.getLocalizedStringDomain("Earth", "celestia-data"),
-            objectPath = "Sol/Earth",
+    private fun showGoTo() = lifecycleScope.launch {
+        val inputData = GoToInputFragment.GoToData(
+            objectName = "",
             0.0f,
             0.0f,
             8.0,
             GoToLocation.DistanceUnit.radii
         )
-        showBottomSheetFragment(GoToContainerFragment.newInstance(inputData))
+        showBottomSheetFragment(GoToContainerFragment.newInstance(inputData, Selection()))
     }
 
-    override fun onGoToObject(goToData: GoToInputFragment.GoToData) {
-        val selection = appCore.simulation.findObject(goToData.objectPath)
+    override fun onGoToObject(goToData: GoToInputFragment.GoToData, selection: Selection) {
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return

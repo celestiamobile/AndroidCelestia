@@ -260,6 +260,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/boundaries.h
         ${CELESTIA_SRC_DIR}/celengine/category.cpp
         ${CELESTIA_SRC_DIR}/celengine/category.h
+        ${CELESTIA_SRC_DIR}/celengine/completion.cpp
+        ${CELESTIA_SRC_DIR}/celengine/completion.h
         ${CELESTIA_SRC_DIR}/celengine/console.cpp
         ${CELESTIA_SRC_DIR}/celengine/console.h
         ${CELESTIA_SRC_DIR}/celengine/constellation.cpp
