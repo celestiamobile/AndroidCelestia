@@ -11,9 +11,13 @@
 
 package space.celestia.celestia;
 
+import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
-public class Completion {
+public class Completion implements Parcelable {
     @NonNull
     public final String name;
     @NonNull
@@ -23,4 +27,36 @@ public class Completion {
         this.name = name;
         this.selection = selection;
     }
+
+    @Override
+    public int describeContents(){
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeParcelable(selection, 0);
+    }
+
+    public static final Creator<Completion> CREATOR = new Creator<>() {
+        @Override
+        public Completion createFromParcel(Parcel in) {
+            String name = in.readString();
+            Selection selection;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                selection = in.readParcelable(Selection.class.getClassLoader(), Selection.class);
+            } else {
+                selection = in.readParcelable(Selection.class.getClassLoader());
+            }
+            assert name != null;
+            assert selection != null;
+            return new Completion(name, selection);
+        }
+
+        @Override
+        public Completion[] newArray(int size) {
+            return new Completion[size];
+        }
+    };
 }
