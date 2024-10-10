@@ -40,6 +40,7 @@ public class Completion implements Parcelable {
     }
 
     public static final Creator<Completion> CREATOR = new Creator<>() {
+        @SuppressWarnings("deprecation")
         @Override
         public Completion createFromParcel(Parcel in) {
             String name = in.readString();
