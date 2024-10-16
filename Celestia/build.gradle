@@ -11,6 +11,7 @@
 
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -54,14 +55,18 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    kotlinOptions {
+        jvmTarget = '21'
     }
 
     namespace 'space.celestia.celestia'
 }
 
 dependencies {
-    implementation "androidx.annotation:annotation:1.8.2"
+    implementation "androidx.annotation:annotation:1.9.0"
     implementation "androidx.games:games-frame-pacing:2.1.2"
 }
