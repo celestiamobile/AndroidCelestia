@@ -221,28 +221,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             )
         }
 
-        if (appSettings[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
-            val builder = MaterialAlertDialogBuilder(this)
-            builder.setCancelable(false)
-            builder.setTitle(R.string.privacy_policy_alert_title)
-            builder.setMessage(R.string.privacy_policy_alert_detail)
-            builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
-                val baseURL = "https://celestia.mobi/privacy"
-                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", "zh_CN").build()
-                openURI(uri)
-                finishAndRemoveTask()
-                exitProcess(0)
-            }
-            builder.setPositiveButton(R.string.privacy_policy_alert_accept_button_title) { _, _ ->
-                appSettings[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] = "true"
-            }
-            builder.setNegativeButton(R.string.privacy_policy_alert_decline_button_title) { dialog, _ ->
-                dialog.cancel()
-                finishAndRemoveTask()
-                exitProcess(0)
-            }
-            builder.show()
-        }
+        showPrivacyAlertIfNeeded()
 
         // Handle notch
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -362,6 +341,30 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
+    }
+
+    private fun showPrivacyAlertIfNeeded() {
+        if (appSettings[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
+            val builder = MaterialAlertDialogBuilder(this)
+            builder.setCancelable(false)
+            builder.setTitle(R.string.privacy_policy_alert_title)
+            builder.setMessage(R.string.privacy_policy_alert_detail)
+            builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
+                val baseURL = "https://celestia.mobi/privacy"
+                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", "zh_CN").build()
+                openURI(uri)
+                showPrivacyAlertIfNeeded()
+            }
+            builder.setPositiveButton(R.string.privacy_policy_alert_accept_button_title) { _, _ ->
+                appSettings[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] = "true"
+            }
+            builder.setNegativeButton(R.string.privacy_policy_alert_decline_button_title) { dialog, _ ->
+                dialog.cancel()
+                finishAndRemoveTask()
+                exitProcess(0)
+            }
+            builder.show()
+        }
     }
 
     private fun updateConfiguration(configuration: Configuration, windowInsets: WindowInsetsCompat?) {
