@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="576"
+    android:versionCode="577"
     android:versionName="1.7.10">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
@@ -97,8 +97,7 @@
                     android:scheme="celguide"
                     android:host="*" />
             </intent-filter>
-            <intent-filter android:autoVerify="true"
-                tools:targetApi="m">
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -107,8 +106,7 @@
                     android:host="celestia.mobi"
                     android:pathPattern="/resources/item" />
             </intent-filter>
-            <intent-filter android:autoVerify="true"
-                tools:targetApi="m">
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

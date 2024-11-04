@@ -67,6 +67,6 @@ android {
 }
 
 dependencies {
-    implementation "androidx.annotation:annotation:1.9.0"
+    implementation "androidx.annotation:annotation:1.9.1"
     implementation "androidx.games:games-frame-pacing:2.1.2"
 }
