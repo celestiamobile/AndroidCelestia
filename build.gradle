@@ -40,7 +40,7 @@ allprojects {
                 minSdkVersion     : 23,
                 targetSdkVersion  : 35,
                 compileSdkVersion : 35,
-                ndkVersion        : "27.1.12297006",
+                ndkVersion        : "27.2.12479018",
                 buildToolsVersion : "35.0.0",
                 cmakeVersion      : "3.22.1"
         ]
