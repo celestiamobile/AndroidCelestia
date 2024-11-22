@@ -102,7 +102,7 @@ Java_space_celestia_celestia_Simulation_c_1goToEclipse(JNIEnv *env, jclass clazz
     auto targetSel = javaSelectionAsSelection(env, target);
     auto sim = reinterpret_cast<Simulation *>(pointer);
     sim->setTime(time);
-    sim->setFrame(ObserverFrame::PhaseLock, targetSel, refSel);
+    sim->setFrame(ObserverFrame::CoordinateSystem::PhaseLock, targetSel, refSel);
     sim->update(0);
     double distance = targetSel.radius() * 4.0;
     sim->gotoLocation(UniversalCoord::Zero().offsetKm(Eigen::Vector3d::UnitX() * distance),

@@ -63,14 +63,14 @@ Java_space_celestia_celestia_Simulation_c_1goToDestination(JNIEnv *env,
             // Use the default distance
             sim->gotoSelection(5.0,
                                Eigen::Vector3f::UnitY(),
-                               ObserverFrame::ObserverLocal);
+                               ObserverFrame::CoordinateSystem::ObserverLocal);
         }
         else
         {
             sim->gotoSelection(5.0,
                                distance,
                                Eigen::Vector3f::UnitY(),
-                               ObserverFrame::ObserverLocal);
+                               ObserverFrame::CoordinateSystem::ObserverLocal);
         }
     }
     env->ReleaseStringUTFChars(target, str);
@@ -87,7 +87,7 @@ Java_space_celestia_celestia_Simulation_c_1goToLocation(JNIEnv *env,
     auto sim = (Simulation *)pointer;
     sim->setSelection(javaSelectionAsSelection(env, selection));
     sim->geosynchronousFollow();
-    sim->gotoSelection(duration, distance, Eigen::Vector3f(0, 1, 0), ObserverFrame::ObserverLocal);
+    sim->gotoSelection(duration, distance, Eigen::Vector3f(0, 1, 0), ObserverFrame::CoordinateSystem::ObserverLocal);
 }
 
 extern "C"
