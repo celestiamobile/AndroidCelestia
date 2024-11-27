@@ -11,6 +11,8 @@
 
 #include "CelestiaJNI.h"
 #include <celengine/body.h>
+#include <celengine/timeline.h>
+#include <celengine/timelinephase.h>
 
 extern "C"
 JNIEXPORT jint JNICALL
@@ -44,14 +46,14 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_Body_c_1isEllipsoid(JNIEnv *env, jclass clazz, jlong pointer) {
     auto body = reinterpret_cast<Body *>(pointer);
-    return (jboolean)(body->isEllipsoid() ? JNI_TRUE : JNI_FALSE);
+    return static_cast<jboolean>(body->isEllipsoid() ? JNI_TRUE : JNI_FALSE);
 }
 
 extern "C"
 JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_Body_c_1getRadius(JNIEnv *env, jclass clazz, jlong pointer) {
     auto body = reinterpret_cast<Body *>(pointer);
-    return body->getRadius();
+    return static_cast<jfloat>(body->getRadius());
 }
 
 extern "C"
@@ -66,7 +68,7 @@ JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Body_c_1getOrbitAtTime(JNIEnv *env, jclass clazz, jlong pointer,
                                                                        jdouble julian_day) {
     auto body = reinterpret_cast<Body *>(pointer);
-    return (jlong)(body->getOrbit(julian_day));
+    return reinterpret_cast<jlong>(body->getOrbit(julian_day));
 }
 
 extern "C"
@@ -75,7 +77,7 @@ Java_space_celestia_celestia_Body_c_1getRotationModelAtTime(JNIEnv *env,
                                                                                jclass clazz, jlong pointer,
                                                                                jdouble julian_day) {
     auto body = reinterpret_cast<Body *>(pointer);
-    return (jlong)(body->getRotationModel(julian_day));
+    return reinterpret_cast<jlong>(body->getRotationModel(julian_day));
 }
 
 extern "C"
@@ -83,7 +85,7 @@ JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Body_c_1getPlanetarySystem(JNIEnv *env,
                                                                            jclass clazz, jlong pointer) {
     auto body = reinterpret_cast<Body *>(pointer);
-    return (jlong)(body->getSystem());
+    return reinterpret_cast<jlong>(body->getSystem());
 }
 
 extern "C"
@@ -109,36 +111,36 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Body_c_1getTimeline(JNIEnv *env, jclass clazz, jlong pointer) {
     auto body = reinterpret_cast<Body *>(pointer);
-    return (jlong)body->getTimeline();
+    return reinterpret_cast<jlong>(body->getTimeline());
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_Timeline_c_1getPhaseCount(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto timeline = (Timeline *)pointer;
-    return (jint)timeline->phaseCount();
+    auto timeline = reinterpret_cast<Timeline *>(pointer);
+    return static_cast<jint>(timeline->phaseCount());
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Timeline_c_1getPhase(JNIEnv *env, jclass clazz, jint index,
                                                   jlong pointer) {
-    auto timeline = (Timeline *)pointer;
-    return (jlong)timeline->getPhase((unsigned int)index).get();
+    auto timeline = reinterpret_cast<Timeline *>(pointer);
+    return reinterpret_cast<jlong>(timeline->getPhase(static_cast<unsigned int>(index)).get());
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Timeline_00024Phase_c_1getStartTime(JNIEnv *env, jclass clazz,
                                                                  jlong pointer) {
-    auto phase = (TimelinePhase *)pointer;
-    return (jdouble)phase->startTime();
+    auto phase = reinterpret_cast<TimelinePhase *>(pointer);
+    return static_cast<jdouble>(phase->startTime());
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Timeline_00024Phase_c_1getEndTime(JNIEnv *env, jclass clazz,
                                                                jlong pointer) {
-    auto phase = (TimelinePhase *)pointer;
-    return (jdouble)phase->endTime();
+    auto phase = reinterpret_cast<TimelinePhase *>(pointer);
+    return static_cast<jdouble>(phase->endTime());
 }

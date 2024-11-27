@@ -17,6 +17,7 @@
 #include <celestia/celestiacore.h>
 #include <celengine/body.h>
 #include <celengine/glsupport.h>
+#include <celengine/location.h>
 #include <celestia/configfile.h>
 #include <celestia/helper.h>
 #include <celestia/progressnotifier.h>
