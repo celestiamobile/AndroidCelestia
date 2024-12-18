@@ -90,11 +90,6 @@ public class Universe implements BrowserItem.ChildrenProvider {
         return null;
     }
 
-    public @NonNull
-    Selection findObject(@NonNull String name) {
-        return c_findObject(pointer, name);
-    }
-
     public void mark(@NonNull Selection selection, int marker) {
         c_mark(pointer, selection, marker);
     }
@@ -113,7 +108,6 @@ public class Universe implements BrowserItem.ChildrenProvider {
     private static native long c_getStarBrowser(long pointer, int kind, long observer);
     private static native String c_getChildrenForStar(long ptr, long pointer);
     private static native String c_getChildrenForBody(long ptr, long pointer);
-    private static native Selection c_findObject(long ptr, String name);
 
     private static native void c_mark(long ptr, Selection selection, int marker);
     private static native void c_unmark(long ptr, Selection selection);

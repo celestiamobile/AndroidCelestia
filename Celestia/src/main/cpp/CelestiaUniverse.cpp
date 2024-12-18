@@ -74,16 +74,6 @@ Java_space_celestia_celestia_Universe_c_1getStarBrowser(JNIEnv *env, jclass claz
     return reinterpret_cast<jlong>(b);
 }
 
-extern "C"
-JNIEXPORT jobject JNICALL
-Java_space_celestia_celestia_Universe_c_1findObject(JNIEnv *env, jclass clazz, jlong pointer, jstring name) {
-    auto u = (Universe *)pointer;
-    const char *str = env->GetStringUTFChars(name, nullptr);
-    auto sel = u->find(str, {});
-    env->ReleaseStringUTFChars(name, str);
-    return selectionAsJavaSelection(env, sel);
-}
-
 using namespace std;
 
 using json = nlohmann::json;

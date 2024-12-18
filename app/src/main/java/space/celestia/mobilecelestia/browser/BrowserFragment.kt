@@ -81,7 +81,7 @@ class BrowserFragment : Fragment(), BrowserRootFragment, NavigationBarView.OnIte
             val universe = simulation.universe
             return when (type) {
                 Type.SolarSystem -> {
-                    universe.solBrowserRoot()!!
+                    simulation.solBrowserRoot()!!
                 }
                 Type.Star -> {
                     universe.starBrowserRoot(simulation.activeObserver)
@@ -187,12 +187,11 @@ class BrowserFragment : Fragment(), BrowserRootFragment, NavigationBarView.OnIte
             val simulation = appCore.simulation
             val universe = simulation.universe
             val observer = simulation.activeObserver
-            universe.createStaticBrowserItems(observer)
+            simulation.createStaticBrowserItems(observer)
             universe.createDynamicBrowserItems(observer)
-            val solRoot = universe.solBrowserRoot()
-            if (solRoot != null) {
+            val solRoot = simulation.solBrowserRoot()
+            if (solRoot != null)
                 browserTabs.add(0, Tab(Tab.Type.SolarSystem))
-            }
         }
         tabs = browserTabs
         rootItemsLoaded()

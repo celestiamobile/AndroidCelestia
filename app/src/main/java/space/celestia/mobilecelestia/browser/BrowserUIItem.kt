@@ -19,29 +19,31 @@ private var starRoot: BrowserItem? = null
 private var dsoRoot: BrowserItem? = null
 private var brightestStars: BrowserItem? = null
 
-fun Universe.createStaticBrowserItems(observer: Observer) {
+fun Simulation.createStaticBrowserItems(observer: Observer) {
     if (solRoot == null)
         solRoot = createSolBrowserRoot()
     if (dsoRoot == null)
-        dsoRoot = createDSOBrowserRoot()
+        dsoRoot = universe.createDSOBrowserRoot()
     if (brightestStars == null)
-        brightestStars = createStarBrowserRootItem(StarBrowser.KIND_BRIGHTEST, observer, CelestiaString("Brightest Stars (Absolute Magnitude)",""), true, null)
+        brightestStars = universe.createStarBrowserRootItem(StarBrowser.KIND_BRIGHTEST, observer, CelestiaString("Brightest Stars (Absolute Magnitude)",""), true, null)
 }
 
 fun Universe.createDynamicBrowserItems(observer: Observer) {
     starRoot = createStarBrowserRoot(observer)
 }
 
-private fun Universe.createSolBrowserRoot(): BrowserItem? {
+private fun Simulation.createSolBrowserRoot(): BrowserItem? {
     val sol = findObject("Sol").star ?: return null
+    val universe = this.universe
+    val catalog = universe.starCatalog
     return BrowserPredefinedItem(
-        starCatalog.getStarName(
+        catalog.getStarName(
             sol
-        ), CelestiaString("Solar System", "Tab for solar system in Star Browser"), sol, this, BrowserPredefinedItem.CategoryInfo("B2E44BE0-9DF7-FAB9-92D4-F8D323D31250", false)
+        ), CelestiaString("Solar System", "Tab for solar system in Star Browser"), sol, universe, BrowserPredefinedItem.CategoryInfo("B2E44BE0-9DF7-FAB9-92D4-F8D323D31250", false)
     )
 }
 
-fun Universe.solBrowserRoot(): BrowserItem? {
+fun Simulation.solBrowserRoot(): BrowserItem? {
     if (solRoot == null)
         solRoot = createSolBrowserRoot()
     return solRoot
@@ -178,13 +180,6 @@ class BrowserPredefinedItem: BrowserItem {
     constructor(name: String, alternativeName: String?, children: List<KeyValuePair>, categoryInfo: CategoryInfo?) : super(name, alternativeName, children) {
         this.categoryInfo = categoryInfo
     }
-}
-
-class BrowserPredefinedItem3(
-    name: String,
-    alternativeName: String?,
-    children: MutableList<KeyValuePair>
-) : BrowserItem(name, alternativeName, children) {
 }
 
 class BrowserUIItem(val item: BrowserItem, val isLeaf: Boolean)
