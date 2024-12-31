@@ -10,8 +10,7 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/Container">
@@ -20,22 +19,17 @@
         android:id="@+id/celestia_gl_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        style="@style/Container"
-        />
+        style="@style/Container"/>
 
-    <FrameLayout
-        style="@style/ControlViewBackground"
+    <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
         android:id="@+id/active_control_view_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/control_view_container_margin_end"
-        android:paddingVertical="@dimen/control_view_container_padding_vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_gravity="end|center_vertical"
+        android:layout_margin="@dimen/control_view_container_margin_end">
         <space.celestia.mobilecelestia.celestia.CelestiaControlView
             android:id="@+id/control_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-    </FrameLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
