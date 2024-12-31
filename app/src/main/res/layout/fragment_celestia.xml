@@ -2,7 +2,7 @@
 <!--
   ~ fragment_celestia.xml
   ~
-  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~ Copyright (C) 2025-present, Celestia Development Team
   ~
   ~ This program is free software; you can redistribute it and/or
   ~ modify it under the terms of the GNU General Public License
@@ -10,33 +10,27 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     style="@style/Container">
 
     <FrameLayout
         android:id="@+id/celestia_gl_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        style="@style/Container"
-        />
+        style="@style/Container"/>
 
-    <FrameLayout
-        style="@style/ControlViewBackground"
+    <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
         android:id="@+id/active_control_view_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/control_view_container_margin_end"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_gravity="end|center_vertical">
         <space.celestia.mobilecelestia.celestia.CelestiaControlView
             android:id="@+id/control_view"
             android:layout_margin="@dimen/control_view_margin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-    </FrameLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
+</FrameLayout>

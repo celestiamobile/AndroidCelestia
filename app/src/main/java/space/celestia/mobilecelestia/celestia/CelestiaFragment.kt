@@ -264,7 +264,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val safeInsetEnd = if (ltr) newInsets.right else newInsets.left
 
         val controlView = thisView.findViewById<FrameLayout>(currentControlViewID) ?: return
-        val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
+        val params = controlView.layoutParams as? FrameLayout.LayoutParams
         if (params != null) {
             params.marginEnd = resources.getDimensionPixelOffset(R.dimen.control_view_container_margin_end) + safeInsetEnd
             controlView.layoutParams = params
