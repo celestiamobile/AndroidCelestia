@@ -26,6 +26,7 @@
     <dimen name="section_footer_margin_top">8dp</dimen>
     <dimen name="section_footer_margin_bottom">12dp</dimen>
     <dimen name="list_item_gap_horizontal">8dp</dimen>
+    <dimen name="list_item_gap_imge_text_horizontal">12dp</dimen>
     <dimen name="list_item_gap_vertical">8dp</dimen>
 
     <dimen name="tutorial_list_item_gap_horizontal">16dp</dimen>
@@ -96,8 +97,7 @@
     <dimen name="bottom_navigation_view_item_padding_top">8dp</dimen>
     <dimen name="bottom_navigation_view_item_padding_bottom">10dp</dimen>
 
-    <dimen name="control_view_container_margin_end">8dp</dimen>
-    <dimen name="control_view_margin">8dp</dimen>
+    <dimen name="control_view_container_margin_end">16dp</dimen>
     <dimen name="control_view_icon_size">40dp</dimen>
     <dimen name="control_view_icon_spacing">6dp</dimen>
 

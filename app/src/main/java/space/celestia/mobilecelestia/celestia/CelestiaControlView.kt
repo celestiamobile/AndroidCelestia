@@ -14,9 +14,15 @@ package space.celestia.mobilecelestia.celestia
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.widget.Button
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.updatePadding
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.overflow.OverflowLinearLayout
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.StandardImageButton
 
@@ -46,7 +52,7 @@ sealed class CelestiaControlButton {
     ) : CelestiaControlButton()
 }
 
-class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs)  {
+class CelestiaControlView(context: Context, attrs: AttributeSet) : OverflowLinearLayout(context, attrs)  {
     var buttons: List<CelestiaControlButton> = listOf()
     set(value) {
         field = value
@@ -62,26 +68,18 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
         removeAllViews()
 
         orientation = VERTICAL
-
+        val inflater = LayoutInflater.from(context)
         for (index in buttons.indices) {
             val item = buttons[index]
-            val button = StandardImageButton(context)
-            button.setColorFilter(ContextCompat.getColor(context, com.google.android.material.R.color.material_on_background_emphasis_medium))
-
-            val size = resources.getDimensionPixelSize(R.dimen.control_view_icon_size)
-            val params = LayoutParams(size, size)
-            if (index != 0) {
-                params.topMargin = resources.getDimensionPixelOffset(R.dimen.control_view_icon_spacing)
-            }
-            button.layoutParams = params
+            val button = inflater.inflate(R.layout.floating_toolbar_button, this, false) as MaterialButton
             when (item) {
                 is CelestiaControlButton.Tap -> {
-                    button.setImageResource(item.image)
+                    button.icon = ContextCompat.getDrawable(context, item.image)
                     button.contentDescription = item.contentDescription
                     button.setOnClickListener { listener?.didTapAction(item.action) }
                 }
                 is CelestiaControlButton.Press -> {
-                    button.setImageResource(item.image)
+                    button.icon = ContextCompat.getDrawable(context, item.image)
                     button.contentDescription = item.contentDescription
                     button.setOnTouchListener { view, event ->
                         when (event.actionMasked) {
@@ -98,7 +96,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
                 is CelestiaControlButton.Toggle -> {
                     button.isSelected = item.currentState
                     button.contentDescription = item.contentDescription
-                    button.setImageResource(item.image)
+                    button.icon = ContextCompat.getDrawable(context, item.image)
                     button.setOnClickListener { btn ->
                         btn.isSelected = !btn.isSelected
                         listener?.didToggleToMode(if (btn.isSelected) item.onAction else item.offAction)
