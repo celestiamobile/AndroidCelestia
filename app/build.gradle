@@ -142,7 +142,7 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
     implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
 
-    def composeBom = platform('androidx.compose:compose-bom:2025.01.00')
+    def composeBom = platform('androidx.compose:compose-bom:2025.01.01')
     implementation composeBom
     androidTestImplementation composeBom
 
