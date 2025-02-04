@@ -6,7 +6,7 @@ jobs:
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
-    contentCommitHash: ${{ 'e804551103660af99579ad60a7275d2f89c9f214' }}
+    contentCommitHash: ${{ 'de6dc6b3f9e39e7286ea4dccb877d38d077cba8c' }}
 
   steps:
   - checkout: Celestia
@@ -136,7 +136,7 @@ jobs:
       jdkSourceOption: 'PreInstalled'
     displayName: 'Install Java 21'
 
-  - task: Gradle@2
+  - task: Gradle@3
     inputs:
       workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
       gradleWrapperFile: '$(system.defaultWorkingDirectory)/AndroidCelestia/gradlew'
@@ -147,7 +147,7 @@ jobs:
     displayName: 'Build APK'
     condition: eq( variables['outputFormat'], 'apk' )
 
-  - task: Gradle@2
+  - task: Gradle@3
     inputs:
       workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
       gradleWrapperFile: '$(system.defaultWorkingDirectory)/AndroidCelestia/gradlew'
