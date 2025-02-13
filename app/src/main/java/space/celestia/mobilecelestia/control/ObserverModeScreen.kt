@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
@@ -30,8 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
@@ -81,9 +78,7 @@ fun ObserverModeScreen(paddingValues: PaddingValues, openLink: (String) -> Unit,
         mutableStateOf(Selection())
     }
     val selectedCoordinateSystem = coordinateSystems[selectedCoordinateIndex].first
-    val nestedScrollInterop = rememberNestedScrollInteropConnection()
     Column(modifier = modifier
-        .nestedScroll(nestedScrollInterop)
         .verticalScroll(state = rememberScrollState(), enabled = true)
         .padding(paddingValues)) {
         Header(text = CelestiaString("Coordinate System", "Used in Flight Mode"))
