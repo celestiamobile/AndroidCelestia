@@ -192,7 +192,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SearchFragment.Listener,
     BottomControlFragment.Listener,
     BrowserCommonFragment.Listener,
-    CameraControlFragment.Listener,
+    CameraControlContainerFragment.Listener,
     HelpFragment.Listener,
     FavoriteFragment.Listener,
     FavoriteItemFragment.Listener,
@@ -208,7 +208,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
-    ObserverModeFragment.Listener,
     SubscriptionBackingFragment.Listener {
 
     @AppSettings
@@ -1370,23 +1369,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo) {
         openAddonCategory(categoryInfo)
-    }
-
-    override fun onCameraActionClicked(action: CameraControlAction) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.reverseObserverOrientation() }
-    }
-
-    override fun onCameraActionStepperTouchDown(action: CameraControlAction) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyDown(action.value) }
-    }
-
-    override fun onCameraActionStepperTouchUp(action: CameraControlAction) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyUp(action.value) }
-    }
-
-    override fun onCameraControlObserverModeClicked() {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet) as? CameraControlContainerFragment ?: return
-        frag.pushFragment(ObserverModeFragment.newInstance())
     }
 
     override fun onObserverModeLearnMoreClicked(link: String) {

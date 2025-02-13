@@ -17,6 +17,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.org.jetbrains.kotlin.kapt)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.org.jetbrains.kotlin.serialization)
 }
 
 android {
@@ -132,6 +133,7 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.drawerlayout)
 
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -155,6 +157,8 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation.runtime.ktx)
 
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
