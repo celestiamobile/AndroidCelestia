@@ -29,8 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import space.celestia.celestia.GoToLocation
@@ -100,9 +98,7 @@ fun GoToScreen(initialData: GoToData, selection: Selection, paddingValues: Paddi
     val isLongitudeValid = currentLongitudeValue != null && currentLongitudeValue >= -180.0 && currentLongitudeValue <= 180.0
     val isLatitudeValid = currentLatitudeValue != null && currentLatitudeValue >= -90.0 && currentLatitudeValue <= 90.0
     val isDistanceValid = currentDistanceValue != null && currentDistanceValue >= 0.0
-    val nestedScrollInterop = rememberNestedScrollInteropConnection()
     Column(modifier = modifier
-        .nestedScroll(nestedScrollInterop)
         .verticalScroll(state = rememberScrollState(), enabled = true)
         .padding(paddingValues)) {
         Header(text = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"))
