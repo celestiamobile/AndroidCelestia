@@ -63,10 +63,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
-import space.celestia.celestia.Body
 import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Destination
-import space.celestia.celestia.EclipseFinder
 import space.celestia.celestia.GoToLocation
 import space.celestia.celestia.Renderer
 import space.celestia.celestia.Script
@@ -108,8 +106,6 @@ import space.celestia.mobilecelestia.control.InstantAction
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
-import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
-import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
 import space.celestia.mobilecelestia.favorite.DestinationDetailFragment
 import space.celestia.mobilecelestia.favorite.FavoriteBaseItem
 import space.celestia.mobilecelestia.favorite.FavoriteBookmarkItem
@@ -158,10 +154,8 @@ import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.currentBookmark
-import space.celestia.mobilecelestia.utils.julianDay
 import space.celestia.mobilecelestia.utils.showAlert
 import space.celestia.mobilecelestia.utils.showError
-import space.celestia.mobilecelestia.utils.showLoading
 import space.celestia.mobilecelestia.utils.showOptions
 import space.celestia.mobilecelestia.utils.showTextInput
 import java.io.File
@@ -189,8 +183,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     FavoriteItemFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    EventFinderInputFragment.Listener,
-    EventFinderResultFragment.Listener,
     InstalledAddonListFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToContainerFragment.Listener,
@@ -1468,42 +1460,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (localizable)
             uri = uri.buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
         openURI(uri)
-    }
-
-    override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
-        lifecycleScope.launch {
-            val body = withContext(executor.asCoroutineDispatcher()) {
-                appCore.simulation.findObject(objectName).`object` as? Body
-            }
-            if (body == null) {
-                showAlert(CelestiaString("Object not found", ""))
-                return@launch
-            }
-            val finder = EclipseFinder(body)
-            val alert = showLoading(CelestiaString("Calculating…", "Calculating for eclipses")) {
-                finder.abort()
-            } ?: return@launch
-            val results = withContext(Dispatchers.IO) {
-                finder.search(
-                    startDate.julianDay,
-                    endDate.julianDay,
-                    EclipseFinder.ECLIPSE_KIND_LUNAR or EclipseFinder.ECLIPSE_KIND_SOLAR
-                )
-            }
-            EventFinderResultFragment.eclipses = results
-            finder.close()
-            if (alert.isShowing) alert.dismiss()
-            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-            if (frag is EventFinderContainerFragment) {
-                frag.showResult()
-            }
-        }
-    }
-
-    override fun onEclipseChosen(eclipse: EclipseFinder.Eclipse) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.simulation.goToEclipse(eclipse)
-        }
     }
 
     private fun showUnsupportedAction() {
