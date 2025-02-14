@@ -73,8 +73,6 @@ import space.celestia.mobilecelestia.control.*
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
-import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
-import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
 import space.celestia.mobilecelestia.favorite.*
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
@@ -120,8 +118,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     FavoriteItemFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    EventFinderInputFragment.Listener,
-    EventFinderResultFragment.Listener,
     InstalledAddonListFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToContainerFragment.Listener,
@@ -1399,42 +1395,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (localizable)
             uri = uri.buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
         openURI(uri)
-    }
-
-    override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
-        lifecycleScope.launch {
-            val body = withContext(executor.asCoroutineDispatcher()) {
-                appCore.simulation.findObject(objectName).`object` as? Body
-            }
-            if (body == null) {
-                showAlert(CelestiaString("Object not found", ""))
-                return@launch
-            }
-            val finder = EclipseFinder(body)
-            val alert = showLoading(CelestiaString("Calculating…", "Calculating for eclipses")) {
-                finder.abort()
-            } ?: return@launch
-            val results = withContext(Dispatchers.IO) {
-                finder.search(
-                    startDate.julianDay,
-                    endDate.julianDay,
-                    EclipseFinder.ECLIPSE_KIND_LUNAR or EclipseFinder.ECLIPSE_KIND_SOLAR
-                )
-            }
-            EventFinderResultFragment.eclipses = results
-            finder.close()
-            if (alert.isShowing) alert.dismiss()
-            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-            if (frag is EventFinderContainerFragment) {
-                frag.showResult()
-            }
-        }
-    }
-
-    override fun onEclipseChosen(eclipse: EclipseFinder.Eclipse) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.simulation.goToEclipse(eclipse)
-        }
     }
 
     private fun showUnsupportedAction() {
