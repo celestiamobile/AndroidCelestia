@@ -633,8 +633,8 @@ private val staticRendererItems: List<SettingsItem> = listOf(
     SettingsRefreshRateItem(),
     SettingsCommonItem(CelestiaString("Advanced", "Advanced setting items"), listOf(
         SettingsCommonItem.Section(listOf(
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, "HiDPI", true),
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, "Anti-aliasing")
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, CelestiaString("HiDPI", "HiDPI support in display"), true),
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", ""))
         ),  footer =  CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
     )),
     SettingsRenderInfoItem()
