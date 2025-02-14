@@ -47,7 +47,6 @@ import space.celestia.mobilecelestia.utils.julianDay
 import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.text.DateFormat
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
@@ -55,8 +54,6 @@ fun TimeSettingsScreen(paddingValues: PaddingValues, modifier: Modifier = Modifi
     val viewModel: SettingsViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
     val formatter = remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault()) }
-    val dialogDateFormat = remember { android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss") }
-    val dialogDateFormatter = remember { SimpleDateFormat(dialogDateFormat, Locale.US) }
     val displayNumberFormat = remember {
         val numberFormat = NumberFormat.getNumberInstance()
         numberFormat.isGroupingUsed = false
