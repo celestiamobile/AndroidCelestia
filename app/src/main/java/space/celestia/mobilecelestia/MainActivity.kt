@@ -1414,16 +1414,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSearchForEvent(objectName: String, startDate: Date, endDate: Date) {
-        val body = appCore.simulation.findObject(objectName).`object` as? Body
-        if (body == null) {
-            showAlert(CelestiaString("Object not found", ""))
-            return
-        }
-        val finder = EclipseFinder(body)
-        val alert = showLoading(CelestiaString("Calculating…", "Calculating for eclipses")) {
-            finder.abort()
-        } ?: return
         lifecycleScope.launch {
+            val body = withContext(executor.asCoroutineDispatcher()) {
+                appCore.simulation.findObject(objectName).`object` as? Body
+            }
+            if (body == null) {
+                showAlert(CelestiaString("Object not found", ""))
+                return@launch
+            }
+            val finder = EclipseFinder(body)
+            val alert = showLoading(CelestiaString("Calculating…", "Calculating for eclipses")) {
+                finder.abort()
+            } ?: return@launch
             val results = withContext(Dispatchers.IO) {
                 finder.search(
                     startDate.julianDay,
