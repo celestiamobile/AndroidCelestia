@@ -1110,13 +1110,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             is SubsystemActionItem -> {
                 val entry = item.`object` ?: return
-                val browserItem = BrowserItem(
-                    appCore.simulation.universe.getNameForSelection(item),
-                    null,
-                    entry,
-                    appCore.simulation.universe
-                )
                 lifecycleScope.launch {
+                    val name = withContext(executor.asCoroutineDispatcher()) {
+                        appCore.simulation.universe.getNameForSelection(item)
+                    }
+                    val browserItem = BrowserItem(name, null, entry, appCore.simulation.universe)
                     showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
                 }
             }
