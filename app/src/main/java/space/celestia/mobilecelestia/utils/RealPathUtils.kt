@@ -15,6 +15,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -36,12 +37,13 @@ object RealPathUtils {
         uri: Uri
     ): String? {
         // DocumentProvider
+        val isTree = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && DocumentsContract.isTreeUri(uri)
         when {
-            DocumentsContract.isDocumentUri(context, uri) -> {
+            DocumentsContract.isDocumentUri(context, uri) || isTree -> {
                 // ExternalStorageProvider
                 when {
                     isExternalStorageDocument(uri) -> {
-                        val docId = DocumentsContract.getDocumentId(uri)
+                        val docId = if (isTree) DocumentsContract.getTreeDocumentId(uri) else DocumentsContract.getDocumentId(uri)
                         val split = docId.split(":").toTypedArray()
                         val type = split[0]
 
@@ -57,7 +59,7 @@ object RealPathUtils {
                             "storage" + "/" + docId.replace(":", "/")
                         }
                     }
-                    isDownloadsDocument(uri) -> {
+                    !isTree && isDownloadsDocument(uri) -> {
                         val fileName = getFilePath(context, uri)
                         if (fileName != null) {
                             return getExternalStorageDirectory(context) + "/Download/" + fileName
@@ -72,7 +74,7 @@ object RealPathUtils {
                             "content://downloads/my_downloads",
                             "content://downloads/all_downloads"
                         )
-                        var idLong: Long
+                        val idLong: Long
                         try {
                             idLong = java.lang.Long.valueOf(id)
                         } catch (ignored: NumberFormatException) {
@@ -100,7 +102,7 @@ object RealPathUtils {
                         }
                         return null
                     }
-                    isMediaDocument(uri) -> {
+                    !isTree && isMediaDocument(uri) -> {
                         val docId = DocumentsContract.getDocumentId(uri)
                         val split = docId.split(":").toTypedArray()
                         val type = split[0]
