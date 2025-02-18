@@ -36,9 +36,9 @@ fun TextInputDialog(onDismissRequest: () -> Unit, confirmHandler: () -> Unit, ti
 }
 
 @Composable
-fun TextInputDialog(onDismissRequest: () -> Unit, title: String, confirmHandler: (String?) -> Unit) {
+fun TextInputDialog(onDismissRequest: () -> Unit, title: String, placeholder: String? = null, confirmHandler: (String?) -> Unit) {
     var string: String? by remember {
-        mutableStateOf(null)
+        mutableStateOf(placeholder)
     }
     TextInputDialog(
         onDismissRequest = onDismissRequest,
