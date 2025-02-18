@@ -22,17 +22,17 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.os.BundleCompat
+import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Selection
-import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import java.net.URL
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class InfoFragment : NavigationFragment.SubFragment() {
+class InfoFragment : Fragment() {
     private var listener: Listener? = null
     private lateinit var selection: Selection
     private var embeddedInNavigation = false
@@ -45,7 +45,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
 
         arguments?.let {
             selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)!!
-            embeddedInNavigation = it.getBoolean(ARG_EMBEDDED_IN_NAVIGATION, false)
         }
     }
 
@@ -69,13 +68,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (embeddedInNavigation)
-            title = appCore.simulation.universe.getNameForSelection(selection)
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Listener) {
@@ -97,14 +89,12 @@ class InfoFragment : NavigationFragment.SubFragment() {
 
     companion object {
         const val ARG_OBJECT = "object"
-        const val ARG_EMBEDDED_IN_NAVIGATION = "embedded-in-navigation"
 
         @JvmStatic
-        fun newInstance(selection: Selection, embeddedInNavigation: Boolean = false) =
+        fun newInstance(selection: Selection) =
             InfoFragment().apply {
                 arguments = Bundle().apply {
                     this.putParcelable(ARG_OBJECT, selection)
-                    this.putBoolean(ARG_EMBEDDED_IN_NAVIGATION, embeddedInNavigation)
                 }
             }
     }
