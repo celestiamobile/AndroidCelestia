@@ -74,6 +74,11 @@ import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.favorite.*
+import space.celestia.mobilecelestia.favorite.viewmodel.Favorite
+import space.celestia.mobilecelestia.favorite.viewmodel.getCurrentBookmarks
+import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentBookmarks
+import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentDestinations
+import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentScripts
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.help.NewHelpFragment
@@ -116,11 +121,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     CameraControlContainerFragment.Listener,
     HelpFragment.Listener,
     FavoriteFragment.Listener,
-    FavoriteItemFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
     InstalledAddonListFragment.Listener,
-    DestinationDetailFragment.Listener,
     GoToContainerFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsFragment.Listener,
@@ -1285,22 +1288,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openURL(url)
     }
 
-    override fun addFavoriteItem(item: MutableFavoriteBaseItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
-            val bookmark = appCore.currentBookmark
-            if (bookmark == null) {
-                showAlert(CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
-                return
-            }
-            frag.add(FavoriteBookmarkItem(bookmark))
-        }
-    }
-
-    override fun shareFavoriteItem(item: MutableFavoriteBaseItem) {
-        if (item is FavoriteBookmarkItem && item.bookmark.isLeaf) {
-            shareURLDirect(item.bookmark.name, item.bookmark.url)
-        }
+    override fun shareItem(item: Favorite.Shareable.Object) {
+        shareURLDirect(item.title, item.url)
     }
 
     private fun readFavorites() {
@@ -1321,52 +1310,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val str = Gson().toJson(favorites, myType)
             FileUtils.writeTextToFile(str, favoriteJsonFilePath)
         } catch (ignored: Throwable) { }
-    }
-
-    override fun onFavoriteItemSelected(item: FavoriteBaseItem) {
-        if (item.isLeaf) {
-            if (item is FavoriteScriptItem) {
-                openCelestiaURL(item.script.filename)
-            } else if (item is FavoriteBookmarkItem) {
-                openCelestiaURL(item.bookmark.url)
-            } else if (item is FavoriteDestinationItem) {
-                val destination = item.destination
-                val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-                if (frag is FavoriteFragment) {
-                    frag.pushFragment(DestinationDetailFragment.newInstance(destination))
-                }
-            }
-        } else {
-            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-            if (frag is FavoriteFragment) {
-                frag.pushItem(item)
-            }
-        }
-    }
-
-    override fun onGoToDestination(destination: Destination) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.goTo(destination) }
-    }
-
-    override fun deleteFavoriteItem(index: Int) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is FavoriteFragment) {
-            frag.remove(index)
-        }
-    }
-
-    override fun renameFavoriteItem(item: MutableFavoriteBaseItem, completion: (String) -> Unit) {
-        showTextInput(CelestiaString("Rename", "Rename a favorite item (currently bookmark)"), item.title) { text ->
-            item.rename(text)
-            completion(text)
-        }
-    }
-
-    override fun moveFavoriteItem(fromIndex: Int, toIndex: Int) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is FavoriteFragment) {
-            frag.move(fromIndex, toIndex)
-        }
     }
 
     override fun onRefreshRateChanged(frameRateOption: Int) {
