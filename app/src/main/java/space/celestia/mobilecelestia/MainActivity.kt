@@ -176,7 +176,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     InfoFragment.Listener,
     SearchFragment.Listener,
     BottomControlFragment.Listener,
-    BrowserCommonFragment.Listener,
+    SubsystemBrowserFragment.Listener,
+    BrowserFragment.Listener,
     CameraControlContainerFragment.Listener,
     HelpFragment.Listener,
     FavoriteFragment.Listener,
@@ -1166,13 +1167,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     openURL(url)
             }
             is SubsystemActionItem -> {
-                val entry = item.`object` ?: return
+                if (item.`object` == null) return
                 lifecycleScope.launch {
-                    val name = withContext(executor.asCoroutineDispatcher()) {
-                        appCore.simulation.universe.getNameForSelection(item)
-                    }
-                    val browserItem = BrowserItem(name, null, entry, appCore.simulation.universe)
-                    showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
+                    showBottomSheetFragment(SubsystemBrowserFragment.newInstance(item))
                 }
             }
             is AlternateSurfacesItem -> {
@@ -1330,20 +1327,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onBottomControlHide() {
         lifecycleScope.launch {
             hideToolbar(true)
-        }
-    }
-
-    override fun onBrowserItemSelected(item: BrowserUIItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet) as? BrowserRootFragment ?: return
-        if (!item.isLeaf) {
-            frag.pushItem(item.item)
-        } else {
-            val obj = item.item.`object`
-            if (obj != null) {
-                frag.showInfo(Selection(obj))
-            } else {
-                showAlert(CelestiaString("Object not found", ""))
-            }
         }
     }
 
