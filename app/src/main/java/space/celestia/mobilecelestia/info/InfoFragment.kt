@@ -16,6 +16,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.os.BundleCompat
@@ -37,8 +40,6 @@ class InfoFragment : NavigationFragment.SubFragment() {
     @Inject
     lateinit var appCore: AppCore
 
-    private lateinit var objectName: String
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -52,18 +53,17 @@ class InfoFragment : NavigationFragment.SubFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        objectName = appCore.simulation.universe.getNameForSelection(selection)
         return ComposeView(requireContext()).apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    InfoScreen(selection = selection, title = objectName, showTitle = !embeddedInNavigation, linkHandler = {
+                    InfoScreen(selection = selection, showTitle = !embeddedInNavigation, linkHandler = {
                         listener?.onInfoLinkMetaDataClicked(it)
                     }, actionHandler = { item ->
                         listener?.onInfoActionSelected(item, selection)
-                    })
+                    }, paddingValues = WindowInsets.systemBars.asPaddingValues())
                 }
             }
         }
@@ -73,7 +73,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         if (embeddedInNavigation)
-            title = objectName
+            title = appCore.simulation.universe.getNameForSelection(selection)
     }
 
     override fun onAttach(context: Context) {

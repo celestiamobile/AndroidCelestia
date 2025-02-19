@@ -1870,7 +1870,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         updateCurrentScripts(scripts)
         updateCurrentDestinations(appCore.destinations)
-        showBottomSheetFragment(FavoriteFragment.newInstance(FavoriteRoot()))
+        showBottomSheetFragment(FavoriteFragment.newInstance())
     }
 
     private fun showSettings() = lifecycleScope.launch {

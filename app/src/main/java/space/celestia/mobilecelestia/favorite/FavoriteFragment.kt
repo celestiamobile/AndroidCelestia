@@ -15,25 +15,15 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.celestiafoundation.utils.getSerializableValue
 
 class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     private var listener: Listener? = null
-    private var initialItem: FavoriteBaseItem? = null
 
     private val current: FavoriteItemFragment
         get() = requireNotNull(top) as FavoriteItemFragment
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            initialItem = it.getSerializableValue(ARG_ITEM, FavoriteBaseItem::class.java)
-        }
-    }
-
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return FavoriteItemFragment.newInstance(initialItem ?: FavoriteRoot())
+        return FavoriteItemFragment.newInstance(FavoriteRoot())
     }
 
     fun pushItem(item: FavoriteBaseItem) {
@@ -76,14 +66,7 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     companion object {
-        const val ARG_ITEM = "item"
-
         @JvmStatic
-        fun newInstance(item: FavoriteBaseItem) =
-            FavoriteFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable(ARG_ITEM, item)
-                }
-            }
+        fun newInstance() = FavoriteFragment()
     }
 }

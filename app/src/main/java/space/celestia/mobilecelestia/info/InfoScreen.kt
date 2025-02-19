@@ -13,13 +13,10 @@ package space.celestia.mobilecelestia.info
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -35,9 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
@@ -56,20 +51,14 @@ import java.net.MalformedURLException
 import java.net.URL
 
 @Composable
-fun InfoScreen(selection: Selection, title: String? = null, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem) -> Unit, paddingValues: PaddingValues? = null) {
+fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem) -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
     val viewModel: InfoViewModel = hiltViewModel()
-    var isWebInfoLoaded by remember {
-        mutableStateOf(false)
-    }
-    var objectName by remember {
-        mutableStateOf(title ?: viewModel.appCore.simulation.universe.getNameForSelection(selection))
-    }
-    var overview by remember {
-        mutableStateOf(viewModel.appCore.getOverviewForSelection(selection))
-    }
+    var isWebInfoLoaded by remember { mutableStateOf(false) }
+    var objectName by remember { mutableStateOf("") }
+    var overview by remember { mutableStateOf("") }
 
-    LaunchedEffect(selection, title) {
-        objectName = title ?: viewModel.appCore.simulation.universe.getNameForSelection(selection)
+    LaunchedEffect(selection) {
+        objectName = if (showTitle) viewModel.appCore.simulation.universe.getNameForSelection(selection) else ""
         overview = viewModel.appCore.getOverviewForSelection(selection)
         isWebInfoLoaded = false
     }
@@ -77,16 +66,14 @@ fun InfoScreen(selection: Selection, title: String? = null, showTitle: Boolean, 
     val rowModifier = Modifier.fillMaxWidth()
 
     val direction = LocalLayoutDirection.current
-    val systemPadding = paddingValues ?: WindowInsets.systemBars.asPaddingValues()
     val contentPadding = PaddingValues(
-        start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal) + systemPadding.calculateStartPadding(direction),
-        top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical) + systemPadding.calculateTopPadding(),
-        end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal) + systemPadding.calculateEndPadding(direction),
-        bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical) + systemPadding.calculateBottomPadding(),
+        start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal) + paddingValues.calculateStartPadding(direction),
+        top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical) + paddingValues.calculateTopPadding(),
+        end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal) + paddingValues.calculateEndPadding(direction),
+        bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical) + paddingValues.calculateBottomPadding(),
     )
 
-    val nestedScrollInterop = rememberNestedScrollInteropConnection()
-    LazyVerticalGrid(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = contentPadding, columns = GridCells.Fixed(2), content = {
+    LazyVerticalGrid(modifier = modifier, contentPadding = contentPadding, columns = GridCells.Fixed(2), content = {
         val hasAltSurface = (selection.body?.alternateSurfaceNames?.size ?: 0) > 0
         val hasWebInfo = !selection.webInfoURL.isNullOrEmpty()
 

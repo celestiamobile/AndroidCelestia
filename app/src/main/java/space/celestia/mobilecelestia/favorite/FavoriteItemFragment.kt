@@ -155,7 +155,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
     private fun MainScreen() {
         if (childItems.isEmpty()) {
             Box(modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .systemBarsPadding(), contentAlignment = Alignment.Center) {
                 EmptyHint(text = favoriteItem?.emptyHint ?: "")
             }
