@@ -79,8 +79,6 @@ import space.celestia.mobilecelestia.favorite.viewmodel.getCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentDestinations
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentScripts
-import space.celestia.mobilecelestia.help.HelpAction
-import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.help.NewHelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.*
@@ -119,15 +117,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SubsystemBrowserFragment.Listener,
     BrowserFragment.Listener,
     CameraControlContainerFragment.Listener,
-    HelpFragment.Listener,
+    CommonWebNavigationFragment.Listener,
     FavoriteFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    InstalledAddonListFragment.Listener,
     GoToContainerFragment.Listener,
-    ResourceItemFragment.Listener,
-    SettingsFragment.Listener,
-    CommonWebFragment.Listener {
+    ResourceFragment.Listener,
+    SettingsFragment.Listener {
 
     @AppSettings
     @Inject
@@ -738,7 +734,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             lifecycleScope.launch {
                 try {
                     val result = resourceAPI.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    showBottomSheetFragment(ResourceItemNavigationFragment.newInstance(result, Date()))
+                    showBottomSheetFragment(ResourceItemNavigationFragment.newInstance(result))
                 } catch (ignored: Throwable) {}
             }
             cleanup()
@@ -1146,34 +1142,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openURL(url.toString())
     }
 
-    override fun onRunScript(file: File) {
-        openCelestiaURL(file.absolutePath)
-    }
-
-    override fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
-        if (!supportedScriptTypes.contains(type)) return
-        val supportedScriptLocations = listOf("temp", "context")
-        if (location != null && !supportedScriptLocations.contains(location)) return
-        if (location == "context" && contextDirectory == null) return
-
-        val scriptFile: File
-        val scriptFileName = "${name ?: UUID.randomUUID()}.${type}"
-        scriptFile = if (location == "context") {
-            File(contextDirectory, scriptFileName)
-        } else {
-            File(cacheDir, scriptFileName)
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                scriptFile.writeText(content)
-                withContext(Dispatchers.Main) {
-                    openCelestiaURL(scriptFile.absolutePath)
-                }
-            } catch (ignored: Throwable) {}
-        }
-    }
-
     override fun onReceivedACK(id: String) {
         if (id == latestNewsID) {
             appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
@@ -1186,12 +1154,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onShareURL(title: String, url: String) {
         shareURLDirect(title, url)
-    }
-
-    override fun onRunDemo() {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.runDemo()
-        }
     }
 
     override fun onOpenSubscriptionPage() {
@@ -1221,24 +1183,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     showBottomSheetFragment(SettingsCurrentTimeNavigationFragment.newInstance())
                 }
             }
-        }
-    }
-
-    override fun objectExistsWithName(name: String): Boolean {
-        return !appCore.simulation.findObject(name).isEmpty
-    }
-
-    override fun onGoToObject(name: String) {
-        hideKeyboard()
-
-        val sel = appCore.simulation.findObject(name)
-        if (sel.isEmpty) {
-            showAlert(CelestiaString("Object not found", ""))
-            return
-        }
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.simulation.selection = sel
-            appCore.charEnter(CelestiaAction.GoTo.value)
         }
     }
 
@@ -1274,18 +1218,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onObserverModeLearnMoreClicked(link: String) {
         openURL(link)
-    }
-
-    override fun onHelpActionSelected(action: HelpAction) {
-        when (action) {
-            HelpAction.RunDemo -> {
-                lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.runDemo() }
-            }
-        }
-    }
-
-    override fun onHelpURLSelected(url: String) {
-        openURL(url)
     }
 
     override fun shareItem(item: Favorite.Shareable.Object) {
@@ -1795,13 +1727,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     // Resource
     private fun showInstalledAddons() = lifecycleScope.launch {
         showBottomSheetFragment(ResourceFragment.newInstance())
-    }
-
-    override fun onInstalledAddonSelected(addon: ResourceItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is ResourceFragment) {
-            frag.pushItem(addon)
-        }
     }
 
     override fun onOpenAddonDownload() {
