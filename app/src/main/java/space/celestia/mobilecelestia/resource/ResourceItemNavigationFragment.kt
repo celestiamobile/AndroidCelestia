@@ -1,60 +1,134 @@
 package space.celestia.mobilecelestia.resource
 
+import android.content.Context
 import android.os.Bundle
-import space.celestia.mobilecelestia.common.NavigationFragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.os.BundleCompat
+import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
-import space.celestia.celestiafoundation.utils.getSerializableValue
-import java.lang.ref.WeakReference
-import java.util.*
+import space.celestia.celestiafoundation.utils.commonHandler
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.resource.ResourceFragment.Listener
+import space.celestia.mobilecelestia.resource.model.ResourceAPI
+import space.celestia.mobilecelestia.resource.viewmodel.AddonViewModel
+import space.celestia.mobilecelestia.utils.CelestiaString
 
-class ResourceItemNavigationFragment: NavigationFragment() {
+class ResourceItemNavigationFragment: Fragment() {
     private lateinit var item: ResourceItem
-    private lateinit var language: String
-    private lateinit var lastUpdateDate: Date
+    private var listener: ResourceFragment.Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) {
-            item = savedInstanceState.getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
-            lastUpdateDate = savedInstanceState.getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
-        } else {
-            item = requireArguments().getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
-            lastUpdateDate = requireArguments().getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
-        }
-        language = requireArguments().getString(ARG_LANG, "en")
+
+        item = BundleCompat.getSerializable(requireArguments(), ARG_ITEM, ResourceItem::class.java)!!
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(ARG_ITEM, item)
-        outState.putSerializable(ARG_UPDATED_DATE, lastUpdateDate)
-        super.onSaveInstanceState(outState)
-    }
-
-    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        val fragment = ResourceItemFragment.newInstance(item, language, lastUpdateDate)
-        val weakSelf = WeakReference(this)
-        fragment.updateListener = object : ResourceItemFragment.UpdateListener {
-            override fun onResourceItemUpdated(resourceItem: ResourceItem, updateDate: Date) {
-                val self = weakSelf.get() ?: return
-                self.item = resourceItem
-                self.lastUpdateDate = updateDate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen()
+                }
             }
         }
-        return fragment
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is Listener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement ResourceFragment.Listener")
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        listener = null
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun MainScreen() {
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+        Scaffold(topBar = {
+            TopAppBar(title = {
+                Text(text = item.name)
+            }, actions = {
+                IconButton(onClick = {
+                    listener?.onShareAddon(item.name, item.id)
+                }) {
+                    Icon(imageVector = Icons.Filled.Share, contentDescription = "")
+                }
+            }, scrollBehavior = scrollBehavior)
+        }) { paddingValues ->
+            AddonScreen(
+                addon = item,
+                language = AppCore.getLanguage(),
+                shareURLHandler = { title, url ->
+                    listener?.onShareURL(title, url)
+                },
+                receivedACKHandler = {
+                    listener?.onReceivedACK(it)
+                },
+                openSubscriptionPageHandler = {
+                    listener?.onOpenSubscriptionPage()
+                },
+                openExternalWebLink = {
+                    listener?.onExternalWebLinkClicked(it)
+                },
+                paddingValues = paddingValues,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            )
+        }
     }
 
     companion object {
         private const val ARG_ITEM = "item"
-        private const val ARG_LANG = "lang"
-        private const val ARG_UPDATED_DATE = "date"
 
         @JvmStatic
-        fun newInstance(item: ResourceItem, language: String, lastUpdateDate: Date) =
+        fun newInstance(item: ResourceItem) =
             ResourceItemNavigationFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, item)
-                    putString(ARG_LANG, language)
-                    putSerializable(ARG_UPDATED_DATE, lastUpdateDate)
                 }
             }
     }
