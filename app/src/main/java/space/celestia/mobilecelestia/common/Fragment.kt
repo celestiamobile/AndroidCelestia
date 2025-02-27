@@ -11,22 +11,13 @@
 
 package space.celestia.mobilecelestia.common
 
-import android.view.View
 import androidx.fragment.app.Fragment
-import space.celestia.mobilecelestia.R
+import androidx.fragment.app.FragmentTransaction
 
 fun Fragment.push(fragment: Fragment, containerID: Int): Int? {
     if (!isAdded) return null
-
-    val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-
-    val ani1 = if (ltr) R.anim.enter_from_right else R.anim.enter_from_left
-    val ani2 = if (ltr) R.anim.exit_to_left else R.anim.exit_to_right
-    val ani3 = if (ltr) R.anim.enter_from_left else R.anim.enter_from_right
-    val ani4 = if (ltr) R.anim.exit_to_right else R.anim.exit_to_left
-
     return childFragmentManager.beginTransaction()
-        .setCustomAnimations(ani1, ani2, ani3, ani4)
+        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
         .addToBackStack(childFragmentManager.backStackEntryCount.toString())
         .replace(containerID, fragment)
         .commitAllowingStateLoss()

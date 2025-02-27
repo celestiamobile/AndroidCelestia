@@ -231,6 +231,8 @@ abstract class NavigationFragment: Fragment(), Toolbar.OnMenuItemClickListener {
     private var lastShowNavigationBar: Boolean = true
     private var commitIds = arrayListOf<Int>()
     private var fragmentCreated = false
+    private var isBackStackChangeInProgress = false
+    private var isPredictiveBack = false
 
     open val fragmentResource: Int
         get() = R.layout.fragment_general_container_with_toolbar
@@ -242,12 +244,42 @@ abstract class NavigationFragment: Fragment(), Toolbar.OnMenuItemClickListener {
         super.onCreate(savedInstanceState)
 
         val weakSelf = WeakReference(this)
-        childFragmentManager.addOnBackStackChangedListener {
-            val self = weakSelf.get() ?: return@addOnBackStackChangedListener
-            val backEntryCount = self.childFragmentManager.backStackEntryCount
-            if (backEntryCount < self.commitIds.size - 1)
-                self.poppedToIndex(backEntryCount)
-        }
+        childFragmentManager.addOnBackStackChangedListener(object: FragmentManager.OnBackStackChangedListener {
+            override fun onBackStackChanged() {
+                val self = weakSelf.get() ?: return
+                if (self.isBackStackChangeInProgress) {
+                    self.isPredictiveBack = true
+                } else {
+                    val backEntryCount = self.childFragmentManager.backStackEntryCount
+                    if (backEntryCount < self.commitIds.size - 1)
+                        self.poppedToIndex(backEntryCount)
+                }
+            }
+
+            override fun onBackStackChangeStarted(fragment: Fragment, pop: Boolean) {
+                super.onBackStackChangeStarted(fragment, pop)
+                val self = weakSelf.get() ?: return
+                self.isBackStackChangeInProgress = true
+                self.isPredictiveBack = false
+            }
+
+            override fun onBackStackChangeCommitted(fragment: Fragment, pop: Boolean) {
+                super.onBackStackChangeCommitted(fragment, pop)
+                val self = weakSelf.get() ?: return
+                if (isPredictiveBack) {
+                    val backEntryCount = self.childFragmentManager.backStackEntryCount - 1
+                    if (backEntryCount < self.commitIds.size - 1)
+                        self.poppedToIndex(backEntryCount)
+                }
+                self.isBackStackChangeInProgress = false
+            }
+
+            override fun onBackStackChangeCancelled() {
+                super.onBackStackChangeCancelled()
+                val self = weakSelf.get() ?: return
+                self.isBackStackChangeInProgress = false
+            }
+        })
     }
 
     override fun onCreateView(
@@ -300,7 +332,7 @@ abstract class NavigationFragment: Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    fun replaceFragment(fragment: SubFragment) {
+    private fun replaceFragment(fragment: SubFragment) {
         val commitId = replace(fragment, R.id.fragment_container, true) ?: return
         commitIds = arrayListOf(commitId)
         configureToolbar(fragment.title, fragment.rightNavigationBarItems, fragment.leftNavigationBarItem,false, fragment.showNavigationBar)
@@ -388,28 +420,11 @@ abstract class NavigationFragment: Fragment(), Toolbar.OnMenuItemClickListener {
         return top?.menuItemClicked(groupId, id) ?: true
     }
 
-    private fun canPop(): Boolean {
-        if (!isAdded) return false
-        return commitIds.size > 1
-    }
-
-    private fun popLast() {
-        if (canPop()) {
-            popFragment()
-        }
-    }
-
     private fun popFragment() {
-        popFragmentToIndex(commitIds.size - 2)
-        fragmentDidPop()
+        childFragmentManager.popBackStack()
     }
 
-    fun popFragmentToIndex(index: Int) {
-        childFragmentManager.popBackStackImmediate(commitIds[index + 1], FragmentManager.POP_BACK_STACK_INCLUSIVE)
-        poppedToIndex(index)
-    }
-
-    fun poppedToIndex(index: Int) {
+    private fun poppedToIndex(index: Int) {
         if (index == 0) {
             // no more return
             toolbar.navigationIcon = null
@@ -430,8 +445,6 @@ abstract class NavigationFragment: Fragment(), Toolbar.OnMenuItemClickListener {
         )
         appBar.setExpanded(true)
     }
-
-    open fun fragmentDidPop() {}
 
     private companion object {
         const val ARG_LEFT_ITEM = "left"

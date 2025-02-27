@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="587"
+    android:versionCode="591"
     android:versionName="1.7.12">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
@@ -33,6 +33,7 @@
         android:theme="@style/AppTheme"
         android:resizeableActivity="true"
         android:localeConfig="@xml/locales_config"
+        android:enableOnBackInvokedCallback="true"
         tools:targetApi="tiramisu">
 
         <meta-data android:name="WindowManagerPreference:FreeformWindowSize"
