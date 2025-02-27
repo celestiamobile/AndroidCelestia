@@ -28,6 +28,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
@@ -195,6 +196,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
         appStatusReporter = factory.getAppStatusReporter()
 
@@ -223,12 +226,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         showPrivacyAlertIfNeeded()
 
-        // Handle notch
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val lp = window.attributes
-            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-            window.attributes = lp
-        }
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         appStatusReporter.register(this)
