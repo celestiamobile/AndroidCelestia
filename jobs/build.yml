@@ -2,7 +2,7 @@ jobs:
 - job: Build
   displayName: 'Build'
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-24.04'
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
@@ -63,7 +63,7 @@ jobs:
       feedsToUse: 'internal'
       vstsFeed: '9f9dcde1-dcba-4537-8214-71c8a03b99a0/14bb1031-e6b2-40ac-b287-73e7fcb5900e'
       vstsFeedPackage: '8024e780-0af6-4980-8246-df6550e8d1b6'
-      vstsPackageVersion: '0.0.19'
+      vstsPackageVersion: '0.0.20'
     displayName: 'Download Dependencies'
 
   - script: |
