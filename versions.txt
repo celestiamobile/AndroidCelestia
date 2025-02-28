@@ -1,4 +1,4 @@
 Celestia=5ca37b4
 CelestiaContent=81e468c
 CelestiaLocalization=135a029
-apple-android=5c8647a
+apple-android=5c19349
