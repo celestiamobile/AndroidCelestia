@@ -1,0 +1,19 @@
+diff --git a/android/values-zh-rCN/strings.xml b/android/values-zh-rCN/strings.xml
+index 6c03140..7e9804a 100644
+--- a/android/values-zh-rCN/strings.xml
++++ b/android/values-zh-rCN/strings.xml
+@@ -10,11 +10,11 @@
+   -->
+ 
+ <resources>
+-    <string name="app_name">Celestia</string>
++    <string name="app_name">天际遨游</string>
+     <string name="celestia_language">zh_CN</string>
+     <string name="privacy_policy_alert_decline_button_title">暂不同意</string>
+     <string name="privacy_policy_alert_show_policy_button_title">查看协议</string>
+     <string name="privacy_policy_alert_title">隐私政策与服务协议</string>
+     <string name="privacy_policy_alert_detail">请您务必仔细阅读，充分理解服务协议和隐私政策各条款。如果您同意，请点击下方的\"同意\"按钮。</string>
+     <string name="privacy_policy_alert_accept_button_title">同意</string>
+-</resources>
+\ No newline at end of file
++</resources>
