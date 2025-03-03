@@ -134,7 +134,7 @@ dependencies {
     implementation project(path: ':Celestia')
     implementation project(path: ':CelestiaFoundation')
 
-    def sentry_version = '7.18.1'
+    def sentry_version = '7.20.1'
     playImplementation "io.sentry:sentry-android:$sentry_version"
     sideloadImplementation "io.sentry:sentry-android:$sentry_version"
 
