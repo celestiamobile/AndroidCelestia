@@ -55,10 +55,6 @@
 
     <dimen name="list_item_slider_margin_horizontal">4dp</dimen>
 
-    <dimen name="dialog_text_input_view_padding_horizontal">16dp</dimen>
-    <dimen name="dialog_text_input_view_padding_vertical">12dp</dimen>
-    <dimen name="dialog_text_input_text_padding_horizontal">4dp</dimen>
-
     <dimen name="bottom_control_view_item_dimension">52dp</dimen>
     <dimen name="bottom_control_view_margin_horizontal">4dp</dimen>
     <dimen name="bottom_control_view_margin_vertical">2dp</dimen>
