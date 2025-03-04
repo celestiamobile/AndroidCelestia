@@ -13,12 +13,13 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import space.celestia.mobilecelestia.R
 
 @Composable
-fun TextRow(primaryText: String, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, @DrawableRes accessoryResource: Int = 0, accessoryContentDescription: String = "") {
+fun TextRow(primaryText: String, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, @DrawableRes accessoryResource: Int = 0, accessoryContentDescription: String = "", horizontalPadding: Dp = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(
-        horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
+        horizontal = horizontalPadding,
         vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
     )) {
         Column(modifier = Modifier.weight(1.0f), horizontalAlignment = Alignment.Start) {
