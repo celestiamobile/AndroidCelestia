@@ -142,7 +142,7 @@ public:
     object(object),
     method(method) {};
 
-    void update(const std::string& status)
+    void update(const std::string& status) override
     {
         if (!object) { return; }
 
@@ -166,7 +166,7 @@ public:
     object(object),
     method(method) {};
 
-    void requestContextMenu(float x, float y, Selection sel)
+    void requestContextMenu(float x, float y, Selection sel) override
     {
         auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
         if (!env) return;
@@ -295,13 +295,13 @@ Java_space_celestia_celestia_AppCore_c_1startSimulation(JNIEnv *env, jclass claz
         jsize number = env->GetArrayLength(extra_directories);
         for (jsize i = 0; i < number; i++)
         {
-            jstring str = (jstring)env->GetObjectArrayElement(extra_directories, i);
+            auto str = (jstring)env->GetObjectArrayElement(extra_directories, i);
             const char *c_str = env->GetStringUTFChars(str, nullptr);
-            extras.push_back(c_str);
+            extras.emplace_back(c_str);
             env->ReleaseStringUTFChars(str, c_str);
         }
     }
-    std::string configFile = "";
+    std::string configFile;
     if (config_file_name != nullptr)
     {
         const char *c_str = env->GetStringUTFChars(config_file_name, nullptr);
@@ -688,7 +688,7 @@ Java_space_celestia_celestia_AppCore_c_1setLocaleDirectoryPath(JNIEnv *env,
     }
     else
     {
-        shouldAppendCountryCode = uloc.find("_") == std::string::npos;
+        shouldAppendCountryCode = uloc.find('_') == std::string::npos;
     }
     if (shouldAppendCountryCode)
     {

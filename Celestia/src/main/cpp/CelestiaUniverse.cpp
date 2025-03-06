@@ -26,14 +26,14 @@
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Universe_c_1getStarCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto u = (Universe *)pointer;
+    auto u = reinterpret_cast<Universe *>(pointer);
     return (jlong)u->getStarCatalog();
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Universe_c_1getDSOCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto u = (Universe *)pointer;
+    auto u = reinterpret_cast<Universe *>(pointer);
     return (jlong)u->getDSOCatalog();
 }
 
@@ -74,8 +74,6 @@ Java_space_celestia_celestia_Universe_c_1getStarBrowser(JNIEnv *env, jclass claz
     return reinterpret_cast<jlong>(b);
 }
 
-using namespace std;
-
 using json = nlohmann::json;
 
 const static std::string BROWSER_ITEM_NAME_KEY = "name";
@@ -85,11 +83,11 @@ const static jint BROWSER_ITEM_TYPE_LOCATION = 1;
 const static std::string BROWSER_ITEM_POINTER_KEY = "pointer";
 const static std::string BROWSER_ITEM_CHILDREN_KEY = "children";
 
-static json create_browser_item(std::string name, jint key, map<string, pair<jlong, string>> mp) {
+static json create_browser_item(std::string const& name, jint key, std::map<std::string, std::pair<jlong, std::string>> &mp) {
     json j;
     j[BROWSER_ITEM_NAME_KEY] = name;
     json items;
-    map<string, pair<jlong, string>>::iterator iter;
+    std::map<std::string, std::pair<jlong, std::string>>::iterator iter;
     for(iter = mp.begin(); iter != mp.end(); iter++) {
         json item;
         item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
@@ -101,38 +99,38 @@ static json create_browser_item(std::string name, jint key, map<string, pair<jlo
     return j;
 }
 
-static void create_browser_item_and_add(json &parent, std::string name, int key,  map<string, pair<jlong, string>> mp) {
+static void create_browser_item_and_add(json &parent, std::string const& name, int key, std::map<std::string, std::pair<jlong, std::string>> &mp) {
     parent[name] = create_browser_item(name, key, mp);
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
-    auto u = (Universe *)ptr;
+    auto u = reinterpret_cast<Universe *>(ptr);
     SolarSystem *ss = u->getSolarSystem((Star *)pointer);
 
-    PlanetarySystem* sys = NULL;
+    PlanetarySystem *sys = nullptr;
     if (ss) sys = ss->getPlanets();
 
     json j;
 
     if (sys) {
         int sysSize = sys->getSystemSize();
-        map<string, pair<jlong, string>> topLevel;
-        map<string, pair<jlong, string>> planets;
-        map<string, pair<jlong, string>> dwarfPlanets;
-        map<string, pair<jlong, string>> minorMoons;
-        map<string, pair<jlong, string>> asteroids;
-        map<string, pair<jlong, string>> comets;
-        map<string, pair<jlong, string>> spacecrafts;
+        std::map<std::string, std::pair<jlong, std::string>> topLevel;
+        std::map<std::string, std::pair<jlong, std::string>> planets;
+        std::map<std::string, std::pair<jlong, std::string>> dwarfPlanets;
+        std::map<std::string, std::pair<jlong, std::string>> minorMoons;
+        std::map<std::string, std::pair<jlong, std::string>> asteroids;
+        std::map<std::string, std::pair<jlong, std::string>> comets;
+        std::map<std::string, std::pair<jlong, std::string>> spacecrafts;
 
         for (int i = 0; i < sysSize; i++) {
             Body* body = sys->getBody(i);
             if (body->getName().empty())
                 continue;
 
-            string name = body->getName(true).c_str();
-            auto jitem = make_pair((jlong)body, name);
+            std::string name = body->getName(true);
+            auto jitem = make_pair(reinterpret_cast<jlong>(body), name);
 
             auto bodyClass  = body->getClassification();
 
@@ -170,7 +168,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass 
             }
         }
 
-        map<string, pair<jlong, string>>::iterator iter;
+        std::map<std::string, std::pair<jlong, std::string>>::iterator iter;
         for(iter = topLevel.begin(); iter != topLevel.end(); iter++) {
             json item;
             item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
@@ -204,9 +202,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass 
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
-    auto u = (Universe *)ptr;
-
-    Body *b = (Body *)pointer;
+    auto b = reinterpret_cast<Body *>(pointer);
     PlanetarySystem* sys = b->getSatellites();
 
     json j;
@@ -215,10 +211,10 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
     {
         int sysSize = sys->getSystemSize();
 
-        map<string, pair<jlong, string>> topLevel;
-        map<string, pair<jlong, string>> minorMoons;
-        map<string, pair<jlong, string>> comets;
-        map<string, pair<jlong, string>> spacecrafts;
+        std::map<std::string, std::pair<jlong, std::string>> topLevel;
+        std::map<std::string, std::pair<jlong, std::string>> minorMoons;
+        std::map<std::string, std::pair<jlong, std::string>> comets;
+        std::map<std::string, std::pair<jlong, std::string>> spacecrafts;
 
         int i;
         for (i = 0; i < sysSize; i++)
@@ -227,8 +223,8 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
             if (body->getName().empty())
                 continue;
 
-            string name = body->getName(true).c_str();
-            auto jitem = make_pair((jlong)body, name);
+            std::string name = body->getName(true);
+            auto jitem = make_pair(reinterpret_cast<jlong>(body), name);
 
             auto bodyClass  = body->getClassification();
 
@@ -259,7 +255,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
             }
         }
 
-        map<string, pair<jlong, string>>::iterator iter;
+        std::map<std::string, std::pair<jlong, std::string>>::iterator iter;
         for(iter = topLevel.begin(); iter != topLevel.end(); iter++) {
             json item;
             item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
@@ -281,7 +277,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
     auto locations = GetBodyFeaturesManager()->getLocations(b);
     if (locations.has_value() && !locations->empty())
     {
-        std::map<string, pair<jlong, string>> locationsMap;
+        std::map<std::string, std::pair<jlong, std::string>> locationsMap;
         for (const auto loc : *locations)
         {
             auto name = loc->getName(true);
@@ -302,7 +298,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Universe_c_1mark(JNIEnv *env, jclass clazz,
                                                          jlong ptr, jobject selection,
                                                          jint marker) {
-    auto u = (Universe *)ptr;
+    auto u = reinterpret_cast<Universe *>(ptr);
     u->markObject(javaSelectionAsSelection(env, selection), celestia::MarkerRepresentation(celestia::MarkerRepresentation::Symbol(marker), 10.0f, Color(0.0f, 1.0f, 0.0f, 0.9f)), 1);
 }
 
@@ -310,7 +306,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Universe_c_1unmark(JNIEnv *env, jclass clazz,
                                                            jlong ptr, jobject selection) {
-    auto u = (Universe *)ptr;
+    auto u = reinterpret_cast<Universe *>(ptr);
     u->unmarkObject(javaSelectionAsSelection(env, selection), 1);
 }
 
@@ -318,6 +314,6 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Universe_c_1unmarkAll(JNIEnv *env, jclass clazz,
                                                               jlong ptr) {
-    auto u = (Universe *)ptr;
+    auto u = reinterpret_cast<Universe *>(ptr);
     u->unmarkAll();
 }
