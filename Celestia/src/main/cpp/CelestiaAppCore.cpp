@@ -247,15 +247,15 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
 
     // start with default values
     constexpr auto DEFAULT_ORBIT_MASK = BodyClassification::Planet | BodyClassification::Moon | BodyClassification::Stellar;
-    constexpr int DEFAULT_LABEL_MODE = 2176;
+    constexpr auto DEFAULT_LABEL_MODE = RenderLabels::I18nConstellationLabels | RenderLabels::LocationLabels;
     constexpr float DEFAULT_AMBIENT_LIGHT_LEVEL = 0.1f;
     constexpr float DEFAULT_VISUAL_MAGNITUDE = 8.0f;
-    constexpr Renderer::StarStyle DEFAULT_STAR_STYLE = Renderer::FuzzyPointStars;
+    constexpr StarStyle DEFAULT_STAR_STYLE = StarStyle::FuzzyPointStars;
     constexpr ColorTableType DEFAULT_STARS_COLOR = ColorTableType::Blackbody_D65;
-    constexpr unsigned int DEFAULT_TEXTURE_RESOLUTION = medres;
+    constexpr auto DEFAULT_TEXTURE_RESOLUTION = TextureResolution::medres;
     constexpr float DEFAULT_TINT_SATURATION = 0.5f;
 
-    core->getRenderer()->setRenderFlags(Renderer::DefaultRenderFlags);
+    core->getRenderer()->setRenderFlags(RenderFlags::DefaultRenderFlags);
     core->getRenderer()->setOrbitMask(DEFAULT_ORBIT_MASK);
     core->getRenderer()->setLabelMode(DEFAULT_LABEL_MODE);
     core->getRenderer()->setAmbientLightLevel(DEFAULT_AMBIENT_LIGHT_LEVEL);
@@ -801,14 +801,16 @@ static uint64_t bit_mask_value_update(jboolean value, uint64_t bit, uint64_t set
 #define RENDERMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag (JNIEnv *env, jclass clazz, jlong pointer) { \
     auto core = (CelestiaCore *)pointer; \
-    return (jboolean)(((core->getRenderer()->getRenderFlags() & Renderer::Show##flag) == 0) ? JNI_FALSE : JNI_TRUE); \
+    return static_cast<jboolean>(celestia::util::is_set(core->getRenderer()->getRenderFlags(), RenderFlags::Show##flag) ? JNI_TRUE : JNI_FALSE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setShow##flag (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = (CelestiaCore *)pointer; \
-    core->getRenderer()->setRenderFlags(bit_mask_value_update(value, Renderer::Show##flag, core->getRenderer()->getRenderFlags())); \
+    auto core = (CelestiaCore *)pointer;                          \
+    auto flags = core->getRenderer()->getRenderFlags();           \
+    celestia::util::set_or_unset(flags, RenderFlags::Show##flag, static_cast<bool>(value)); \
+    core->getRenderer()->setRenderFlags(flags); \
 } \
 
 RENDERMETHODS(Stars)
@@ -847,15 +849,17 @@ RENDERMETHODS(Ecliptic)
 
 #define LABELMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = (CelestiaCore *)pointer; \
-    return (jboolean)(((core->getRenderer()->getLabelMode() & Renderer::flag##Labels) == 0) ? JNI_FALSE : JNI_TRUE); \
+    auto core = reinterpret_cast<CelestiaCore*>(pointer);        \
+    return static_cast<jboolean>(celestia::util::is_set(core->getRenderer()->getLabelMode(), RenderLabels::flag##Labels) ? JNI_TRUE : JNI_FALSE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = (CelestiaCore *)pointer; \
-    core->getRenderer()->setLabelMode((int)bit_mask_value_update(value, Renderer::flag##Labels, core->getRenderer()->getLabelMode())); \
+    auto core = reinterpret_cast<CelestiaCore*>(pointer);        \
+    auto flags = core->getRenderer()->getLabelMode();            \
+    celestia::util::set_or_unset(flags, RenderLabels::flag##Labels, static_cast<bool>(value)); \
+    core->getRenderer()->setLabelMode(flags); \
 } \
 
 LABELMETHODS(Star)
@@ -901,15 +905,15 @@ ORBITMETHODS(MinorMoon)
 
 #define FEATUREMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = (CelestiaCore *)pointer; \
-    return (jboolean)(((core->getSimulation()->getObserver().getLocationFilter() & Location::flag) == 0) ? JNI_FALSE : JNI_TRUE); \
+    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    return static_cast<jboolean>(((core->getSimulation()->getObserver().getLocationFilter() & Location::flag) == 0) ? JNI_FALSE : JNI_TRUE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = (CelestiaCore *)pointer; \
-    core->getSimulation()->getObserver().setLocationFilter((int)bit_mask_value_update(value, Location::flag, core->getSimulation()->getObserver().getLocationFilter())); \
+    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    core->getSimulation()->getObserver().setLocationFilter(bit_mask_value_update(value, Location::flag, core->getSimulation()->getObserver().getLocationFilter())); \
 } \
 
 FEATUREMETHODS(City)
@@ -967,14 +971,14 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setResolution(JNIEnv *env, jclass clazz, jlong pointer,
                                                                  jint value) {
     auto core = (CelestiaCore *)pointer;
-    core->getRenderer()->setResolution(value);
+    core->getRenderer()->setResolution(static_cast<TextureResolution>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getResolution(JNIEnv *env, jclass clazz, jlong pointer) {
     auto core = (CelestiaCore *)pointer;
-    return core->getRenderer()->getResolution();
+    return static_cast<jint>(core->getRenderer()->getResolution());
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -1046,14 +1050,14 @@ Java_space_celestia_celestia_AppCore_c_1getDateFormat(JNIEnv *env, jclass clazz,
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarStyle(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = (CelestiaCore *)pointer;
-    core->getRenderer()->setStarStyle((Renderer::StarStyle)value);
+    core->getRenderer()->setStarStyle(static_cast<StarStyle>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarStyle(JNIEnv *env, jclass clazz, jlong pointer) {
     auto core = (CelestiaCore *)pointer;
-    return core->getRenderer()->getStarStyle();
+    return static_cast<jint>(core->getRenderer()->getStarStyle());
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -1121,13 +1125,13 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setFaintestVisible(JNIEnv *env, jclass clazz, jlong pointer, jdouble faintest_visible) {
     auto core = (CelestiaCore *)pointer;
-    if ((core->getRenderer()->getRenderFlags() & Renderer::ShowAutoMag) == 0)
+    if (!celestia::util::is_set(core->getRenderer()->getRenderFlags(), RenderFlags::ShowAutoMag))
     {
-        core->setFaintest((float)faintest_visible);
+        core->setFaintest(static_cast<float>(faintest_visible));
     }
     else
     {
-        core->getRenderer()->setFaintestAM45deg((float)faintest_visible);
+        core->getRenderer()->setFaintestAM45deg(static_cast<float>(faintest_visible));
         core->setFaintestAutoMag();
     }
 }
@@ -1136,7 +1140,7 @@ extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_AppCore_c_1getFaintestVisible(JNIEnv *env, jclass clazz, jlong pointer) {
     auto core = (CelestiaCore *)pointer;
-    if ((core->getRenderer()->getRenderFlags() & Renderer::ShowAutoMag) == 0)
+    if (!celestia::util::is_set(core->getRenderer()->getRenderFlags(), RenderFlags::ShowAutoMag))
     {
         return core->getSimulation()->getFaintestVisible();
     }
