@@ -14,4 +14,9 @@ class BrowserNavigationViewModel @Inject constructor(val appCore: AppCore, val e
     lateinit var currentPath: String
     val currentPathMap = hashMapOf<Browser, String>()
     val browserMap = hashMapOf<String, BrowserItem>()
+
+    fun reset() {
+        currentPathMap.clear()
+        browserMap.clear()
+    }
 }

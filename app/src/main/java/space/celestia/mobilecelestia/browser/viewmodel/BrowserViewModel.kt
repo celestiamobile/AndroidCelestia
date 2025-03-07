@@ -67,6 +67,10 @@ class BrowserViewModel @Inject constructor(val appCore: AppCore, val executor: C
         }
         tabData = browserTabs
     }
+
+    fun reset() {
+        tabData = listOf()
+    }
 }
 
 @HiltViewModel

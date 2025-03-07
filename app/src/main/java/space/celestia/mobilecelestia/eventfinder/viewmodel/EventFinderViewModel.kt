@@ -12,4 +12,9 @@ import javax.inject.Inject
 class EventFinderViewModel @Inject constructor(val appCore: AppCore, val executor: CelestiaExecutor) : ViewModel() {
     var currentEclipseFinder: EclipseFinder? = null
     var eclipseResults: List<Eclipse> = listOf()
+
+    fun reset() {
+        currentEclipseFinder = null
+        eclipseResults = listOf()
+    }
 }
