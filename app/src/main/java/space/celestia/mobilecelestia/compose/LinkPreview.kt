@@ -3,12 +3,19 @@ package space.celestia.mobilecelestia.compose
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -19,17 +26,21 @@ import space.celestia.ui.linkpreview.LPLinkViewData
 import space.celestia.ui.linkpreview.LPMetadataProvider
 import java.net.URL
 
-private enum class FetchState {
-    Successful, Failed, Fetching, None
+private sealed class FetchState {
+    data class Successful(val metadata: LPLinkViewData) : FetchState()
+    data object Failed : FetchState()
+    data object Fetching : FetchState()
+    data object None : FetchState()
+    data object NotInitialized : FetchState()
 }
 
 @SuppressLint("InflateParams")
 @Composable
-fun LinkPreviewInternal(metadata: LPLinkViewData?, modifier: Modifier = Modifier, onClick: (URL) -> Unit) {
+private fun LinkPreviewInternal(metadata: LPLinkViewData, modifier: Modifier = Modifier, onClick: (URL) -> Unit) {
     AndroidView(factory = { context ->
         val view = LayoutInflater.from(context).inflate(R.layout.common_link_preview, null, false) as LPLinkView
         view.setOnClickListener {
-            val url = metadata?.url ?: return@setOnClickListener
+            val url = metadata.url
             onClick(url)
         }
         view
@@ -39,21 +50,24 @@ fun LinkPreviewInternal(metadata: LPLinkViewData?, modifier: Modifier = Modifier
 }
 
 @Composable
-fun LinkPreview(url: URL, modifier: Modifier = Modifier, loadResult: (Boolean) -> Unit, onClick: (URL) -> Unit) {
+fun LinkPreview(url: URL, modifier: Modifier = Modifier, onClick: (URL) -> Unit) {
     val coroutineScope = rememberCoroutineScope()
-    var metadata by remember {
-        mutableStateOf<LPLinkViewData?>(null)
+    var state: FetchState by remember {
+        mutableStateOf(FetchState.NotInitialized)
     }
-    var state by remember {
-        mutableStateOf(FetchState.None)
+
+    fun updateState(newState: FetchState) {
+        val currentState = state
+        if (currentState is FetchState.Successful)
+            currentState.metadata.image?.recycle()
+        state = newState
     }
+
     val lifeCycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifeCycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_DESTROY) {
-                metadata?.image?.recycle()
-                metadata = null
-            }
+            if (event == Lifecycle.Event.ON_DESTROY)
+                updateState(FetchState.NotInitialized)
         }
         lifeCycleOwner.lifecycle.addObserver(observer)
         onDispose {
@@ -62,21 +76,18 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, loadResult: (Boolean) -
     }
 
     LaunchedEffect(url) {
-        metadata = null
-        state = FetchState.None
+        updateState(FetchState.None)
     }
 
     if (state == FetchState.None) {
-        state = FetchState.Fetching
+        updateState(FetchState.Fetching)
         val fetcher = LPMetadataProvider()
         fetcher.startFetchMetadataForURL(coroutineScope, url) { metaData, _ ->
             if (metaData == null) {
-                state = FetchState.Failed
-                loadResult(false)
+                updateState(FetchState.Failed)
                 return@startFetchMetadataForURL
             }
-            metadata = LPLinkViewData(metaData.url, metaData.title, null, true)
-            loadResult(true)
+            var metadata = LPLinkViewData(metaData.url, metaData.title, null, true)
             val imageURL = metaData.imageURL ?: metaData.iconURL
             val usesIcon = metaData.imageURL == null
             val client = OkHttpClient()
@@ -93,11 +104,12 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, loadResult: (Boolean) -
             if (image != null) {
                 metadata = LPLinkViewData(metaData.url, metaData.title, image, usesIcon)
             }
-            state = FetchState.Successful
+            updateState(FetchState.Successful(metadata))
         }
     }
 
-    if (state == FetchState.Successful) {
-        LinkPreviewInternal(metadata = metadata, modifier = modifier, onClick = onClick)
+    val currentState = state
+    if (currentState is FetchState.Successful) {
+        LinkPreviewInternal(metadata = currentState.metadata, modifier = modifier, onClick = onClick)
     }
 }

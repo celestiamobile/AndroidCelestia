@@ -53,14 +53,12 @@ import java.net.URL
 @Composable
 fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
     val viewModel: InfoViewModel = hiltViewModel()
-    var isWebInfoLoaded by remember { mutableStateOf(false) }
     var objectName by remember { mutableStateOf("") }
     var overview by remember { mutableStateOf("") }
 
     LaunchedEffect(selection) {
         objectName = if (showTitle) viewModel.appCore.simulation.universe.getNameForSelection(selection) else ""
         overview = viewModel.appCore.getOverviewForSelection(selection)
-        isWebInfoLoaded = false
     }
 
     val rowModifier = Modifier.fillMaxWidth()
@@ -97,9 +95,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> U
                     url = URL(urlString)
                 } catch (ignored: MalformedURLException) {}
                 if (hasWebInfo && url != null) {
-                    LinkPreview(url = url, modifier = rowModifier.padding(bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), loadResult = { loadResult ->
-                        isWebInfoLoaded = loadResult
-                    }, onClick = { finalURL ->
+                    LinkPreview(url = url, modifier = rowModifier.padding(bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), onClick = { finalURL ->
                         linkHandler(finalURL)
                     })
                 }
