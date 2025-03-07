@@ -71,7 +71,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import space.celestia.celestiafoundation.utils.getSerializableValue
+import androidx.core.os.BundleCompat
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.ContextMenuContainer
@@ -93,7 +93,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            favoriteItem = it.getSerializableValue(ARG_ITEM, FavoriteBaseItem::class.java)
+            favoriteItem = BundleCompat.getSerializable(it, ARG_ITEM, FavoriteBaseItem::class.java)
             reload()
         }
     }

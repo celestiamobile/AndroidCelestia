@@ -18,31 +18,17 @@ import space.celestia.celestiafoundation.resource.model.ResourceItem
 import java.util.*
 
 class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
-    private lateinit var language: String
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        language = requireArguments().getString(ARG_LANG, "en")
-    }
-
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
         return InstalledAddonListFragment.newInstance()
     }
 
     fun pushItem(item: ResourceItem) {
         // Installed item, update time is unknown so set to epoch time here
-        val frag = ResourceItemFragment.newInstance(item, language, Date(0))
+        val frag = ResourceItemFragment.newInstance(item, Date(0))
         pushFragment(frag)
     }
 
     companion object {
-        private const val ARG_LANG = "lang"
-
-        fun newInstance(language: String) = ResourceFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_LANG, language)
-            }
-        }
+        fun newInstance() = ResourceFragment()
     }
 }

@@ -16,13 +16,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
-import space.celestia.celestiafoundation.utils.getSerializableValue
 
 class BottomControlFragment : Fragment() {
 
@@ -34,7 +34,7 @@ class BottomControlFragment : Fragment() {
 
         arguments?.let {
             @Suppress("UNCHECKED_CAST")
-            items = it.getSerializableValue(ARG_ACTIONS, ArrayList::class.java) as List<BottomControlAction>
+            items = BundleCompat.getSerializable(it, ARG_ACTIONS, ArrayList::class.java) as List<BottomControlAction>
         }
     }
 

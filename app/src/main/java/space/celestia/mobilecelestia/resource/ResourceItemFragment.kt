@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -25,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
@@ -34,7 +36,6 @@ import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.URLHelper
 import space.celestia.celestiafoundation.utils.commonHandler
-import space.celestia.celestiafoundation.utils.getSerializableValue
 import space.celestia.mobilecelestia.utils.*
 import java.io.File
 import java.lang.ref.WeakReference
@@ -47,8 +48,6 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     lateinit var resourceManager: ResourceManager
     @Inject
     lateinit var resourceAPI: ResourceAPIService
-
-    private lateinit var language: String
 
     private lateinit var item: ResourceItem
     private lateinit var lastUpdateDate: Date
@@ -79,13 +78,12 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState != null) {
-            item = savedInstanceState.getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
-            lastUpdateDate = savedInstanceState.getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
+            item = BundleCompat.getSerializable(savedInstanceState, ARG_ITEM, ResourceItem::class.java)!!
+            lastUpdateDate = BundleCompat.getSerializable(savedInstanceState, ARG_UPDATED_DATE, Date::class.java)!!
         } else {
-            item = requireArguments().getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
-            lastUpdateDate = requireArguments().getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
+            item = BundleCompat.getSerializable(requireArguments(), ARG_ITEM, ResourceItem::class.java)!!
+            lastUpdateDate = BundleCompat.getSerializable(requireArguments(), ARG_UPDATED_DATE, Date::class.java)!!
         }
-        language = requireArguments().getString(ARG_LANG, "en")
     }
 
     override fun onCreateView(
@@ -129,7 +127,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         rightNavigationBarItems = listOf(NavigationFragment.BarButtonItem(SHARE_BAR_BUTTON_ID, null, R.drawable.ic_share))
 
         if (savedInstanceState == null) {
-            val uri = URLHelper.buildInAppAddonURI(item.id, language)
+            val uri = URLHelper.buildInAppAddonURI(item.id, AppCore.getLanguage())
             replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item)), R.id.webview_container, false)
         }
 
@@ -138,11 +136,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             // here from Installed where the URL might be incorrect
             val weakSelf = WeakReference(this)
             val resourceAPI = this.resourceAPI
-            val language = this.language
             val itemID = item.id
             lifecycleScope.launch {
                 try {
-                    val result = resourceAPI.item(language, itemID).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                    val result = resourceAPI.item(AppCore.getLanguage(), itemID).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
                     val self = weakSelf.get() ?: return@launch
                     self.item = result
                     self.lastUpdateDate = Date()
@@ -322,17 +319,15 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     companion object {
         private const val ARG_ITEM = "item"
-        private const val ARG_LANG = "lang"
         private const val ARG_UPDATED_DATE = "date"
         private const val UPDATE_INTERVAL_MILLISECONDS = 1800000L
         private const val SHARE_BAR_BUTTON_ID = 4214
 
         @JvmStatic
-        fun newInstance(item: ResourceItem, language: String, lastUpdateDate: Date) =
+        fun newInstance(item: ResourceItem, lastUpdateDate: Date) =
             ResourceItemFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, item)
-                    putString(ARG_LANG, language)
                     putSerializable(ARG_UPDATED_DATE, lastUpdateDate)
                 }
             }

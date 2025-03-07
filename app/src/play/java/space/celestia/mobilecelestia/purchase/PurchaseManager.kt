@@ -36,11 +36,10 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     internal var billingClient: BillingClient? = null
     private var connected = false
 
-    private var dataStore: PreferenceManager
+    private var dataStore: PreferenceManager = PreferenceManager(context, "celestia_plus")
     private var cachedPurchaseToken: String?
 
     init {
-        dataStore = PreferenceManager(context, "celestia_plus")
         cachedPurchaseToken = dataStore[purchaseTokenCacheKey]
     }
 

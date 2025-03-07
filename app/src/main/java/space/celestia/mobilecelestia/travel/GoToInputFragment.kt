@@ -24,7 +24,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +52,6 @@ import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.ObjectNameAutoComplete
 import space.celestia.mobilecelestia.compose.OptionSelect
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.celestiafoundation.utils.getSerializableValue
 import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.io.Serializable
 import java.text.NumberFormat
@@ -83,7 +84,7 @@ class GoToInputFragment : NavigationFragment.SubFragment() {
 
         arguments?.let {
             _selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)
-            _goToData = it.getSerializableValue(ARG_DATA, GoToData::class.java)
+            _goToData = BundleCompat.getSerializable(it, ARG_DATA, GoToData::class.java)
         }
     }
 

@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
+import androidx.core.os.BundleCompat
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -56,7 +57,6 @@ import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.celestiafoundation.utils.getSerializableValue
 import space.celestia.mobilecelestia.utils.showOptions
 import javax.inject.Inject
 
@@ -80,7 +80,7 @@ class SettingsCommonFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            item = it.getSerializableValue(ARG_ITEM, SettingsCommonItem::class.java)
+            item = BundleCompat.getSerializable(it, ARG_ITEM, SettingsCommonItem::class.java)
         }
     }
 

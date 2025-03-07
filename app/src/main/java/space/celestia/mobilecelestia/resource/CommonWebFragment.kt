@@ -44,11 +44,11 @@ import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.celestiafoundation.utils.commonHandler
-import space.celestia.celestiafoundation.utils.getSerializableValue
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.*
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
 open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInterface.MessageHandler {
@@ -86,7 +86,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
         uri = BundleCompat.getParcelable(requireArguments(), ARG_URI, Uri::class.java)!!
         matchingQueryKeys = requireArguments().getStringArrayList(ARG_MATCHING_QUERY_KEYS) ?: listOf()
-        contextDirectory = requireArguments().getSerializableValue(ARG_CONTEXT_DIRECTORY, File::class.java)
+        contextDirectory = BundleCompat.getSerializable(requireArguments(), ARG_CONTEXT_DIRECTORY, File::class.java)
         filterURL = requireArguments().getBoolean(ARG_FILTER_URL, true)
         if (savedInstanceState != null) {
             initialLoadFinished = savedInstanceState.getBoolean(ARG_INITIAL_LOAD_FINISHED, false)
@@ -177,7 +177,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
             fun shouldOverrideUrl(url: String?): Boolean {
                 if (url == null) return true
-                val uri = Uri.parse(url)
+                val uri = url.toUri()
                 if (isURLAllowed(uri))
                     return false
                 weakSelf.get()?.listener?.onExternalWebLinkClicked(url)
@@ -383,7 +383,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 val frag = parentFragment
                 // Do not push another ResourceItemFragment if it is the top
                 if (frag is NavigationFragment && frag.top !is ResourceItemFragment) {
-                    frag.pushFragment(ResourceItemFragment.newInstance(result, lang, Date()))
+                    frag.pushFragment(ResourceItemFragment.newInstance(result, Date()))
                 }
             } catch (ignored: Throwable) {}
         }

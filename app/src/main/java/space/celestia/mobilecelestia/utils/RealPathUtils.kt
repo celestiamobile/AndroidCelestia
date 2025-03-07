@@ -23,6 +23,7 @@ import space.celestia.celestiafoundation.utils.FileUtils
 import space.celestia.mobilecelestia.BuildConfig
 import java.io.File
 import java.io.IOException
+import androidx.core.net.toUri
 
 object RealPathUtils {
     fun getRealPath(
@@ -82,7 +83,7 @@ object RealPathUtils {
                         }
                         for (contentUriPrefix in contentUriPrefixesToTry) {
                             val contentUri = ContentUris.withAppendedId(
-                                Uri.parse(contentUriPrefix),
+                                contentUriPrefix.toUri(),
                                 idLong
                             )
                             val path = getDataColumn(context, contentUri, null, null)

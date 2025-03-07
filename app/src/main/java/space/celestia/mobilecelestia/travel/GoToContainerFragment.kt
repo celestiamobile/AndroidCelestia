@@ -15,7 +15,6 @@ import android.os.Bundle
 import androidx.core.os.BundleCompat
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.celestiafoundation.utils.getSerializableValue
 
 class GoToContainerFragment : NavigationFragment() {
     private val goToData: GoToInputFragment.GoToData
@@ -31,7 +30,7 @@ class GoToContainerFragment : NavigationFragment() {
 
         arguments?.let {
             _selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)
-            _goToData = it.getSerializableValue(ARG_DATA, GoToInputFragment.GoToData::class.java)
+            _goToData = BundleCompat.getSerializable(it, ARG_DATA, GoToInputFragment.GoToData::class.java)
         }
     }
 

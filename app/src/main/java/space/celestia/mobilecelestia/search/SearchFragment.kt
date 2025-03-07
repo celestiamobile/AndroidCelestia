@@ -20,24 +20,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
-import space.celestia.celestia.AppCore
 import space.celestia.celestia.Selection
-import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import java.net.URL
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
     private var listener: Listener? = null
-
-    @Inject
-    lateinit var appCore: AppCore
-
-    @Inject
-    lateinit var executor: CelestiaExecutor
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

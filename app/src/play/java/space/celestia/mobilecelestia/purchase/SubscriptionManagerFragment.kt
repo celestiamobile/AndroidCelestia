@@ -2,12 +2,12 @@ package space.celestia.mobilecelestia.purchase
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,31 +43,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.ProductDetails
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.purchase.viewmodel.SubscriptionManagerViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
-import java.lang.ref.WeakReference
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SubscriptionManagerFragment: Fragment() {
-    @Inject
-    lateinit var purchaseManager: PurchaseManager
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -117,6 +115,7 @@ class SubscriptionManagerFragment: Fragment() {
 
     @Composable
     private fun Content(modifier: Modifier = Modifier) {
+        val viewModel: SubscriptionManagerViewModel = hiltViewModel()
         var needsRefreshing by remember {
             mutableStateOf(true)
         }
@@ -127,7 +126,7 @@ class SubscriptionManagerFragment: Fragment() {
             mutableStateOf<String?>(null)
         }
         var subscriptionStatus by remember {
-            mutableStateOf(purchaseManager.subscriptionStatus)
+            mutableStateOf(viewModel.purchaseManager.subscriptionStatus)
         }
 
         val listener by remember {
@@ -141,9 +140,9 @@ class SubscriptionManagerFragment: Fragment() {
         DisposableEffect(lifeCycleOwner) {
             val observer = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_CREATE) {
-                    purchaseManager.addListener(listener)
+                    viewModel.purchaseManager.addListener(listener)
                 } else if (event == Lifecycle.Event.ON_DESTROY) {
-                    purchaseManager.removeListener(listener)
+                    viewModel.purchaseManager.removeListener(listener)
                 }
             }
             lifeCycleOwner.lifecycle.addObserver(observer)
@@ -163,11 +162,11 @@ class SubscriptionManagerFragment: Fragment() {
             )) {
             if (needsRefreshing) {
                 LaunchedEffect(true) {
-                    val subscriptionResult = purchaseManager.getSubscriptionDetails()
-                    purchaseManager.getValidSubscription()
+                    val subscriptionResult = viewModel.purchaseManager.getSubscriptionDetails()
+                    viewModel.purchaseManager.getValidSubscription()
                     val subscriptionValue = subscriptionResult?.subscription
                     needsRefreshing = false
-                    if (subscriptionResult == null || subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscriptionValue == null || purchaseManager.subscriptionStatus is PurchaseManager.SubscriptionStatus.Error) {
+                    if (subscriptionResult == null || subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscriptionValue == null || viewModel.purchaseManager.subscriptionStatus is PurchaseManager.SubscriptionStatus.Error) {
                         errorText = CelestiaString("We encountered an error.", "Error loading the subscription page")
                         subscription = null
                     } else {
@@ -269,7 +268,8 @@ class SubscriptionManagerFragment: Fragment() {
 
     @Composable
     private fun PlanList(productDetails: ProductDetails, plans: List<PurchaseManager.Plan>, status: PurchaseManager.SubscriptionStatus.Good) {
-        val weakSelf = WeakReference(this)
+        val viewModel: SubscriptionManagerViewModel = hiltViewModel()
+        val activity = LocalActivity.current
         val text: String = when (status) {
             is PurchaseManager.SubscriptionStatus.Good.None -> {
                 CelestiaString("Choose one of the plans below to get Celestia PLUS", "")
@@ -343,9 +343,9 @@ class SubscriptionManagerFragment: Fragment() {
                 }
             }
             PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction, actionButtonHidden = actionButtonHidden) {
-                val self = weakSelf.get() ?: return@PlanCard
-                val activity = self.activity ?: return@PlanCard
-                self.purchaseManager.createSubscription(plan, productDetails, token, activity)
+                activity?.let {
+                    viewModel.purchaseManager.createSubscription(plan, productDetails, token, it)
+                }
             }
             if (index != plans.size - 1) {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
@@ -356,13 +356,13 @@ class SubscriptionManagerFragment: Fragment() {
             FilledTonalButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    val self = weakSelf.get() ?: return@FilledTonalButton
-                    val activity = self.activity ?: return@FilledTonalButton
-                    val url = self.purchaseManager.subscriptionManagementURL()
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    val ai = intent.resolveActivityInfo(activity.packageManager, PackageManager.MATCH_DEFAULT_ONLY)
-                    if (ai != null && ai.exported)
-                        activity.startActivity(intent)
+                    activity?.let {
+                        val url = viewModel.purchaseManager.subscriptionManagementURL()
+                        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                        val ai = intent.resolveActivityInfo(it.packageManager, PackageManager.MATCH_DEFAULT_ONLY)
+                        if (ai != null && ai.exported)
+                            it.startActivity(intent)
+                    }
                 }) {
                 Text(text = CelestiaString("Manage Subscription", ""))
             }

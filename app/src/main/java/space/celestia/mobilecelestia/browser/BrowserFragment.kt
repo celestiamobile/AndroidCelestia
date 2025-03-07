@@ -12,11 +12,13 @@
 package space.celestia.mobilecelestia.browser
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.core.graphics.Insets
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -33,7 +35,6 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.info.InfoFragment
-import space.celestia.celestiafoundation.utils.getSerializableValue
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -100,7 +101,7 @@ class BrowserFragment : Fragment(), BrowserRootFragment, NavigationBarView.OnIte
             currentPath = savedInstanceState.getString(ARG_PATH_TAG, "")
             selectedItemIndex = savedInstanceState.getInt(ARG_ITEM_TAG, 0)
             @Suppress("UNCHECKED_CAST")
-            tabs = savedInstanceState.getSerializableValue(ARG_TABS, ArrayList::class.java) as List<Tab>
+            tabs = BundleCompat.getSerializable(savedInstanceState, ARG_TABS, ArrayList::class.java) as List<Tab>
         }
     }
 

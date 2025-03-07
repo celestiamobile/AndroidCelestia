@@ -40,8 +40,8 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
-import space.celestia.celestiafoundation.utils.getSerializableValue
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.Separator
@@ -124,7 +124,7 @@ class ToolbarFragment: Fragment() {
 
         arguments?.let {
             @Suppress("UNCHECKED_CAST")
-            val value = it.getSerializableValue(ARG_ACTION_WRAPPER, ArrayList::class.java) as? List<List<ToolbarAction>>
+            val value = BundleCompat.getSerializable(it, ARG_ACTION_WRAPPER, ArrayList::class.java) as? List<List<ToolbarAction>>
             if (value != null) {
                 existingActions = value
             }

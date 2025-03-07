@@ -61,7 +61,7 @@ class InfoFragment : NavigationFragment.SubFragment() {
                 Mdc3Theme {
                     InfoScreen(selection = selection, showTitle = !embeddedInNavigation, linkHandler = {
                         listener?.onInfoLinkMetaDataClicked(it)
-                    }, actionHandler = { item ->
+                    }, actionHandler = { item, selection ->
                         listener?.onInfoActionSelected(item, selection)
                     }, paddingValues = WindowInsets.systemBars.asPaddingValues())
                 }

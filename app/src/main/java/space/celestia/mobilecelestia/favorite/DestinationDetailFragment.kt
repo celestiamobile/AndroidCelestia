@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
+import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -44,7 +45,6 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.celestiafoundation.utils.getSerializableValue
 
 class DestinationDetailFragment : NavigationFragment.SubFragment() {
     private var item: Destination? = null
@@ -54,7 +54,7 @@ class DestinationDetailFragment : NavigationFragment.SubFragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            item = it.getSerializableValue(ARG_ITEM, Destination::class.java)
+            item = BundleCompat.getSerializable(it, ARG_ITEM, Destination::class.java)
         }
     }
     override fun onCreateView(

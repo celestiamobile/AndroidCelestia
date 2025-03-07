@@ -1,27 +1,25 @@
 package space.celestia.mobilecelestia.resource
 
 import android.os.Bundle
-import space.celestia.mobilecelestia.common.NavigationFragment
+import androidx.core.os.BundleCompat
 import space.celestia.celestiafoundation.resource.model.ResourceItem
-import space.celestia.celestiafoundation.utils.getSerializableValue
+import space.celestia.mobilecelestia.common.NavigationFragment
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.Date
 
 class ResourceItemNavigationFragment: NavigationFragment() {
     private lateinit var item: ResourceItem
-    private lateinit var language: String
     private lateinit var lastUpdateDate: Date
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
-            item = savedInstanceState.getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
-            lastUpdateDate = savedInstanceState.getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
+            item = BundleCompat.getSerializable(savedInstanceState, ARG_ITEM, ResourceItem::class.java)!!
+            lastUpdateDate = BundleCompat.getSerializable(savedInstanceState, ARG_UPDATED_DATE, Date::class.java)!!
         } else {
-            item = requireArguments().getSerializableValue(ARG_ITEM, ResourceItem::class.java)!!
-            lastUpdateDate = requireArguments().getSerializableValue(ARG_UPDATED_DATE, Date::class.java)!!
+            item = BundleCompat.getSerializable(requireArguments(), ARG_ITEM, ResourceItem::class.java)!!
+            lastUpdateDate = BundleCompat.getSerializable(requireArguments(), ARG_UPDATED_DATE, Date::class.java)!!
         }
-        language = requireArguments().getString(ARG_LANG, "en")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -31,7 +29,7 @@ class ResourceItemNavigationFragment: NavigationFragment() {
     }
 
     override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        val fragment = ResourceItemFragment.newInstance(item, language, lastUpdateDate)
+        val fragment = ResourceItemFragment.newInstance(item, lastUpdateDate)
         val weakSelf = WeakReference(this)
         fragment.updateListener = object : ResourceItemFragment.UpdateListener {
             override fun onResourceItemUpdated(resourceItem: ResourceItem, updateDate: Date) {
@@ -45,15 +43,13 @@ class ResourceItemNavigationFragment: NavigationFragment() {
 
     companion object {
         private const val ARG_ITEM = "item"
-        private const val ARG_LANG = "lang"
         private const val ARG_UPDATED_DATE = "date"
 
         @JvmStatic
-        fun newInstance(item: ResourceItem, language: String, lastUpdateDate: Date) =
+        fun newInstance(item: ResourceItem, lastUpdateDate: Date) =
             ResourceItemNavigationFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, item)
-                    putString(ARG_LANG, language)
                     putSerializable(ARG_UPDATED_DATE, lastUpdateDate)
                 }
             }

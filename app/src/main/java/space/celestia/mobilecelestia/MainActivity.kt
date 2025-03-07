@@ -42,7 +42,6 @@ import androidx.core.view.*
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
@@ -101,13 +100,14 @@ import java.lang.ref.WeakReference
 import java.net.URL
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.system.exitProcess
+import androidx.core.net.toUri
+import androidx.core.view.isVisible
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
@@ -312,8 +312,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(MENU_VISIBLE_TAG, drawerLayout.isDrawerOpen(GravityCompat.END))
-        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).visibility == View.VISIBLE)
-        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).visibility == View.VISIBLE)
+        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).isVisible)
+        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).isVisible)
         outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
         super.onSaveInstanceState(outState)
     }
@@ -348,7 +348,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             builder.setMessage(R.string.privacy_policy_alert_detail)
             builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
                 val baseURL = "https://celestia.mobi/privacy"
-                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", "zh_CN").build()
+                val uri = baseURL.toUri().buildUpon().appendQueryParameter("lang", "zh_CN").build()
                 openURI(uri)
                 showPrivacyAlertIfNeeded()
             }
@@ -739,7 +739,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             lifecycleScope.launch {
                 try {
                     val result = resourceAPI.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    showBottomSheetFragment(ResourceItemNavigationFragment.newInstance(result, lang, Date()))
+                    showBottomSheetFragment(ResourceItemNavigationFragment.newInstance(result, Date()))
                 } catch (ignored: Throwable) {}
             }
             cleanup()
@@ -1056,7 +1056,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             ToolbarAction.NewsArchive -> {
                 val baseURL = "https://celestia.mobi/news"
-                val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
+                val uri = baseURL.toUri().buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
                 lifecycleScope.launch {
                     hideOverlay(true)
                     openURL(uri.toString())
@@ -1249,7 +1249,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onShareAddon(name: String, id: String) {
         val baseURL = "https://celestia.mobi/resources/item"
-        val uri = Uri.parse(baseURL).buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", AppCore.getLanguage()).build()
+        val uri = baseURL.toUri().buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", AppCore.getLanguage()).build()
         shareURLDirect(name, uri.toString())
     }
 
@@ -1420,7 +1420,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onAboutURLSelected(url: String, localizable: Boolean) {
-        var uri = Uri.parse(url)
+        var uri = url.toUri()
         if (localizable)
             uri = uri.buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
         openURI(uri)
@@ -1509,7 +1509,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun openURL(url: String) {
-        openURI(Uri.parse(url))
+        openURI(url.toUri())
     }
 
     private fun openURI(uri: Uri) {
@@ -1703,7 +1703,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         if (uris.isEmpty()) {
             intent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:")
+                data = "mailto:".toUri()
                 putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL_ADDRESS))
                 putExtra(Intent.EXTRA_SUBJECT, subject)
                 putExtra(Intent.EXTRA_TEXT, body)
@@ -1858,7 +1858,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showHelp() = lifecycleScope.launch {
-        showBottomSheetFragment(NewHelpFragment.newInstance(AppCore.getLanguage()))
+        showBottomSheetFragment(NewHelpFragment.newInstance())
     }
 
     private fun showFavorite() = lifecycleScope.launch {
@@ -1933,7 +1933,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     // Resource
     private fun showInstalledAddons() = lifecycleScope.launch {
-        showBottomSheetFragment(ResourceFragment.newInstance(AppCore.getLanguage()))
+        showBottomSheetFragment(ResourceFragment.newInstance())
     }
 
     override fun onInstalledAddonSelected(addon: ResourceItem) {
@@ -1949,7 +1949,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun openAddonDownload() {
         val baseURL = "https://celestia.mobi/resources/categories"
-        var builder = Uri.parse(baseURL)
+        var builder = baseURL.toUri()
             .buildUpon()
             .appendQueryParameter("lang", AppCore.getLanguage())
             .appendQueryParameter("platform", "android")
@@ -1964,15 +1964,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun openAddonCategory(info: BrowserPredefinedItem.CategoryInfo) {
         val baseURL = if (info.isLeaf) "https://celestia.mobi/resources/category" else "https://celestia.mobi/resources/categories"
-        var builder = Uri.parse(baseURL)
+        var builder = baseURL.toUri()
             .buildUpon()
             .appendQueryParameter("lang", language)
             .appendQueryParameter("platform", "android")
             .appendQueryParameter("theme", "dark")
-        if (info.isLeaf)
-            builder = builder.appendQueryParameter("category", info.id)
+        builder = if (info.isLeaf)
+            builder.appendQueryParameter("category", info.id)
         else
-            builder = builder.appendQueryParameter("parent", info.id)
+            builder.appendQueryParameter("parent", info.id)
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
@@ -2017,7 +2017,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private suspend fun showBottomSheetFragmentDirect(fragment: Fragment) {
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
-        val id = supportFragmentManager
+        supportFragmentManager
             .beginTransaction()
             .add(R.id.bottom_sheet, fragment, BOTTOM_SHEET_ROOT_FRAGMENT_TAG)
             .setPrimaryNavigationFragment(fragment)
