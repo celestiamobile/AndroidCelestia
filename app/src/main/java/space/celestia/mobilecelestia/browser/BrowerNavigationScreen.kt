@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,21 +42,37 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import java.net.URL
 
 @Serializable
-data class Browser(val path: String)
+sealed class Browser {
+    abstract val path: String
+
+    @Serializable
+    data class Item(override val path: String) : Browser()
+
+    @Serializable
+    sealed class Root() : Browser() {
+        @Serializable
+        data class SolarSystem(override val path: String) : Root()
+        @Serializable
+        data class Stars(override val path: String) : Root()
+        @Serializable
+        data class DSOs(override val path: String) : Root()
+    }
+}
 
 @Serializable
 data class BrowserItemInfo(val objectType: Int, val objectPointer: Long)
 
 @Composable
-fun BrowserNavigationScreen(rootItem: BrowserItem, navController: NavHostController, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit, topBarStateChange: (String, Boolean) -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
+fun BrowserNavigationScreen(root: Browser, rootItem: BrowserItem, navController: NavHostController, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit, topBarStateChange: (String, Boolean) -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
     val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current)
 
     val viewModel: BrowserNavigationViewModel = hiltViewModel()
     if (viewModel.browserMap.isEmpty()) {
-        val path = "${rootItem.hashCode()}"
-        viewModel.rootPath = path
+        val path = root.path
+        viewModel.root = root
         viewModel.currentPath = path
         viewModel.browserMap[path] = rootItem
+        viewModel.currentPathMap[root] = path
     }
 
     DisposableEffect(navController) {
@@ -65,8 +82,17 @@ fun BrowserNavigationScreen(rootItem: BrowserItem, navController: NavHostControl
             val currentBackStackEntry = controller.currentBackStackEntry
             if (currentBackStackEntry == null) {
                 title = ""
-            } else if (currentBackStackEntry.destination.hasRoute<Browser>()) {
-                val browserItem = viewModel.browserMap[currentBackStackEntry.toRoute<Browser>().path]
+            } else if (currentBackStackEntry.destination.hasRoute<Browser.Item>()) {
+                val browserItem = viewModel.browserMap[currentBackStackEntry.toRoute<Browser.Item>().path]
+                title = browserItem?.alternativeName ?: browserItem?.name ?: ""
+            } else if (currentBackStackEntry.destination.hasRoute<Browser.Root.SolarSystem>()) {
+                val browserItem = viewModel.browserMap[currentBackStackEntry.toRoute<Browser.Root.SolarSystem>().path]
+                title = browserItem?.alternativeName ?: browserItem?.name ?: ""
+            } else if (currentBackStackEntry.destination.hasRoute<Browser.Root.Stars>()) {
+                val browserItem = viewModel.browserMap[currentBackStackEntry.toRoute<Browser.Root.Stars>().path]
+                title = browserItem?.alternativeName ?: browserItem?.name ?: ""
+            } else if (currentBackStackEntry.destination.hasRoute<Browser.Root.DSOs>()) {
+                val browserItem = viewModel.browserMap[currentBackStackEntry.toRoute<Browser.Root.DSOs>().path]
                 title = browserItem?.alternativeName ?: browserItem?.name ?: ""
             } else if (currentBackStackEntry.destination.hasRoute<BrowserItemInfo>()) {
                 val item = currentBackStackEntry.toRoute<BrowserItemInfo>()
@@ -86,20 +112,22 @@ fun BrowserNavigationScreen(rootItem: BrowserItem, navController: NavHostControl
         mutableStateOf(null)
     }
 
-    NavHost(navController = navController, startDestination = Browser("${rootItem.hashCode()}")) {
-        composable<Browser> {
+    NavHost(navController = navController, startDestination = root) {
+        @Composable
+        fun ListScreen(path: String) {
             CompositionLocalProvider(
                 LocalViewModelStoreOwner provides viewModelStoreOwner
             ) {
                 BrowserItemScreen(
                     paddingValues = paddingValues,
-                    path = it.toRoute<Browser>().path,
+                    path = path,
                     modifier = modifier,
                     itemSelected = { item ->
                         if (!item.isLeaf) {
                             viewModel.currentPath = "${viewModel.currentPath}/${item.item.hashCode()}"
+                            viewModel.currentPathMap[viewModel.root] = viewModel.currentPath
                             viewModel.browserMap[viewModel.currentPath] = item.item
-                            navController.navigate(Browser(viewModel.currentPath))
+                            navController.navigate(Browser.Item(viewModel.currentPath))
                         } else {
                             val obj = item.item.`object`
                             if (obj != null) {
@@ -115,6 +143,22 @@ fun BrowserNavigationScreen(rootItem: BrowserItem, navController: NavHostControl
             }
         }
 
+        composable<Browser.Item> {
+            ListScreen(path = it.toRoute<Browser.Item>().path)
+        }
+
+        composable<Browser.Root.SolarSystem> {
+            ListScreen(path = it.toRoute<Browser.Root.SolarSystem>().path)
+        }
+
+        composable<Browser.Root.Stars> {
+            ListScreen(path = it.toRoute<Browser.Root.Stars>().path)
+        }
+
+        composable<Browser.Root.DSOs> {
+            ListScreen(path = it.toRoute<Browser.Root.DSOs>().path)
+        }
+
         composable<BrowserItemInfo> {
             val item = it.toRoute<BrowserItemInfo>()
             val selection = Selection(item.objectPointer, item.objectType)
@@ -122,9 +166,7 @@ fun BrowserNavigationScreen(rootItem: BrowserItem, navController: NavHostControl
                 selection = selection,
                 showTitle = false,
                 linkHandler = linkHandler,
-                actionHandler = { action ->
-                    actionHandler(action, selection)
-                },
+                actionHandler = actionHandler,
                 paddingValues = paddingValues,
                 modifier = modifier
             )

@@ -184,7 +184,6 @@ class ResourceFragment : Fragment() {
                     }
                     AddonScreen(
                         addon = addon,
-                        language = AppCore.getLanguage(),
                         shareURLHandler = { title, url ->
                             listener?.onShareURL(title, url)
                         },
