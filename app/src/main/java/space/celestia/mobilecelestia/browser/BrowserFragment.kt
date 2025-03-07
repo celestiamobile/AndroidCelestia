@@ -152,19 +152,17 @@ class BrowserFragment : Fragment() {
                         selected = selectedTabIndex == index,
                         onClick = {
                             selectedTabIndex = index
-                            val path = "${tab.item.hashCode()}"
-                            val previousRoot = navigationModel.rootPath
-                            navigationModel.rootPath = path
-                            navigationModel.currentPath = path
-                            navigationModel.browserMap[path] = tab.item
-                            navController.navigate(Browser(path)) {
-                                popUpTo(Browser(previousRoot)) {
+                            val previousRoot = navigationModel.root
+                            navigationModel.root = tab.root
+                            navigationModel.currentPath = navigationModel.currentPathMap[tab.root] ?: tab.root.path
+                            navigationModel.browserMap[tab.root.path] = tab.item
+                            navController.navigate(tab.root) {
+                                popUpTo(previousRoot) {
                                     inclusive = true
-                                    // TODO: State restoration does not work
-                                    // saveState = true
+                                    saveState = true
                                 }
                                 launchSingleTop = true
-                                // restoreState = true
+                                restoreState = true
                             }
                         }
                     )
@@ -175,6 +173,7 @@ class BrowserFragment : Fragment() {
                 LocalViewModelStoreOwner provides viewModelStoreOwner
             ) {
                 BrowserNavigationScreen(
+                    root = viewModel.tabData[0].root,
                     rootItem = viewModel.tabData[0].item,
                     navController = navController,
                     addonCategoryRequested = {

@@ -28,6 +28,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import space.celestia.celestia.AppCore
 import space.celestia.celestia.Selection
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
@@ -82,7 +83,6 @@ fun ResourceManager.getAddonState(addon: ResourceItem): AddonState {
 @Composable
 fun AddonScreen(
     addon: ResourceItem,
-    language: String,
     shareURLHandler: (String, String) -> Unit,
     receivedACKHandler: (String) -> Unit,
     openSubscriptionPageHandler: () -> Unit,
@@ -164,7 +164,7 @@ fun AddonScreen(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), progress = { downloadProgress })
         }
 
-        val webViewState = rememberWebViewState(url = URLHelper.buildInAppAddonURI(addon.id, language).toString(), filterURL = true, matchingQueryKeys = listOf("item"))
+        val webViewState = rememberWebViewState(url = URLHelper.buildInAppAddonURI(addon.id, AppCore.getLanguage()).toString(), filterURL = true, matchingQueryKeys = listOf("item"))
 
         SingleWebScreen(
             webViewState = webViewState,
