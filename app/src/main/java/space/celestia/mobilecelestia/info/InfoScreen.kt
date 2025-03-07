@@ -107,7 +107,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> U
         }
 
         val actions = ArrayList(InfoActionItem.infoActions)
-        if (hasWebInfo && !isWebInfoLoaded)
+        if (hasWebInfo)
             actions.add(InfoWebActionItem())
         if (hasAltSurface)
             actions.add(AlternateSurfacesItem())
