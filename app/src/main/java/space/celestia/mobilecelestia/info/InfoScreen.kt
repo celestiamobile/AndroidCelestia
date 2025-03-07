@@ -45,7 +45,7 @@ import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.info.model.InfoWebActionItem
 import space.celestia.mobilecelestia.info.model.MarkItem
 import space.celestia.mobilecelestia.info.model.SubsystemActionItem
-import space.celestia.mobilecelestia.settings.viewmodel.InfoViewModel
+import space.celestia.mobilecelestia.info.viewmodel.InfoViewModel
 import space.celestia.mobilecelestia.utils.getOverviewForSelection
 import java.net.MalformedURLException
 import java.net.URL

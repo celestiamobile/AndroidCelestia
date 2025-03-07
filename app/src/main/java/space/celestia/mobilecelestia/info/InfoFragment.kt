@@ -24,21 +24,15 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
-import space.celestia.celestia.AppCore
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import java.net.URL
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class InfoFragment : Fragment() {
     private var listener: Listener? = null
     private lateinit var selection: Selection
-    private var embeddedInNavigation = false
-
-    @Inject
-    lateinit var appCore: AppCore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +52,7 @@ class InfoFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    InfoScreen(selection = selection, showTitle = !embeddedInNavigation, linkHandler = {
+                    InfoScreen(selection = selection, showTitle = true, linkHandler = {
                         listener?.onInfoLinkMetaDataClicked(it)
                     }, actionHandler = { item, selection ->
                         listener?.onInfoActionSelected(item, selection)

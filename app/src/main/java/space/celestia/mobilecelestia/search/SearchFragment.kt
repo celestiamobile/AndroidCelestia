@@ -39,9 +39,7 @@ class SearchFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    SearchScreen(objectNotFoundHandler = {
-                        listener?.onObjectNotFound()
-                    }, actionHandler = { action, selection ->
+                    SearchScreen(actionHandler = { action, selection ->
                         listener?.onInfoActionSelected(action, selection)
                     }, linkHandler = {
                         listener?.onInfoLinkMetaDataClicked(it)
@@ -66,7 +64,6 @@ class SearchFragment : Fragment() {
     }
 
     interface Listener {
-        fun onObjectNotFound()
         fun onInfoActionSelected(action: InfoActionItem, item: Selection)
         fun onInfoLinkMetaDataClicked(url: URL)
     }

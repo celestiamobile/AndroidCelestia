@@ -1160,10 +1160,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showInAppPurchase()
     }
 
-    override fun onObjectNotFound() {
-        showAlert(CelestiaString("Object not found", ""))
-    }
-
     override fun onInstantActionSelected(item: CelestiaAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.charEnter(item.value) }
     }

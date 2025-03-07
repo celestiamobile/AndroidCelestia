@@ -43,7 +43,7 @@ sealed class BrowserTab {
     }
 }
 
-data class BrowserTabData(val tab: BrowserTab, val item: BrowserItem)
+data class BrowserTabData(val tab: BrowserTab, val item: BrowserItem, val root: Browser.Root)
 
 @HiltViewModel
 class BrowserViewModel @Inject constructor(val appCore: AppCore, val executor: CelestiaExecutor) : ViewModel() {
@@ -59,10 +59,15 @@ class BrowserViewModel @Inject constructor(val appCore: AppCore, val executor: C
             universe.createDynamicBrowserItems(observer)
             val solRoot = simulation.solBrowserRoot()
             if (solRoot != null)
-                browserTabs.add(BrowserTabData(BrowserTab.SolarSystem, solRoot))
-            browserTabs.add(BrowserTabData(BrowserTab.Stars, simulation.universe.starBrowserRoot(observer)))
-            browserTabs.add(BrowserTabData(BrowserTab.DSO, simulation.universe.dsoBrowserRoot()))
+                browserTabs.add(BrowserTabData(BrowserTab.SolarSystem, solRoot, Browser.Root.SolarSystem("${solRoot.hashCode()}")))
+            val starRoot = simulation.universe.starBrowserRoot(observer)
+            browserTabs.add(BrowserTabData(BrowserTab.Stars, starRoot, Browser.Root.Stars("${starRoot.hashCode()}")))
+            val dsoRoot = simulation.universe.dsoBrowserRoot()
+            browserTabs.add(BrowserTabData(BrowserTab.DSO, dsoRoot, Browser.Root.DSOs("${dsoRoot.hashCode()}")))
         }
         tabData = browserTabs
     }
 }
+
+@HiltViewModel
+class SubsystemBrowserViewModel @Inject constructor(val appCore: AppCore) : ViewModel()

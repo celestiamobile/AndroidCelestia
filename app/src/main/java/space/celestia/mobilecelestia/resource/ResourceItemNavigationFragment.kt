@@ -83,7 +83,6 @@ class ResourceItemNavigationFragment: Fragment() {
         }) { paddingValues ->
             AddonScreen(
                 addon = item,
-                language = AppCore.getLanguage(),
                 shareURLHandler = { title, url ->
                     listener?.onShareURL(title, url)
                 },
