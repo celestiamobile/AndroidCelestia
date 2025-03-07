@@ -51,7 +51,7 @@ import java.net.MalformedURLException
 import java.net.URL
 
 @Composable
-fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
+fun InfoScreen(selection: Selection, showTitle: Boolean, onInfoActionSelected: (InfoActionItem, Selection) -> Unit, onInfoLinkMetaDataClicked: (URL) -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
     val viewModel: InfoViewModel = hiltViewModel()
     var objectName by remember { mutableStateOf("") }
     var overview by remember { mutableStateOf("") }
@@ -96,7 +96,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> U
                 } catch (ignored: MalformedURLException) {}
                 if (hasWebInfo && url != null) {
                     LinkPreview(url = url, modifier = rowModifier.padding(bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), onClick = { finalURL ->
-                        linkHandler(finalURL)
+                        onInfoLinkMetaDataClicked(finalURL)
                     })
                 }
             }
@@ -122,7 +122,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> U
                     end =  if (index % 2 == 1) 0.dp else dimensionResource(horizontalButtonSpacing) / 2,
                     bottom = if (index / 2 == (count - 1) / 2) 0.dp else dimensionResource(verticalButtonSpacing) / 2,
                 ), onClick = {
-                    actionHandler(item.second, selection)
+                    onInfoActionSelected(item.second, selection)
                 }) {
                 Text(text = item.second.title)
             }

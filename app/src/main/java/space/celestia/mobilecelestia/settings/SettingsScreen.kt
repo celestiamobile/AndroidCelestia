@@ -1,5 +1,5 @@
 /*
- * SettingsFragment.kt
+ * SettingsScreen.kt
  *
  * Copyright (C) 2023-present, Celestia Development Team
  *
@@ -12,12 +12,8 @@
 package space.celestia.mobilecelestia.settings
 
 import RenderInfoScreen
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,11 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavType
@@ -49,7 +41,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.purchase.FontSettingsScreen
 import space.celestia.mobilecelestia.purchase.SubscriptionBackingScreen
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
@@ -156,27 +147,10 @@ sealed class Settings {
 @Serializable
 data class SettingsSection(val items: List<Settings>, val title: StringResource)
 
-class SettingsFragment : Fragment() {
-    private var listener: Listener? = null
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    MainScreen()
-                }
-            }
-        }
-    }
-
-    private fun getCurrentTopAppBarTitle(controller: NavController): String {
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(onRefreshRateChanged: (Int) -> Unit, onAboutURLSelected: (String, Boolean) -> Unit, requestOpenSubscriptionManagement: () -> Unit) {
+    fun getCurrentTopAppBarTitle(controller: NavController): String {
         val backStackEntry = controller.currentBackStackEntry ?: return ""
         if (backStackEntry.destination.hasRoute<Settings.Common>()) {
             return backStackEntry.toRoute<Settings.Common>().name
@@ -211,113 +185,85 @@ class SettingsFragment : Fragment() {
         return ""
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    private fun MainScreen() {
-        val viewModel: SettingsViewModel = hiltViewModel()
-        val sections = if (viewModel.purchaseManager.canUseInAppPurchase()) mainSettingSectionsBeforePlus + celestiaPlusSettingSection + mainSettingSectionsAfterPlus else mainSettingSectionsBeforePlus + mainSettingSectionsAfterPlus
-        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-        val navController = rememberNavController()
-        var title by remember {
-            mutableStateOf("")
+    val viewModel: SettingsViewModel = hiltViewModel()
+    val sections = if (viewModel.purchaseManager.canUseInAppPurchase()) mainSettingSectionsBeforePlus + celestiaPlusSettingSection + mainSettingSectionsAfterPlus else mainSettingSectionsBeforePlus + mainSettingSectionsAfterPlus
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val navController = rememberNavController()
+    var title by remember {
+        mutableStateOf("")
+    }
+    var canPop by remember { mutableStateOf(false) }
+    DisposableEffect(navController) {
+        val listener = NavController.OnDestinationChangedListener { controller, _, _ ->
+            canPop = controller.previousBackStackEntry != null
+            title = getCurrentTopAppBarTitle(controller)
         }
-        var canPop by remember { mutableStateOf(false) }
-        DisposableEffect(navController) {
-            val listener = NavController.OnDestinationChangedListener { controller, _, _ ->
-                canPop = controller.previousBackStackEntry != null
-                title = getCurrentTopAppBarTitle(controller)
-            }
-            navController.addOnDestinationChangedListener(listener)
-            onDispose {
-                navController.removeOnDestinationChangedListener(listener)
-            }
+        navController.addOnDestinationChangedListener(listener)
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
         }
+    }
 
-        Scaffold(topBar = {
-            TopAppBar(title = {
-                Text(text = title)
-            }, navigationIcon = {
-                if (canPop) {
-                    IconButton(onClick = {
-                        navController.navigateUp()
-                    }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
-                    }
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Text(text = title)
+        }, navigationIcon = {
+            if (canPop) {
+                IconButton(onClick = {
+                    navController.navigateUp()
+                }) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
                 }
-            }, scrollBehavior = scrollBehavior)
-        }) { paddingValues ->
-            NavHost(navController = navController, startDestination = Settings.Home) {
-                composable<Settings.Home> {
-                    SettingsListScreen(paddingValues = paddingValues, itemHandler = {
-                        navController.navigate(it)
-                    }, sections = sections,  modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                }
-                composable<Settings.Language> {
-                    LanguageSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                }
-                composable<Settings.RefreshRate> {
-                    RefreshRateSettingsScreen(paddingValues = paddingValues, changeHandler = {
-                        listener?.onRefreshRateChanged(it)
-                    }, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                }
-                composable<Settings.About> {
-                    AboutScreen(paddingValues = paddingValues, urlHandler = { url, localizable ->
-                        listener?.onAboutURLSelected(url, localizable)
-                    }, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                }
-                composable<Settings.CurrentTime> {
-                    TimeSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                }
-                composable<Settings.DataLocation> {
-                    DataLocationSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                }
-                composable<Settings.Common>(typeMap = Settings.Common.typeMap) { backStackEntry ->
-                    CommonSettingsScreen(paddingValues = paddingValues, item = backStackEntry.toRoute<Settings.Common>().data, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                }
-                composable<Settings.RenderInfo> {
-                    RenderInfoScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    composable<Settings.Font> {
-                        SubscriptionBackingScreen(paddingValues = paddingValues, content = {
-                            FontSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
-                        }) {
-                            listener?.requestOpenSubscriptionManagement()
-                        }
-                    }
-                }
-                composable<Settings.Toolbar> {
+            }
+        }, scrollBehavior = scrollBehavior)
+    }) { paddingValues ->
+        NavHost(navController = navController, startDestination = Settings.Home) {
+            composable<Settings.Home> {
+                SettingsListScreen(paddingValues = paddingValues, itemHandler = {
+                    navController.navigate(it)
+                }, sections = sections,  modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+            }
+            composable<Settings.Language> {
+                LanguageSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+            }
+            composable<Settings.RefreshRate> {
+                RefreshRateSettingsScreen(paddingValues = paddingValues, changeHandler = {
+                    onRefreshRateChanged(it)
+                }, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+            }
+            composable<Settings.About> {
+                AboutScreen(paddingValues = paddingValues, urlHandler = { url, localizable ->
+                    onAboutURLSelected(url, localizable)
+                }, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+            }
+            composable<Settings.CurrentTime> {
+                TimeSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+            }
+            composable<Settings.DataLocation> {
+                DataLocationSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+            }
+            composable<Settings.Common>(typeMap = Settings.Common.typeMap) { backStackEntry ->
+                CommonSettingsScreen(paddingValues = paddingValues, item = backStackEntry.toRoute<Settings.Common>().data, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+            }
+            composable<Settings.RenderInfo> {
+                RenderInfoScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                composable<Settings.Font> {
                     SubscriptionBackingScreen(paddingValues = paddingValues, content = {
-                        ToolbarSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+                        FontSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
                     }) {
-                        listener?.requestOpenSubscriptionManagement()
+                        requestOpenSubscriptionManagement()
                     }
                 }
             }
+            composable<Settings.Toolbar> {
+                SubscriptionBackingScreen(paddingValues = paddingValues, content = {
+                    ToolbarSettingsScreen(paddingValues = paddingValues, modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection))
+                }) {
+                    requestOpenSubscriptionManagement()
+                }
+            }
         }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement SettingsFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
-    interface Listener {
-        fun onRefreshRateChanged(frameRateOption: Int)
-        fun onAboutURLSelected(url: String, localizable: Boolean)
-        fun requestOpenSubscriptionManagement()
-    }
-
-    companion object {
-        fun newInstance() = SettingsFragment()
     }
 }

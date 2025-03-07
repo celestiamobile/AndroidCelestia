@@ -47,10 +47,6 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         return true
     }
 
-    fun createInAppPurchaseFragment(): Fragment? {
-        return SubscriptionManagerFragment.newInstance()
-    }
-
     fun purchaseToken(): String? {
         return cachedPurchaseToken
     }
