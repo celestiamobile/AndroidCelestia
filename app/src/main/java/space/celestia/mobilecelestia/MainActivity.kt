@@ -11,7 +11,6 @@
 
 package space.celestia.mobilecelestia
 import android.animation.ObjectAnimator
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -28,9 +27,12 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
@@ -81,17 +83,19 @@ import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
 import space.celestia.celestiafoundation.utils.versionName
-import space.celestia.mobilecelestia.browser.BrowserFragment
 import space.celestia.mobilecelestia.browser.BrowserPredefinedItem
-import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
+import space.celestia.mobilecelestia.celestia.UtilityScreen
+import space.celestia.mobilecelestia.celestia.viewmodel.Context
+import space.celestia.mobilecelestia.celestia.viewmodel.Utility
+import space.celestia.mobilecelestia.celestia.viewmodel.UtilityViewModel
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.control.BottomControlAction
 import space.celestia.mobilecelestia.control.BottomControlFragment
-import space.celestia.mobilecelestia.control.CameraControlContainerFragment
 import space.celestia.mobilecelestia.control.ContinuousAction
 import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
@@ -100,15 +104,11 @@ import space.celestia.mobilecelestia.control.GroupActionItem
 import space.celestia.mobilecelestia.control.InstantAction
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
-import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
-import space.celestia.mobilecelestia.favorite.FavoriteFragment
 import space.celestia.mobilecelestia.favorite.viewmodel.Favorite
 import space.celestia.mobilecelestia.favorite.viewmodel.getCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentDestinations
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentScripts
-import space.celestia.mobilecelestia.help.NewHelpFragment
-import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
@@ -120,22 +120,12 @@ import space.celestia.mobilecelestia.info.model.MarkItem
 import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.resource.CommonWebFragment
-import space.celestia.mobilecelestia.resource.CommonWebNavigationFragment
-import space.celestia.mobilecelestia.resource.InstalledAddonListFragment
-import space.celestia.mobilecelestia.resource.ResourceFragment
-import space.celestia.mobilecelestia.resource.ResourceItemFragment
-import space.celestia.mobilecelestia.resource.ResourceItemNavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
-import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.CustomFont
-import space.celestia.mobilecelestia.settings.SettingsCurrentTimeNavigationFragment
-import space.celestia.mobilecelestia.settings.SettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsKey
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
-import space.celestia.mobilecelestia.travel.GoToContainerFragment
 import space.celestia.mobilecelestia.travel.GoToData
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -147,7 +137,6 @@ import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.URL
-import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -158,19 +147,9 @@ import kotlin.system.exitProcess
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     ToolbarFragment.Listener,
-    InfoFragment.Listener,
-    SearchFragment.Listener,
     BottomControlFragment.Listener,
-    SubsystemBrowserFragment.Listener,
-    BrowserFragment.Listener,
-    CameraControlContainerFragment.Listener,
-    CommonWebNavigationFragment.Listener,
-    FavoriteFragment.Listener,
     AppStatusReporter.Listener,
-    CelestiaFragment.Listener,
-    GoToContainerFragment.Listener,
-    ResourceFragment.Listener,
-    SettingsFragment.Listener {
+    CelestiaFragment.Listener {
 
     @AppSettings
     @Inject
@@ -231,6 +210,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var isAskingForExit = false
 
     private var onBackPressedCallback: OnBackPressedCallback? = null
+
+    private val utilityViewModel: UtilityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -305,7 +286,63 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
-        val bottomSheetContainer = findViewById<FrameLayout>(R.id.bottom_sheet)
+        val bottomSheetContainer = findViewById<ComposeView>(R.id.bottom_sheet)
+        val weakSelf = WeakReference(this)
+        bottomSheetContainer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        bottomSheetContainer.setContent {
+            Mdc3Theme {
+                UtilityScreen(
+                    onRefreshRateChanged = {
+                        weakSelf.get()?.onRefreshRateChanged(it)
+                    },
+                    onAboutURLSelected = { url, localized ->
+                        weakSelf.get()?.onAboutURLSelected(url, localized)
+                    },
+                    requestOpenSubscriptionManagement = {
+                        weakSelf.get()?.requestOpenSubscriptionManagement()
+                    },
+                    onOpenAddonDownload = {
+                        weakSelf.get()?.onOpenAddonDownload()
+                    },
+                    onShareAddon = { name, id ->
+                        weakSelf.get()?.onShareAddon(name, id)
+                    },
+                    onExternalWebLinkClicked = {
+                        weakSelf.get()?.onExternalWebLinkClicked(it)
+                    },
+                    onShareURL = { title, url ->
+                        weakSelf.get()?.onShareURL(title, url)
+                    },
+                    onOpenSubscriptionPage = {
+                        weakSelf.get()?.onOpenSubscriptionPage()
+                    },
+                    onReceivedACK = {
+                        weakSelf.get()?.onReceivedACK(it)
+                    },
+                    onObserverModeLearnMoreClicked = {
+                        weakSelf.get()?.onObserverModeLearnMoreClicked(it)
+                    },
+                    onInfoLinkMetaDataClicked = {
+                        weakSelf.get()?.onInfoLinkMetaDataClicked(it)
+                    },
+                    onInfoActionSelected = { action, item ->
+                        weakSelf.get()?.onInfoActionSelected(action, item)
+                    },
+                    onGoToObject = { goToData, selection ->
+                        weakSelf.get()?.onGoToObject(goToData, selection)
+                    },
+                    onBrowserAddonCategoryRequested = {
+                        weakSelf.get()?.onBrowserAddonCategoryRequested(it)
+                    },
+                    shareItem = {
+                        weakSelf.get()?.shareItem(it)
+                    },
+                    saveFavorites = {
+                        weakSelf.get()?.saveFavorites()
+                    }
+                )
+            }
+        }
         ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
             val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
             val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
@@ -528,8 +565,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val backPressedCallback = object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     val self = weakSelf.get() ?: return
-                    val frag = self.supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-                    if (frag != null) {
+                    if (self.utilityViewModel.current !is Utility.Empty) {
                         self.lifecycleScope.launch {
                             self.hideOverlay(true)
                         }
@@ -771,7 +807,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val lang = AppCore.getLanguage()
         if (guide != null) {
             lifecycleScope.launch {
-                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(guide, lang), listOf("guide")))
+                showBottomSheetUtility(Utility.Web(), Context.Web(URLHelper.buildInAppGuideURI(guide, lang), listOf("guide")))
             }
             cleanup()
             return
@@ -781,7 +817,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             lifecycleScope.launch {
                 try {
                     val result = resourceAPI.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    showBottomSheetFragment(ResourceItemNavigationFragment.newInstance(result))
+                    showBottomSheetUtility(Utility.Addon(), Context.Addon(result))
                 } catch (ignored: Throwable) {}
             }
             cleanup()
@@ -794,7 +830,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
-                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(result.id, lang), listOf("guide")))
+                showBottomSheetUtility(Utility.Web(), Context.Web(URLHelper.buildInAppGuideURI(result.id, lang), listOf("guide")))
             } catch (ignored: Throwable) {}
         }
     }
@@ -1119,17 +1155,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun requestOpenSubscriptionManagement() {
+    private fun requestOpenSubscriptionManagement() {
         showInAppPurchase()
     }
 
     private fun showInAppPurchase() = lifecycleScope.launch {
-        val fragment = purchaseManager.createInAppPurchaseFragment() ?: return@launch
-        showBottomSheetFragment(fragment)
+        showBottomSheetUtility(Utility.InAppPurchase)
     }
 
     // Listeners...
-    override fun onInfoActionSelected(action: InfoActionItem, item: Selection) {
+    private fun onInfoActionSelected(action: InfoActionItem, item: Selection) {
         when (action) {
             is InfoNormalActionItem -> {
                 lifecycleScope.launch(executor.asCoroutineDispatcher()) {
@@ -1150,7 +1185,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             is SubsystemActionItem -> {
                 if (item.`object` == null) return
                 lifecycleScope.launch {
-                    showBottomSheetFragment(SubsystemBrowserFragment.newInstance(item))
+                    showBottomSheetUtility(Utility.SubsystemBrowser(), Context.SubsystemBrowser(item))
                 }
             }
             is AlternateSurfacesItem -> {
@@ -1185,25 +1220,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onInfoLinkMetaDataClicked(url: URL) {
+    private fun onInfoLinkMetaDataClicked(url: URL) {
         openURL(url.toString())
     }
 
-    override fun onReceivedACK(id: String) {
+    private fun onReceivedACK(id: String) {
         if (id == latestNewsID) {
             appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
         }
     }
 
-    override fun onExternalWebLinkClicked(url: String) {
+    private fun onExternalWebLinkClicked(url: String) {
         openURL(url)
     }
 
-    override fun onShareURL(title: String, url: String) {
+    private fun onShareURL(title: String, url: String) {
         shareURLDirect(title, url)
     }
 
-    override fun onOpenSubscriptionPage() {
+    private fun onOpenSubscriptionPage() {
         showInAppPurchase()
     }
 
@@ -1223,13 +1258,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         when (type) {
             CustomActionType.ShowTimeSettings -> {
                 lifecycleScope.launch {
-                    showBottomSheetFragment(SettingsCurrentTimeNavigationFragment.newInstance())
+                    showBottomSheetUtility(Utility.CurrentTime)
                 }
             }
         }
     }
 
-    override fun onShareAddon(name: String, id: String) {
+    private fun onShareAddon(name: String, id: String) {
         val baseURL = "https://celestia.mobi/resources/item"
         val uri = baseURL.toUri().buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", AppCore.getLanguage()).build()
         shareURLDirect(name, uri.toString())
@@ -1255,15 +1290,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo) {
+    private fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo) {
         openAddonCategory(categoryInfo)
     }
 
-    override fun onObserverModeLearnMoreClicked(link: String) {
+    private fun onObserverModeLearnMoreClicked(link: String) {
         openURL(link)
     }
 
-    override fun shareItem(item: Favorite.Shareable.Object) {
+    private fun shareItem(item: Favorite.Shareable.Object) {
         shareURLDirect(item.title, item.url)
     }
 
@@ -1278,7 +1313,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         updateCurrentBookmarks(favorites)
     }
 
-    override fun saveFavorites() {
+    private fun saveFavorites() {
         val favorites = getCurrentBookmarks()
         try {
             val myType = object : TypeToken<List<BookmarkNode>>() {}.type
@@ -1287,11 +1322,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } catch (ignored: Throwable) { }
     }
 
-    override fun onRefreshRateChanged(frameRateOption: Int) {
+    private fun onRefreshRateChanged(frameRateOption: Int) {
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
-    override fun onAboutURLSelected(url: String, localizable: Boolean) {
+    private fun onAboutURLSelected(url: String, localizable: Boolean) {
         var uri = url.toUri()
         if (localizable)
             uri = uri.buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
@@ -1398,11 +1433,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private suspend fun hideBottomSheet(animated: Boolean) {
         hideView(animated, R.id.bottom_sheet_card, false)
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
-        val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (fragment != null) {
-            supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).setPrimaryNavigationFragment(null)
-                .commitAllowingStateLoss()
-        }
+        utilityViewModel.context = null
+        utilityViewModel.current = Utility.Empty
     }
 
     private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean) {
@@ -1490,11 +1522,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun  hideKeyboard() {
-        (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+        (getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
     private fun showInfo(selection: Selection) = lifecycleScope.launch {
-        showBottomSheetFragment(InfoFragment.newInstance(selection))
+        showBottomSheetUtility(Utility.Info(), Context.Info(selection))
     }
 
     private fun showSendFeedback() {
@@ -1622,11 +1654,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showSearch() = lifecycleScope.launch {
-        showBottomSheetFragment(SearchFragment.newInstance())
+        showBottomSheetUtility(Utility.Search)
     }
 
     private fun showBrowser() = lifecycleScope.launch {
-        showBottomSheetFragment(BrowserFragment.newInstance())
+        showBottomSheetUtility(Utility.Browser)
     }
 
     private fun showTimeControl() = lifecycleScope.launch {
@@ -1690,11 +1722,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showCameraControl() = lifecycleScope.launch {
-        showBottomSheetFragment(CameraControlContainerFragment.newInstance())
+        showBottomSheetUtility(Utility.CameraControl)
     }
 
     private fun showHelp() = lifecycleScope.launch {
-        showBottomSheetFragment(NewHelpFragment.newInstance())
+        showBottomSheetUtility(Utility.Help)
     }
 
     private fun showFavorite() = lifecycleScope.launch {
@@ -1705,11 +1737,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         updateCurrentScripts(scripts)
         updateCurrentDestinations(appCore.destinations)
-        showBottomSheetFragment(FavoriteFragment.newInstance())
+        showBottomSheetUtility(Utility.Favorites)
     }
 
     private fun showSettings() = lifecycleScope.launch {
-        showBottomSheetFragment(SettingsFragment.newInstance())
+        showBottomSheetUtility(Utility.Settings)
     }
 
     private fun showShare() {
@@ -1764,15 +1796,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showEventFinder() = lifecycleScope.launch {
-        showBottomSheetFragment(EventFinderContainerFragment.newInstance())
+        showBottomSheetUtility(Utility.EventFinder)
     }
 
     // Resource
     private fun showInstalledAddons() = lifecycleScope.launch {
-        showBottomSheetFragment(ResourceFragment.newInstance())
+        showBottomSheetUtility(Utility.AddonManagement)
     }
 
-    override fun onOpenAddonDownload() {
+    private fun onOpenAddonDownload() {
         openAddonDownload()
     }
 
@@ -1787,7 +1819,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
-            showBottomSheetFragment(CommonWebNavigationFragment.newInstance(builder.build()))
+            showBottomSheetUtility(Utility.WebNavigation(), Context.WebNavigation(builder.build()))
         }
     }
 
@@ -1805,7 +1837,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
-            showBottomSheetFragment(CommonWebNavigationFragment.newInstance(builder.build()))
+            showBottomSheetUtility(Utility.WebNavigation(), Context.WebNavigation(builder.build()))
         }
     }
 
@@ -1817,10 +1849,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             8.0,
             GoToLocation.DistanceUnit.radii
         )
-        showBottomSheetFragment(GoToContainerFragment.newInstance(inputData, Selection()))
+        showBottomSheetUtility(Utility.GoTo(), Context.GoTo(inputData, Selection()))
     }
 
-    override fun onGoToObject(goToData: GoToData, selection: Selection) {
+    private fun onGoToObject(goToData: GoToData, selection: Selection) {
         if (selection.isEmpty) {
             showAlert(CelestiaString("Object not found", ""))
             return
@@ -1838,19 +1870,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    // Utilities
-    private suspend fun showBottomSheetFragment(fragment: Fragment) {
+    private suspend fun showBottomSheetUtility(utility: Utility, context: Context? = null) {
         hideOverlay(true)
-        showBottomSheetFragmentDirect(fragment)
+        showBottomSheetUtilityDirect(utility = utility, context = context)
     }
 
-    private suspend fun showBottomSheetFragmentDirect(fragment: Fragment) {
+    private suspend fun showBottomSheetUtilityDirect(utility: Utility, context: Context?) {
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.bottom_sheet, fragment, BOTTOM_SHEET_ROOT_FRAGMENT_TAG)
-            .setPrimaryNavigationFragment(fragment)
-            .commitAllowingStateLoss()
+        utilityViewModel.context = context
+        utilityViewModel.current = utility
         showView(true, R.id.bottom_sheet_card, false)
     }
 
