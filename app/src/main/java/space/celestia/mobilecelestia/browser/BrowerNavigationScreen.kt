@@ -165,8 +165,8 @@ fun BrowserNavigationScreen(root: Browser, rootItem: BrowserItem, navController:
             InfoScreen(
                 selection = selection,
                 showTitle = false,
-                linkHandler = linkHandler,
-                actionHandler = actionHandler,
+                onInfoLinkMetaDataClicked = linkHandler,
+                onInfoActionSelected = actionHandler,
                 paddingValues = paddingValues,
                 modifier = modifier
             )
