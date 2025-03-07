@@ -36,24 +36,20 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import space.celestia.celestia.AppCore
 import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Selection
+import space.celestia.mobilecelestia.browser.viewmodel.SubsystemBrowserViewModel
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import java.net.URL
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SubsystemBrowserFragment : Fragment() {
     private var listener: Listener? = null
     private lateinit var root: Selection
-    private lateinit var rootName: String
-
-    @Inject
-    lateinit var appCore: AppCore
 
     interface Listener {
         fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo)
@@ -66,7 +62,6 @@ class SubsystemBrowserFragment : Fragment() {
 
         arguments?.let {
             root = requireNotNull(BundleCompat.getParcelable(it, ARG_ROOT, Selection::class.java))
-            rootName = appCore.simulation.universe.getNameForSelection(root)
         }
     }
 
@@ -104,7 +99,8 @@ class SubsystemBrowserFragment : Fragment() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun MainScreen() {
-        val item = BrowserItem(rootName, null, requireNotNull(root.`object`), appCore.simulation.universe)
+        val viewModel: SubsystemBrowserViewModel = hiltViewModel()
+        val item by remember { mutableStateOf(BrowserItem(viewModel.appCore.simulation.universe.getNameForSelection(root), null, requireNotNull(root.`object`), viewModel.appCore.simulation.universe)) }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
         var title by remember { mutableStateOf("") }
@@ -126,6 +122,7 @@ class SubsystemBrowserFragment : Fragment() {
             }, scrollBehavior = scrollBehavior)
         }) { paddingValues ->
             BrowserNavigationScreen(
+                root = Browser.Item("${item.hashCode()}"),
                 rootItem = item,
                 navController = navController,
                 addonCategoryRequested = {
