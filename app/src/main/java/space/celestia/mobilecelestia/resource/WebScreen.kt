@@ -203,7 +203,6 @@ fun WebNavigationScreen(
                 val addon = requireNotNull(addonViewModel.addonMap[it.toRoute<WebAddon>().id])
                 AddonScreen(
                     addon = addon,
-                    language = AppCore.getLanguage(),
                     shareURLHandler = shareURLHandler,
                     receivedACKHandler = receivedACKHandler,
                     openSubscriptionPageHandler = openSubscriptionPageHandler,
