@@ -1160,6 +1160,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInAppPurchase() = lifecycleScope.launch {
+        if (!purchaseManager.canUseInAppPurchase()) return@launch
         showBottomSheetUtility(Utility.InAppPurchase)
     }
 
