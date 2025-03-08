@@ -27,19 +27,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.rememberNavController
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.browser.viewmodel.BrowserNavigationViewModel
@@ -74,7 +73,7 @@ fun BrowserScreen(onBrowserAddonCategoryRequested: (categoryInfo: BrowserPredefi
     }
 
     val navController = rememberNavController()
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
     Scaffold(topBar = {
         TopAppBar(title = {
             Text(text = title)
@@ -107,10 +106,10 @@ fun BrowserScreen(onBrowserAddonCategoryRequested: (categoryInfo: BrowserPredefi
                         navController.navigate(tab.root) {
                             popUpTo(previousRoot) {
                                 inclusive = true
-                                saveState = true
+                                // saveState = true
                             }
                             launchSingleTop = true
-                            restoreState = true
+                            // restoreState = true
                         }
                     }
                 )

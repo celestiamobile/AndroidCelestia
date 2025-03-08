@@ -28,6 +28,10 @@ fun TextInputDialog(onDismissRequest: () -> Unit, confirmHandler: () -> Unit, ti
         TextButton(onClick = confirmHandler) {
             Text(text = CelestiaString("OK", ""))
         }
+    }, dismissButton = {
+        TextButton(onClick = onDismissRequest) {
+            Text(text = CelestiaString("Cancel", ""))
+        }
     }, title = {
         Text(text = title)
     }, text = {

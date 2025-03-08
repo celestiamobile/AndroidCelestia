@@ -120,7 +120,7 @@ fun UtilityScreen(
             CameraControlMainScreen(onObserverModeLearnMoreClicked = onObserverModeLearnMoreClicked)
         }
         composable<Utility.Help> {
-            NewHelpScreen(onShareAddon = onShareAddon, onExternalWebLinkClicked = onExternalWebLinkClicked, onShareURL = onShareURL, onOpenSubscriptionPage = onOpenSubscriptionPage, onReceivedACK = onReceivedACK)
+            NewHelpScreen(onExternalWebLinkClicked = onExternalWebLinkClicked, onShareURL = onShareURL, onOpenSubscriptionPage = onOpenSubscriptionPage, onReceivedACK = onReceivedACK)
         }
         composable<Utility.EventFinder> {
             EventFinderScreen()
