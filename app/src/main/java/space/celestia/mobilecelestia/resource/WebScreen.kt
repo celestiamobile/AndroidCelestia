@@ -22,12 +22,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -44,6 +46,7 @@ import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -69,14 +72,14 @@ enum class WebViewLoadState {
 @Composable
 fun SingleWebScreen(
     webViewState: WebViewState,
+    modifier: Modifier = Modifier,
     contextDirectory: File? = null,
     shareURLHandler: (String, String) -> Unit,
     receivedACKHandler: (String) -> Unit,
     openSubscriptionPageHandler: () -> Unit,
     openExternalWebLink: (String) -> Unit,
     fallback: (@Composable () -> Unit)? = null,
-    paddingValues: PaddingValues,
-    modifier: Modifier = Modifier
+    paddingValues: PaddingValues
 ) {
     WebScreen(
         webViewState = webViewState,
@@ -116,10 +119,20 @@ fun WebNavigationScreen(
 
     var showAddon by remember { mutableStateOf(false) }
     var addonTitle by remember { mutableStateOf("") }
-    var canPop by remember { mutableStateOf(false) }
     var canShare by remember { mutableStateOf(false) }
+    var canPop by remember { mutableStateOf(false) }
 
     val viewModel: AddonViewModel = hiltViewModel()
+
+    LaunchedEffect(navigator) {
+        snapshotFlow { navigator.canGoBack }
+            .distinctUntilChanged()
+            .collect {
+                if (!showAddon)
+                    canPop = it
+            }
+    }
+
     DisposableEffect(navController) {
         val listener = NavController.OnDestinationChangedListener { controller, _, _ ->
             val currentBackStackEntry = controller.currentBackStackEntry
@@ -135,7 +148,7 @@ fun WebNavigationScreen(
                 addonTitle = requireNotNull(viewModel.addonMap[currentBackStackEntry.toRoute<WebAddon>().id]).name
                 showAddon = true
                 canShare = true
-                canPop = navController.previousBackStackEntry != null
+                canPop = true
             }
         }
         navController.addOnDestinationChangedListener(listener)
@@ -148,7 +161,7 @@ fun WebNavigationScreen(
         TopAppBar(title = {
             Text(if (showAddon) addonTitle else webViewState.pageTitle ?: "")
         }, navigationIcon = {
-            if ((showAddon && navController.currentBackStackEntry != null) || navigator.canGoBack) {
+            if (canPop) {
                 IconButton(onClick = {
                     if (showAddon) {
                         navController.navigateUp()
@@ -218,6 +231,8 @@ fun WebNavigationScreen(
 @Composable
 private fun WebScreen(
     webViewState: WebViewState,
+    paddingValues: PaddingValues,
+    modifier: Modifier = Modifier,
     navigator: WebViewNavigator = rememberWebViewNavigator(),
     contextDirectory: File? = null,
     shareURLHandler: (String, String) -> Unit,
@@ -226,8 +241,6 @@ private fun WebScreen(
     openSubscriptionPageHandler: () -> Unit,
     openExternalWebLink: (String) -> Unit,
     fallback: (@Composable () -> Unit)? = null,
-    paddingValues: PaddingValues,
-    modifier: Modifier = Modifier
 ) {
     // https://stackoverflow.com/questions/43917214/android-how-to-check-if-webview-is-available
     val hasWebView = runCatching { CookieManager.getInstance() }.isSuccess
@@ -245,7 +258,7 @@ private fun WebScreen(
 
     var loadState: WebViewLoadState by rememberSaveable { mutableStateOf(WebViewLoadState.Loading) }
 
-    Box(modifier = modifier.padding(paddingValues), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
         if (loadState == WebViewLoadState.Loading) {
             CircularProgressIndicator()
         } else if (loadState == WebViewLoadState.Error && fallback != null) {
@@ -254,7 +267,7 @@ private fun WebScreen(
 
         WebView(
             state = webViewState,
-            modifier = Modifier.alpha(if (loadState == WebViewLoadState.Loaded || (loadState == WebViewLoadState.Error && fallback == null)) 1f else 0f),
+            modifier = Modifier.fillMaxSize().alpha(if (loadState == WebViewLoadState.Loaded || (loadState == WebViewLoadState.Error && fallback == null)) 1f else 0f),
             navigator = navigator,
             onPageCommitVisible = {
                 loadState = WebViewLoadState.Loaded

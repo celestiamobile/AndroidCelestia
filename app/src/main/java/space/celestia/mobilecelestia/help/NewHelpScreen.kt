@@ -28,7 +28,7 @@ import space.celestia.mobilecelestia.resource.SingleWebScreen
 import space.celestia.mobilecelestia.resource.viewmodel.WebViewModel
 
 @Composable
-fun NewHelpScreen(onShareAddon:(String, String) -> Unit, onExternalWebLinkClicked:(String) -> Unit, onShareURL:(String, String) -> Unit, onOpenSubscriptionPage:() -> Unit, onReceivedACK:(String) -> Unit) {
+fun NewHelpScreen(onExternalWebLinkClicked:(String) -> Unit, onShareURL:(String, String) -> Unit, onOpenSubscriptionPage:() -> Unit, onReceivedACK:(String) -> Unit) {
     val scope = rememberCoroutineScope()
     val viewModel: WebViewModel = hiltViewModel()
     val webViewState = rememberWebViewState(url = URLHelper.buildInAppGuideShortURI("/help/welcome", AppCore.getLanguage(), false).toString(), matchingQueryKeys = listOf("guide"), filterURL = true)
