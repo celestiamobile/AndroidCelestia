@@ -21,6 +21,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.serialization.Serializable
 import space.celestia.celestia.Selection
 import space.celestia.celestiafoundation.resource.model.ResourceItem
+import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.travel.GoToData
 import java.util.UUID
 import javax.inject.Inject
@@ -76,5 +77,7 @@ sealed class Context {
 @HiltViewModel
 class UtilityViewModel @Inject constructor() : ViewModel() {
     var current: Utility by mutableStateOf(Utility.Empty)
+    var canShowDrawer: Boolean by mutableStateOf(false)
+    var additionalDrawerActions: List<List<ToolbarAction>> by mutableStateOf(listOf())
     var context: Context? = null
 }
