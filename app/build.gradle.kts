@@ -130,7 +130,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.drawerlayout)
 
     implementation(libs.kotlinx.serialization.json)
