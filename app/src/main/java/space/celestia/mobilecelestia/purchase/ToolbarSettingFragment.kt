@@ -180,6 +180,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                 DropdownMenuItem(text = {
                     Text(text = CelestiaString("Delete", ""))
                 }, onClick = {
+                    showMenu = false
                     val index = list.indexOf(item)
                     if (index >= 0 && index < list.size && list[index].deletable) {
                         list = list.toMutableList().apply {

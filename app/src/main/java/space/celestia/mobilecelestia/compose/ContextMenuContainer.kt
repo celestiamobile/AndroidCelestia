@@ -14,7 +14,7 @@ package space.celestia.mobilecelestia.compose
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +25,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -36,7 +36,7 @@ fun ContextMenuContainer(expanded: Boolean, onDismissRequest: () -> Unit, menu: 
         false
     }) {
         content()
-        Box(modifier = with(LocalDensity.current) { Modifier.offset(x = offset.x.toDp(), y = offset.y.toDp()) }) {
+        Box(modifier = Modifier.absoluteOffset { IntOffset(x = offset.x.toInt(), y = offset.y.toInt()) }) {
             DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
                 menu()
             }

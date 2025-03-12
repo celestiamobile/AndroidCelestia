@@ -90,7 +90,7 @@ class LPLinkView(context: Context, attrs: AttributeSet) : MaterialCardView(conte
 
             val iconView = ImageView(context)
             val isRTL = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
-            iconView.setPadding(favIconPadding, if (isRTL) 0 else favIconPadding, if (isRTL) favIconPadding else 0, favIconPadding)
+            iconView.setPadding(if (isRTL) 0 else favIconPadding, favIconPadding, if (isRTL) favIconPadding else 0, favIconPadding)
             container.addView(iconView)
 
             val params = iconView.layoutParams
