@@ -48,7 +48,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
-import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -96,7 +95,6 @@ import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.control.BottomControlAction
-import space.celestia.mobilecelestia.control.BottomControlFragment
 import space.celestia.mobilecelestia.control.ContinuousAction
 import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
@@ -110,16 +108,8 @@ import space.celestia.mobilecelestia.favorite.viewmodel.getCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentDestinations
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentScripts
-import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
-import space.celestia.mobilecelestia.info.model.CelestiaAction
-import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
-import space.celestia.mobilecelestia.info.model.InfoActionItem
-import space.celestia.mobilecelestia.info.model.InfoNormalActionItem
-import space.celestia.mobilecelestia.info.model.InfoSelectActionItem
-import space.celestia.mobilecelestia.info.model.InfoWebActionItem
-import space.celestia.mobilecelestia.info.model.MarkItem
-import space.celestia.mobilecelestia.info.model.SubsystemActionItem
-import space.celestia.mobilecelestia.loading.LoadingFragment
+import space.celestia.mobilecelestia.info.model.*
+import space.celestia.mobilecelestia.loading.LoadingView
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
@@ -292,26 +282,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         bottomToolbar.setContent {
             Mdc3Theme {
                 val viewModel: UtilityViewModel = hiltViewModel()
-                if (viewModel.canShowDrawerAndToolbar) {
-                    viewModel.toolbarActions?.let {
-                        Toolbar(it,
-                            onInstantActionSelected = {
-                                weakSelf.get()?.onInstantActionSelected(it)
-                            },
-                            onContinuousActionDown = {
-                                weakSelf.get()?.onContinuousActionDown(it)
-                            },
-                            onContinuousActionUp = {
-                                weakSelf.get()?.onContinuousActionUp(it)
-                            },
-                            onCustomAction = {
-                                weakSelf.get()?.onCustomAction(it)
-                            },
-                            onBottomControlHide = {
-                                weakSelf.get()?.onBottomControlHide()
-                            }
-                        )
-                    }
+                viewModel.toolbarActions?.let {
+                    Toolbar(it,
+                        onInstantActionSelected = {
+                            weakSelf.get()?.onInstantActionSelected(it)
+                        },
+                        onContinuousActionDown = {
+                            weakSelf.get()?.onContinuousActionDown(it)
+                        },
+                        onContinuousActionUp = {
+                            weakSelf.get()?.onContinuousActionUp(it)
+                        },
+                        onCustomAction = {
+                            weakSelf.get()?.onCustomAction(it)
+                        },
+                        onBottomControlHide = {
+                            weakSelf.get()?.onBottomControlHide()
+                        }
+                    )
                 }
             }
         }
@@ -320,13 +308,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         drawer.setContent {
             Mdc3Theme {
                 val viewModel: UtilityViewModel = hiltViewModel()
-                if (viewModel.canShowDrawerAndToolbar) {
-                    Drawer(additionalActions = viewModel.additionalDrawerActions) {
-                        weakSelf.get()?.onToolbarActionSelected(it)
+                viewModel.additionalDrawerActions?.let {
+                    Drawer(additionalActions = it) { action ->
+                        weakSelf.get()?.onToolbarActionSelected(action)
                     }
                 }
             }
         }
+
+        val loadingView = findViewById<ComposeView>(R.id.loading_fragment_container)
+        loadingView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        loadingView.setContent {
+            Mdc3Theme {
+                val viewModel: UtilityViewModel = hiltViewModel()
+                viewModel.loadingText?.let {
+                    LoadingView(it)
+                }
+            }
+        }
+
         val bottomSheetContainer = findViewById<ComposeView>(R.id.bottom_sheet)
         bottomSheetContainer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         bottomSheetContainer.setContent {
@@ -410,7 +410,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         when (currentState) {
             AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
-                loadExternalConfig(savedState)
+                loadExternalConfig()
             }
             AppStatusReporter.State.LOADING -> {
                 // Do nothing
@@ -516,13 +516,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)
     }
 
-    private fun loadExternalConfig(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
-                .commitAllowingStateLoss()
-        }
+    private fun loadExternalConfig() {
         appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -558,7 +552,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun celestiaLoadingProgress(status: String) {}
+    override fun celestiaLoadingProgress(status: String) {
+        lifecycleScope.launch {
+            utilityViewModel.loadingText = status
+        }
+    }
 
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
         when (newState) {
@@ -587,13 +585,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun celestiaLoadingFinished() {
-        supportFragmentManager.findFragmentById(R.id.loading_fragment_container)?.let {
-            supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
-        }
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+        utilityViewModel.loadingText = null
         findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
         utilityViewModel.additionalDrawerActions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
-        utilityViewModel.canShowDrawerAndToolbar = true
         val weakSelf = WeakReference(this)
         if (onBackPressedCallback == null) {
             val backPressedCallback = object : OnBackPressedCallback(true) {

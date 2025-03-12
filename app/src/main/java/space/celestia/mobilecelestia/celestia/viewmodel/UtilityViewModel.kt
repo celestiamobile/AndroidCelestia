@@ -78,8 +78,8 @@ sealed class Context {
 @HiltViewModel
 class UtilityViewModel @Inject constructor() : ViewModel() {
     var current: Utility by mutableStateOf(Utility.Empty)
-    var canShowDrawerAndToolbar: Boolean by mutableStateOf(false)
-    var additionalDrawerActions: List<List<ToolbarAction>> by mutableStateOf(listOf())
+    var additionalDrawerActions: List<List<ToolbarAction>>? by mutableStateOf(null)
     var toolbarActions: List<BottomControlAction>? by mutableStateOf(null)
+    var loadingText: String? by mutableStateOf("")
     var context: Context? = null
 }
