@@ -21,6 +21,7 @@ buildscript {
     ext.lifecycle_version = '2.8.7'
     ext.okhttp_version = '4.12.0'
     ext.gson_version = '2.12.1'
+    ext.compose_bom = '2025.02.00'
 
     repositories {
         google()
