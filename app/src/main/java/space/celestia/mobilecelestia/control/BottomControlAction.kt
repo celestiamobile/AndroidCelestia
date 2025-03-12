@@ -17,12 +17,12 @@ import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
-interface BottomControlAction: Serializable {
-    val imageID: Int?
-    val contentDescription: String?
+sealed class BottomControlAction: Serializable {
+    abstract val imageID: Int?
+    abstract val contentDescription: String?
 }
 
-class InstantAction(val action: CelestiaAction): Serializable, BottomControlAction {
+data class InstantAction(val action: CelestiaAction): Serializable, BottomControlAction() {
     override val imageID: Int?
         get() = when (action) {
             CelestiaAction.Faster -> {
@@ -80,7 +80,7 @@ class InstantAction(val action: CelestiaAction): Serializable, BottomControlActi
         }
 }
 
-class ContinuousAction(val action: CelestiaContinuosAction): Serializable, BottomControlAction {
+data class ContinuousAction(val action: CelestiaContinuosAction): Serializable, BottomControlAction() {
     override val imageID: Int?
         get() = when (action) {
             CelestiaContinuosAction.TravelFaster -> {
@@ -108,14 +108,14 @@ class ContinuousAction(val action: CelestiaContinuosAction): Serializable, Botto
         }
 }
 
-class GroupActionItem(val title: String, val action: CelestiaContinuosAction): Serializable
+data class GroupActionItem(val title: String, val action: CelestiaContinuosAction): Serializable
 
 enum class CustomActionType: Serializable {
     ShowTimeSettings
 }
-class CustomAction(val type: CustomActionType, override val imageID: Int?, override val contentDescription: String?): Serializable, BottomControlAction
+data class CustomAction(val type: CustomActionType, override val imageID: Int?, override val contentDescription: String?): Serializable, BottomControlAction()
 
-class GroupAction(override val contentDescription: String, val actions: List<GroupActionItem>): Serializable, BottomControlAction {
+data class GroupAction(override val contentDescription: String, val actions: List<GroupActionItem>): Serializable, BottomControlAction() {
     override val imageID: Int
         get() = R.drawable.common_other
 }

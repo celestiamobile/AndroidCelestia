@@ -11,7 +11,11 @@
 
 package space.celestia.mobilecelestia.control
 
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import space.celestia.mobilecelestia.R
@@ -32,14 +36,12 @@ class BottomControlRecyclerViewAdapter(
     override fun getItemViewType(position: Int): Int {
         if (position == values.size)
             return HIDE_ACTION
-        val item = values[position]
-        if (item is InstantAction)
-            return INSTANT_ACTION
-        if (item is ContinuousAction)
-            return CONTINUOUS_ACTION
-        if (item is GroupAction)
-            return GROUP_ACTION
-        return super.getItemViewType(position)
+        return when (values[position]) {
+            is ContinuousAction -> CONTINUOUS_ACTION
+            is CustomAction -> CUSTOM_ACTION
+            is GroupAction -> GROUP_ACTION
+            is InstantAction -> INSTANT_ACTION
+        }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -58,39 +60,47 @@ class BottomControlRecyclerViewAdapter(
         holder.imageButton.contentDescription = item.contentDescription
         holder.imageButton.setOnClickListener(null)
         holder.imageButton.setOnTouchListener(null)
-        if (item is InstantAction) {
-            holder.imageButton.setOnClickListener {
-                listener?.onInstantActionSelected(item.action)
+        when (item) {
+            is InstantAction -> {
+                holder.imageButton.setOnClickListener {
+                    listener?.onInstantActionSelected(item.action)
+                }
             }
-        } else if (item is ContinuousAction) {
-            holder.imageButton.setOnTouchListener { view, event ->
-                when (event.actionMasked) {
-                    MotionEvent.ACTION_DOWN -> {
-                        listener?.onContinuousActionDown(item.action)
+
+            is ContinuousAction -> {
+                holder.imageButton.setOnTouchListener { view, event ->
+                    when (event.actionMasked) {
+                        MotionEvent.ACTION_DOWN -> {
+                            listener?.onContinuousActionDown(item.action)
+                        }
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            listener?.onContinuousActionUp(item.action)
+                        }
                     }
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        listener?.onContinuousActionUp(item.action)
+                    return@setOnTouchListener view.onTouchEvent(event)
+                }
+            }
+
+            is GroupAction -> {
+                holder.imageButton.setOnClickListener {
+                    val popup = PopupMenu(it.context, it)
+                    for (i in item.actions.indices) {
+                        val action = item.actions[i]
+                        popup.menu.add(Menu.NONE, i, Menu.NONE, action.title)
                     }
+                    popup.setOnMenuItemClickListener { menuItem ->
+                        listener?.onContinuousActionDown(item.actions[menuItem.itemId].action)
+                        listener?.onContinuousActionUp(item.actions[menuItem.itemId].action)
+                        return@setOnMenuItemClickListener true
+                    }
+                    popup.show()
                 }
-                return@setOnTouchListener view.onTouchEvent(event)
             }
-        } else if (item is GroupAction) {
-            holder.imageButton.setOnClickListener {
-                val popup = PopupMenu(it.context, it)
-                for (i in item.actions.indices) {
-                    val action = item.actions[i]
-                    popup.menu.add(Menu.NONE, i, Menu.NONE, action.title)
+
+            is CustomAction -> {
+                holder.imageButton.setOnClickListener {
+                    listener?.onCustomAction(item.type)
                 }
-                popup.setOnMenuItemClickListener { menuItem ->
-                    listener?.onContinuousActionDown(item.actions[menuItem.itemId].action)
-                    listener?.onContinuousActionUp(item.actions[menuItem.itemId].action)
-                    return@setOnMenuItemClickListener true
-                }
-                popup.show()
-            }
-        } else if (item is CustomAction) {
-            holder.imageButton.setOnClickListener {
-                listener?.onCustomAction(item.type)
             }
         }
     }
@@ -107,5 +117,6 @@ class BottomControlRecyclerViewAdapter(
         const val CONTINUOUS_ACTION = 1
         const val GROUP_ACTION = 2
         const val HIDE_ACTION = 3
+        const val CUSTOM_ACTION = 4
     }
 }
