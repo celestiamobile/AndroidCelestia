@@ -118,7 +118,7 @@
 
         </space.celestia.mobilecelestia.common.SheetLayout>
 
-        <FrameLayout
+        <androidx.compose.ui.platform.ComposeView
             android:id="@+id/loading_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
