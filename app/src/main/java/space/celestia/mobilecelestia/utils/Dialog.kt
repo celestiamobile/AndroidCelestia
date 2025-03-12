@@ -12,7 +12,6 @@
 package space.celestia.mobilecelestia.utils
 
 import android.app.Activity
-import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 fun Activity.showOptions(title: String, options: Array<String>, handler: (Int) -> Unit) {
@@ -25,26 +24,6 @@ fun Activity.showOptions(title: String, options: Array<String>, handler: (Int) -
         handler(index)
     }
     builder.show()
-}
-
-fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): AlertDialog? {
-    if (isFinishing || isDestroyed)
-        return null
-
-    val builder = MaterialAlertDialogBuilder(this)
-    builder.setTitle(title)
-    if (cancelHandler != null) {
-        builder.setCancelable(false)
-        builder.setNegativeButton(CelestiaString("Cancel", "")) { dialog, _ ->
-            dialog.cancel()
-        }
-        builder.setOnCancelListener {
-            cancelHandler()
-        }
-    } else {
-        builder.setCancelable(false)
-    }
-    return builder.show()
 }
 
 fun Activity.showAlert(title: String, message: String? = null, handler: (() -> Unit)? = null, cancelHandler: (() -> Unit)? = null) {

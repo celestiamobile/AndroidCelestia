@@ -135,7 +135,7 @@ fun GoToScreen(initialData: GoToData, selection: Selection, paddingValues: Paddi
                 }
             }, selectedIndex = distanceUnits.indexOf(distanceUnit) , selectionChange = {
                 distanceUnit = distanceUnits[it]
-            })
+            }, wrapWidth = true)
         }
         FilledTonalButton(
             enabled = isLatitudeValid && isLongitudeValid && isDistanceValid,
