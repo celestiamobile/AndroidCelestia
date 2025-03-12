@@ -12,95 +12,88 @@
 package space.celestia.mobilecelestia.control
 
 import android.annotation.SuppressLint
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MotionEvent
-import android.widget.PopupMenu
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.res.painterResource
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.StandardImageButton
+import space.celestia.mobilecelestia.compose.ContextMenuContainer
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
 import space.celestia.mobilecelestia.utils.CelestiaString
 
-@SuppressLint("ClickableViewAccessibility", "InflateParams")
 @Composable
-private fun ContinuousButton(imageID: Int?, contentDescription: String?, onActionDown: () -> Unit, onActionUp: () -> Unit) {
-    AndroidView(factory = {
-        val view = LayoutInflater.from(it).inflate(R.layout.fragment_bottom_control_item, null, false)
-        val button = view.findViewById<StandardImageButton>(R.id.button)
-        button.setOnTouchListener { sender, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    onActionDown()
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    onActionUp()
-                }
-            }
-            return@setOnTouchListener sender.onTouchEvent(event)
-        }
-        view
-    }, update = {
-        val button = it.findViewById<StandardImageButton>(R.id.button)
-        button.setImageResource(imageID ?: 0)
-        button.contentDescription = contentDescription
-    }, modifier = Modifier.size(dimensionResource(R.dimen.bottom_control_view_dimension)))
+private fun BottomActionButton(imageId: Int, contentDescription: String?, onActionDown: () -> Unit = {}, onActionUp: () -> Unit = {}, onAction: () -> Unit = {}) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    Box(modifier = Modifier.size(dimensionResource(R.dimen.bottom_control_view_dimension))
+        .pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                onAction()
+            }, onPress = { offset ->
+                onActionDown()
+                val press = PressInteraction.Press(offset)
+                interactionSource.emit(press)
+                tryAwaitRelease()
+                onActionUp()
+                interactionSource.emit(PressInteraction.Release(press))
+            })
+        }, contentAlignment = Alignment.Center
+    ) {
+        Icon(painterResource(imageId), contentDescription = contentDescription, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.alpha(if (isPressed) 0.38f else 1.0f).size(dimensionResource(R.dimen.bottom_control_view_item_dimension)))
+    }
 }
 
-@SuppressLint("InflateParams")
 @Composable
-private fun InstantButton(imageID: Int?, contentDescription: String?, onAction: () -> Unit) {
-    AndroidView(factory = {
-        val view = LayoutInflater.from(it).inflate(R.layout.fragment_bottom_control_item, null, false)
-        val button = view.findViewById<StandardImageButton>(R.id.button)
-        button.setOnClickListener {
-            onAction()
-        }
-        view
-    }, update = {
-        val button = it.findViewById<StandardImageButton>(R.id.button)
-        button.setImageResource(imageID ?: 0)
-        button.contentDescription = contentDescription
-    }, modifier = Modifier.size(dimensionResource(R.dimen.bottom_control_view_dimension)))
+private fun ContinuousButton(imageId: Int, contentDescription: String?, onActionDown: () -> Unit, onActionUp: () -> Unit) {
+    BottomActionButton(imageId, contentDescription, onActionDown = onActionDown, onActionUp = onActionUp)
 }
 
-@SuppressLint("InflateParams")
 @Composable
-private fun GroupButton(imageID: Int?, contentDescription: String?, actions: List<GroupActionItem>, onAction: (CelestiaContinuosAction) -> Unit) {
-    AndroidView(factory = { context ->
-        val view = LayoutInflater.from(context).inflate(R.layout.fragment_bottom_control_item, null, false)
-        val button = view.findViewById<StandardImageButton>(R.id.button)
-        button.setOnClickListener {
-            val popup = PopupMenu(context, it)
-            for (i in actions.indices) {
-                val action = actions[i]
-                popup.menu.add(Menu.NONE, i, Menu.NONE, action.title)
-            }
-            popup.setOnMenuItemClickListener { menuItem ->
-                onAction(actions[menuItem.itemId].action)
-                return@setOnMenuItemClickListener true
-            }
-            popup.show()
+private fun InstantButton(imageId: Int, contentDescription: String?, onAction: () -> Unit) {
+    BottomActionButton(imageId, contentDescription, onAction = onAction)
+}
+
+@Composable
+private fun GroupButton(imageId: Int, contentDescription: String?, actions: List<GroupActionItem>, onAction: (CelestiaContinuosAction) -> Unit) {
+    var showMenu by remember { mutableStateOf(false) }
+    ContextMenuContainer(expanded = showMenu, onDismissRequest = { showMenu = false }, menu = {
+        for (action in actions) {
+            DropdownMenuItem(text = {
+                Text(text = action.title)
+            }, onClick = {
+                showMenu = false
+                onAction(action.action)
+            })
         }
-        view
-    }, update = {
-        val button = it.findViewById<StandardImageButton>(R.id.button)
-        button.setImageResource(imageID ?: 0)
-        button.contentDescription = contentDescription
-    }, modifier = Modifier.size(dimensionResource(R.dimen.bottom_control_view_dimension)))
+    }, content = {
+        BottomActionButton(imageId, contentDescription, onAction = {
+            showMenu = true
+        })
+    })
 }
 
 @Composable
@@ -122,7 +115,7 @@ fun Toolbar(
         items(actions)  { action ->
             when (action) {
                 is ContinuousAction -> {
-                    ContinuousButton(action.imageID, action.contentDescription, onActionDown = {
+                    ContinuousButton(action.imageID!!, action.contentDescription, onActionDown = {
                         onContinuousActionDown(action.action)
                     }, onActionUp = {
                         onContinuousActionUp(action.action)
@@ -140,7 +133,7 @@ fun Toolbar(
                     }
                 }
                 is InstantAction -> {
-                    InstantButton(action.imageID, action.contentDescription) {
+                    InstantButton(action.imageID!!, action.contentDescription) {
                         onInstantActionSelected(action.action)
                     }
                 }
