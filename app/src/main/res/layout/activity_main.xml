@@ -126,11 +126,10 @@
             style="@style/Container" />
     </FrameLayout>
 
-    <FrameLayout
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/drawer"
         android:layout_width="@dimen/toolbar_default_width"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        style="@style/Container">
-    </FrameLayout>
+        style="@style/Container"/>
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -87,7 +87,6 @@ import space.celestia.mobilecelestia.resource.*
 import space.celestia.mobilecelestia.resource.model.*
 import space.celestia.mobilecelestia.settings.*
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
-import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToData
 import space.celestia.mobilecelestia.utils.*
 import java.io.File
@@ -104,15 +103,16 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.system.exitProcess
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.hilt.navigation.compose.hiltViewModel
 import space.celestia.mobilecelestia.celestia.UtilityScreen
 import space.celestia.mobilecelestia.celestia.viewmodel.Context
 import space.celestia.mobilecelestia.celestia.viewmodel.Utility
 import space.celestia.mobilecelestia.celestia.viewmodel.UtilityViewModel
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.toolbar.Drawer
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
-    ToolbarFragment.Listener,
     BottomControlFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener {
@@ -246,14 +246,26 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         })
 
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawer)) { _, insets ->
+        val drawer = findViewById<ComposeView>(R.id.drawer)
+        ViewCompat.setOnApplyWindowInsetsListener(drawer) { _, insets ->
             val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
             val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(if (isRTL) systemBarInsets.left else 0 , systemBarInsets.top, if (isRTL) 0 else systemBarInsets.right, systemBarInsets.bottom))
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
-        val bottomSheetContainer = findViewById<ComposeView>(R.id.bottom_sheet)
         val weakSelf = WeakReference(this)
+        drawer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        drawer.setContent {
+            Mdc3Theme {
+                val viewModel: UtilityViewModel = hiltViewModel()
+                if (viewModel.canShowDrawer) {
+                    Drawer(additionalActions = viewModel.additionalDrawerActions) {
+                        weakSelf.get()?.onToolbarActionSelected(it)
+                    }
+                }
+            }
+        }
+        val bottomSheetContainer = findViewById<ComposeView>(R.id.bottom_sheet)
         bottomSheetContainer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         bottomSheetContainer.setContent {
             Mdc3Theme {
@@ -314,7 +326,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
             return@setOnApplyWindowInsetsListener builder.build()
         }
-        findViewById<FrameLayout>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        drawer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
@@ -431,7 +443,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         toolbarSafeAreaParams.bottomMargin = safeInsets.bottom
         toolbarOverlay.requestLayout()
 
-        val drawerParams = findViewById<View>(R.id.drawer).layoutParams
+        val drawerParams = findViewById<ComposeView>(R.id.drawer).layoutParams
         drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
 
         val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
@@ -518,16 +530,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
         findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
-        if (supportFragmentManager.findFragmentById(R.id.drawer) == null) {
-            val actions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.drawer, ToolbarFragment.newInstance(actions))
-                .commitAllowingStateLoss()
-        }
-
+        utilityViewModel.additionalDrawerActions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
+        utilityViewModel.canShowDrawer = true
+        val weakSelf = WeakReference(this)
         if (onBackPressedCallback == null) {
-            val weakSelf = WeakReference(this)
             val backPressedCallback = object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     val self = weakSelf.get() ?: return
@@ -1039,7 +1045,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         drawerLayout.openDrawer(GravityCompat.END, true)
     }
 
-    override fun onToolbarActionSelected(action: ToolbarAction) {
+    private fun onToolbarActionSelected(action: ToolbarAction) {
         executeToolbarAction(action)
     }
 
