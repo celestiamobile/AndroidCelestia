@@ -1,7 +1,7 @@
 /*
  * BrowserFragment.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2025-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,206 +11,195 @@
 
 package space.celestia.mobilecelestia.browser
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import androidx.core.os.BundleCompat
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationBarView
-import com.google.android.material.progressindicator.CircularProgressIndicator
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import space.celestia.celestia.AppCore
-import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Selection
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CelestiaExecutor
-import space.celestia.mobilecelestia.common.replace
-import space.celestia.mobilecelestia.info.InfoFragment
-import java.io.Serializable
-import javax.inject.Inject
-
-interface BrowserRootFragment {
-    fun pushItem(browserItem: BrowserItem)
-    fun showInfo(selection: Selection)
-}
+import space.celestia.mobilecelestia.browser.viewmodel.BrowserNavigationViewModel
+import space.celestia.mobilecelestia.browser.viewmodel.BrowserViewModel
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.info.model.InfoActionItem
+import java.net.URL
 
 @AndroidEntryPoint
-class BrowserFragment : Fragment(), BrowserRootFragment, NavigationBarView.OnItemSelectedListener {
-    private var currentPath = ""
-    private var selectedItemIndex = 0
-    private lateinit var loadingIndicator: CircularProgressIndicator
-    private lateinit var browserContainer: LinearLayout
-    private lateinit var navigation: BottomNavigationView
-    private var tabs = listOf<Tab>()
+class BrowserFragment : Fragment() {
+    private var listener: Listener? = null
 
-    @Inject
-    lateinit var appCore: AppCore
-    @Inject
-    lateinit var executor: CelestiaExecutor
-
-    class Tab(private val type: Type): Serializable {
-        enum class Type: Serializable {
-            SolarSystem, Star, DSO
-        }
-
-        val iconResource: Int
-        get() {
-            return when (type) {
-                Type.SolarSystem -> {
-                    R.drawable.browser_tab_sso
-                }
-                Type.Star -> {
-                    R.drawable.browser_tab_star
-                }
-                Type.DSO -> {
-                    R.drawable.browser_tab_dso
-                }
-            }
-        }
-
-        fun getBrowserItem(appCore: AppCore): BrowserItem {
-            val simulation = appCore.simulation
-            val universe = simulation.universe
-            return when (type) {
-                Type.SolarSystem -> {
-                    simulation.solBrowserRoot()!!
-                }
-                Type.Star -> {
-                    universe.starBrowserRoot(simulation.activeObserver)
-                }
-                Type.DSO -> {
-                    universe.dsoBrowserRoot()
-                }
-            }
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (savedInstanceState != null) {
-            currentPath = savedInstanceState.getString(ARG_PATH_TAG, "")
-            selectedItemIndex = savedInstanceState.getInt(ARG_ITEM_TAG, 0)
-            @Suppress("UNCHECKED_CAST")
-            tabs = BundleCompat.getSerializable(savedInstanceState, ARG_TABS, ArrayList::class.java) as List<Tab>
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(ARG_PATH_TAG, currentPath)
-        outState.putInt(ARG_ITEM_TAG, selectedItemIndex)
-        outState.putSerializable(ARG_TABS, ArrayList(tabs))
-
-        super.onSaveInstanceState(outState)
+    interface Listener {
+        fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo)
+        fun onInfoActionSelected(action: InfoActionItem, item: Selection)
+        fun onInfoLinkMetaDataClicked(url: URL)
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_browser, container, false)
-        loadingIndicator = view.findViewById(R.id.loading_indicator)
-        browserContainer = view.findViewById(R.id.browser_container)
-        navigation = view.findViewById(R.id.navigation)
-        return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (tabs.isEmpty()) {
-            loadRootBrowserItems()
-        } else {
-            rootItemsLoaded()
-            if (savedInstanceState == null) {
-                showTab(selectedItemIndex)
+    ): View {
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    MainScreen()
+                }
             }
         }
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        val newSelectedItemIndex = item.itemId
-        if (newSelectedItemIndex != selectedItemIndex) {
-            showTab(newSelectedItemIndex)
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is Listener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement BrowserFragment.Listener")
         }
-        return true
     }
 
-    private fun rootItemsLoaded() {
-        browserContainer.visibility = View.VISIBLE
-        loadingIndicator.visibility = View.GONE
-        for (i in 0 until tabs.count()) {
-            val tab = tabs[i]
-            val item = tab.getBrowserItem(appCore)
-            navigation.menu.add(Menu.NONE, i, Menu.NONE, item.alternativeName ?: item.name).setIcon(tab.iconResource)
+    override fun onDetach() {
+        super.onDetach()
+        listener = null
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun MainScreen() {
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+        var title by remember { mutableStateOf("") }
+        var canPop by remember { mutableStateOf(false) }
+        var loaded by remember { mutableStateOf(false) }
+
+        val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current)
+        val navigationModel: BrowserNavigationViewModel = hiltViewModel()
+        val viewModel: BrowserViewModel = hiltViewModel()
+
+        LaunchedEffect(Unit) {
+            viewModel.loadBrowserTabs()
+            loaded = true
         }
-        navigation.selectedItemId = selectedItemIndex
-        navigation.setOnItemSelectedListener(this)
-    }
 
-    private fun showTab(index: Int) {
-        selectedItemIndex = index
-        replaceItem(tabs[selectedItemIndex].getBrowserItem(appCore))
-    }
-
-    private fun replaceItem(browserItem: BrowserItem) {
-        currentPath = browserItem.name
-        browserMap[currentPath] = browserItem
-        replace(BrowserNavigationFragment.newInstance(currentPath), R.id.navigation_container, true)
-    }
-
-    override fun pushItem(browserItem: BrowserItem) {
-        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
-        currentPath = "$currentPath/${browserItem.name}"
-        browserMap[currentPath] = browserItem
-        navigationFragment.pushItem(currentPath)
-    }
-
-    override fun showInfo(selection: Selection) {
-        val navigationFragment = childFragmentManager.findFragmentById(R.id.navigation_container) as? BrowserNavigationFragment ?: return
-        navigationFragment.pushFragment(InfoFragment.newInstance(selection, true))
-    }
-
-    private fun loadRootBrowserItems() = lifecycleScope.launch {
-        browserContainer.visibility = View.GONE
-        loadingIndicator.visibility = View.VISIBLE
-        val browserTabs = arrayListOf(Tab(Tab.Type.Star), Tab(Tab.Type.DSO))
-        withContext(executor.asCoroutineDispatcher()) {
-            val simulation = appCore.simulation
-            val universe = simulation.universe
-            val observer = simulation.activeObserver
-            simulation.createStaticBrowserItems(observer)
-            universe.createDynamicBrowserItems(observer)
-            val solRoot = simulation.solBrowserRoot()
-            if (solRoot != null)
-                browserTabs.add(0, Tab(Tab.Type.SolarSystem))
+        if (!loaded) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+            return
         }
-        tabs = browserTabs
-        rootItemsLoaded()
-        showTab(selectedItemIndex)
+
+        val navController = rememberNavController()
+        var selectedTabIndex by remember { mutableIntStateOf(0) }
+        Scaffold(topBar = {
+            TopAppBar(title = {
+                Text(text = title)
+            }, navigationIcon = {
+                if (canPop) {
+                    IconButton(onClick = {
+                        navController.navigateUp()
+                    }) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                    }
+                }
+            }, scrollBehavior = scrollBehavior)
+        }, bottomBar = {
+            NavigationBar {
+                viewModel.tabData.forEachIndexed { index, tab ->
+                    NavigationBarItem(
+                        icon = {
+                            Icon(painter = painterResource(id = tab.tab.iconResource), contentDescription = "")
+                        },
+                        label = {
+                            Text(tab.item.alternativeName ?: tab.item.name)
+                        },
+                        selected = selectedTabIndex == index,
+                        onClick = {
+                            selectedTabIndex = index
+                            val previousRoot = navigationModel.root
+                            navigationModel.root = tab.root
+                            navigationModel.currentPath = navigationModel.currentPathMap[tab.root] ?: tab.root.path
+                            navigationModel.browserMap[tab.root.path] = tab.item
+                            navController.navigate(tab.root) {
+                                popUpTo(previousRoot) {
+                                    inclusive = true
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+            }
+        }) { paddingValues ->
+            CompositionLocalProvider(
+                LocalViewModelStoreOwner provides viewModelStoreOwner
+            ) {
+                BrowserNavigationScreen(
+                    root = viewModel.tabData[0].root,
+                    rootItem = viewModel.tabData[0].item,
+                    navController = navController,
+                    addonCategoryRequested = {
+                        listener?.onBrowserAddonCategoryRequested(it)
+                    },
+                    linkHandler = {
+                        listener?.onInfoLinkMetaDataClicked(it)
+                    },
+                    actionHandler = { action, selection ->
+                        listener?.onInfoActionSelected(action, selection)
+                    },
+                    topBarStateChange = { newTitle, newCanPop ->
+                        title = newTitle
+                        canPop = newCanPop
+                    },
+                    paddingValues = paddingValues,
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                )
+            }
+        }
     }
 
     companion object {
-        private const val ARG_PATH_TAG = "path"
-        private const val ARG_ITEM_TAG = "item"
-        private const val ARG_TABS = "tabs"
-
         @JvmStatic
         fun newInstance(): BrowserFragment {
             return BrowserFragment()
         }
-
-        // Global lookup map for browser item. This allows restoration
-        // as BrowserItem cannot be saved and restored
-        val browserMap = HashMap<String, BrowserItem>()
     }
 }
