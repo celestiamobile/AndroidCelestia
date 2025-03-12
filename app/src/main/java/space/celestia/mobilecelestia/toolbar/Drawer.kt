@@ -1,7 +1,7 @@
 /*
- * ToolbarFragment.kt
+ * Drawer.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2025-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,11 +11,6 @@
 
 package space.celestia.mobilecelestia.toolbar
 
-import android.content.Context
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,15 +30,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import androidx.core.os.BundleCompat
-import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.Separator
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
@@ -115,99 +105,35 @@ enum class ToolbarAction : Serializable {
     }
 }
 
-class ToolbarFragment: Fragment() {
-    private var existingActions: List<List<ToolbarAction>> = ArrayList()
-    private var listener: Listener? = null
+@Composable
+fun Drawer(additionalActions: List<List<ToolbarAction>>, onToolbarActionSelected: (ToolbarAction) -> Unit) {
+    val allSections = ArrayList(additionalActions)
+    allSections.addAll(ToolbarAction.persistentAction)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            @Suppress("UNCHECKED_CAST")
-            val value = BundleCompat.getSerializable(it, ARG_ACTION_WRAPPER, ArrayList::class.java) as? List<List<ToolbarAction>>
-            if (value != null) {
-                existingActions = value
-            }
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        val view =  ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    MainScreen()
-                }
-            }
-        }
-        return view
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement ToolbarFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
-    @Composable
-    private fun MainScreen() {
-        val allSections = ArrayList(existingActions)
-        allSections.addAll(ToolbarAction.persistentAction)
-
-        LazyColumn(
-            contentPadding = WindowInsets.systemBars.asPaddingValues(),
-            modifier = Modifier
-                .nestedScroll(rememberNestedScrollInteropConnection())
-                .background(color = MaterialTheme.colorScheme.background)
-        ) {
-            for (sectionIndex in allSections.indices) {
-                val section = allSections[sectionIndex]
-                items(section) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal)), modifier = Modifier
-                        .clickable {
-                            listener?.onToolbarActionSelected(it)
-                        }
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal))) {
-                        Icon(painter = painterResource(id = it.imageResource), contentDescription = "", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension)))
-                        Text(text = it.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
+    LazyColumn(
+        contentPadding = WindowInsets.systemBars.asPaddingValues(),
+        modifier = Modifier
+            .nestedScroll(rememberNestedScrollInteropConnection())
+            .background(color = MaterialTheme.colorScheme.background)
+    ) {
+        for (sectionIndex in allSections.indices) {
+            val section = allSections[sectionIndex]
+            items(section) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal)), modifier = Modifier
+                    .clickable {
+                        onToolbarActionSelected(it)
                     }
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal))) {
+                    Icon(painter = painterResource(id = it.imageResource), contentDescription = "", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension)))
+                    Text(text = it.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
                 }
-                if (sectionIndex != allSections.size - 1) {
-                    item {
-                        Separator(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.toolbar_separator_padding_vertical)), separatorStart = dimensionResource(id = R.dimen.toolbar_separator_inset_start))
-                    }
+            }
+            if (sectionIndex != allSections.size - 1) {
+                item {
+                    Separator(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.toolbar_separator_padding_vertical)), separatorStart = dimensionResource(id = R.dimen.toolbar_separator_inset_start))
                 }
             }
         }
-    }
-
-    interface Listener {
-        fun onToolbarActionSelected(action: ToolbarAction)
-    }
-
-    companion object {
-        const val ARG_ACTION_WRAPPER = "action-wrapper"
-
-        @JvmStatic
-        fun newInstance(actions: List<List<ToolbarAction>>) =
-            ToolbarFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable(ARG_ACTION_WRAPPER, ArrayList<ArrayList<ToolbarAction>>(actions.map { ArrayList(it) }))
-                }
-            }
     }
 }
