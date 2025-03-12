@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <dimen name="LPLinkView_titleTextDefaultSize">15sp</dimen>
-    <dimen name="LPLinkView_footnoteTextDefaultSize">13dp</dimen>
-    <dimen name="LPLinkView_textContentDefaultVerticalPadding">8dp</dimen>
-    <dimen name="LPLinkView_textContentDefaultHorizontalPadding">12dp</dimen>
-    <dimen name="LPLinkView_textContentDefaultSpacing">6dp</dimen>
-    <dimen name="LPLinkView_favIconDefaultPadding">8dp</dimen>
-</resources>

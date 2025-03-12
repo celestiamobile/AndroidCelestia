@@ -2,7 +2,9 @@ package space.celestia.mobilecelestia.compose
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
-import android.view.LayoutInflater
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -12,7 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -36,17 +39,21 @@ private sealed class FetchState {
 
 @SuppressLint("InflateParams")
 @Composable
-private fun LinkPreviewInternal(metadata: LPLinkViewData, modifier: Modifier = Modifier, onClick: (URL) -> Unit) {
-    AndroidView(factory = { context ->
-        val view = LayoutInflater.from(context).inflate(R.layout.common_link_preview, null, false) as LPLinkView
-        view.setOnClickListener {
-            val url = metadata.url
-            onClick(url)
-        }
-        view
-    }, update = {
-        it.linkData = metadata
-    }, modifier = modifier)
+private fun LinkPreviewInternal(metadata: LPLinkViewData, modifier: Modifier = Modifier) {
+    LPLinkView(
+        data = metadata,
+        titleColor = MaterialTheme.colorScheme.onBackground,
+        titleStyle = MaterialTheme.typography.bodyLarge,
+        footerColor = colorResource(com.google.android.material.R.color.material_on_background_emphasis_medium),
+        footerStyle = MaterialTheme.typography.bodyMedium,
+        textSpacing = dimensionResource(R.dimen.link_text_content_spacing),
+        textPaddings = PaddingValues(
+            horizontal = dimensionResource(R.dimen.link_text_content_horizontal_padding),
+            vertical = dimensionResource(R.dimen.link_text_content_vertical_padding),
+        ),
+        favIconPadding = dimensionResource(R.dimen.link_fav_icon_padding),
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -110,6 +117,8 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, onClick: (URL) -> Unit)
 
     val currentState = state
     if (currentState is FetchState.Successful) {
-        LinkPreviewInternal(metadata = currentState.metadata, modifier = modifier, onClick = onClick)
+        LinkPreviewInternal(metadata = currentState.metadata, modifier = modifier.clickable {
+            onClick(currentState.metadata.url)
+        })
     }
 }
