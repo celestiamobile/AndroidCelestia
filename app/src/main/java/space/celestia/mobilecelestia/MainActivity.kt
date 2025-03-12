@@ -81,7 +81,6 @@ import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentDestinations
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentScripts
 import space.celestia.mobilecelestia.info.model.*
-import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.resource.*
 import space.celestia.mobilecelestia.resource.model.*
@@ -109,6 +108,7 @@ import space.celestia.mobilecelestia.celestia.viewmodel.Context
 import space.celestia.mobilecelestia.celestia.viewmodel.Utility
 import space.celestia.mobilecelestia.celestia.viewmodel.UtilityViewModel
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.loading.LoadingView
 import space.celestia.mobilecelestia.toolbar.Drawer
 
 @AndroidEntryPoint
@@ -244,26 +244,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         bottomToolbar.setContent {
             Mdc3Theme {
                 val viewModel: UtilityViewModel = hiltViewModel()
-                if (viewModel.canShowDrawerAndToolbar) {
-                    viewModel.toolbarActions?.let {
-                        Toolbar(it,
-                            onInstantActionSelected = {
-                                weakSelf.get()?.onInstantActionSelected(it)
-                            },
-                            onContinuousActionDown = {
-                                weakSelf.get()?.onContinuousActionDown(it)
-                            },
-                            onContinuousActionUp = {
-                                weakSelf.get()?.onContinuousActionUp(it)
-                            },
-                            onCustomAction = {
-                                weakSelf.get()?.onCustomAction(it)
-                            },
-                            onBottomControlHide = {
-                                weakSelf.get()?.onBottomControlHide()
-                            }
-                        )
-                    }
+                viewModel.toolbarActions?.let {
+                    Toolbar(it,
+                        onInstantActionSelected = {
+                            weakSelf.get()?.onInstantActionSelected(it)
+                        },
+                        onContinuousActionDown = {
+                            weakSelf.get()?.onContinuousActionDown(it)
+                        },
+                        onContinuousActionUp = {
+                            weakSelf.get()?.onContinuousActionUp(it)
+                        },
+                        onCustomAction = {
+                            weakSelf.get()?.onCustomAction(it)
+                        },
+                        onBottomControlHide = {
+                            weakSelf.get()?.onBottomControlHide()
+                        }
+                    )
                 }
             }
         }
@@ -272,13 +270,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         drawer.setContent {
             Mdc3Theme {
                 val viewModel: UtilityViewModel = hiltViewModel()
-                if (viewModel.canShowDrawerAndToolbar) {
-                    Drawer(additionalActions = viewModel.additionalDrawerActions) {
-                        weakSelf.get()?.onToolbarActionSelected(it)
+                viewModel.additionalDrawerActions?.let {
+                    Drawer(additionalActions = it) { action ->
+                        weakSelf.get()?.onToolbarActionSelected(action)
                     }
                 }
             }
         }
+
+        val loadingView = findViewById<ComposeView>(R.id.loading_fragment_container)
+        loadingView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        loadingView.setContent {
+            Mdc3Theme {
+                val viewModel: UtilityViewModel = hiltViewModel()
+                viewModel.loadingText?.let {
+                    LoadingView(it)
+                }
+            }
+        }
+
         val bottomSheetContainer = findViewById<ComposeView>(R.id.bottom_sheet)
         bottomSheetContainer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         bottomSheetContainer.setContent {
@@ -370,7 +380,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         when (currentState) {
             AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
-                loadExternalConfig(savedState)
+                loadExternalConfig()
             }
             AppStatusReporter.State.LOADING -> {
                 // Do nothing
@@ -477,13 +487,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)
     }
 
-    private fun loadExternalConfig(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
-                .commitAllowingStateLoss()
-        }
+    private fun loadExternalConfig() {
         appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -519,7 +523,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun celestiaLoadingProgress(status: String) {}
+    override fun celestiaLoadingProgress(status: String) {
+        lifecycleScope.launch {
+            utilityViewModel.loadingText = status
+        }
+    }
 
     override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
         when (newState) {
@@ -548,13 +556,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun celestiaLoadingFinished() {
-        supportFragmentManager.findFragmentById(R.id.loading_fragment_container)?.let {
-            supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
-        }
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+        utilityViewModel.loadingText = null
         findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
         utilityViewModel.additionalDrawerActions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
-        utilityViewModel.canShowDrawerAndToolbar = true
         val weakSelf = WeakReference(this)
         if (onBackPressedCallback == null) {
             val backPressedCallback = object : OnBackPressedCallback(true) {
