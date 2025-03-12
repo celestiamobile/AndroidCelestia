@@ -21,10 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CommonSectionV2
-import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.Header
-import space.celestia.mobilecelestia.compose.Separator
 import space.celestia.mobilecelestia.compose.TextRow
 
 @Composable

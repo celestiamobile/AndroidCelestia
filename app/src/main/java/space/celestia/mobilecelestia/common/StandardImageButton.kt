@@ -17,7 +17,6 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 
 class StandardImageButton: androidx.appcompat.widget.AppCompatImageButton {
-
     constructor(context: Context, attrSet: AttributeSet) : super(context, attrSet) {
         background = null
     }
