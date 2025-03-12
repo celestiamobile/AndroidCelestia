@@ -113,7 +113,6 @@ import space.celestia.mobilecelestia.toolbar.Drawer
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
-    BottomControlFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener {
 
@@ -240,11 +239,40 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         val weakSelf = WeakReference(this)
+        val bottomToolbar = findViewById<ComposeView>(R.id.toolbar_container)
+        bottomToolbar.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        bottomToolbar.setContent {
+            Mdc3Theme {
+                val viewModel: UtilityViewModel = hiltViewModel()
+                if (viewModel.canShowDrawerAndToolbar) {
+                    viewModel.toolbarActions?.let {
+                        Toolbar(it,
+                            onInstantActionSelected = {
+                                weakSelf.get()?.onInstantActionSelected(it)
+                            },
+                            onContinuousActionDown = {
+                                weakSelf.get()?.onContinuousActionDown(it)
+                            },
+                            onContinuousActionUp = {
+                                weakSelf.get()?.onContinuousActionUp(it)
+                            },
+                            onCustomAction = {
+                                weakSelf.get()?.onCustomAction(it)
+                            },
+                            onBottomControlHide = {
+                                weakSelf.get()?.onBottomControlHide()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
         drawer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         drawer.setContent {
             Mdc3Theme {
                 val viewModel: UtilityViewModel = hiltViewModel()
-                if (viewModel.canShowDrawer) {
+                if (viewModel.canShowDrawerAndToolbar) {
                     Drawer(additionalActions = viewModel.additionalDrawerActions) {
                         weakSelf.get()?.onToolbarActionSelected(it)
                     }
@@ -327,7 +355,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
 
             findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+            bottomToolbar.visibility = if (toolbarVisible) View.VISIBLE else View.GONE
 
             if (menuVisible) {
                 // Try to open the drawer, need to post delay since it might have been closed just now
@@ -526,7 +554,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
         findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
         utilityViewModel.additionalDrawerActions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
-        utilityViewModel.canShowDrawer = true
+        utilityViewModel.canShowDrawerAndToolbar = true
         val weakSelf = WeakReference(this)
         if (onBackPressedCallback == null) {
             val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -1210,19 +1238,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showInAppPurchase()
     }
 
-    override fun onInstantActionSelected(item: CelestiaAction) {
+    private fun onInstantActionSelected(item: CelestiaAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.charEnter(item.value) }
     }
 
-    override fun onContinuousActionUp(item: CelestiaContinuosAction) {
+    private fun onContinuousActionUp(item: CelestiaContinuosAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyUp(item.value) }
     }
 
-    override fun onContinuousActionDown(item: CelestiaContinuosAction) {
+    private fun onContinuousActionDown(item: CelestiaContinuosAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyDown(item.value) }
     }
 
-    override fun onCustomAction(type: CustomActionType) {
+    private fun onCustomAction(type: CustomActionType) {
         when (type) {
             CustomActionType.ShowTimeSettings -> {
                 lifecycleScope.launch {
@@ -1252,7 +1280,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             showUnsupportedAction()
     }
 
-    override fun onBottomControlHide() {
+    private fun onBottomControlHide() {
         lifecycleScope.launch {
             hideToolbar(true)
         }
@@ -1393,9 +1421,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private suspend fun hideToolbar(animated: Boolean) {
         hideViewAlpha(animated, R.id.toolbar_container)
         findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
-        val fragment = supportFragmentManager.findFragmentById(R.id.toolbar_container)
-        if (fragment != null)
-            supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).commitAllowingStateLoss()
+        utilityViewModel.toolbarActions = null
     }
 
     private suspend fun hideBottomSheet(animated: Boolean) {
@@ -1646,16 +1672,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 CelestiaAction.Reverse
             )
         }
-        showToolbarFragment(BottomControlFragment.newInstance(actions.map { InstantAction(it) } + timeSettingItem))
+        showToolbar(actions.map { InstantAction(it) } + timeSettingItem)
     }
 
     private fun showScriptControl() = lifecycleScope.launch {
-        showToolbarFragment(
-            BottomControlFragment.newInstance(
-                listOf(
-                    CelestiaAction.PlayPause,
-                    CelestiaAction.CancelScript
-                ).map { InstantAction(it) }))
+        showToolbar(listOf(CelestiaAction.PlayPause, CelestiaAction.CancelScript).map { InstantAction(it) })
     }
 
     private fun showSpeedControl() = lifecycleScope.launch {
@@ -1684,9 +1705,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 )
             )
         )
-        showToolbarFragment(
-            BottomControlFragment.newInstance(actions)
-        )
+        showToolbar(actions)
     }
 
     private fun showCameraControl() = lifecycleScope.launch {
@@ -1850,18 +1869,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showView(true, R.id.bottom_sheet_card, false)
     }
 
-    private suspend fun showToolbarFragment(fragment: Fragment) {
+    private suspend fun showToolbar(actions: List<BottomControlAction>) {
         hideOverlay(true)
         hideToolbar(true)
-        showToolbarFragmentDirect(fragment)
+        showToolbarDirect(actions)
     }
 
-    private suspend fun showToolbarFragmentDirect(fragment: Fragment) {
+    private suspend fun showToolbarDirect(actions: List<BottomControlAction>) {
         findViewById<View>(R.id.toolbar_overlay).visibility = View.VISIBLE
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.toolbar_container, fragment)
-            .commitAllowingStateLoss()
+        utilityViewModel.toolbarActions = actions
         showViewAlpha(true, R.id.toolbar_container)
     }
 

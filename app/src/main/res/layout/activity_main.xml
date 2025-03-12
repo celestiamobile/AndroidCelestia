@@ -55,9 +55,9 @@
                 android:orientation="vertical"
                 app:layout_constraintGuide_percent="0.8"/>
 
-            <FrameLayout
+            <androidx.compose.ui.platform.ComposeView
                 android:id="@+id/toolbar_container"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="@dimen/bottom_control_container_height"
                 android:layout_marginBottom="@dimen/common_page_medium_margin_vertical"
                 android:layout_marginStart="@dimen/common_page_medium_margin_horizontal"
