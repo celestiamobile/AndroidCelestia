@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -73,7 +74,8 @@ fun UtilityScreen(
     onGoToObject:(GoToData, Selection) -> Unit,
     onBrowserAddonCategoryRequested: (categoryInfo: BrowserPredefinedItem.CategoryInfo) -> Unit,
     shareItem: (Favorite.Shareable.Object) -> Unit,
-    saveFavorites: () -> Unit
+    saveFavorites: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val viewModel: UtilityViewModel = hiltViewModel()
 
@@ -92,7 +94,7 @@ fun UtilityScreen(
             }
     }
 
-    NavHost(navController = navController, startDestination = Utility.Empty) {
+    NavHost(navController = navController, startDestination = Utility.Empty, modifier = modifier) {
         composable<Utility.Empty> {}
         composable<Utility.AddonManagement> {
             AddonManagementScreen(onOpenAddonDownload = onOpenAddonDownload, onShareAddon = onShareAddon, onExternalWebLinkClicked = onExternalWebLinkClicked, onShareURL = onShareURL, onOpenSubscriptionPage = onOpenSubscriptionPage, onReceivedACK = onReceivedACK)
