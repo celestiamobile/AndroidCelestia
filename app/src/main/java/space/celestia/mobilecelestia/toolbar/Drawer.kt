@@ -125,7 +125,7 @@ fun Drawer(additionalActions: List<List<ToolbarAction>>, onToolbarActionSelected
                     }
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal))) {
-                    Icon(painter = painterResource(id = it.imageResource), contentDescription = "", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension)))
+                    Icon(painter = painterResource(id = it.imageResource), contentDescription = null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension)))
                     Text(text = it.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
                 }
             }
