@@ -73,7 +73,7 @@ fun HelpScreen(helpURLSelected: (String) -> Unit, helpActionSelected: (HelpActio
 
         items(staticHelpDescriptionItems) {
             Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.tutorial_list_item_gap_horizontal)), modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal), vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))) {
-                Icon(painter = painterResource(id = it.imageResourceID), contentDescription = "", modifier = Modifier.size(dimensionResource(id = R.dimen.tutorial_list_icon_dimension)), tint = MaterialTheme.colorScheme.onBackground)
+                Icon(painter = painterResource(id = it.imageResourceID), contentDescription = null, modifier = Modifier.size(dimensionResource(id = R.dimen.tutorial_list_icon_dimension)), tint = MaterialTheme.colorScheme.onBackground)
                 Text(text = it.description, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
             }
         }
