@@ -48,6 +48,7 @@ import space.celestia.mobilecelestia.favorite.viewmodel.Favorite
 import space.celestia.mobilecelestia.favorite.viewmodel.FavoriteRepresentation
 import space.celestia.mobilecelestia.favorite.viewmodel.FavoriteTree
 import space.celestia.mobilecelestia.favorite.viewmodel.FavoriteViewModel
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.currentBookmark
 
 @Serializable
@@ -110,7 +111,7 @@ fun FavoriteScreen(shareItem: (Favorite.Shareable.Object) -> Unit, saveFavorites
                 IconButton(onClick = {
                     navController.navigateUp()
                 }) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = CelestiaString("Go Back", "Button to go back to the previous page"))
                 }
             }
         }, actions = {
@@ -134,7 +135,7 @@ fun FavoriteScreen(shareItem: (Favorite.Shareable.Object) -> Unit, saveFavorites
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = ""
+                        contentDescription = CelestiaString("Add favorite", "Button to create a new favorite")
                     )
                 }
             }

@@ -125,7 +125,7 @@ fun SearchScreen(onInfoActionSelected: (InfoActionItem, Selection) -> Unit, onIn
                         Text(text = CelestiaString("Search", ""))
                     },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                        Icon(imageVector = Icons.Default.Search, contentDescription = CelestiaString("Search", ""))
                     },
                 )
             },
