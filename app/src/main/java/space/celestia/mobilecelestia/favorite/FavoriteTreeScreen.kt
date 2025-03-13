@@ -178,7 +178,7 @@ private fun Item(item: Favorite, tree: FavoriteTree<*>, index: Int, dragDropStat
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
                         .weight(1.0f)
-                        .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical),)
+                        .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))
                 )
                 if (isDraggable) {
                     Icon(
@@ -234,21 +234,25 @@ private fun BuildSwipeToDismissBox(item: Favorite, tree: FavoriteTree<*>, index:
         val iconColor: Color?
         val icon: ImageVector?
         val alignment: Alignment?
+        val contentDescription: String?
         if (tree is FavoriteTree.Editable && swipeState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
             color = MaterialTheme.colorScheme.errorContainer
             iconColor = MaterialTheme.colorScheme.onErrorContainer
             icon = Icons.Outlined.Delete
             alignment = Alignment.CenterEnd
+            contentDescription = CelestiaString("Delete", "")
         } else if (item is Favorite.Renamable && swipeState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
             color = MaterialTheme.colorScheme.secondaryContainer
             iconColor = MaterialTheme.colorScheme.onSecondaryContainer
             icon = Icons.Outlined.Edit
             alignment = Alignment.CenterStart
+            contentDescription = CelestiaString("Rename", "Rename a favorite item (currently bookmark)")
         } else {
             color = null
             iconColor = null
             icon = null
             alignment = null
+            contentDescription = null
         }
         SwipeToDismissBox(
             state = swipeState,
@@ -262,7 +266,7 @@ private fun BuildSwipeToDismissBox(item: Favorite, tree: FavoriteTree<*>, index:
                     ) {
                         Icon(
                             modifier = Modifier.minimumInteractiveComponentSize(),
-                            imageVector = icon, contentDescription = null,
+                            imageVector = icon, contentDescription = contentDescription,
                             tint = iconColor
                         )
                     }

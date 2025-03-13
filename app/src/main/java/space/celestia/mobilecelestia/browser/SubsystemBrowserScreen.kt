@@ -33,6 +33,7 @@ import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.browser.viewmodel.SubsystemBrowserViewModel
 import space.celestia.mobilecelestia.info.model.InfoActionItem
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.net.URL
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +56,7 @@ fun SubsystemBrowserScreen(item: Selection, onBrowserAddonCategoryRequested: (ca
                 IconButton(onClick = {
                     navController.navigateUp()
                 }) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = CelestiaString("Go Back", "Button to go back to the previous page"))
                 }
             }
         }, scrollBehavior = scrollBehavior)
