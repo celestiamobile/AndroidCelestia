@@ -163,24 +163,19 @@ private fun SettingEntry(item: SettingsEntry) {
                 }
             )
             if (showSelectionDialog) {
-                var pendingSelectionIndex by remember {
-                    mutableIntStateOf(item.options.indexOfFirst { it.index == selected })
-                }
                 SelectionInputDialog(
                     onDismissRequest = { showSelectionDialog = false },
-                    selectedIndex = pendingSelectionIndex,
+                    selectedIndex = item.options.indexOfFirst { it.index == selected },
                     items = item.options.map { it.name.displayName },
                     selectionChangeHandler = {
-                        pendingSelectionIndex = it
+                        showSelectionDialog = false
+                        if (it >= 0 && it < item.options.size) {
+                            val value = item.options[it].index
+                            selected = value
+                            viewModel.appSettings[item.key] = value.toString()
+                        }
                     }
-                ) {
-                    showSelectionDialog = false
-                    if (pendingSelectionIndex >= 0 && pendingSelectionIndex < item.options.size) {
-                        val value = item.options[pendingSelectionIndex].index
-                        selected = value
-                        viewModel.appSettings[item.key] = value.toString()
-                    }
-                }
+                )
             }
         }
 

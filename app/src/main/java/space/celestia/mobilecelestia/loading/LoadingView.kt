@@ -35,7 +35,7 @@ fun LoadingView(text: String) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.common_page_medium_margin_horizontal))) {
             Image(
                 painter = painterResource(id = R.drawable.loading_icon),
-                contentDescription = CelestiaString("App icon", "App icon for Celestia"),
+                contentDescription = null,
                 modifier = Modifier
                     .size(dimensionResource(id = R.dimen.app_icon_dimension))
             )

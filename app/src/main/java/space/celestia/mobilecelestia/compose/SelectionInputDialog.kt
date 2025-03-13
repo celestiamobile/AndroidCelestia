@@ -11,34 +11,55 @@
 
 package space.celestia.mobilecelestia.compose
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import space.celestia.mobilecelestia.utils.CelestiaString
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectionInputDialog(onDismissRequest: () -> Unit, title: String? = null, selectedIndex: Int, items: List<String>, selectionChangeHandler: (Int) -> Unit, confirmHandler: () -> Unit) {
-    AlertDialog(
+fun SelectionInputDialog(onDismissRequest: () -> Unit, title: String? = null, selectedIndex: Int, items: List<String>, selectionChangeHandler: (Int) -> Unit) {
+    // val DialogPadding = PaddingValues(all = 24.dp)
+    // val TitlePadding = PaddingValues(bottom = 16.dp)
+    BasicAlertDialog(
         onDismissRequest = onDismissRequest,
-        title = if (title != null) { { Text(text = title) } } else null,
-        text = {
-            LazyColumn(content = {
-                itemsIndexed(items) { index, item ->
-                    RadioButtonRow(primaryText = item, selected = index == selectedIndex, hideHorizontalPadding = true) {
-                        selectionChangeHandler(index)
+        properties = DialogProperties()
+    ) {
+        Surface(
+            shape = AlertDialogDefaults.shape,
+            color = AlertDialogDefaults.containerColor,
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+        ) {
+            Column(modifier = Modifier.padding(PaddingValues(vertical = 24.dp))) {
+                title?.let {
+                    Box(
+                        Modifier.padding(PaddingValues(bottom = 16.dp, start = 24.dp, end = 24.dp))
+                            .align(Alignment.Start)
+                    ) {
+                        Text(text = title, fontStyle = MaterialTheme.typography.headlineSmall.fontStyle, fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = MaterialTheme.typography.headlineSmall.fontWeight, fontFamily = MaterialTheme.typography.headlineSmall.fontFamily, color = AlertDialogDefaults.titleContentColor)
                     }
                 }
-            })
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                confirmHandler()
-            }) {
-                Text(text = CelestiaString("OK", ""))
+                LazyColumn(content = {
+                    itemsIndexed(items) { index, item ->
+                        RadioButtonRow(primaryText = item, selected = index == selectedIndex) {
+                            selectionChangeHandler(index)
+                        }
+                    }
+                })
             }
         }
-    )
+    }
 }
