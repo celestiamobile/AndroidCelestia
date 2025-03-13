@@ -207,8 +207,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onCreate(savedState)
 
         drawerLayout = findViewById(R.id.drawer_container)
-        // Avoid opening by swipe, drawer will always closed by now
-        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
         Log.d(TAG, "Creating MainActivity")
 
@@ -247,6 +245,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnTouchListener interactionBlocked
         }
 
+        val weakSelf = WeakReference(this)
+        drawerLayout.setDrawerLockMode(if (drawerLayout.isDrawerOpen(GravityCompat.END)) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+        drawerLayout.addDrawerListener(object: DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+
+            override fun onDrawerOpened(drawerView: View) {
+                weakSelf.get()?.drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                weakSelf.get()?.drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {}
+        })
+
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawer)) { _, insets ->
             val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
@@ -270,19 +284,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (savedState != null) {
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
-            val menuVisible = savedState.getBoolean(MENU_VISIBLE_TAG, false)
             val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
             initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
 
             findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-
-            if (menuVisible) {
-                // Try to open the drawer, need to post delay since it might have been closed just now
-                drawerLayout.postDelayed({
-                    drawerLayout.openDrawer(GravityCompat.END, false)
-                }, 0)
-            }
 
             findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
             findViewById<View>(R.id.bottom_sheet_card).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
@@ -311,7 +317,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(MENU_VISIBLE_TAG, drawerLayout.isDrawerOpen(GravityCompat.END))
         outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).isVisible)
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).isVisible)
         outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
@@ -487,7 +492,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 override fun handleOnBackPressed() {
                     val self = weakSelf.get() ?: return
                     val frag = self.supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-                    if (frag != null || self.drawerLayout.isDrawerOpen(GravityCompat.END)) {
+                    if (frag != null) {
                         self.lifecycleScope.launch {
                             self.hideOverlay(true)
                         }
@@ -2097,7 +2102,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/scripts"
 
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
-        private const val MENU_VISIBLE_TAG = "menu_visible"
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 
         private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
