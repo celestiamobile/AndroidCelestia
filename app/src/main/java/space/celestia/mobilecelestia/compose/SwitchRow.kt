@@ -17,20 +17,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.semantics.Role
 import space.celestia.mobilecelestia.R
 
 @Composable
 fun SwitchRow(primaryText: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange).padding(
         horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
     )) {
         Column(modifier = Modifier.weight(1.0f).padding(
@@ -47,6 +50,6 @@ fun SwitchRow(primaryText: String, checked: Boolean, onCheckedChange: (Boolean) 
             }
         }
         Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.list_item_gap_horizontal)))
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(checked = checked, onCheckedChange = null, modifier = Modifier.minimumInteractiveComponentSize())
     }
 }
