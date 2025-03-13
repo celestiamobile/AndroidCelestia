@@ -80,7 +80,7 @@ fun SubscriptionManagerScreen() {
 private fun AppIcon(modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(id = R.drawable.loading_icon),
-        contentDescription = CelestiaString("App icon", "App icon for Celestia"),
+        contentDescription = null,
         modifier = modifier
             .size(dimensionResource(id = R.dimen.app_icon_dimension))
     )
