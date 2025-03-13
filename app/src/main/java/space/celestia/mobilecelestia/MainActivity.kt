@@ -22,7 +22,6 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -30,9 +29,28 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.widget.AppCompatImageButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
@@ -101,6 +119,7 @@ import space.celestia.mobilecelestia.control.CustomActionType
 import space.celestia.mobilecelestia.control.GroupAction
 import space.celestia.mobilecelestia.control.GroupActionItem
 import space.celestia.mobilecelestia.control.InstantAction
+import space.celestia.mobilecelestia.control.Toolbar
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.favorite.viewmodel.Favorite
@@ -108,7 +127,15 @@ import space.celestia.mobilecelestia.favorite.viewmodel.getCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentDestinations
 import space.celestia.mobilecelestia.favorite.viewmodel.updateCurrentScripts
-import space.celestia.mobilecelestia.info.model.*
+import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
+import space.celestia.mobilecelestia.info.model.CelestiaAction
+import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
+import space.celestia.mobilecelestia.info.model.InfoActionItem
+import space.celestia.mobilecelestia.info.model.InfoNormalActionItem
+import space.celestia.mobilecelestia.info.model.InfoSelectActionItem
+import space.celestia.mobilecelestia.info.model.InfoWebActionItem
+import space.celestia.mobilecelestia.info.model.MarkItem
+import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.loading.LoadingView
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
@@ -241,12 +268,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener insets
         }
 
-        findViewById<View>(R.id.close_button).setOnClickListener {
-            lifecycleScope.launch {
-                hideOverlay(true)
-            }
-        }
-
         @Suppress("ClickableViewAccessibility")
         findViewById<View>(R.id.interaction_filter).setOnTouchListener { _, _ ->
             return@setOnTouchListener interactionBlocked
@@ -282,8 +303,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         bottomToolbar.setContent {
             Mdc3Theme {
                 val viewModel: UtilityViewModel = hiltViewModel()
-                viewModel.toolbarActions?.let {
-                    Toolbar(it,
+                viewModel.toolbarActions?.let { actions ->
+                    Toolbar(actions,
                         onInstantActionSelected = {
                             weakSelf.get()?.onInstantActionSelected(it)
                         },
@@ -330,57 +351,70 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val bottomSheetContainer = findViewById<ComposeView>(R.id.bottom_sheet)
         bottomSheetContainer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         bottomSheetContainer.setContent {
+            val scope = rememberCoroutineScope()
             Mdc3Theme {
-                UtilityScreen(
-                    onRefreshRateChanged = {
-                        weakSelf.get()?.onRefreshRateChanged(it)
-                    },
-                    onAboutURLSelected = { url, localized ->
-                        weakSelf.get()?.onAboutURLSelected(url, localized)
-                    },
-                    requestOpenSubscriptionManagement = {
-                        weakSelf.get()?.requestOpenSubscriptionManagement()
-                    },
-                    onOpenAddonDownload = {
-                        weakSelf.get()?.onOpenAddonDownload()
-                    },
-                    onShareAddon = { name, id ->
-                        weakSelf.get()?.onShareAddon(name, id)
-                    },
-                    onExternalWebLinkClicked = {
-                        weakSelf.get()?.onExternalWebLinkClicked(it)
-                    },
-                    onShareURL = { title, url ->
-                        weakSelf.get()?.onShareURL(title, url)
-                    },
-                    onOpenSubscriptionPage = {
-                        weakSelf.get()?.onOpenSubscriptionPage()
-                    },
-                    onReceivedACK = {
-                        weakSelf.get()?.onReceivedACK(it)
-                    },
-                    onObserverModeLearnMoreClicked = {
-                        weakSelf.get()?.onObserverModeLearnMoreClicked(it)
-                    },
-                    onInfoLinkMetaDataClicked = {
-                        weakSelf.get()?.onInfoLinkMetaDataClicked(it)
-                    },
-                    onInfoActionSelected = { action, item ->
-                        weakSelf.get()?.onInfoActionSelected(action, item)
-                    },
-                    onGoToObject = { goToData, selection ->
-                        weakSelf.get()?.onGoToObject(goToData, selection)
-                    },
-                    onBrowserAddonCategoryRequested = {
-                        weakSelf.get()?.onBrowserAddonCategoryRequested(it)
-                    },
-                    shareItem = {
-                        weakSelf.get()?.shareItem(it)
-                    },
-                    saveFavorites = {
-                        weakSelf.get()?.saveFavorites()
+                Column(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(topStart = dimensionResource(R.dimen.sheet_background_corner_radius), topEnd = dimensionResource(R.dimen.sheet_background_corner_radius)))) {
+                    Box(modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.sheet_handle_container_height))) {
+                        Icon(painter = painterResource(R.drawable.ic_close), contentDescription = "", tint = colorResource(com.google.android.material.R.color.material_on_background_emphasis_medium), modifier = Modifier.fillMaxHeight().aspectRatio(1.0f).clickable {
+                            scope.launch {
+                                weakSelf.get()?.hideBottomSheet(true)
+                            }
+                        }.padding(dimensionResource(R.dimen.sheet_close_button_padding)))
+                        Box(modifier = Modifier.align(Alignment.Center).size(width = dimensionResource(R.dimen.sheet_handle_width), height = dimensionResource(R.dimen.sheet_handle_height)).background(color = colorResource(com.google.android.material.R.color.material_on_background_disabled), shape = RoundedCornerShape(size = dimensionResource(R.dimen.sheet_handle_corner_radius))))
                     }
-                )
+
+                    UtilityScreen(
+                        onRefreshRateChanged = {
+                            weakSelf.get()?.onRefreshRateChanged(it)
+                        },
+                        onAboutURLSelected = { url, localized ->
+                            weakSelf.get()?.onAboutURLSelected(url, localized)
+                        },
+                        requestOpenSubscriptionManagement = {
+                            weakSelf.get()?.requestOpenSubscriptionManagement()
+                        },
+                        onOpenAddonDownload = {
+                            weakSelf.get()?.onOpenAddonDownload()
+                        },
+                        onShareAddon = { name, id ->
+                            weakSelf.get()?.onShareAddon(name, id)
+                        },
+                        onExternalWebLinkClicked = {
+                            weakSelf.get()?.onExternalWebLinkClicked(it)
+                        },
+                        onShareURL = { title, url ->
+                            weakSelf.get()?.onShareURL(title, url)
+                        },
+                        onOpenSubscriptionPage = {
+                            weakSelf.get()?.onOpenSubscriptionPage()
+                        },
+                        onReceivedACK = {
+                            weakSelf.get()?.onReceivedACK(it)
+                        },
+                        onObserverModeLearnMoreClicked = {
+                            weakSelf.get()?.onObserverModeLearnMoreClicked(it)
+                        },
+                        onInfoLinkMetaDataClicked = {
+                            weakSelf.get()?.onInfoLinkMetaDataClicked(it)
+                        },
+                        onInfoActionSelected = { action, item ->
+                            weakSelf.get()?.onInfoActionSelected(action, item)
+                        },
+                        onGoToObject = { goToData, selection ->
+                            weakSelf.get()?.onGoToObject(goToData, selection)
+                        },
+                        onBrowserAddonCategoryRequested = {
+                            weakSelf.get()?.onBrowserAddonCategoryRequested(it)
+                        },
+                        shareItem = {
+                            weakSelf.get()?.shareItem(it)
+                        },
+                        saveFavorites = {
+                            weakSelf.get()?.saveFavorites()
+                        },
+                        modifier = Modifier.weight(1.0f)
+                    )
+                }
             }
         }
         ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
@@ -405,7 +439,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             bottomToolbar.visibility = if (toolbarVisible) View.VISIBLE else View.GONE
 
             findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.bottom_sheet_card).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+            bottomSheetContainer.visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
         }
 
         when (currentState) {
@@ -587,7 +621,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun celestiaLoadingFinished() {
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
         utilityViewModel.loadingText = null
-        findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
         utilityViewModel.additionalDrawerActions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
         val weakSelf = WeakReference(this)
         if (onBackPressedCallback == null) {
@@ -1459,7 +1492,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private suspend fun hideBottomSheet(animated: Boolean) {
-        hideView(animated, R.id.bottom_sheet_card, false)
+        hideView(animated, R.id.bottom_sheet, false)
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
         utilityViewModel.context = null
         utilityViewModel.current = Utility.Empty
@@ -1547,10 +1580,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             })
             hideAnimator.start()
         }
-    }
-
-    private fun  hideKeyboard() {
-        (getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
     private fun showInfo(selection: Selection) = lifecycleScope.launch {
@@ -1900,7 +1929,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
         utilityViewModel.context = context
         utilityViewModel.current = utility
-        showView(true, R.id.bottom_sheet_card, false)
+        showView(true, R.id.bottom_sheet, false)
     }
 
     private suspend fun showToolbar(actions: List<BottomControlAction>) {
@@ -1976,7 +2005,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 
-        private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 
         private const val FILE_PROVIDER_AUTHORITY = "space.celestia.mobilecelestia.fileprovider"
@@ -1993,8 +2021,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
         var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
-
-        private val supportedScriptTypes = listOf("cel", "celx")
 
         init {
             System.loadLibrary("ziputils")
