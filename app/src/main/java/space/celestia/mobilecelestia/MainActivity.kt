@@ -355,7 +355,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             Mdc3Theme {
                 Column(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(topStart = dimensionResource(R.dimen.sheet_background_corner_radius), topEnd = dimensionResource(R.dimen.sheet_background_corner_radius)))) {
                     Box(modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.sheet_handle_container_height))) {
-                        Icon(painter = painterResource(R.drawable.ic_close), contentDescription = "", tint = colorResource(com.google.android.material.R.color.material_on_background_emphasis_medium), modifier = Modifier.fillMaxHeight().aspectRatio(1.0f).clickable {
+                        Icon(painter = painterResource(R.drawable.ic_close), contentDescription = CelestiaString("Close", ""), tint = colorResource(com.google.android.material.R.color.material_on_background_emphasis_medium), modifier = Modifier.fillMaxHeight().aspectRatio(1.0f).clickable {
                             scope.launch {
                                 weakSelf.get()?.hideBottomSheet(true)
                             }

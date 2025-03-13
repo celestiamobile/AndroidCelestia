@@ -25,11 +25,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 @Composable
 fun Stepper(touchDown: (Boolean) -> Unit, touchUp: (Boolean) -> Unit) {
     Row(modifier = Modifier.size(width = dimensionResource(R.dimen.stepper_width), height = dimensionResource(R.dimen.stepper_height)).background(color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(size = dimensionResource(R.dimen.stepper_corner_radius)))) {
-        StepperButton(icon = painterResource(R.drawable.ic_remove), contentDescription = "", touchUp = {
+        StepperButton(icon = painterResource(R.drawable.ic_remove), contentDescription = CelestiaString("Decrement value", "Button to decrement a certain value"), touchUp = {
             touchUp(true)
         }, touchDown = {
             touchDown(true)
@@ -39,7 +40,7 @@ fun Stepper(touchDown: (Boolean) -> Unit, touchUp: (Boolean) -> Unit) {
             Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.outline))
         }
 
-        StepperButton(icon = painterResource(R.drawable.ic_add), contentDescription = "", touchUp = {
+        StepperButton(icon = painterResource(R.drawable.ic_add), contentDescription = CelestiaString("Increment value", "Button to increment a certain value"), touchUp = {
             touchUp(false)
         }, touchDown = {
             touchDown(false)
