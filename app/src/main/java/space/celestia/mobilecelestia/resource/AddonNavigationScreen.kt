@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +38,7 @@ fun AddonNavigationScreen(item: ResourceItem, onShareAddon:(String, String) -> U
             IconButton(onClick = {
                 onShareAddon(item.name, item.id)
             }) {
-                Icon(imageVector = Icons.Filled.Share, contentDescription = "")
+                Icon(imageVector = Icons.Filled.Share, contentDescription = CelestiaString("Share", ""))
             }
         }, scrollBehavior = scrollBehavior)
     }) { paddingValues ->

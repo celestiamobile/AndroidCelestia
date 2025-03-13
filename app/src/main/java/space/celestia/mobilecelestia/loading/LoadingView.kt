@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.utils.CelestiaString
 
 @Composable
 fun LoadingView(text: String) {
@@ -34,7 +35,7 @@ fun LoadingView(text: String) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.common_page_medium_margin_horizontal))) {
             Image(
                 painter = painterResource(id = R.drawable.loading_icon),
-                contentDescription = null,
+                contentDescription = CelestiaString("App icon", "App icon for Celestia"),
                 modifier = Modifier
                     .size(dimensionResource(id = R.dimen.app_icon_dimension))
             )

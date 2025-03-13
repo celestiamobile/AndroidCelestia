@@ -44,6 +44,7 @@ import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.browser.viewmodel.BrowserNavigationViewModel
 import space.celestia.mobilecelestia.browser.viewmodel.BrowserViewModel
 import space.celestia.mobilecelestia.info.model.InfoActionItem
+import space.celestia.mobilecelestia.utils.CelestiaString
 import java.net.URL
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,7 +83,7 @@ fun BrowserScreen(onBrowserAddonCategoryRequested: (categoryInfo: BrowserPredefi
                 IconButton(onClick = {
                     navController.navigateUp()
                 }) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = CelestiaString("Go Back", "Button to go back to the previous page"))
                 }
             }
         }, scrollBehavior = scrollBehavior)
@@ -91,7 +92,7 @@ fun BrowserScreen(onBrowserAddonCategoryRequested: (categoryInfo: BrowserPredefi
             viewModel.tabData.forEachIndexed { index, tab ->
                 NavigationBarItem(
                     icon = {
-                        Icon(painter = painterResource(id = tab.tab.iconResource), contentDescription = "")
+                        Icon(painter = painterResource(id = tab.tab.iconResource), contentDescription = tab.tab.contentDescription)
                     },
                     label = {
                         Text(tab.item.alternativeName ?: tab.item.name)

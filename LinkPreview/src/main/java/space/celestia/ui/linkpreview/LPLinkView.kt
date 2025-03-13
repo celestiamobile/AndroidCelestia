@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.Dp
 import java.net.URL
 
 @Composable
-fun LPLinkView(data: LPLinkViewData, titleColor: Color, titleStyle: TextStyle, footerColor: Color, footerStyle: TextStyle, textSpacing: Dp, textPaddings: PaddingValues, favIconPadding: Dp, modifier: Modifier = Modifier) {
+fun LPLinkView(data: LPLinkViewData, imageContentDescription: String, titleColor: Color, titleStyle: TextStyle, footerColor: Color, footerStyle: TextStyle, textSpacing: Dp, textPaddings: PaddingValues, favIconPadding: Dp, modifier: Modifier = Modifier) {
     val textContent: @Composable (modifier: Modifier) -> Unit = { textContentModifier ->
         LinkTextView(
             title = data.title,
@@ -55,7 +55,7 @@ fun LPLinkView(data: LPLinkViewData, titleColor: Color, titleStyle: TextStyle, f
             textContent(Modifier)
         } else if (data.usesIcon) {
             Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
-                Image(bitmap = data.image.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxHeight().aspectRatio(1.0f).padding(
+                Image(bitmap = data.image.asImageBitmap(), contentDescription = imageContentDescription, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxHeight().aspectRatio(1.0f).padding(
                     start = favIconPadding,
                     top = favIconPadding,
                     bottom = favIconPadding
@@ -64,7 +64,7 @@ fun LPLinkView(data: LPLinkViewData, titleColor: Color, titleStyle: TextStyle, f
             }
         } else {
             Column {
-                Image(bitmap = data.image.asImageBitmap(), contentDescription = null, modifier = Modifier.fillMaxWidth().aspectRatio(data.image.width.toFloat() / data.image.height.toFloat()))
+                Image(bitmap = data.image.asImageBitmap(), contentDescription = imageContentDescription, modifier = Modifier.fillMaxWidth().aspectRatio(data.image.width.toFloat() / data.image.height.toFloat()))
                 textContent(Modifier)
             }
         }

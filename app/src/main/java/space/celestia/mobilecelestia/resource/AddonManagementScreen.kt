@@ -94,7 +94,7 @@ fun AddonManagementScreen(onOpenAddonDownload: () -> Unit, onShareAddon:(String,
                 IconButton(onClick = {
                     navController.navigateUp()
                 }) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = CelestiaString("Go Back", "Button to go back to the previous page"))
                 }
             }
         }, actions = {
@@ -106,7 +106,7 @@ fun AddonManagementScreen(onOpenAddonDownload: () -> Unit, onShareAddon:(String,
                         onShareAddon(addon.name, addon.id)
                     }
                 }) {
-                    Icon(imageVector = Icons.Filled.Share, contentDescription = "")
+                    Icon(imageVector = Icons.Filled.Share, contentDescription = CelestiaString("Share", ""))
                 }
             }
         }, scrollBehavior = scrollBehavior)

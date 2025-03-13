@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.ui.linkpreview.LPLinkView
 import space.celestia.ui.linkpreview.LPLinkViewData
 import space.celestia.ui.linkpreview.LPMetadataProvider
@@ -42,6 +43,7 @@ private sealed class FetchState {
 private fun LinkPreviewInternal(metadata: LPLinkViewData, modifier: Modifier = Modifier) {
     LPLinkView(
         data = metadata,
+        imageContentDescription = CelestiaString("Preview image of the link", "Image preview of the selected link"),
         titleColor = MaterialTheme.colorScheme.onBackground,
         titleStyle = MaterialTheme.typography.bodyLarge,
         footerColor = colorResource(com.google.android.material.R.color.material_on_background_emphasis_medium),
