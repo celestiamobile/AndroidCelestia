@@ -297,7 +297,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
-        val weakSelf = WeakReference(this)
         val bottomToolbar = findViewById<ComposeView>(R.id.toolbar_container)
         bottomToolbar.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         bottomToolbar.setContent {
