@@ -16,6 +16,7 @@ import space.celestia.mobilecelestia.browser.dsoBrowserRoot
 import space.celestia.mobilecelestia.browser.solBrowserRoot
 import space.celestia.mobilecelestia.browser.starBrowserRoot
 import space.celestia.mobilecelestia.common.CelestiaExecutor
+import space.celestia.mobilecelestia.utils.CelestiaString
 import javax.inject.Inject
 
 @Serializable
@@ -23,10 +24,15 @@ sealed class BrowserTab {
     @get:DrawableRes
     abstract val iconResource: Int
 
+    abstract val contentDescription: String
+
     @Serializable
     data object SolarSystem: BrowserTab() {
         override val iconResource: Int
             get() = R.drawable.browser_tab_sso
+
+        override val contentDescription: String
+            get() = CelestiaString("Solar system tab", "")
     }
 
     @Serializable
@@ -34,12 +40,17 @@ sealed class BrowserTab {
         override val iconResource: Int
             get() = R.drawable.browser_tab_dso
 
+        override val contentDescription: String
+            get() = CelestiaString("DSOs tab", "")
     }
 
     @Serializable
     data object Stars: BrowserTab() {
         override val iconResource: Int
             get() = R.drawable.browser_tab_star
+
+        override val contentDescription: String
+            get() = CelestiaString("Stars tab", "")
     }
 }
 

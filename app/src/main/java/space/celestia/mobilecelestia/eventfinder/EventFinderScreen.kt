@@ -73,7 +73,7 @@ fun EventFinderScreen() {
                 IconButton(onClick = {
                     navController.navigateUp()
                 }) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = CelestiaString("Go Back", "Button to go back to the previous page"))
                 }
             }
         }, scrollBehavior = scrollBehavior)

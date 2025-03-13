@@ -171,7 +171,7 @@ fun WebNavigationScreen(
                 }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = ""
+                        contentDescription = CelestiaString("Go Back", "Button to go back to the previous page")
                     )
                 }
             }
@@ -184,7 +184,7 @@ fun WebNavigationScreen(
                         shareAddon(addon.name, addon.id)
                     }
                 }) {
-                    Icon(imageVector = Icons.Filled.Share, contentDescription = "")
+                    Icon(imageVector = Icons.Filled.Share, contentDescription = CelestiaString("Share", ""))
                 }
             }
         }, scrollBehavior = scrollBehavior)
