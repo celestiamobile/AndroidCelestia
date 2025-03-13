@@ -23,6 +23,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 
@@ -30,7 +32,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 @Composable
 fun OptionSelect(options: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, selectionChange: (Int) -> Unit, wrapWidth: Boolean = false) {
     var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }, modifier = modifier) {
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }, modifier = modifier.semantics { Role.DropdownList }) {
         SimpleTextField(value = options[selectedIndex], readOnly = true, onValueChange = {}, trailingIcon = {
             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
         }, textStyle = MaterialTheme.typography.bodyLarge, modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable).then(if (wrapWidth) Modifier.width(IntrinsicSize.Min) else Modifier.fillMaxWidth()))
