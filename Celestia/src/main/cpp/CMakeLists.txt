@@ -64,6 +64,8 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_SRC_DIR}/celutil/associativearray.cpp
+        ${CELESTIA_SRC_DIR}/celutil/associativearray.h
         ${CELESTIA_SRC_DIR}/celutil/binaryread.h
         ${CELESTIA_SRC_DIR}/celutil/binarywrite.h
         ${CELESTIA_SRC_DIR}/celutil/blockarray.h
@@ -87,6 +89,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/localeutil.h
         ${CELESTIA_SRC_DIR}/celutil/logger.cpp
         ${CELESTIA_SRC_DIR}/celutil/logger.h
+        ${CELESTIA_SRC_DIR}/celutil/parser.cpp
+        ${CELESTIA_SRC_DIR}/celutil/parser.h
         ${CELESTIA_SRC_DIR}/celutil/ranges.h
         ${CELESTIA_SRC_DIR}/celutil/r128.h
         ${CELESTIA_SRC_DIR}/celutil/r128util.cpp
@@ -300,8 +304,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/globular.h
         ${CELESTIA_SRC_DIR}/celengine/glshader.cpp
         ${CELESTIA_SRC_DIR}/celengine/glshader.h
-        ${CELESTIA_SRC_DIR}/celengine/hash.cpp
-        ${CELESTIA_SRC_DIR}/celengine/hash.h
         ${CELESTIA_SRC_DIR}/celengine/lightenv.h
         ${CELESTIA_SRC_DIR}/celengine/location.cpp
         ${CELESTIA_SRC_DIR}/celengine/location.h
@@ -335,8 +337,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/overlayimage.h
         ${CELESTIA_SRC_DIR}/celengine/parseobject.cpp
         ${CELESTIA_SRC_DIR}/celengine/parseobject.h
-        ${CELESTIA_SRC_DIR}/celengine/parser.cpp
-        ${CELESTIA_SRC_DIR}/celengine/parser.h
         ${CELESTIA_SRC_DIR}/celengine/perspectiveprojectionmode.cpp
         ${CELESTIA_SRC_DIR}/celengine/perspectiveprojectionmode.h
         ${CELESTIA_SRC_DIR}/celengine/planetgrid.cpp
@@ -405,8 +405,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/univcoord.h
         ${CELESTIA_SRC_DIR}/celengine/universe.cpp
         ${CELESTIA_SRC_DIR}/celengine/universe.h
-        ${CELESTIA_SRC_DIR}/celengine/value.cpp
-        ${CELESTIA_SRC_DIR}/celengine/value.h
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.cpp
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.h
         ${CELESTIA_SRC_DIR}/celengine/virtualtex.cpp
