@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
@@ -199,10 +200,10 @@ private fun Item(item: Favorite, tree: FavoriteTree<*>, index: Int, dragDropStat
                     )
                 }
                 if (item.tree != null || item.representation != null) {
-                    Image(
-                        painter = painterResource(id = R.drawable.accessory_full_disclosure),
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorResource(id = com.google.android.material.R.color.material_on_background_disabled))
+                        tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled)
                     )
                 }
             }

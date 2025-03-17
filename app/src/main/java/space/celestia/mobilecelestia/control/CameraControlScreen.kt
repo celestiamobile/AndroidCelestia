@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -93,7 +95,7 @@ fun CameraControlScreen(paddingValues: PaddingValues, observerModeTapped: () -> 
         }, modifier = internalViewModifier)
         Footer(text = CelestiaString("Long press on stepper to zoom in/out.", ""))
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-        TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = {
+        TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryIcon = Icons.AutoMirrored.Filled.KeyboardArrowRight, modifier = Modifier.clickable(onClick = {
             observerModeTapped()
         }))
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
