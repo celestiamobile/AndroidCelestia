@@ -720,15 +720,15 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     companion object {
-        private const val ARG_DATA_DIR = "data"
-        private const val ARG_CFG_FILE = "cfg"
-        private const val ARG_ADDON_DIR = "addon"
-        private const val ARG_MULTI_SAMPLE = "multisample"
-        private const val ARG_FULL_RESOLUTION = "fullresolution"
-        private const val ARG_FRAME_RATE_OPTION = "framerateoption"
-        private const val ARG_INTERACTION_MODE = "interaction-mode"
-        private const val ARG_HAS_SET_RENDERER = "has-set-renderer"
-        private const val ARG_LANG_OVERRIDE = "lang"
+        const val ARG_DATA_DIR = "data"
+        const val ARG_CFG_FILE = "cfg"
+        const val ARG_ADDON_DIR = "addon"
+        const val ARG_MULTI_SAMPLE = "multisample"
+        const val ARG_FULL_RESOLUTION = "fullresolution"
+        const val ARG_FRAME_RATE_OPTION = "framerateoption"
+        const val ARG_INTERACTION_MODE = "interaction-mode"
+        const val ARG_HAS_SET_RENDERER = "has-set-renderer"
+        const val ARG_LANG_OVERRIDE = "lang"
         private const val GROUP_ACTION = 0
         private const val GROUP_ALT_SURFACE_TOP = 1
         private const val GROUP_ALT_SURFACE = 2

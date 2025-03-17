@@ -25,6 +25,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -41,8 +42,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +72,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.core.view.*
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
+import androidx.fragment.compose.AndroidFragment
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -128,7 +140,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(R.layout.activity_main),
+class MainActivity : AppCompatActivity(),
     AppStatusReporter.Listener,
     CelestiaFragment.Listener {
 
@@ -182,6 +194,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val celestiaDataDirPath: String
         get() = appSettings[PreferenceManager.PredefinedKey.DataDirPath] ?: defaultFilePaths.dataDirectoryPath
 
+    private val customFrameRateOption: Int
+        get() = appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS
+
     private val fontDirPath: String
         get() = defaultFilePaths.fontDirectoryPath
 
@@ -205,7 +220,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         super.onCreate(savedState)
 
-        drawerLayout = findViewById(R.id.drawer_container)
+        setContent {
+            Mdc3Theme {
+                App()
+            }
+        }
+
+//        drawerLayout = findViewById(R.id.drawer_container)
 
         Log.d(TAG, "Creating MainActivity")
 
@@ -233,179 +254,176 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener insets
         }
 
-        @Suppress("ClickableViewAccessibility")
-        findViewById<View>(R.id.interaction_filter).setOnTouchListener { _, _ ->
-            return@setOnTouchListener interactionBlocked
-        }
+//        @Suppress("ClickableViewAccessibility")
+//        findViewById<View>(R.id.interaction_filter).setOnTouchListener { _, _ ->
+//            return@setOnTouchListener interactionBlocked
+//        }
 
-        val weakSelf = WeakReference(this)
-        drawerLayout.setDrawerLockMode(if (drawerLayout.isDrawerOpen(GravityCompat.END)) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-        drawerLayout.addDrawerListener(object: DrawerListener {
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+//        val weakSelf = WeakReference(this)
+//        drawerLayout.setDrawerLockMode(if (drawerLayout.isDrawerOpen(GravityCompat.END)) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+//        drawerLayout.addDrawerListener(object: DrawerListener {
+//            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+//
+//            override fun onDrawerOpened(drawerView: View) {
+//                weakSelf.get()?.drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+//            }
+//
+//            override fun onDrawerClosed(drawerView: View) {
+//                weakSelf.get()?.drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+//            }
+//
+//            override fun onDrawerStateChanged(newState: Int) {}
+//        })
 
-            override fun onDrawerOpened(drawerView: View) {
-                weakSelf.get()?.drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-            }
+//        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+//        val drawer = findViewById<ComposeView>(R.id.drawer)
+//        ViewCompat.setOnApplyWindowInsetsListener(drawer) { _, insets ->
+//            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+//            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(if (isRTL) systemBarInsets.left else 0 , systemBarInsets.top, if (isRTL) 0 else systemBarInsets.right, systemBarInsets.bottom))
+//            return@setOnApplyWindowInsetsListener builder.build()
+//        }
 
-            override fun onDrawerClosed(drawerView: View) {
-                weakSelf.get()?.drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-            }
-
-            override fun onDrawerStateChanged(newState: Int) {}
-        })
-
-        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        val drawer = findViewById<ComposeView>(R.id.drawer)
-        ViewCompat.setOnApplyWindowInsetsListener(drawer) { _, insets ->
-            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
-            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(if (isRTL) systemBarInsets.left else 0 , systemBarInsets.top, if (isRTL) 0 else systemBarInsets.right, systemBarInsets.bottom))
-            return@setOnApplyWindowInsetsListener builder.build()
-        }
-
-        val bottomToolbar = findViewById<ComposeView>(R.id.toolbar_container)
-        bottomToolbar.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-        bottomToolbar.setContent {
-            Mdc3Theme {
-                val viewModel: UtilityViewModel = hiltViewModel()
-                viewModel.toolbarActions?.let { actions ->
-                    Toolbar(actions,
-                        onInstantActionSelected = {
-                            weakSelf.get()?.onInstantActionSelected(it)
-                        },
-                        onContinuousActionDown = {
-                            weakSelf.get()?.onContinuousActionDown(it)
-                        },
-                        onContinuousActionUp = {
-                            weakSelf.get()?.onContinuousActionUp(it)
-                        },
-                        onCustomAction = {
-                            weakSelf.get()?.onCustomAction(it)
-                        },
-                        onBottomControlHide = {
-                            weakSelf.get()?.onBottomControlHide()
-                        }
-                    )
-                }
-            }
-        }
-
-        drawer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-        drawer.setContent {
-            Mdc3Theme {
-                val viewModel: UtilityViewModel = hiltViewModel()
-                viewModel.additionalDrawerActions?.let {
-                    Drawer(additionalActions = it) { action ->
-                        weakSelf.get()?.onToolbarActionSelected(action)
-                    }
-                }
-            }
-        }
-
-        val loadingView = findViewById<ComposeView>(R.id.loading_fragment_container)
-        loadingView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-        loadingView.setContent {
-            Mdc3Theme {
-                val viewModel: UtilityViewModel = hiltViewModel()
-                viewModel.loadingText?.let {
-                    LoadingView(it)
-                }
-            }
-        }
-
-        val bottomSheetContainer = findViewById<ComposeView>(R.id.bottom_sheet)
-        bottomSheetContainer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-        bottomSheetContainer.setContent {
-            val scope = rememberCoroutineScope()
-            Mdc3Theme {
-                Column(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(topStart = dimensionResource(R.dimen.sheet_background_corner_radius), topEnd = dimensionResource(R.dimen.sheet_background_corner_radius)))) {
-                    Box(modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.sheet_handle_container_height))) {
-                        Icon(painter = painterResource(R.drawable.ic_close), contentDescription = CelestiaString("Close", ""), tint = colorResource(com.google.android.material.R.color.material_on_background_emphasis_medium), modifier = Modifier.fillMaxHeight().aspectRatio(1.0f).clickable {
-                            scope.launch {
-                                weakSelf.get()?.hideBottomSheet(true)
-                            }
-                        }.padding(dimensionResource(R.dimen.sheet_close_button_padding)))
-                        Box(modifier = Modifier.align(Alignment.Center).size(width = dimensionResource(R.dimen.sheet_handle_width), height = dimensionResource(R.dimen.sheet_handle_height)).background(color = colorResource(com.google.android.material.R.color.material_on_background_disabled), shape = RoundedCornerShape(size = dimensionResource(R.dimen.sheet_handle_corner_radius))))
-                    }
-
-                    UtilityScreen(
-                        onRefreshRateChanged = {
-                            weakSelf.get()?.onRefreshRateChanged(it)
-                        },
-                        onAboutURLSelected = { url, localized ->
-                            weakSelf.get()?.onAboutURLSelected(url, localized)
-                        },
-                        requestOpenSubscriptionManagement = {
-                            weakSelf.get()?.requestOpenSubscriptionManagement()
-                        },
-                        onOpenAddonDownload = {
-                            weakSelf.get()?.onOpenAddonDownload()
-                        },
-                        onShareAddon = { name, id ->
-                            weakSelf.get()?.onShareAddon(name, id)
-                        },
-                        onExternalWebLinkClicked = {
-                            weakSelf.get()?.onExternalWebLinkClicked(it)
-                        },
-                        onShareURL = { title, url ->
-                            weakSelf.get()?.onShareURL(title, url)
-                        },
-                        onOpenSubscriptionPage = {
-                            weakSelf.get()?.onOpenSubscriptionPage()
-                        },
-                        onReceivedACK = {
-                            weakSelf.get()?.onReceivedACK(it)
-                        },
-                        onObserverModeLearnMoreClicked = {
-                            weakSelf.get()?.onObserverModeLearnMoreClicked(it)
-                        },
-                        onInfoLinkMetaDataClicked = {
-                            weakSelf.get()?.onInfoLinkMetaDataClicked(it)
-                        },
-                        onInfoActionSelected = { action, item ->
-                            weakSelf.get()?.onInfoActionSelected(action, item)
-                        },
-                        onGoToObject = { goToData, selection ->
-                            weakSelf.get()?.onGoToObject(goToData, selection)
-                        },
-                        onBrowserAddonCategoryRequested = {
-                            weakSelf.get()?.onBrowserAddonCategoryRequested(it)
-                        },
-                        shareItem = {
-                            weakSelf.get()?.shareItem(it)
-                        },
-                        saveFavorites = {
-                            weakSelf.get()?.saveFavorites()
-                        },
-                        modifier = Modifier.weight(1.0f)
-                    )
-                }
-            }
-        }
-        ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
-            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
-            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
-            return@setOnApplyWindowInsetsListener builder.build()
-        }
-        drawer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-
+//        val bottomToolbar = findViewById<ComposeView>(R.id.toolbar_container)
+//        bottomToolbar.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+//        bottomToolbar.setContent {
+//            Mdc3Theme {
+//                val viewModel: UtilityViewModel = hiltViewModel()
+//                viewModel.toolbarActions?.let { actions ->
+//                    Toolbar(actions,
+//                        onInstantActionSelected = {
+//                            weakSelf.get()?.onInstantActionSelected(it)
+//                        },
+//                        onContinuousActionDown = {
+//                            weakSelf.get()?.onContinuousActionDown(it)
+//                        },
+//                        onContinuousActionUp = {
+//                            weakSelf.get()?.onContinuousActionUp(it)
+//                        },
+//                        onCustomAction = {
+//                            weakSelf.get()?.onCustomAction(it)
+//                        },
+//                        onBottomControlHide = {
+//                            weakSelf.get()?.onBottomControlHide()
+//                        }
+//                    )
+//                }
+//            }
+//        }
+//
+//        drawer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+//        drawer.setContent {
+//            Mdc3Theme {
+//                val viewModel: UtilityViewModel = hiltViewModel()
+//                viewModel.additionalDrawerActions?.let {
+//                    Drawer(additionalActions = it) { action ->
+//                        weakSelf.get()?.onToolbarActionSelected(action)
+//                    }
+//                }
+//            }
+//        }
+//
+//        val loadingView = findViewById<ComposeView>(R.id.loading_fragment_container)
+//        loadingView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+//        loadingView.setContent {
+//            Mdc3Theme {
+//                App()
+//            }
+//        }
+//
+//        val bottomSheetContainer = findViewById<ComposeView>(R.id.bottom_sheet)
+//        bottomSheetContainer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+//        bottomSheetContainer.setContent {
+//            val scope = rememberCoroutineScope()
+//            Mdc3Theme {
+//                Column(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(topStart = dimensionResource(R.dimen.sheet_background_corner_radius), topEnd = dimensionResource(R.dimen.sheet_background_corner_radius)))) {
+//                    Box(modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.sheet_handle_container_height))) {
+//                        Icon(painter = painterResource(R.drawable.ic_close), contentDescription = CelestiaString("Close", ""), tint = colorResource(com.google.android.material.R.color.material_on_background_emphasis_medium), modifier = Modifier.fillMaxHeight().aspectRatio(1.0f).clickable {
+//                            scope.launch {
+//                                weakSelf.get()?.hideBottomSheet(true)
+//                            }
+//                        }.padding(dimensionResource(R.dimen.sheet_close_button_padding)))
+//                        Box(modifier = Modifier.align(Alignment.Center).size(width = dimensionResource(R.dimen.sheet_handle_width), height = dimensionResource(R.dimen.sheet_handle_height)).background(color = colorResource(com.google.android.material.R.color.material_on_background_disabled), shape = RoundedCornerShape(size = dimensionResource(R.dimen.sheet_handle_corner_radius))))
+//                    }
+//
+//                    UtilityScreen(
+//                        onRefreshRateChanged = {
+//                            weakSelf.get()?.onRefreshRateChanged(it)
+//                        },
+//                        onAboutURLSelected = { url, localized ->
+//                            weakSelf.get()?.onAboutURLSelected(url, localized)
+//                        },
+//                        requestOpenSubscriptionManagement = {
+//                            weakSelf.get()?.requestOpenSubscriptionManagement()
+//                        },
+//                        onOpenAddonDownload = {
+//                            weakSelf.get()?.onOpenAddonDownload()
+//                        },
+//                        onShareAddon = { name, id ->
+//                            weakSelf.get()?.onShareAddon(name, id)
+//                        },
+//                        onExternalWebLinkClicked = {
+//                            weakSelf.get()?.onExternalWebLinkClicked(it)
+//                        },
+//                        onShareURL = { title, url ->
+//                            weakSelf.get()?.onShareURL(title, url)
+//                        },
+//                        onOpenSubscriptionPage = {
+//                            weakSelf.get()?.onOpenSubscriptionPage()
+//                        },
+//                        onReceivedACK = {
+//                            weakSelf.get()?.onReceivedACK(it)
+//                        },
+//                        onObserverModeLearnMoreClicked = {
+//                            weakSelf.get()?.onObserverModeLearnMoreClicked(it)
+//                        },
+//                        onInfoLinkMetaDataClicked = {
+//                            weakSelf.get()?.onInfoLinkMetaDataClicked(it)
+//                        },
+//                        onInfoActionSelected = { action, item ->
+//                            weakSelf.get()?.onInfoActionSelected(action, item)
+//                        },
+//                        onGoToObject = { goToData, selection ->
+//                            weakSelf.get()?.onGoToObject(goToData, selection)
+//                        },
+//                        onBrowserAddonCategoryRequested = {
+//                            weakSelf.get()?.onBrowserAddonCategoryRequested(it)
+//                        },
+//                        shareItem = {
+//                            weakSelf.get()?.shareItem(it)
+//                        },
+//                        saveFavorites = {
+//                            weakSelf.get()?.saveFavorites()
+//                        },
+//                        modifier = Modifier.weight(1.0f)
+//                    )
+//                }
+//            }
+//        }
+//        ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
+//            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+//            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
+//            return@setOnApplyWindowInsetsListener builder.build()
+//        }
+//        drawer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//        bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
             celestiaLoadingFailed()
             return
         }
-
-        if (savedState != null) {
-            val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
-            val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
-            initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
-
-            findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-            bottomToolbar.visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-
-            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
-            bottomSheetContainer.visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
-        }
-
+//
+//        if (savedState != null) {
+//            val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
+//            val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
+//            initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
+//
+//            findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+//            bottomToolbar.visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+//
+//            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+//            bottomSheetContainer.visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+//        }
+//
         when (currentState) {
             AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
                 loadExternalConfig()
@@ -429,9 +447,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).isVisible)
-        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).isVisible)
-        outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
+//        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).isVisible)
+//        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).isVisible)
+//        outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
         super.onSaveInstanceState(outState)
     }
 
@@ -455,6 +473,115 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
+    }
+
+    @Composable
+    private fun App() {
+        val viewModel: UtilityViewModel = hiltViewModel()
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (viewModel.isConfigLoaded && !viewModel.isCelestiaLoadingFailed) {
+                Container()
+            }
+            viewModel.loadingText?.let {
+                LoadingView(it)
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun Container() {
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val viewModel: UtilityViewModel = hiltViewModel()
+        val weakSelf = WeakReference(this)
+        ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
+            viewModel.additionalDrawerActions?.let {
+                ModalDrawerSheet {
+                    Drawer(additionalActions = it) { action ->
+                        weakSelf.get()?.onToolbarActionSelected(action)
+                    }
+                }
+            }
+        }) {
+            AndroidFragment<CelestiaFragment>(arguments = Bundle().apply {
+                putString(CelestiaFragment.ARG_DATA_DIR, celestiaDataDirPath)
+                putString(CelestiaFragment.ARG_CFG_FILE, celestiaConfigFilePath)
+                putBoolean(CelestiaFragment.ARG_MULTI_SAMPLE, enableMultisample)
+                putBoolean(CelestiaFragment.ARG_FULL_RESOLUTION, enableHiDPI)
+                putString(CelestiaFragment.ARG_LANG_OVERRIDE, language)
+                putInt(CelestiaFragment.ARG_FRAME_RATE_OPTION, customFrameRateOption)
+                putStringArrayList(CelestiaFragment.ARG_ADDON_DIR, ArrayList(addonPaths))
+            })
+        }
+
+        val sheetState = rememberModalBottomSheetState()
+        val scope = rememberCoroutineScope()
+        if (utilityViewModel.current != Utility.Empty) {
+            ModalBottomSheet(onDismissRequest = { utilityViewModel.context = null; utilityViewModel.current = Utility.Empty }, sheetState = sheetState) {
+                UtilityScreen(
+                    onRefreshRateChanged = {
+                        weakSelf.get()?.onRefreshRateChanged(it)
+                    },
+                    onAboutURLSelected = { url, localized ->
+                        weakSelf.get()?.onAboutURLSelected(url, localized)
+                    },
+                    requestOpenSubscriptionManagement = {
+                        weakSelf.get()?.requestOpenSubscriptionManagement()
+                    },
+                    onOpenAddonDownload = {
+                        weakSelf.get()?.onOpenAddonDownload()
+                    },
+                    onShareAddon = { name, id ->
+                        weakSelf.get()?.onShareAddon(name, id)
+                    },
+                    onExternalWebLinkClicked = {
+                        weakSelf.get()?.onExternalWebLinkClicked(it)
+                    },
+                    onShareURL = { title, url ->
+                        weakSelf.get()?.onShareURL(title, url)
+                    },
+                    onOpenSubscriptionPage = {
+                        weakSelf.get()?.onOpenSubscriptionPage()
+                    },
+                    onReceivedACK = {
+                        weakSelf.get()?.onReceivedACK(it)
+                    },
+                    onObserverModeLearnMoreClicked = {
+                        weakSelf.get()?.onObserverModeLearnMoreClicked(it)
+                    },
+                    onInfoLinkMetaDataClicked = {
+                        weakSelf.get()?.onInfoLinkMetaDataClicked(it)
+                    },
+                    onInfoActionSelected = { action, item ->
+                        weakSelf.get()?.onInfoActionSelected(action, item)
+                    },
+                    onGoToObject = { goToData, selection ->
+                        weakSelf.get()?.onGoToObject(goToData, selection)
+                    },
+                    onBrowserAddonCategoryRequested = {
+                        weakSelf.get()?.onBrowserAddonCategoryRequested(it)
+                    },
+                    shareItem = {
+                        weakSelf.get()?.shareItem(it)
+                    },
+                    saveFavorites = {
+                        weakSelf.get()?.saveFavorites()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                // Sheet content
+//                Button(onClick = {
+//                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+//                        if (!sheetState.isVisible) {
+//                            utilityViewModel.context = null
+//                            utilityViewModel.current = Utility.Empty
+//                        }
+//                    }
+//                }) {
+//                    Text("Hide bottom sheet")
+//                }
+            }
+        }
     }
 
     private fun showPrivacyAlertIfNeeded() {
@@ -495,23 +622,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val safeInsetStart = if (isRTL) safeInsets.right else safeInsets.left
         val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
 
-        val toolbarOverlay = findViewById<ViewGroup>(R.id.toolbar_overlay)
-        val toolbarSafeAreaParams = findViewById<FrameLayout>(R.id.toolbar_safe_area).layoutParams as ConstraintLayout.LayoutParams
-        toolbarSafeAreaParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
-        toolbarSafeAreaParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
-        toolbarSafeAreaParams.topMargin = safeInsets.top
-        toolbarSafeAreaParams.bottomMargin = safeInsets.bottom
-        toolbarOverlay.requestLayout()
-
-        val drawerParams = findViewById<ComposeView>(R.id.drawer).layoutParams
-        drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
-
-        val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
-        bottomSheetContainer.edgeInsets = safeInsets
-        bottomSheetContainer.useLandscapeLayout = hasRegularHorizontalSpace
-        bottomSheetContainer.requestLayout()
-
-        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)
+//        val toolbarOverlay = findViewById<ViewGroup>(R.id.toolbar_overlay)
+//        val toolbarSafeAreaParams = findViewById<FrameLayout>(R.id.toolbar_safe_area).layoutParams as ConstraintLayout.LayoutParams
+//        toolbarSafeAreaParams.leftMargin = if (isRTL) safeInsetEnd else safeInsetStart
+//        toolbarSafeAreaParams.rightMargin = if (isRTL) safeInsetStart else safeInsetEnd
+//        toolbarSafeAreaParams.topMargin = safeInsets.top
+//        toolbarSafeAreaParams.bottomMargin = safeInsets.bottom
+//        toolbarOverlay.requestLayout()
+//
+//        val drawerParams = findViewById<ComposeView>(R.id.drawer).layoutParams
+//        drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
+//
+//        val bottomSheetContainer = findViewById<SheetLayout>(R.id.bottom_sheet_overlay)
+//        bottomSheetContainer.edgeInsets = safeInsets
+//        bottomSheetContainer.useLandscapeLayout = hasRegularHorizontalSpace
+//        bottomSheetContainer.requestLayout()
+//
+//        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)
     }
 
     private fun loadExternalConfig() {
@@ -543,11 +670,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun hideSystemUI() {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window, findViewById(R.id.main_container)).let { controller ->
-            controller.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
+//        WindowInsetsControllerCompat(window, findViewById(R.id.main_container)).let { controller ->
+//            controller.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+//            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+//        }
     }
 
     override fun celestiaLoadingProgress(status: String) {
@@ -583,7 +710,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun celestiaLoadingFinished() {
-        findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+//        findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
         utilityViewModel.loadingText = null
         utilityViewModel.additionalDrawerActions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
         val weakSelf = WeakReference(this)
@@ -646,9 +773,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun removeCelestiaFragment() {
-        supportFragmentManager.findFragmentById(R.id.celestia_fragment_container)?.let {
-            supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
-        }
+//        supportFragmentManager.findFragmentById(R.id.celestia_fragment_container)?.let {
+//            supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
+//        }
     }
 
     private fun copyAssetIfNeeded() {
@@ -1070,23 +1197,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun loadConfigSuccess() {
-        val customFrameRateOption =
-            appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull()
-                ?: Renderer.FRAME_60FPS
         // Add gl fragment
-        val celestiaFragment = CelestiaFragment.newInstance(
-            celestiaDataDirPath,
-            celestiaConfigFilePath,
-            addonPaths,
-            enableMultisample,
-            enableHiDPI,
-            customFrameRateOption,
-            language
-        )
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.celestia_fragment_container, celestiaFragment)
-            .commitAllowingStateLoss()
+//        val celestiaFragment = CelestiaFragment.newInstance(
+//            celestiaDataDirPath,
+//            celestiaConfigFilePath,
+//            addonPaths,
+//            enableMultisample,
+//            enableHiDPI,
+//            customFrameRateOption,
+//            language
+//        )
+//        supportFragmentManager
+//            .beginTransaction()
+//            .add(R.id.celestia_fragment_container, celestiaFragment)
+//            .commitAllowingStateLoss()
+        utilityViewModel.isConfigLoaded = true
     }
 
     private fun loadConfigFailed(error: Throwable) {
@@ -1420,8 +1545,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private suspend fun hideOverlay(animated: Boolean) {
-        hideMenu(animated)
-        hideBottomSheet(animated)
+//        hideMenu(animated)
+//        hideBottomSheet(animated)
     }
 
     private suspend fun hideMenu(animated: Boolean): Unit = suspendCoroutine { cont ->
@@ -1450,30 +1575,30 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private suspend fun hideToolbar(animated: Boolean) {
-        hideViewAlpha(animated, R.id.toolbar_container)
-        findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
+//        hideViewAlpha(animated, R.id.toolbar_container)
+//        findViewById<View>(R.id.toolbar_overlay).visibility = View.INVISIBLE
         utilityViewModel.toolbarActions = null
     }
 
     private suspend fun hideBottomSheet(animated: Boolean) {
-        hideView(animated, R.id.bottom_sheet, false)
-        findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
-        utilityViewModel.context = null
-        utilityViewModel.current = Utility.Empty
+//        hideView(animated, R.id.bottom_sheet, false)
+//        findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
+//        utilityViewModel.context = null
+//        utilityViewModel.current = Utility.Empty
     }
 
     private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean) {
-        val view = findViewById<View>(viewID)
-        view.visibility = View.VISIBLE
-        val parent = view.parent as? View ?: return
-
-        val destination: Float = if (horizontal) {
-            val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-            (if (ltr) (parent.width - view.left) else -(view.right)).toFloat()
-        } else {
-            (parent.height - view.top).toFloat()
-        }
-        showView(animated, view, ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", destination, 0f))
+//        val view = findViewById<View>(viewID)
+//        view.visibility = View.VISIBLE
+//        val parent = view.parent as? View ?: return
+//
+//        val destination: Float = if (horizontal) {
+//            val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
+//            (if (ltr) (parent.width - view.left) else -(view.right)).toFloat()
+//        } else {
+//            (parent.height - view.top).toFloat()
+//        }
+//        showView(animated, view, ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", destination, 0f))
     }
 
     private suspend fun showViewAlpha(animated: Boolean, viewID: Int) {
@@ -1890,10 +2015,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private suspend fun showBottomSheetUtilityDirect(utility: Utility, context: Context?) {
-        findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
+//        findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
         utilityViewModel.context = context
         utilityViewModel.current = utility
-        showView(true, R.id.bottom_sheet, false)
+//        showView(true, R.id.bottom_sheet, false)
     }
 
     private suspend fun showToolbar(actions: List<BottomControlAction>) {

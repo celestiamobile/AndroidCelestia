@@ -94,7 +94,7 @@ fun UtilityScreen(
             }
     }
 
-    NavHost(navController = navController, startDestination = Utility.Empty, modifier = modifier) {
+    NavHost(navController = navController, startDestination = viewModel.current, modifier = modifier) {
         composable<Utility.Empty> {}
         composable<Utility.AddonManagement> {
             AddonManagementScreen(onOpenAddonDownload = onOpenAddonDownload, onShareAddon = onShareAddon, onExternalWebLinkClicked = onExternalWebLinkClicked, onShareURL = onShareURL, onOpenSubscriptionPage = onOpenSubscriptionPage, onReceivedACK = onReceivedACK)
