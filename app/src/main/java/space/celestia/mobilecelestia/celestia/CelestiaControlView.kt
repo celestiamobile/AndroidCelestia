@@ -1,7 +1,7 @@
 /*
  * CelestiaControlView.kt
  *
- * Copyright (C) 2001-2020, Celestia Development Team
+ * Copyright (C) 2025-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,14 +11,35 @@
 
 package space.celestia.mobilecelestia.celestia
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.util.AttributeSet
-import android.view.MotionEvent
-import android.widget.LinearLayout
-import androidx.core.content.ContextCompat
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.StandardImageButton
+import space.celestia.mobilecelestia.celestia.viewmodel.CelestiaViewModel
 
 enum class CelestiaControlAction {
     ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Search, Hide, Show, Go
@@ -26,7 +47,8 @@ enum class CelestiaControlAction {
 
 sealed class CelestiaControlButton {
     data class Toggle(
-        val image: Int,
+        val offImage: Int,
+        val onImage: Int,
         val offAction: CelestiaControlAction,
         val onAction: CelestiaControlAction,
         val contentDescription: String,
@@ -46,75 +68,84 @@ sealed class CelestiaControlButton {
     ) : CelestiaControlButton()
 }
 
-class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs)  {
-    var buttons: List<CelestiaControlButton> = listOf()
-    set(value) {
-        field = value
-        setUp()
+@Composable
+private fun ControlButton(imageId: Int, contentDescription: String?, onActionDown: () -> Unit = {}, onActionUp: () -> Unit = {}, onAction: () -> Unit = {}) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    Box(modifier = Modifier.size(dimensionResource(R.dimen.control_view_icon_size))
+        .pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                onAction()
+            }, onPress = { offset ->
+                onActionDown()
+                val press = PressInteraction.Press(offset)
+                interactionSource.emit(press)
+                tryAwaitRelease()
+                onActionUp()
+                interactionSource.emit(PressInteraction.Release(press))
+            })
+        }, contentAlignment = Alignment.Center
+    ) {
+        Icon(painterResource(imageId), contentDescription = contentDescription, tint = colorResource(com.google.android.material.R.color.material_on_background_emphasis_medium), modifier = Modifier.alpha(if (isPressed) 0.38f else 1.0f).size(dimensionResource(R.dimen.bottom_control_view_item_dimension)))
     }
+}
 
-    init {
-        setUp()
-    }
+@Composable
+private fun ContinuousButton(imageId: Int, contentDescription: String?, onActionDown: () -> Unit, onActionUp: () -> Unit) {
+    ControlButton(imageId, contentDescription, onActionDown = onActionDown, onActionUp = onActionUp)
+}
 
-    @SuppressLint("ClickableViewAccessibility")
-    fun setUp() {
-        removeAllViews()
+@Composable
+private fun InstantButton(imageId: Int, contentDescription: String?, onAction: () -> Unit) {
+    ControlButton(imageId, contentDescription, onAction = onAction)
+}
 
-        orientation = VERTICAL
-
-        for (index in buttons.indices) {
-            val item = buttons[index]
-            val button = StandardImageButton(context)
-            button.setColorFilter(ContextCompat.getColor(context, com.google.android.material.R.color.material_on_background_emphasis_medium))
-
-            val size = resources.getDimensionPixelSize(R.dimen.control_view_icon_size)
-            val params = LayoutParams(size, size)
-            if (index != 0) {
-                params.topMargin = resources.getDimensionPixelOffset(R.dimen.control_view_icon_spacing)
-            }
-            button.layoutParams = params
-            when (item) {
-                is CelestiaControlButton.Tap -> {
-                    button.setImageResource(item.image)
-                    button.contentDescription = item.contentDescription
-                    button.setOnClickListener { listener?.didTapAction(item.action) }
-                }
+@Composable
+fun CelestiaControlView(
+    didTapAction: (CelestiaControlAction) -> Unit,
+    didStartPressingAction: (CelestiaControlAction) -> Unit,
+    didEndPressingAction:(CelestiaControlAction) -> Unit,
+    didToggleToMode:(CelestiaControlAction) -> Unit
+) {
+    val viewModel: CelestiaViewModel = hiltViewModel()
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.control_view_icon_spacing)),
+        modifier = Modifier.background(
+            color = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(size = dimensionResource(R.dimen.bottom_control_container_corner_radius))
+        ).padding(dimensionResource(R.dimen.control_view_margin))
+    ) {
+        items(viewModel.controlButtons) {
+            when (it) {
                 is CelestiaControlButton.Press -> {
-                    button.setImageResource(item.image)
-                    button.contentDescription = item.contentDescription
-                    button.setOnTouchListener { view, event ->
-                        when (event.actionMasked) {
-                            MotionEvent.ACTION_DOWN -> {
-                                listener?.didStartPressingAction(item.action)
-                            }
-                            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                                listener?.didEndPressingAction(item.action)
-                            }
-                        }
-                        view.onTouchEvent(event)
+                    ContinuousButton(
+                        imageId = it.image,
+                        contentDescription = it.contentDescription,
+                        onActionUp = {
+                            didEndPressingAction(it.action)
+                        },
+                        onActionDown = {
+                            didStartPressingAction(it.action)
+                        })
+                }
+
+                is CelestiaControlButton.Tap -> {
+                    InstantButton(imageId = it.image, contentDescription = it.contentDescription) {
+                        didTapAction(it.action)
                     }
                 }
+
                 is CelestiaControlButton.Toggle -> {
-                    button.isSelected = item.currentState
-                    button.contentDescription = item.contentDescription
-                    button.setImageResource(item.image)
-                    button.setOnClickListener { btn ->
-                        btn.isSelected = !btn.isSelected
-                        listener?.didToggleToMode(if (btn.isSelected) item.onAction else item.offAction)
+                    var isSelected by remember { mutableStateOf(it.currentState) }
+                    InstantButton(
+                        imageId = if (isSelected) it.onImage else it.offImage,
+                        contentDescription = it.contentDescription
+                    ) {
+                        isSelected = !isSelected
+                        didToggleToMode(if (isSelected) it.onAction else it.offAction)
                     }
                 }
             }
-            addView(button)
         }
-    }
-
-    var listener: Listener? = null
-
-    interface Listener {
-        fun didTapAction(action: CelestiaControlAction)
-        fun didStartPressingAction(action: CelestiaControlAction)
-        fun didEndPressingAction(action: CelestiaControlAction)
-        fun didToggleToMode(action: CelestiaControlAction)
     }
 }

@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.compose
 
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.ImeAction
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 @Composable
@@ -35,7 +37,14 @@ fun TextInputDialog(onDismissRequest: () -> Unit, confirmHandler: () -> Unit, ti
     }, title = {
         Text(text = title)
     }, text = {
-        TextField(value = text ?: "", placeholder = if (placeholder != null) { { Text(text = placeholder) } } else null, onValueChange = textChange)
+        TextField(
+            value = text ?: "",
+            placeholder = if (placeholder != null) { { Text(text = placeholder) } } else null,
+            onValueChange = textChange,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            )
+        )
     })
 }
 
