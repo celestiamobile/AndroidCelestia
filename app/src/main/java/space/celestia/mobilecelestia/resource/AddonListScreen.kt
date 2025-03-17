@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -82,7 +84,7 @@ fun AddonListScreen(
                     .background(color = MaterialTheme.colorScheme.background)
             ) {
                 items(installedAddons) {
-                    TextRow(primaryText = it.name, accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable {
+                    TextRow(primaryText = it.name, accessoryIcon = Icons.AutoMirrored.Filled.KeyboardArrowRight, modifier = Modifier.clickable {
                         openInstalledAddon(it)
                     })
                 }
