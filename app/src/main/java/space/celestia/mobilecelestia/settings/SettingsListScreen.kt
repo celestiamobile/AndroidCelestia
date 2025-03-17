@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -40,7 +42,7 @@ fun SettingsListScreen(paddingValues: PaddingValues, sections: List<SettingsSect
             items(section.items) { item ->
                 TextRow(primaryText = item.name, modifier = Modifier.clickable {
                     itemHandler(item)
-                })
+                }, accessoryIcon = Icons.AutoMirrored.Filled.KeyboardArrowRight)
             }
             item {
                 if (index == sections.size - 1) {
