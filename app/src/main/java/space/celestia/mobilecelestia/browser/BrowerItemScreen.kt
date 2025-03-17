@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -72,7 +75,7 @@ fun BrowserItemScreen(paddingValues: PaddingValues, path: String, itemSelected: 
             }
 
             items(item.children) { item ->
-                TextRow(primaryText = item.name, accessoryResource = if (item.children.isNotEmpty() || item.`object` == null) R.drawable.accessory_full_disclosure else 0, modifier = Modifier.clickable {
+                TextRow(primaryText = item.name, accessoryIcon = if (item.children.isNotEmpty() || item.`object` == null) Icons.AutoMirrored.Filled.KeyboardArrowRight else null, modifier = Modifier.clickable {
                     itemSelected(BrowserUIItem(item, item.`object` != null && item.children.isEmpty()))
                 })
             }

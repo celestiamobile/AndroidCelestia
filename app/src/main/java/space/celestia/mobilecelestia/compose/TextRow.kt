@@ -1,23 +1,26 @@
 package space.celestia.mobilecelestia.compose
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import space.celestia.mobilecelestia.R
 
 @Composable
-fun TextRow(primaryText: String, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, @DrawableRes accessoryResource: Int = 0, accessoryContentDescription: String = "", horizontalPadding: Dp = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)) {
+fun TextRow(primaryText: String, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, accessoryIcon: ImageVector? = null, accessoryContentDescription: String = "", horizontalPadding: Dp = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(
         horizontal = horizontalPadding,
         vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
@@ -33,10 +36,9 @@ fun TextRow(primaryText: String, modifier: Modifier = Modifier, primaryTextColor
                 )
             }
         }
-        if (accessoryResource != 0) {
+        accessoryIcon?.let {
             Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.list_item_gap_horizontal)))
-            Image(painter = painterResource(id = accessoryResource), contentDescription = accessoryContentDescription, colorFilter = ColorFilter.tint(
-                colorResource(id = com.google.android.material.R.color.material_on_background_disabled)))
+            Icon(imageVector = it, contentDescription = accessoryContentDescription, tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled))
         }
     }
 }
