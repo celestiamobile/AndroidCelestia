@@ -22,10 +22,13 @@ import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -38,6 +41,8 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.celestiafoundation.utils.FilePaths
+import space.celestia.mobilecelestia.celestia.viewmodel.CelestiaViewModel
+import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.purchase.PurchaseManager
@@ -53,7 +58,7 @@ import kotlin.collections.ArrayList
 import kotlin.concurrent.fixedRateTimer
 
 @AndroidEntryPoint
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler {
     private var activity: Activity? = null
 
     @Inject
@@ -75,8 +80,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     // MARK: GL View
     private lateinit var glView: CelestiaView
     private lateinit var viewInteraction: CelestiaInteraction
-
-    private var currentControlViewID = R.id.active_control_view_container
 
     // Parameters
     private var pathToLoad: String? = null
@@ -109,7 +112,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private var loadSuccess = false
     private var haveSurface = false
     private var interactionMode = CelestiaInteraction.InteractionMode.Object
-    private lateinit var controlView: CelestiaControlView
 
     private var isContextMenuEnabled = true
     private var sensitivity = 10.0f
@@ -125,6 +127,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     private var listener: Listener? = null
+
+    private val viewModel: CelestiaViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -175,8 +179,27 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         appStatusReporter.register(this)
 
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
-        controlView = view.findViewById(R.id.control_view)
-        controlView.listener = this
+        val weakSelf = WeakReference(this)
+        val controlView = view.findViewById<ComposeView>(R.id.control_view_container)
+        controlView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        controlView.setContent {
+            Mdc3Theme {
+                CelestiaControlView(
+                    didTapAction = {
+                        weakSelf.get()?.didTapAction(it)
+                    },
+                    didStartPressingAction = {
+                        weakSelf.get()?.didStartPressingAction(it)
+                    },
+                    didEndPressingAction = {
+                        weakSelf.get()?.didEndPressingAction(it)
+                    },
+                    didToggleToMode = {
+                        weakSelf.get()?.didToggleToMode(it)
+                    }
+                )
+            }
+        }
 
         if (!hasSetRenderer) {
             appCore.setRenderer(renderer)
@@ -263,7 +286,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
         val safeInsetEnd = if (ltr) newInsets.right else newInsets.left
 
-        val controlView = thisView.findViewById<FrameLayout>(currentControlViewID) ?: return
+        val controlView = thisView.findViewById<ComposeView>(R.id.control_view_container) ?: return
         val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
         if (params != null) {
             params.marginEnd = resources.getDimensionPixelOffset(R.dimen.control_view_container_margin_end) + safeInsetEnd
@@ -403,7 +426,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private fun setUpInteractions() {
         // Set up control buttons
         val buttonMap = hashMapOf(
-            ToolbarAction.Mode to CelestiaControlButton.Toggle(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), interactionMode == CelestiaInteraction.InteractionMode.Camera),
+            ToolbarAction.Mode to CelestiaControlButton.Toggle(R.drawable.control_mode_object, R.drawable.control_mode_camera, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), interactionMode == CelestiaInteraction.InteractionMode.Camera),
             ToolbarAction.ZoomIn to CelestiaControlButton.Press(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
             ToolbarAction.ZoomOut to CelestiaControlButton.Press(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
             ToolbarAction.Info to CelestiaControlButton.Tap(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
@@ -416,7 +439,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val actions = ArrayList(if (hasCelestiaPlus) appSettings.toolbarItems ?: ToolbarAction.defaultItems else ToolbarAction.defaultItems)
         if (!actions.contains(ToolbarAction.Menu))
             actions.add(ToolbarAction.Menu)
-        controlView.buttons = actions.mapNotNull { buttonMap[it] }
+        viewModel.controlButtons = actions.mapNotNull { buttonMap[it] }
 
         glView.isReady = true
         if (isContextMenuEnabled)
@@ -586,7 +609,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     // Actions
-    override fun didTapAction(action: CelestiaControlAction) {
+    private fun didTapAction(action: CelestiaControlAction) {
         when (action) {
             CelestiaControlAction.ShowMenu -> {
                 listener?.celestiaFragmentDidRequestActionMenu()
@@ -611,7 +634,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     private fun hideControlView() {
-        val controlView = view?.findViewById<FrameLayout>(R.id.active_control_view_container) ?: return
+        val controlView = view?.findViewById<ComposeView>(R.id.control_view_container) ?: return
         if (hideAnimator != null) return
         showAnimator?.let {
             it.cancel()
@@ -629,7 +652,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     private fun showControlView() {
-        val controlView = view?.findViewById<FrameLayout>(R.id.active_control_view_container) ?: return
+        val controlView = view?.findViewById<ComposeView>(R.id.control_view_container) ?: return
         if (showAnimator != null) return
         hideAnimator?.let {
             it.cancel()
@@ -658,7 +681,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    override fun didToggleToMode(action: CelestiaControlAction) {
+    private fun didToggleToMode(action: CelestiaControlAction) {
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
                 interactionMode = CelestiaInteraction.InteractionMode.Camera
@@ -674,7 +697,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    override fun didStartPressingAction(action: CelestiaControlAction) {
+    private fun didStartPressingAction(action: CelestiaControlAction) {
         when (action) {
             CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
             CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
@@ -689,7 +712,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    override fun didEndPressingAction(action: CelestiaControlAction) {
+    private fun didEndPressingAction(action: CelestiaControlAction) {
         zoomTimer?.cancel()
         zoomTimer = null
         viewInteraction.zoomMode = null
