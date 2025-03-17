@@ -24,11 +24,27 @@ enum class CelestiaControlAction {
     ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Search, Hide, Show, Go
 }
 
-interface CelestiaControlButton
+sealed class CelestiaControlButton {
+    data class Toggle(
+        val image: Int,
+        val offAction: CelestiaControlAction,
+        val onAction: CelestiaControlAction,
+        val contentDescription: String,
+        val currentState: Boolean
+    ) : CelestiaControlButton()
 
-class CelestiaToggleButton(val image: Int, val offAction: CelestiaControlAction, val onAction: CelestiaControlAction, val contentDescription: String, val currentState: Boolean): CelestiaControlButton
-class CelestiaTapButton(val image: Int, val action: CelestiaControlAction, val contentDescription: String): CelestiaControlButton
-class CelestiaPressButton(val image: Int, val action: CelestiaControlAction, val contentDescription: String): CelestiaControlButton
+    data class Tap(
+        val image: Int,
+        val action: CelestiaControlAction,
+        val contentDescription: String
+    ) : CelestiaControlButton()
+
+    data class Press(
+        val image: Int,
+        val action: CelestiaControlAction,
+        val contentDescription: String
+    ) : CelestiaControlButton()
+}
 
 class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs)  {
     var buttons: List<CelestiaControlButton> = listOf()
@@ -59,12 +75,12 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
             }
             button.layoutParams = params
             when (item) {
-                is CelestiaTapButton -> {
+                is CelestiaControlButton.Tap -> {
                     button.setImageResource(item.image)
                     button.contentDescription = item.contentDescription
                     button.setOnClickListener { listener?.didTapAction(item.action) }
                 }
-                is CelestiaPressButton -> {
+                is CelestiaControlButton.Press -> {
                     button.setImageResource(item.image)
                     button.contentDescription = item.contentDescription
                     button.setOnTouchListener { view, event ->
@@ -79,7 +95,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
                         view.onTouchEvent(event)
                     }
                 }
-                is CelestiaToggleButton -> {
+                is CelestiaControlButton.Toggle -> {
                     button.isSelected = item.currentState
                     button.contentDescription = item.contentDescription
                     button.setImageResource(item.image)
@@ -88,7 +104,6 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
                         listener?.didToggleToMode(if (btn.isSelected) item.onAction else item.offAction)
                     }
                 }
-                else -> {}
             }
             addView(button)
         }

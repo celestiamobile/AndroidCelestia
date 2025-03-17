@@ -403,14 +403,14 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     private fun setUpInteractions() {
         // Set up control buttons
         val buttonMap = hashMapOf(
-            ToolbarSettingFragment.ToolbarAction.Mode to CelestiaToggleButton(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), interactionMode == CelestiaInteraction.InteractionMode.Camera),
-            ToolbarSettingFragment.ToolbarAction.ZoomIn to CelestiaPressButton(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
-            ToolbarSettingFragment.ToolbarAction.ZoomOut to CelestiaPressButton(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
-            ToolbarSettingFragment.ToolbarAction.Info to CelestiaTapButton(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
-            ToolbarSettingFragment.ToolbarAction.Search to CelestiaTapButton(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
-            ToolbarSettingFragment.ToolbarAction.Menu to CelestiaTapButton(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "Menu button")),
-            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaTapButton(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
-            ToolbarSettingFragment.ToolbarAction.Go to CelestiaTapButton(R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", "Go to an object"))
+            ToolbarSettingFragment.ToolbarAction.Mode to CelestiaControlButton.Toggle(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), interactionMode == CelestiaInteraction.InteractionMode.Camera),
+            ToolbarSettingFragment.ToolbarAction.ZoomIn to CelestiaControlButton.Press(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
+            ToolbarSettingFragment.ToolbarAction.ZoomOut to CelestiaControlButton.Press(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
+            ToolbarSettingFragment.ToolbarAction.Info to CelestiaControlButton.Tap(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
+            ToolbarSettingFragment.ToolbarAction.Search to CelestiaControlButton.Tap(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
+            ToolbarSettingFragment.ToolbarAction.Menu to CelestiaControlButton.Tap(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "Menu button")),
+            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaControlButton.Tap(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
+            ToolbarSettingFragment.ToolbarAction.Go to CelestiaControlButton.Tap(R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", "Go to an object"))
         )
         val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
         val actions = ArrayList(if (hasCelestiaPlus) appSettings.toolbarItems ?: ToolbarSettingFragment.ToolbarAction.defaultItems else ToolbarSettingFragment.ToolbarAction.defaultItems)
