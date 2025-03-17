@@ -90,7 +90,7 @@ class SettingsItemFragment : NavigationFragment.SubFragment() {
                 items(section.items) { item ->
                     TextRow(primaryText = item.name, modifier = Modifier.clickable {
                         listener?.onMainSettingItemSelected(item)
-                    })
+                    }, accessoryResource = R.drawable.accessory_full_disclosure)
                 }
                 item {
                     val footer = section.footer
