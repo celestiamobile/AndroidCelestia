@@ -5,7 +5,7 @@ import androidx.annotation.Keep
 import com.google.gson.Gson
 import java.lang.ref.WeakReference
 
-class CelestiaJavascriptInterface(handler: MessageHandler) {
+class CelestiaJavascriptInterface(private val handler: MessageHandler) {
     interface MessageHandler {
         fun runScript(type: String, content: String, scriptName: String?, scriptLocation: String?)
         fun shareURL(title: String, url: String)
@@ -100,11 +100,9 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
-    private val handler = WeakReference(handler)
-
     @JavascriptInterface
     fun sendMessage(message: String) {
-        val messageHandler = handler.get() ?: return
+        val messageHandler = this.handler
         try {
             val payload = Gson().fromJson(message, MessagePayload::class.java)
             if (payload.minScriptVersion > supportedScriptVersion) return

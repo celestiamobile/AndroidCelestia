@@ -55,10 +55,6 @@
 
     <dimen name="list_item_slider_margin_horizontal">4dp</dimen>
 
-    <dimen name="dialog_text_input_view_padding_horizontal">16dp</dimen>
-    <dimen name="dialog_text_input_view_padding_vertical">12dp</dimen>
-    <dimen name="dialog_text_input_text_padding_horizontal">4dp</dimen>
-
     <dimen name="bottom_control_view_item_dimension">52dp</dimen>
     <dimen name="bottom_control_view_margin_horizontal">4dp</dimen>
     <dimen name="bottom_control_view_margin_vertical">2dp</dimen>
@@ -82,15 +78,15 @@
     <dimen name="back_button_padding">6dp</dimen>
 
     <dimen name="link_card_corner_radius">8dp</dimen>
+    <dimen name="link_text_content_vertical_padding">8dp</dimen>
+    <dimen name="link_text_content_horizontal_padding">12dp</dimen>
+    <dimen name="link_text_content_spacing">6dp</dimen>
+    <dimen name="link_fav_icon_padding">8dp</dimen>
 
     <dimen name="loading_gap_vertical">24dp</dimen>
     <dimen name="app_icon_dimension">128dp</dimen>
     <dimen name="app_icon_padding">14dp</dimen>
     <dimen name="app_icon_rounded_corner">30dp</dimen>
-
-    <dimen name="bottom_navigation_view_min_height">64dp</dimen>
-    <dimen name="bottom_navigation_view_item_padding_top">8dp</dimen>
-    <dimen name="bottom_navigation_view_item_padding_bottom">10dp</dimen>
 
     <dimen name="control_view_container_margin_end">8dp</dimen>
     <dimen name="control_view_margin">8dp</dimen>

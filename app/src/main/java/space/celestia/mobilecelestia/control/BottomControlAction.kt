@@ -113,7 +113,7 @@ data class GroupActionItem(val title: String, val action: CelestiaContinuosActio
 enum class CustomActionType: Serializable {
     ShowTimeSettings
 }
-data class CustomAction(val type: CustomActionType, override val imageID: Int?, override val contentDescription: String?): Serializable, BottomControlAction()
+data class CustomAction(val type: CustomActionType, override val imageID: Int, override val contentDescription: String?): Serializable, BottomControlAction()
 
 data class GroupAction(override val contentDescription: String, val actions: List<GroupActionItem>): Serializable, BottomControlAction() {
     override val imageID: Int

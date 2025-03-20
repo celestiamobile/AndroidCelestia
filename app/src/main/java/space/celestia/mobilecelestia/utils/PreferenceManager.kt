@@ -14,6 +14,7 @@ package space.celestia.mobilecelestia.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import kotlinx.serialization.Serializable
 
 class PreferenceManager(context: Context, name: String) {
     private val sp: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
@@ -23,6 +24,7 @@ class PreferenceManager(context: Context, name: String) {
         val valueString: String
     }
 
+    @Serializable
     enum class PredefinedKey : Key {
         DataVersion,
         OnboardMessage,
