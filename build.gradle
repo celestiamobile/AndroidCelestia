@@ -32,17 +32,6 @@ plugins {
 }
 
 allprojects {
-    project.ext {
-        constants = [
-                minSdkVersion     : 23,
-                targetSdkVersion  : 35,
-                compileSdkVersion : 35,
-                ndkVersion        : "28.0.13004108",
-                buildToolsVersion : "35.0.1",
-                cmakeVersion      : "3.22.1"
-        ]
-    }
-
     repositories {
         google()
         mavenCentral()

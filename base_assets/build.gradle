@@ -9,7 +9,9 @@
  * of the License, or (at your option) any later version.
  */
 
-apply plugin: 'com.android.asset-pack'
+plugins {
+    alias(libs.plugins.asset.pack)
+}
 
 assetPack {
     packName = "base_assets"

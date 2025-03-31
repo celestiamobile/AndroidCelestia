@@ -10,7 +10,7 @@
  */
 
 plugins {
-    id 'com.android.application'
+    alias(libs.plugins.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.hilt)
     alias(libs.plugins.org.jetbrains.kotlin.kapt)
@@ -18,9 +18,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion constants.compileSdkVersion
-    buildToolsVersion constants.buildToolsVersion
-    ndkVersion constants.ndkVersion
+    compileSdkVersion Integer.parseInt(libs.versions.compile.sdk.get())
+    buildToolsVersion libs.versions.build.tools.get()
 
     packagingOptions {
         jniLibs {
@@ -35,8 +34,8 @@ android {
 
     defaultConfig {
         applicationId "space.celestia.mobilecelestia"
-        minSdkVersion constants.minSdkVersion
-        targetSdkVersion constants.targetSdkVersion
+        minSdkVersion Integer.parseInt(libs.versions.min.sdk.get())
+        targetSdkVersion Integer.parseInt(libs.versions.target.sdk.get())
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -45,10 +44,6 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-
-            ndk {
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
-            }
         }
     }
 

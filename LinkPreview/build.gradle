@@ -10,17 +10,17 @@
  */
 
 plugins {
-    id 'com.android.library'
+    alias(libs.plugins.android.library)
     alias(libs.plugins.org.jetbrains.kotlin.android)
 }
 
 android {
-    compileSdkVersion constants.compileSdkVersion
-    buildToolsVersion constants.buildToolsVersion
+    compileSdkVersion Integer.parseInt(libs.versions.compile.sdk.get())
+    buildToolsVersion libs.versions.build.tools.get()
 
     defaultConfig {
-        minSdkVersion constants.minSdkVersion
-        targetSdkVersion constants.targetSdkVersion
+        minSdkVersion Integer.parseInt(libs.versions.min.sdk.get())
+        targetSdkVersion Integer.parseInt(libs.versions.target.sdk.get())
 
         consumerProguardFiles "consumer-rules.pro"
     }

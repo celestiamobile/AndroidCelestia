@@ -10,18 +10,18 @@
  */
 
 plugins {
-    id 'com.android.library'
+    alias(libs.plugins.android.library)
     alias(libs.plugins.org.jetbrains.kotlin.android)
 }
 
 android {
-    compileSdkVersion constants.compileSdkVersion
-    buildToolsVersion constants.buildToolsVersion
-    ndkVersion constants.ndkVersion
+    compileSdkVersion Integer.parseInt(libs.versions.compile.sdk.get())
+    buildToolsVersion libs.versions.build.tools.get()
+    ndkVersion libs.versions.ndk.get()
 
     defaultConfig {
-        minSdkVersion constants.minSdkVersion
-        targetSdkVersion constants.targetSdkVersion
+        minSdkVersion Integer.parseInt(libs.versions.min.sdk.get())
+        targetSdkVersion Integer.parseInt(libs.versions.target.sdk.get())
 
         consumerProguardFiles "consumer-rules.pro"
 
@@ -49,7 +49,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            version constants.cmakeVersion
+            version libs.versions.cmake.get()
             path "src/main/cpp/CMakeLists.txt"
         }
     }
