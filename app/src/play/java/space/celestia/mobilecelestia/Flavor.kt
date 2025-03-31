@@ -17,7 +17,6 @@ fun CelestiaApplication.setUpFlavor() {
     SentryAndroid.init(this) { options ->
         options.dsn = "SENTRY-DSN"
         options.isDebug = BuildConfig.DEBUG
-        options.enableTracing = false
         options.isAttachScreenshot = false
         options.isAttachViewHierarchy = false
         options.addBundleId("BUNDLE_UUID")

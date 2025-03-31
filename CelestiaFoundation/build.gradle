@@ -1,6 +1,6 @@
 plugins {
     id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
+    alias(libs.plugins.org.jetbrains.kotlin.android)
 }
 
 android {
@@ -34,14 +34,14 @@ android {
 }
 
 dependencies {
-    implementation "androidx.core:core-ktx:$core_ktx_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
-    implementation "com.google.code.gson:gson:$gson_version"
-    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation libs.androidx.core.ktx
+    implementation libs.kotlinx.coroutines.android
+    implementation libs.gson
+    implementation libs.okhttp
 
     implementation project(path: ':ZipUtils')
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
 }
