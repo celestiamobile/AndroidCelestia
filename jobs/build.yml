@@ -6,7 +6,7 @@ jobs:
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
-    contentCommitHash: ${{ '82f08ce3f90d9eb6339d8b9cf349afcea243f2f9' }}
+    contentCommitHash: ${{ 'c7fc5bbd2b6ecc97fa6168e47682ec3d79003fa0' }}
 
   steps:
   - checkout: Celestia
@@ -20,7 +20,7 @@ jobs:
 
   - script: |
       sudo apt update
-      sudo apt install -y gettext gperf
+      sudo apt install -y gettext gperf imagemagick
     displayName: 'Install Dependencies'
 
   - script: |
@@ -47,6 +47,10 @@ jobs:
       cd CelestiaContent
       git checkout $(contentCommitHash)
     displayName: 'Checkout Content'
+
+  - script: |
+      sh $(System.DefaultWorkingDirectory)/AndroidCelestia/app/downsize_textures.sh
+    displayName: 'Running imagemagick'
 
   - script: |
       sh $(System.DefaultWorkingDirectory)/AndroidCelestia/app/run_gperf.sh $(System.DefaultWorkingDirectory)/Celestia
