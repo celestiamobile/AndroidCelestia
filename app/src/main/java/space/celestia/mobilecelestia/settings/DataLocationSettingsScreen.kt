@@ -12,7 +12,6 @@
 package space.celestia.mobilecelestia.settings
 
 import android.content.Intent
-import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -72,7 +71,7 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues, modifier: Modifier 
             viewModel.appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] = path
             customConfigFilePath = path
         } else {
-            val expectedParent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) context.externalMediaDirs.firstOrNull() else context.getExternalFilesDir(null)
+            val expectedParent = context.externalMediaDirs.firstOrNull() ?: context.getExternalFilesDir(null)
             errorTitle = CelestiaString("Unable to resolve path", "Custom config/data directory path have to be under a specific path")
             errorMessage = CelestiaString("Please ensure that you have selected a path under %s.", "Custom config/data directory path have to be under a specific path").format(expectedParent?.absolutePath ?: "")
         }
@@ -84,7 +83,7 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues, modifier: Modifier 
             viewModel.appSettings[PreferenceManager.PredefinedKey.DataDirPath] = path
             customDataDirPath = path
         } else {
-            val expectedParent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) context.externalMediaDirs.firstOrNull() else context.getExternalFilesDir(null)
+            val expectedParent = context.externalMediaDirs.firstOrNull() ?: context.getExternalFilesDir(null)
             errorTitle = CelestiaString("Unable to resolve path", "")
             errorMessage = CelestiaString("Please ensure that you have selected a path under %s.", "").format(expectedParent?.absolutePath ?: "")
         }
