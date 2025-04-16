@@ -1,7 +1,7 @@
 /*
- * build.gradle
+ * build.gradle.kts
  *
- * Copyright (C) 2023-present, Celestia Development Team
+ * Copyright (C) 2025-present, Celestia Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,9 +18,9 @@ buildscript {
     }
 
     dependencies {
-        classpath libs.android.tools.build.gradle
-        classpath libs.kotlin.gradle.plugin
-        classpath libs.hilt.android.gradle.plugin
+        classpath(libs.android.tools.build.gradle)
+        classpath(libs.kotlin.gradle.plugin)
+        classpath(libs.hilt.android.gradle.plugin)
     }
 }
 
@@ -39,7 +39,7 @@ allprojects {
     }
 }
 
-tasks.register('clean', Delete) {
-    delete "$rootProject.projectDir/app/src/main/assets/CelestiaResources"
-    delete rootProject.layout.buildDirectory
+tasks.register<Delete>("clean") {
+    delete("${rootProject.projectDir}/app/src/main/assets/CelestiaResources")
+    delete(rootProject.layout.buildDirectory)
 }
