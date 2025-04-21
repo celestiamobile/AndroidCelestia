@@ -90,20 +90,20 @@ val copyLocalizedFiles by tasks.registering(Exec::class) {
     println("Copying localized files")
     workingDir = projectDir
     executable = "/bin/sh"
-    args = listOf("copy_localized_files.sh")
+    setArgs(listOf("copy_localized_files.sh"))
 }
 
 val copyGeneralData by tasks.registering(Exec::class) {
     workingDir = projectDir
     executable = "/bin/sh"
-    args = listOf("copy_general_data.sh")
+    setArgs(listOf("copy_general_data.sh"))
 }
 
 val convertPO by tasks.registering(Exec::class) {
     println("Converting PO")
     workingDir = projectDir
     executable = "/bin/sh"
-    args = listOf("convert_po.sh")
+    setArgs(listOf("convert_po.sh"))
 }
 
 // Task ordering
