@@ -37,8 +37,14 @@ import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.Insets
+import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
-import androidx.core.view.*
+import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.fragment.app.Fragment
@@ -51,9 +57,22 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import space.celestia.celestia.*
+import space.celestia.celestia.AppCore
+import space.celestia.celestia.Body
+import space.celestia.celestia.BrowserItem
+import space.celestia.celestia.Destination
+import space.celestia.celestia.EclipseFinder
+import space.celestia.celestia.GoToLocation
+import space.celestia.celestia.Renderer
+import space.celestia.celestia.Script
+import space.celestia.celestia.Selection
+import space.celestia.celestia.Universe
 import space.celestia.celestiafoundation.favorite.BookmarkNode
 import space.celestia.celestiafoundation.resource.model.GuideItem
 import space.celestia.celestiafoundation.resource.model.ResourceItem
@@ -67,47 +86,104 @@ import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
 import space.celestia.celestiafoundation.utils.versionName
-import space.celestia.mobilecelestia.browser.*
+import space.celestia.mobilecelestia.browser.BrowserCommonFragment
+import space.celestia.mobilecelestia.browser.BrowserFragment
+import space.celestia.mobilecelestia.browser.BrowserPredefinedItem
+import space.celestia.mobilecelestia.browser.BrowserRootFragment
+import space.celestia.mobilecelestia.browser.BrowserUIItem
+import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
-import space.celestia.mobilecelestia.common.*
-import space.celestia.mobilecelestia.control.*
+import space.celestia.mobilecelestia.common.CelestiaExecutor
+import space.celestia.mobilecelestia.common.EdgeInsets
+import space.celestia.mobilecelestia.common.RoundedCorners
+import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.control.BottomControlAction
+import space.celestia.mobilecelestia.control.BottomControlFragment
+import space.celestia.mobilecelestia.control.CameraControlAction
+import space.celestia.mobilecelestia.control.CameraControlContainerFragment
+import space.celestia.mobilecelestia.control.CameraControlFragment
+import space.celestia.mobilecelestia.control.ContinuousAction
+import space.celestia.mobilecelestia.control.CustomAction
+import space.celestia.mobilecelestia.control.CustomActionType
+import space.celestia.mobilecelestia.control.GroupAction
+import space.celestia.mobilecelestia.control.GroupActionItem
+import space.celestia.mobilecelestia.control.InstantAction
+import space.celestia.mobilecelestia.control.ObserverModeFragment
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderInputFragment
 import space.celestia.mobilecelestia.eventfinder.EventFinderResultFragment
-import space.celestia.mobilecelestia.favorite.*
+import space.celestia.mobilecelestia.favorite.DestinationDetailFragment
+import space.celestia.mobilecelestia.favorite.FavoriteBaseItem
+import space.celestia.mobilecelestia.favorite.FavoriteBookmarkItem
+import space.celestia.mobilecelestia.favorite.FavoriteDestinationItem
+import space.celestia.mobilecelestia.favorite.FavoriteFragment
+import space.celestia.mobilecelestia.favorite.FavoriteItemFragment
+import space.celestia.mobilecelestia.favorite.FavoriteScriptItem
+import space.celestia.mobilecelestia.favorite.MutableFavoriteBaseItem
+import space.celestia.mobilecelestia.favorite.getCurrentBookmarks
+import space.celestia.mobilecelestia.favorite.updateCurrentBookmarks
+import space.celestia.mobilecelestia.favorite.updateCurrentDestinations
+import space.celestia.mobilecelestia.favorite.updateCurrentScripts
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.help.NewHelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
-import space.celestia.mobilecelestia.info.model.*
+import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
+import space.celestia.mobilecelestia.info.model.CelestiaAction
+import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
+import space.celestia.mobilecelestia.info.model.InfoActionItem
+import space.celestia.mobilecelestia.info.model.InfoNormalActionItem
+import space.celestia.mobilecelestia.info.model.InfoSelectActionItem
+import space.celestia.mobilecelestia.info.model.InfoWebActionItem
+import space.celestia.mobilecelestia.info.model.MarkItem
+import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.purchase.SubscriptionBackingFragment
-import space.celestia.mobilecelestia.resource.*
-import space.celestia.mobilecelestia.resource.model.*
+import space.celestia.mobilecelestia.resource.CommonWebFragment
+import space.celestia.mobilecelestia.resource.CommonWebNavigationFragment
+import space.celestia.mobilecelestia.resource.InstalledAddonListFragment
+import space.celestia.mobilecelestia.resource.ResourceFragment
+import space.celestia.mobilecelestia.resource.ResourceItemFragment
+import space.celestia.mobilecelestia.resource.ResourceItemNavigationFragment
+import space.celestia.mobilecelestia.resource.model.ResourceAPI
+import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.search.SearchFragment
-import space.celestia.mobilecelestia.settings.*
+import space.celestia.mobilecelestia.settings.AboutFragment
+import space.celestia.mobilecelestia.settings.CustomFont
+import space.celestia.mobilecelestia.settings.SettingsCurrentTimeNavigationFragment
+import space.celestia.mobilecelestia.settings.SettingsFragment
+import space.celestia.mobilecelestia.settings.SettingsItem
+import space.celestia.mobilecelestia.settings.SettingsItemFragment
+import space.celestia.mobilecelestia.settings.SettingsKey
+import space.celestia.mobilecelestia.settings.SettingsRefreshRateFragment
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
 import space.celestia.mobilecelestia.travel.GoToInputFragment
-import space.celestia.mobilecelestia.utils.*
+import space.celestia.mobilecelestia.utils.AppStatusReporter
+import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.mobilecelestia.utils.currentBookmark
+import space.celestia.mobilecelestia.utils.julianDay
+import space.celestia.mobilecelestia.utils.showAlert
+import space.celestia.mobilecelestia.utils.showError
+import space.celestia.mobilecelestia.utils.showLoading
+import space.celestia.mobilecelestia.utils.showOptions
+import space.celestia.mobilecelestia.utils.showTextInput
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.URL
-import java.util.*
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.set
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.system.exitProcess
-import androidx.core.net.toUri
-import androidx.core.view.isVisible
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
@@ -1585,7 +1661,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } else {
             (parent.height - view.top).toFloat()
         }
-        showView(animated, view, ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", destination, 0f))
+        showView(animated, ObjectAnimator.ofFloat(view, if (horizontal) "translationX" else "translationY", destination, 0f))
     }
 
     private suspend fun showViewAlpha(animated: Boolean, viewID: Int) {
@@ -1593,10 +1669,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         view.visibility = View.VISIBLE
         view.alpha = 0.0f
 
-        showView(animated, view, ObjectAnimator.ofFloat(view, "alpha", 1.0f))
+        showView(animated, ObjectAnimator.ofFloat(view, "alpha", 1.0f))
     }
 
-    private suspend fun showView(animated: Boolean, @Suppress("UNUSED_PARAMETER") view: View, showAnimator: ObjectAnimator): Unit = suspendCoroutine { cont ->
+    private suspend fun showView(animated: Boolean, showAnimator: ObjectAnimator): Unit = suspendCoroutine { cont ->
         val executionBlock = {
             cont.resume(Unit)
         }
@@ -2046,8 +2122,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "92"
-        // 91: 1.7.13 Dev, Data update (commit 82f08ce3f90d9eb6339d8b9cf349afcea243f2f9)
+        private const val CURRENT_DATA_VERSION = "93"
+        // 93: 1.8.0 Dev, Data update (commit 7cf89b3deace6b18c1ac6eeb5be3338c34fe470e)
+        // 91: 1.7.13, Data update (commit 82f08ce3f90d9eb6339d8b9cf349afcea243f2f9)
         // 90: 1.7.12, Localization update data update (commit 81e468cf8d0bf5b0c77bfae66129561a74dbe06d)
         // 89: 1.7.11, Localization update data update (commit e804551103660af99579ad60a7275d2f89c9f214)
         // 86: 1.7.10, Data update (commit 35f14ef09ce4463143405c9459a22060c572a0fa)
