@@ -12,7 +12,6 @@
 package space.celestia.mobilecelestia.settings
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.view.LayoutInflater
@@ -126,7 +125,7 @@ class SettingsDataLocationFragment : NavigationFragment.SubFragment() {
 
     private fun showWrongPathProvided() {
         val activity = this.activity ?: return
-        val expectedParent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) activity.externalMediaDirs.firstOrNull() else activity.getExternalFilesDir(null)
+        val expectedParent = activity.externalMediaDirs.firstOrNull() ?: activity.getExternalFilesDir(null)
         activity.showAlert(CelestiaString("Unable to resolve path", "Custom config/data directory path have to be under a specific path"), CelestiaString("Please ensure that you have selected a path under %s.", "Custom config/data directory path have to be under a specific path").format(expectedParent?.absolutePath ?: ""))
     }
 
