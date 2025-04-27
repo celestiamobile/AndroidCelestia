@@ -15,20 +15,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.runningFold
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.browser.BrowserPredefinedItem
 import space.celestia.mobilecelestia.browser.BrowserScreen
 import space.celestia.mobilecelestia.browser.SubsystemBrowserScreen
-import space.celestia.mobilecelestia.celestia.viewmodel.Context
 import space.celestia.mobilecelestia.celestia.viewmodel.Utility
 import space.celestia.mobilecelestia.celestia.viewmodel.UtilityViewModel
 import space.celestia.mobilecelestia.control.CameraControlMainScreen
@@ -49,13 +41,6 @@ import space.celestia.mobilecelestia.settings.SettingsScreen
 import space.celestia.mobilecelestia.travel.GoToData
 import space.celestia.mobilecelestia.travel.GoToMainScreen
 import java.net.URL
-
-data class History<T>(val previous: T?, val current: T)
-fun <T> Flow<T>.runningHistory(): Flow<History<T>?> =
-    runningFold(
-        initial = null as (History<T>?),
-        operation = { accumulator, new -> History(accumulator?.current, new) }
-    )
 
 @Composable
 fun UtilityScreen(
@@ -79,37 +64,12 @@ fun UtilityScreen(
 ) {
     val viewModel: UtilityViewModel = hiltViewModel()
 
-    val navController = rememberNavController()
-    LaunchedEffect(Unit) {
-        snapshotFlow { viewModel.current }
-            .runningHistory()
-            .collect { history ->
-                if (history?.previous == null) return@collect
-                navController.navigate(history.current) {
-                    popUpTo(history.previous) {
-                        inclusive = true
-                    }
-                    launchSingleTop = true
-                }
-            }
-    }
-
-    NavHost(navController = navController, startDestination = Utility.Empty, modifier = modifier) {
-        composable<Utility.Empty> {}
-        composable<Utility.AddonManagement> {
-            AddonManagementScreen(onOpenAddonDownload = onOpenAddonDownload, onShareAddon = onShareAddon, onExternalWebLinkClicked = onExternalWebLinkClicked, onShareURL = onShareURL, onOpenSubscriptionPage = onOpenSubscriptionPage, onReceivedACK = onReceivedACK)
-        }
-        composable<Utility.CurrentTime> {
-            CurrentTimeScreen()
-        }
-        composable<Utility.Settings> {
-            SettingsScreen(onRefreshRateChanged = onRefreshRateChanged, onAboutURLSelected = onAboutURLSelected, requestOpenSubscriptionManagement = requestOpenSubscriptionManagement)
-        }
-        composable<Utility.Addon> {
-            val context = viewModel.context
-            if (context is Context.Addon) {
-                AddonNavigationScreen(
-                    item = context.item,
+    viewModel.current.let {
+        when (it) {
+            is Utility.Empty -> {}
+            is Utility.AddonManagement -> {
+                AddonManagementScreen(
+                    onOpenAddonDownload = onOpenAddonDownload,
                     onShareAddon = onShareAddon,
                     onExternalWebLinkClicked = onExternalWebLinkClicked,
                     onShareURL = onShareURL,
@@ -117,80 +77,112 @@ fun UtilityScreen(
                     onReceivedACK = onReceivedACK
                 )
             }
-        }
-        composable<Utility.CameraControl> {
-            CameraControlMainScreen(onObserverModeLearnMoreClicked = onObserverModeLearnMoreClicked)
-        }
-        composable<Utility.Help> {
-            NewHelpScreen(onExternalWebLinkClicked = onExternalWebLinkClicked, onShareURL = onShareURL, onOpenSubscriptionPage = onOpenSubscriptionPage, onReceivedACK = onReceivedACK)
-        }
-        composable<Utility.EventFinder> {
-            EventFinderScreen()
-        }
-        composable<Utility.Search> {
-            SearchScreen(onInfoLinkMetaDataClicked = onInfoLinkMetaDataClicked, onInfoActionSelected = onInfoActionSelected)
-        }
-        composable<Utility.Browser> {
-            BrowserScreen(onBrowserAddonCategoryRequested = onBrowserAddonCategoryRequested, onInfoActionSelected = onInfoActionSelected, onInfoLinkMetaDataClicked = onInfoLinkMetaDataClicked)
-        }
-        composable<Utility.Favorites> {
-            FavoriteScreen(shareItem = shareItem, saveFavorites = saveFavorites)
-        }
-        composable<Utility.InAppPurchase> {
-            SubscriptionManagerScreen()
-        }
-        composable<Utility.GoTo> {
-            val context = viewModel.context
-            if (context is Context.GoTo) {
-                GoToMainScreen(
-                    goToData = context.goToData,
-                    selection = context.selection,
-                    onGoToObject = onGoToObject
+
+            is Utility.CurrentTime -> {
+                CurrentTimeScreen()
+            }
+
+            is Utility.Settings -> {
+                SettingsScreen(
+                    onRefreshRateChanged = onRefreshRateChanged,
+                    onAboutURLSelected = onAboutURLSelected,
+                    requestOpenSubscriptionManagement = requestOpenSubscriptionManagement
                 )
             }
-        }
-        composable<Utility.Info> {
-            val context = viewModel.context
-            if (context is Context.Info) {
-                InfoScreen(
-                    selection = context.selection,
-                    showTitle = true,
-                    onInfoLinkMetaDataClicked = onInfoLinkMetaDataClicked,
-                    onInfoActionSelected = onInfoActionSelected,
-                    paddingValues = WindowInsets.systemBars.asPaddingValues()
-                )
-            }
-        }
-        composable<Utility.SubsystemBrowser> {
-            val context = viewModel.context
-            if (context is Context.SubsystemBrowser) {
-                SubsystemBrowserScreen(
-                    item = context.selection,
-                    onBrowserAddonCategoryRequested = onBrowserAddonCategoryRequested,
-                    onInfoActionSelected = onInfoActionSelected,
-                    onInfoLinkMetaDataClicked = onInfoLinkMetaDataClicked
-                )
-            }
-        }
-        composable<Utility.Web> {
-            val context = viewModel.context
-            if (context is Context.Web) {
-                CommonWebScreen(
-                    uri = context.uri,
-                    matchingQueryKeys = context.matchingQueryKeys,
-                    filterURL = context.filterURL,
+
+            is Utility.Addon -> {
+                AddonNavigationScreen(
+                    item = it.context.item,
+                    onShareAddon = onShareAddon,
                     onExternalWebLinkClicked = onExternalWebLinkClicked,
                     onShareURL = onShareURL,
                     onOpenSubscriptionPage = onOpenSubscriptionPage,
                     onReceivedACK = onReceivedACK
                 )
             }
-        }
-        composable<Utility.WebNavigation> {
-            val context = viewModel.context
-            if (context is Context.WebNavigation) {
+
+            is Utility.CameraControl -> {
+                CameraControlMainScreen(onObserverModeLearnMoreClicked = onObserverModeLearnMoreClicked)
+            }
+
+            is Utility.Help -> {
+                NewHelpScreen(
+                    onExternalWebLinkClicked = onExternalWebLinkClicked,
+                    onShareURL = onShareURL,
+                    onOpenSubscriptionPage = onOpenSubscriptionPage,
+                    onReceivedACK = onReceivedACK
+                )
+            }
+
+            is Utility.EventFinder -> {
+                EventFinderScreen()
+            }
+
+            is Utility.Search -> {
+                SearchScreen(
+                    onInfoLinkMetaDataClicked = onInfoLinkMetaDataClicked,
+                    onInfoActionSelected = onInfoActionSelected
+                )
+            }
+
+            is Utility.Browser -> {
+                BrowserScreen(
+                    onBrowserAddonCategoryRequested = onBrowserAddonCategoryRequested,
+                    onInfoActionSelected = onInfoActionSelected,
+                    onInfoLinkMetaDataClicked = onInfoLinkMetaDataClicked
+                )
+            }
+
+            is Utility.Favorites -> {
+                FavoriteScreen(shareItem = shareItem, saveFavorites = saveFavorites)
+            }
+
+            is Utility.InAppPurchase -> {
+                SubscriptionManagerScreen()
+            }
+
+            is Utility.GoTo -> {
+                GoToMainScreen(
+                    goToData = it.context.goToData,
+                    selection = it.context.selection,
+                    onGoToObject = onGoToObject
+                )
+            }
+
+            is Utility.Info -> {
+                InfoScreen(
+                    selection = it.context.selection,
+                    showTitle = true,
+                    onInfoLinkMetaDataClicked = onInfoLinkMetaDataClicked,
+                    onInfoActionSelected = onInfoActionSelected,
+                    paddingValues = WindowInsets.systemBars.asPaddingValues()
+                )
+            }
+
+            is Utility.SubsystemBrowser -> {
+                SubsystemBrowserScreen(
+                    item = it.context.selection,
+                    onBrowserAddonCategoryRequested = onBrowserAddonCategoryRequested,
+                    onInfoActionSelected = onInfoActionSelected,
+                    onInfoLinkMetaDataClicked = onInfoLinkMetaDataClicked
+                )
+            }
+
+            is Utility.Web -> {
+                CommonWebScreen(
+                    uri = it.context.uri,
+                    matchingQueryKeys = it.context.matchingQueryKeys,
+                    filterURL = it.context.filterURL,
+                    onExternalWebLinkClicked = onExternalWebLinkClicked,
+                    onShareURL = onShareURL,
+                    onOpenSubscriptionPage = onOpenSubscriptionPage,
+                    onReceivedACK = onReceivedACK
+                )
+            }
+
+            is Utility.WebNavigation -> {
                 CommonWebNavigationScreen(
-                    uri = context.uri,
+                    uri = it.context.uri,
                     onShareAddon = onShareAddon,
                     onExternalWebLinkClicked = onExternalWebLinkClicked,
                     onShareURL = onShareURL,

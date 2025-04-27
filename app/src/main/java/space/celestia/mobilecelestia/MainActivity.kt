@@ -63,7 +63,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -429,16 +428,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return
         }
 
+        val toolbarVisible = utilityViewModel.toolbarActions != null
+        val bottomSheetVisible = utilityViewModel.current != Utility.Empty
+
+        findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+        bottomToolbar.visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+
+        findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+        bottomSheetContainer.visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+
         if (savedState != null) {
-            val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
-            val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
             initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
-
-            findViewById<View>(R.id.toolbar_overlay).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-            bottomToolbar.visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-
-            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
-            bottomSheetContainer.visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
         }
 
         when (currentState) {
@@ -464,8 +464,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).isVisible)
-        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.toolbar_container).isVisible)
         outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
         super.onSaveInstanceState(outState)
     }
@@ -868,7 +866,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val lang = AppCore.getLanguage()
         if (guide != null) {
             lifecycleScope.launch {
-                showBottomSheetUtility(Utility.Web(), Context.Web(URLHelper.buildInAppGuideURI(guide, lang), listOf("guide")))
+                showBottomSheetUtility(Utility.Web(Context.Web(URLHelper.buildInAppGuideURI(guide, lang), listOf("guide"))))
             }
             cleanup()
             return
@@ -878,7 +876,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             lifecycleScope.launch {
                 try {
                     val result = resourceAPI.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    showBottomSheetUtility(Utility.Addon(), Context.Addon(result))
+                    showBottomSheetUtility(Utility.Addon(Context.Addon(result)))
                 } catch (ignored: Throwable) {}
             }
             cleanup()
@@ -891,7 +889,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
-                showBottomSheetUtility(Utility.Web(), Context.Web(URLHelper.buildInAppGuideURI(result.id, lang), listOf("guide")))
+                showBottomSheetUtility(Utility.Web(Context.Web(URLHelper.buildInAppGuideURI(result.id, lang), listOf("guide"))))
             } catch (ignored: Throwable) {}
         }
     }
@@ -1247,7 +1245,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             is SubsystemActionItem -> {
                 if (item.`object` == null) return
                 lifecycleScope.launch {
-                    showBottomSheetUtility(Utility.SubsystemBrowser(), Context.SubsystemBrowser(item))
+                    showBottomSheetUtility(Utility.SubsystemBrowser(Context.SubsystemBrowser(item)))
                 }
             }
             is AlternateSurfacesItem -> {
@@ -1493,7 +1491,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private suspend fun hideBottomSheet(animated: Boolean) {
         hideView(animated, R.id.bottom_sheet, false)
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
-        utilityViewModel.context = null
         utilityViewModel.current = Utility.Empty
     }
 
@@ -1582,7 +1579,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInfo(selection: Selection) = lifecycleScope.launch {
-        showBottomSheetUtility(Utility.Info(), Context.Info(selection))
+        showBottomSheetUtility(Utility.Info(Context.Info(selection)))
     }
 
     private fun showSendFeedback() {
@@ -1868,7 +1865,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
-            showBottomSheetUtility(Utility.WebNavigation(), Context.WebNavigation(builder.build()))
+            showBottomSheetUtility(Utility.WebNavigation(Context.WebNavigation(builder.build())))
         }
     }
 
@@ -1886,7 +1883,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
-            showBottomSheetUtility(Utility.WebNavigation(), Context.WebNavigation(builder.build()))
+            showBottomSheetUtility(Utility.WebNavigation(Context.WebNavigation(builder.build())))
         }
     }
 
@@ -1898,7 +1895,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             8.0,
             GoToLocation.DistanceUnit.radii
         )
-        showBottomSheetUtility(Utility.GoTo(), Context.GoTo(inputData, Selection()))
+        showBottomSheetUtility(Utility.GoTo(Context.GoTo(inputData, Selection())))
     }
 
     private fun onGoToObject(goToData: GoToData, selection: Selection) {
@@ -1919,14 +1916,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private suspend fun showBottomSheetUtility(utility: Utility, context: Context? = null) {
+    private suspend fun showBottomSheetUtility(utility: Utility) {
         hideOverlay(true)
-        showBottomSheetUtilityDirect(utility = utility, context = context)
+        showBottomSheetUtilityDirect(utility = utility)
     }
 
-    private suspend fun showBottomSheetUtilityDirect(utility: Utility, context: Context?) {
+    private suspend fun showBottomSheetUtilityDirect(utility: Utility) {
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
-        utilityViewModel.context = context
         utilityViewModel.current = utility
         showView(true, R.id.bottom_sheet, false)
     }
@@ -2000,9 +1996,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val CELESTIA_ROOT_FOLDER_NAME = "CelestiaResources"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/extras"
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/scripts"
-
-        private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
-        private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 

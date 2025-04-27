@@ -15,54 +15,32 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.serialization.Serializable
 import space.celestia.celestia.Selection
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.mobilecelestia.control.BottomControlAction
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.travel.GoToData
-import java.util.UUID
 import javax.inject.Inject
-import kotlin.uuid.Uuid
 
-@Serializable
 sealed class Utility {
-    @Serializable
     data object Settings : Utility()
-    @Serializable
     data object AddonManagement : Utility()
-    @Serializable
     data object CurrentTime : Utility()
-    @Serializable
     data object CameraControl : Utility()
-    @Serializable
     data object Help : Utility()
-    @Serializable
     data object EventFinder : Utility()
-    @Serializable
     data object Search : Utility()
-    @Serializable
     data object Browser : Utility()
-    @Serializable
     data object Favorites : Utility()
-    @Serializable
     data object InAppPurchase : Utility()
-    @Serializable
-    data class Web(val id: String = "${UUID.randomUUID()}") : Utility()
-    @Serializable
-    data class WebNavigation(val id: String = "${UUID.randomUUID()}")  : Utility()
-    @Serializable
-    data class GoTo(val id: String = "${UUID.randomUUID()}")  : Utility()
-    @Serializable
-    data class Addon(val id: String = "${UUID.randomUUID()}")  : Utility()
-    @Serializable
-    data class Info(val id: String = "${UUID.randomUUID()}")  : Utility()
-    @Serializable
-    data class SubsystemBrowser(val id: String = "${UUID.randomUUID()}")  : Utility()
-    @Serializable
+    data class Web(val context: Context.Web) : Utility()
+    data class WebNavigation(val context: Context.WebNavigation)  : Utility()
+    data class GoTo(val context: Context.GoTo)  : Utility()
+    data class Addon(val context: Context.Addon)  : Utility()
+    data class Info(val context: Context.Info)  : Utility()
+    data class SubsystemBrowser(val context: Context.SubsystemBrowser)  : Utility()
     data object Empty : Utility()
 }
 
@@ -81,5 +59,4 @@ class UtilityViewModel @Inject constructor() : ViewModel() {
     var additionalDrawerActions: List<List<ToolbarAction>>? by mutableStateOf(null)
     var toolbarActions: List<BottomControlAction>? by mutableStateOf(null)
     var loadingText: String? by mutableStateOf("")
-    var context: Context? = null
 }
