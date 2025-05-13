@@ -82,6 +82,10 @@
     <dimen name="back_button_padding">6dp</dimen>
 
     <dimen name="link_card_corner_radius">8dp</dimen>
+    <dimen name="link_text_content_vertical_padding">8dp</dimen>
+    <dimen name="link_text_content_horizontal_padding">12dp</dimen>
+    <dimen name="link_text_content_spacing">6dp</dimen>
+    <dimen name="link_fav_icon_padding">8dp</dimen>
 
     <dimen name="loading_gap_vertical">24dp</dimen>
     <dimen name="app_icon_dimension">128dp</dimen>
