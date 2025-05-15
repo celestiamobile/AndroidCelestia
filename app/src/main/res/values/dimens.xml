@@ -32,9 +32,9 @@
     <dimen name="tutorial_list_icon_dimension">44dp</dimen>
 
     <dimen name="toolbar_list_icon_dimension">24dp</dimen>
-    <dimen name="toolbar_default_width">220dp</dimen>
+    <dimen name="toolbar_default_width">250dp</dimen>
     <dimen name="toolbar_separator_inset_start">32dp</dimen>
-    <dimen name="toolbar_separator_padding_vertical">3dp</dimen>
+    <dimen name="toolbar_separator_padding_vertical">6dp</dimen>
 
     <dimen name="common_page_medium_margin_horizontal">16dp</dimen>
     <dimen name="common_page_medium_margin_vertical">12dp</dimen>

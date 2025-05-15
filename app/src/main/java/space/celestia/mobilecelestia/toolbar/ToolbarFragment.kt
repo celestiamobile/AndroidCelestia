@@ -17,9 +17,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,9 +27,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
@@ -176,15 +173,13 @@ class ToolbarFragment: Fragment() {
             for (sectionIndex in allSections.indices) {
                 val section = allSections[sectionIndex]
                 items(section) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal)), modifier = Modifier
-                        .clickable {
-                            listener?.onToolbarActionSelected(it)
-                        }
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal))) {
-                        Icon(painter = painterResource(id = it.imageResource), contentDescription = "", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension)))
+                    NavigationDrawerItem(label = {
                         Text(text = it.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
-                    }
+                    }, selected = false, icon = {
+                        Icon(painter = painterResource(id = it.imageResource), contentDescription = "", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension)))
+                    }, onClick = {
+                        listener?.onToolbarActionSelected(it)
+                    }, modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(id = R.dimen.list_item_small_margin_horizontal)))
                 }
                 if (sectionIndex != allSections.size - 1) {
                     item {
