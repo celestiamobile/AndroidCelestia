@@ -517,6 +517,8 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/icu
 )
 
+add_link_options("LINKER:--build-id=none")
+
 add_library(cspice STATIC IMPORTED)
 set_target_properties(cspice PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/cspice.a)
 

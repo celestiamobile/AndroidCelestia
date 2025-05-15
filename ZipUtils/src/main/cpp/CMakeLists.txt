@@ -10,6 +10,8 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/libzip
 )
 
+add_link_options("LINKER:--build-id=none")
+
 add_library(libzip STATIC IMPORTED)
 set_target_properties(libzip PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libzip.a)
 
