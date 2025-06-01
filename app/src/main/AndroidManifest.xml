@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="610"
+    android:versionCode="611"
     android:versionName="1.8.2">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
@@ -44,7 +44,6 @@
         <activity
             android:name="space.celestia.mobilecelestia.MainActivity"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode|locale"
-            android:screenOrientation="fullSensor"
             android:launchMode="singleInstance"
             android:exported="true"
             android:windowSoftInputMode="adjustPan"
