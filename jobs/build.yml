@@ -6,7 +6,7 @@ jobs:
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
-    contentCommitHash: ${{ 'bc6291824a5244a415a60e44501f8fec32b0db44' }}
+    contentCommitHash: ${{ '36a7474dceee5e7b83e54c4d0a44115b2953edc6' }}
 
   steps:
   - checkout: Celestia
