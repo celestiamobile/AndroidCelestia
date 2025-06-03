@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.settings
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -105,11 +106,24 @@ class SettingsLanguageFragment : NavigationFragment.SubFragment() {
         )
 
         fun getLocale(locale: String): Locale {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                val components = locale.split("_")
+                if (components.size == 1)
+                    return Locale.of(components[0])
+                if (components.size == 2)
+                    return Locale.of(components[0], components[1])
+                return Locale.of(components[0], components[1], components[2])
+            }
             val components = locale.split("_")
-            if (components.size == 1)
+            if (components.size == 1) {
+                @Suppress("DEPRECATION")
                 return Locale(components[0])
-            if (components.size == 2)
+            }
+            if (components.size == 2) {
+                @Suppress("DEPRECATION")
                 return Locale(components[0], components[1])
+            }
+            @Suppress("DEPRECATION")
             return Locale(components[0], components[1], components[2])
         }
 
