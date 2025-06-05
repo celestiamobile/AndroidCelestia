@@ -166,6 +166,12 @@ public:
     object(object),
     method(method) {};
 
+    ~AppCoreContextMenuHandler() override
+    {
+        auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+        if (env && object) env->DeleteGlobalRef(object);
+    }
+
     void requestContextMenu(float x, float y, Selection sel) override
     {
         auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
@@ -182,6 +188,12 @@ class AppCoreFatalErrorHandler: public CelestiaCore::Alerter
 {
 public:
     AppCoreFatalErrorHandler(jobject object, jmethodID method) : CelestiaCore::Alerter(), object(object), method(method) {};
+
+    ~AppCoreFatalErrorHandler() override
+    {
+        auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+        if (env && object) env->DeleteGlobalRef(object);
+    }
 
     void fatalError(const std::string &message) override
     {
@@ -220,7 +232,6 @@ Java_space_celestia_celestia_AppCore_c_1setContextMenuHandler(JNIEnv *env, jobje
     if (!contextMenuCallback)
         contextMenuCallback = env->GetMethodID(env->GetObjectClass(thiz), "onRequestContextMenu",
                                                "(FFLspace/celestia/celestia/Selection;)V");
-    // TODO: where to delete the global reference?
     core->setContextMenuHandler(new AppCoreContextMenuHandler(env->NewGlobalRef(thiz), contextMenuCallback));
 }
 
@@ -232,7 +243,6 @@ Java_space_celestia_celestia_AppCore_c_1setFatalErrorHandler(JNIEnv *env, jobjec
     if (!fatalErrorCallback)
         fatalErrorCallback = env->GetMethodID(env->GetObjectClass(thiz), "onFatalError",
                                                "(Ljava/lang/String;)V");
-    // TODO: where to delete the global reference?
     core->setAlerter(new AppCoreFatalErrorHandler(env->NewGlobalRef(thiz), fatalErrorCallback));
 }
 
