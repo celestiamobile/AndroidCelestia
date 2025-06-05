@@ -124,7 +124,6 @@ val sideloadImplementation by configurations
 
 dependencies {
     implementation(libs.kotlin.stdlib)
-    implementation(libs.kotlin.stdlib) // Duplicate — you might want to remove one
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.ktx)
