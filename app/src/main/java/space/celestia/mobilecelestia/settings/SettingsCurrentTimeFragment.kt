@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -67,7 +68,7 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment() {
     lateinit var executor: CelestiaExecutor
 
     private var currentTime = mutableStateOf(Date())
-    private var currentJulianDay = mutableStateOf(0.0)
+    private var currentJulianDay = mutableDoubleStateOf(0.0)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -106,7 +107,7 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment() {
             TextRow(primaryText = CelestiaString("Select Time", "Select simulation time"), secondaryText = formatter.format(currentTime.value), modifier = Modifier.clickable(onClick = {
                 onPickTime()
             }))
-            TextRow(primaryText = CelestiaString("Julian Day", "Select time via entering Julian day"), secondaryText = displayNumberFormat.format(currentJulianDay.value), modifier = Modifier.clickable {
+            TextRow(primaryText = CelestiaString("Julian Day", "Select time via entering Julian day"), secondaryText = displayNumberFormat.format(currentJulianDay.doubleValue), modifier = Modifier.clickable {
                 onPickJulianDay()
             })
             TextRow(primaryText = CelestiaString("Set to Current Time", "Set simulation time to device"), modifier = Modifier.clickable(onClick = {
@@ -176,7 +177,7 @@ class SettingsCurrentTimeFragment : NavigationFragment.SubFragment() {
     private fun reload() {
         val time = appCore.simulation.time
         currentTime.value = Utils.createDateFromJulianDay(time)
-        currentJulianDay.value = time
+        currentJulianDay.doubleValue = time
     }
 
     companion object {
