@@ -37,12 +37,15 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
+import space.celestia.mobilecelestia.compose.CheckboxRow
 import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.Stepper
 import space.celestia.mobilecelestia.compose.TextRow
+import space.celestia.mobilecelestia.control.viewmodel.CameraControlViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 enum class CameraControlAction(val value: Int) {
@@ -82,6 +85,7 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
 
     @Composable
     private fun MainScreen() {
+        val viewModel: CameraControlViewModel = hiltViewModel()
         val internalViewModifier = Modifier
             .fillMaxWidth()
             .padding(
@@ -101,6 +105,10 @@ class CameraControlFragment : NavigationFragment.SubFragment() {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             StepperRow(name = CelestiaString("Zoom (Distance)", "Zoom in/out in Camera Control, this changes the relative distance to the object"), minusAction = CameraControlAction.ZoomOut, plusAction = CameraControlAction.ZoomIn, modifier = internalViewModifier)
             Footer(text = CelestiaString("Long press on stepper to zoom in/out.", ""))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+            CheckboxRow(primaryText = CelestiaString("Enable Gyroscope Control", "Enable gyroscope control for camera rotation"), checked = viewModel.sessionSettings.isGyroscopeEnabled, onCheckedChange = {
+                viewModel.sessionSettings.isGyroscopeEnabled = it
+            })
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
             TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = {
                 listener?.onCameraControlObserverModeClicked()

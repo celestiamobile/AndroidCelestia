@@ -15,13 +15,24 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
-import android.view.*
+import android.view.ContextMenu
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.SurfaceHolder
+import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.compose.runtime.snapshotFlow
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
@@ -29,15 +40,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import space.celestia.celestia.*
+import space.celestia.celestia.AppCore
+import space.celestia.celestia.Body
+import space.celestia.celestia.BrowserItem
+import space.celestia.celestia.Renderer
+import space.celestia.celestia.Selection
+import space.celestia.celestia.Universe
+import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.purchase.PurchaseManager
@@ -45,15 +63,20 @@ import space.celestia.mobilecelestia.purchase.ToolbarSettingFragment
 import space.celestia.mobilecelestia.purchase.toolbarItems
 import space.celestia.mobilecelestia.settings.boldFont
 import space.celestia.mobilecelestia.settings.normalFont
-import space.celestia.mobilecelestia.utils.*
+import space.celestia.mobilecelestia.utils.AppStatusReporter
+import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.mobilecelestia.utils.showAlert
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.Locale
+import java.util.Timer
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 import kotlin.concurrent.fixedRateTimer
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 @AndroidEntryPoint
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler, SensorEventListener {
     private var activity: Activity? = null
 
     @Inject
@@ -71,6 +94,13 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     lateinit var purchaseManager: PurchaseManager
     @Inject
     lateinit var defaultFilePaths: FilePaths
+    @Inject
+    lateinit var sessionSettings: SessionSettings
+
+    private lateinit var sensorManager: SensorManager
+    private var gyroscope: Sensor? = null
+    private var isGyroscopeActive = false
+    private var lastRotationQuaternion: FloatArray? = null
 
     // MARK: GL View
     private lateinit var glView: CelestiaView
@@ -128,6 +158,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize SensorManager and get the gyroscope sensor
+        sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
         density = resources.displayMetrics.density
         fontScale = resources.configuration.fontScale
@@ -207,11 +241,21 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     override fun onPause() {
         super.onPause()
 
+        if (isGyroscopeActive) {
+            sensorManager.unregisterListener(this, gyroscope)
+            lastRotationQuaternion = null
+            isGyroscopeActive = false // Mark as inactive
+        }
+
         renderer.pause()
     }
 
     override fun onResume() {
         super.onResume()
+
+        if (sessionSettings.isGyroscopeEnabled) {
+            updateGyroscope(true)
+        }
 
         renderer.resume()
     }
@@ -449,11 +493,37 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
         if (isContextMenuEnabled)
             registerForContextMenu(glView)
+
+        snapshotFlow { sessionSettings.isGyroscopeEnabled }
+            .onEach { isEnabled ->
+                updateGyroscope(isEnabled)
+            }
+            .launchIn(lifecycleScope)
+
         loadSuccess = true
 
         Log.d(TAG, "Ready to display")
 
         handleInsetsChanged(savedInsets)
+    }
+
+    private fun updateGyroscope(isEnabled: Boolean) {
+        if (isEnabled) {
+            if (!isGyroscopeActive) {
+                // Register the listener only if it's not already active
+                sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_GAME)
+                isGyroscopeActive = true
+                Log.d(TAG, "Gyroscope enabled and listener registered.")
+            }
+        } else {
+            if (isGyroscopeActive) {
+                // Unregister the listener only if it's active
+                sensorManager.unregisterListener(this, gyroscope)
+                lastRotationQuaternion = null
+                isGyroscopeActive = false
+                Log.d(TAG, "Gyroscope disabled and listener unregistered.")
+            }
+        }
     }
 
     override fun onCreateContextMenu(
@@ -717,6 +787,34 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             val activity = this@CelestiaFragment.activity ?: return@launch
             activity.showAlert(message)
         }
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type != Sensor.TYPE_ROTATION_VECTOR) return
+        if (!isGyroscopeActive) return // Extra check, though should be handled by registration logic
+
+        val rawQuat = FloatArray(4)
+        SensorManager.getQuaternionFromVector(rawQuat, event.values)
+
+        val currentQuat = floatArrayOf(
+            rawQuat[1], // x
+            rawQuat[2], // y
+            rawQuat[3], // z
+            -rawQuat[0]  // w
+        )
+
+        val fromQuat = lastRotationQuaternion
+        lastRotationQuaternion = currentQuat.copyOf() // Defensive copy
+
+        if (fromQuat != null) {
+            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                appCore.simulation.activeObserver.rotate(fromQuat, currentQuat)
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        Log.d(TAG, "Gyroscope accuracy changed to: $accuracy")
     }
 
     companion object {

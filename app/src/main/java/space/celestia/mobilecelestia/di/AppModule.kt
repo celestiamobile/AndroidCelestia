@@ -14,6 +14,7 @@ import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.celestiafoundation.resource.model.ResourceManager
+import space.celestia.mobilecelestia.celestia.SessionSettings
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import javax.inject.Qualifier
@@ -87,5 +88,11 @@ object AppModule {
     @Provides
     fun provideDefaultFilePaths(@ApplicationContext context: Context): FilePaths {
         return FilePaths(context)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSessionSettings(): SessionSettings {
+        return SessionSettings()
     }
 }

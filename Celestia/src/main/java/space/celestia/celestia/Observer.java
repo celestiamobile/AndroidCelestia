@@ -39,7 +39,12 @@ public class Observer {
         c_setFrame(pointer, coordinateSystem, reference, target);
     }
 
+    public void rotate(float[] from, float[] to) {
+        c_rotate(pointer, from, to);
+    }
+
     private static native String c_getDisplayedSurface(long ptr);
     private static native void c_setDisplayedSurface(long ptr, String displayedSurface);
     private static native void c_setFrame(long ptr, int coordinateSystem, Selection reference, Selection target);
+    private static native void c_rotate(long ptr, float[] from, float[] to);
 }
