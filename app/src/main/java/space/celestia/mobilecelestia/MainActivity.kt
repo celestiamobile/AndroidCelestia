@@ -2122,8 +2122,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "97"
-        // 97: 1.8.3, Localization update data update (commit bf3a919855ea19544d0f524d8466740d9ed11951)
+        private const val CURRENT_DATA_VERSION = "98"
+        // 97: 1.8.3, Localization update data update (commit e09de6968bda2a9d99c42ea6c064d22ea17f7373)
         // 96: 1.8.2, Localization update data update (commit 36a7474dceee5e7b83e54c4d0a44115b2953edc6)
         // 93: 1.8.0, Data update (commit 7cf89b3deace6b18c1ac6eeb5be3338c34fe470e)
         // 91: 1.7.13, Data update (commit 82f08ce3f90d9eb6339d8b9cf349afcea243f2f9)
