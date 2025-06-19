@@ -535,7 +535,7 @@ add_library(libepoxy STATIC IMPORTED)
 set_target_properties(libepoxy PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libGL.a)
 
 add_library(libpng STATIC IMPORTED)
-set_target_properties(libpng PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libpng16.a)
+set_target_properties(libpng PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libpng.a)
 
 add_library(jpeg STATIC IMPORTED)
 set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libjpeg.a)
