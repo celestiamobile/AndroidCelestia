@@ -29,7 +29,7 @@ ndk = "28.1.13356709"
 okhttp = "4.12.0"
 recyclerview = "1.4.0"
 retrofit = "3.0.0"
-sentry-android = "8.11.1"
+sentry-android = "8.13.2"
 target_sdk = "36"
 webkit = "1.14.0"
 
