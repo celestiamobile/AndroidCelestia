@@ -299,7 +299,7 @@ Java_space_celestia_celestia_AppCore_c_1startSimulation(JNIEnv *env, jclass claz
     }
 
     AppCoreProgressWatcher watcher(env, wc, jWcMethod);
-    std::vector<fs::path> extras;
+    std::vector<std::filesystem::path> extras;
     if (extra_directories != nullptr)
     {
         jsize number = env->GetArrayLength(extra_directories);

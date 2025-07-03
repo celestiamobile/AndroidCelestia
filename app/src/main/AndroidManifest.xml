@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="616"
+    android:versionCode="617"
     android:versionName="1.8.7">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
@@ -96,6 +96,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="celguide"
+                    android:host="*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="celestia"
                     android:host="*" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
