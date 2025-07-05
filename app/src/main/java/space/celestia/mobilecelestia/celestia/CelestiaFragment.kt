@@ -802,7 +802,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
                 val activity = weakSelf.get()?.activity ?: return@withContext AppCore.SYSTEM_ACCESS_UNKNOWN
                 val result = activity.showAlertAsync(
                     title = CelestiaString("Script System Access", "Alert title for scripts requesting system access"),
-                    message = CelestiaString("This script requests permission to read/write files and execute external programs. Allowing this can be dangerous.\nDo you trust the script and want to allow this?", "Alert message for scripts requesting system access")
+                    message = CelestiaString("This script requests permission to read/write files and execute external programs. Allowing this can be dangerous.\nDo you trust the script and want to allow this?", "Alert message for scripts requesting system access"),
+                    showCancel = true
                 )
                 return@withContext when (result) {
                     AlertResult.OK -> AppCore.SYSTEM_ACCESS_GRANTED

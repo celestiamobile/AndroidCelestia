@@ -45,7 +45,7 @@
         <activity
             android:name="space.celestia.mobilecelestia.MainActivity"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode|locale"
-            android:launchMode="singleInstance"
+            android:launchMode="singleInstancePerTask"
             android:exported="true"
             android:windowSoftInputMode="adjustPan"
             tools:ignore="LockedOrientationActivity">
