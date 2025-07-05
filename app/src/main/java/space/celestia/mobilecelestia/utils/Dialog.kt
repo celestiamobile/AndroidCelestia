@@ -22,6 +22,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import space.celestia.mobilecelestia.R
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 fun Activity.showTextInput(title: String, placeholder: String? = null, handler: (String) -> Unit) {
     if (isFinishing || isDestroyed)
@@ -137,6 +139,26 @@ fun Activity.showAlert(title: String, message: String? = null, handler: (() -> U
         }
     }
     builder.show()
+}
+
+enum class AlertResult {
+    OK,
+    Cancel
+}
+
+suspend fun Activity.showAlertAsync(title: String, message: String? = null, showCancel: Boolean = false): AlertResult = suspendCoroutine { cont ->
+    showAlert(
+        title = title,
+        message = message,
+        handler = {
+            cont.resume(AlertResult.OK)
+        },
+        cancelHandler = if (showCancel) {
+            {
+                cont.resume(AlertResult.Cancel)
+            }
+        } else null
+    )
 }
 
 fun Activity.showError(error: Throwable) {

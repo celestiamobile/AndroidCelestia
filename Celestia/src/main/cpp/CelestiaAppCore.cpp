@@ -237,6 +237,21 @@ Java_space_celestia_celestia_AppCore_c_1setContextMenuHandler(JNIEnv *env, jobje
 
 extern "C"
 JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setSystemAccessHandler(JNIEnv *env, jobject thiz, jlong ptr) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    static jmethodID systemAccessCallback = nullptr;
+    if (!systemAccessCallback)
+        systemAccessCallback = env->GetMethodID(env->GetObjectClass(thiz), "onSystemAccessRequested", "()I");
+    jobject globalRef = env->NewGlobalRef(thiz);
+    core->setScriptSystemAccessHandler([globalRef]{
+        auto env = reinterpret_cast<JNIEnv *>(pthread_getspecific(javaEnvKey));
+        if (!env) return CelestiaCore::ScriptSystemAccessPolicy::Ask;
+        return static_cast<CelestiaCore::ScriptSystemAccessPolicy>(env->CallIntMethod(globalRef, systemAccessCallback));
+    });
+}
+
+extern "C"
+JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setFatalErrorHandler(JNIEnv *env, jobject thiz, jlong ptr) {
     auto core = reinterpret_cast<CelestiaCore *>(ptr);
     static jmethodID fatalErrorCallback = nullptr;

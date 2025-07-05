@@ -39,10 +39,12 @@ import androidx.core.view.MenuCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Body
@@ -63,10 +65,12 @@ import space.celestia.mobilecelestia.purchase.ToolbarSettingFragment
 import space.celestia.mobilecelestia.purchase.toolbarItems
 import space.celestia.mobilecelestia.settings.boldFont
 import space.celestia.mobilecelestia.settings.normalFont
+import space.celestia.mobilecelestia.utils.AlertResult
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.showAlert
+import space.celestia.mobilecelestia.utils.showAlertAsync
 import java.lang.ref.WeakReference
 import java.util.Locale
 import java.util.Timer
@@ -76,7 +80,7 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 @AndroidEntryPoint
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler, SensorEventListener {
+class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler, AppCore.SystemAccessHandler, SensorEventListener {
     private var activity: Activity? = null
 
     @Inject
@@ -228,6 +232,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         appStatusReporter.unregister(this)
         appCore.setContextMenuHandler(null)
         appCore.setFatalErrorHandler(null)
+        appCore.setSystemAccessHandler(null)
 
         super.onDestroyView()
     }
@@ -490,6 +495,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             if (isContextMenuEnabled)
                 appCore.setContextMenuHandler(this@CelestiaFragment)
             appCore.setFatalErrorHandler(this@CelestiaFragment)
+            appCore.setSystemAccessHandler(this@CelestiaFragment)
         }
         if (isContextMenuEnabled)
             registerForContextMenu(glView)
@@ -786,6 +792,23 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         lifecycleScope.launch {
             val activity = this@CelestiaFragment.activity ?: return@launch
             activity.showAlert(message)
+        }
+    }
+
+    override fun requestSystemAccess(): Int {
+        val weakSelf = WeakReference(this)
+        return runBlocking {
+            withContext(Dispatchers.Main) {
+                val activity = weakSelf.get()?.activity ?: return@withContext AppCore.SYSTEM_ACCESS_UNKNOWN
+                val result = activity.showAlertAsync(
+                    title = CelestiaString("Script System Access", "Alert title for scripts requesting system access"),
+                    message = CelestiaString("This script requests permission to read/write files and execute external programs. Allowing this can be dangerous.\nDo you trust the script and want to allow this?", "Alert message for scripts requesting system access")
+                )
+                return@withContext when (result) {
+                    AlertResult.OK -> AppCore.SYSTEM_ACCESS_GRANTED
+                    AlertResult.Cancel -> AppCore.SYSTEM_ACCESS_DENIED
+                }
+            }
         }
     }
 

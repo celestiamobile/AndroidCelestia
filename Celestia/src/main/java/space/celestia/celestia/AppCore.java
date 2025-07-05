@@ -47,6 +47,10 @@ public class AppCore {
     public static final int IMAGE_TYPE_JPEG     = 1;
     public static final int IMAGE_TYPE_PNG      = 4;
 
+    public static final int SYSTEM_ACCESS_UNKNOWN   = 0;
+    public static final int SYSTEM_ACCESS_GRANTED   = 1;
+    public static final int SYSTEM_ACCESS_DENIED    = 2;
+
     public interface ProgressWatcher {
         void onCelestiaProgress(@NonNull String progress);
     }
@@ -58,11 +62,17 @@ public class AppCore {
     public interface FatalErrorHandler {
         void fatalError(@NonNull String message);
     }
+
+    public interface SystemAccessHandler {
+        int requestSystemAccess();
+    }
+
     private final long pointer;
     private boolean initialized;
     private Simulation simulation;
     private ContextMenuHandler contextMenuHandler;
     private FatalErrorHandler fatalErrorHandler;
+    private SystemAccessHandler systemAccessHandler;
 
     public boolean isInitialized() {
         return initialized;
@@ -75,6 +85,7 @@ public class AppCore {
         this.contextMenuHandler = null;
         c_setContextMenuHandler(pointer);
         c_setFatalErrorHandler(pointer);
+        c_setSystemAccessHandler(pointer);
     }
 
     public boolean startRenderer() {
@@ -122,6 +133,10 @@ public class AppCore {
         fatalErrorHandler = handler;
     }
 
+    public void setSystemAccessHandler(@Nullable SystemAccessHandler handler) {
+        systemAccessHandler = handler;
+    }
+
     private void onRequestContextMenu(float x, float y, Selection selection) {
         if (contextMenuHandler != null)
             contextMenuHandler.requestContextMenu(x, y, selection);
@@ -130,6 +145,12 @@ public class AppCore {
     private void onFatalError(String message) {
         if (fatalErrorHandler != null)
             fatalErrorHandler.fatalError(message);
+    }
+
+    private int onSystemAccessRequested() {
+        if (systemAccessHandler != null)
+            return systemAccessHandler.requestSystemAccess();
+        return SYSTEM_ACCESS_UNKNOWN;
     }
 
     public void setSafeAreaInsets(int left, int top, int right, int bottom) {
@@ -252,6 +273,7 @@ public class AppCore {
     // C function
     private native void c_setContextMenuHandler(long ptr);
     private native void c_setFatalErrorHandler(long ptr);
+    private native void c_setSystemAccessHandler(long ptr);
     private static native long c_init();
     private static native boolean c_startRenderer(long ptr);
     private static native boolean c_startSimulation(long ptr, String configFileName, String[] extraDirectories, ProgressWatcher watcher);
