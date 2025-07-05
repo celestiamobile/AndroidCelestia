@@ -740,6 +740,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             showAlert(String.format(CelestiaString("Celestia does not know how to open %s", ""), itemName))
             return
         }
+        itemName = itemName.substringAfter("/")
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val path = "${cacheDir.absolutePath}/$itemName"
