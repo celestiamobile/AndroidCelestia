@@ -17,7 +17,10 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
+import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import space.celestia.mobilecelestia.R
 import java.text.SimpleDateFormat
@@ -117,14 +120,30 @@ fun Activity.showLoading(title: String, cancelHandler: (() -> Unit)? = null): Al
 }
 
 fun Activity.showAlert(title: String, message: String? = null, handler: (() -> Unit)? = null, cancelHandler: (() -> Unit)? = null) {
-    if (isFinishing || isDestroyed)
+    if (isFinishing || isDestroyed) {
+        if (cancelHandler != null)
+            cancelHandler()
         return
+    }
+
+    var handlerCalled = false
+    (this as? ComponentActivity)?.lifecycle?.addObserver(object : DefaultLifecycleObserver {
+        override fun onDestroy(owner: LifecycleOwner) {
+            owner.lifecycle.removeObserver(this)
+            if (!handlerCalled) {
+                handlerCalled = true
+                if (cancelHandler != null)
+                    cancelHandler()
+            }
+        }
+    })
 
     val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
     if (message != null)
         builder.setMessage(message)
     builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->
+        handlerCalled = true
         if (handler != null)
             handler()
     }
@@ -133,10 +152,10 @@ fun Activity.showAlert(title: String, message: String? = null, handler: (() -> U
             dialog.cancel()
         }
     }
-    if (cancelHandler != null) {
-        builder.setOnCancelListener {
+    builder.setOnCancelListener {
+        handlerCalled = true
+        if (cancelHandler != null)
             cancelHandler()
-        }
     }
     builder.show()
 }
