@@ -29,6 +29,7 @@ public class Utils {
     Vector rectToSpherical(@NonNull Vector rect);
     public static native double AUToKilometers(double au);
     public static native double degFromRad(double rad);
+    public static native float[] transformQuaternion(float[] q, float angleZ);
 
     public static Date createDateFromJulianDay(Double julianDay) {
         return new Date(getMilliSecondsFromEpochFromJulianDay(julianDay));

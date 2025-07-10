@@ -24,9 +24,11 @@ import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
 import android.view.ContextMenu
+import android.view.Display
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
@@ -52,6 +54,7 @@ import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
+import space.celestia.celestia.Utils
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.mobilecelestia.MainActivity
@@ -76,8 +79,6 @@ import java.util.Locale
 import java.util.Timer
 import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
-import kotlin.math.abs
-import kotlin.math.sqrt
 
 @AndroidEntryPoint
 class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler, AppCore.SystemAccessHandler, SensorEventListener {
@@ -578,7 +579,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         if (obj is Body) {
             val alternateSurfaces = obj.alternateSurfaceNames
-            if (alternateSurfaces.size > 0) {
+            if (alternateSurfaces.isNotEmpty()) {
                 val subMenu = menu.addSubMenu(GROUP_ALT_SURFACE_TOP, 0, Menu.NONE, CelestiaString("Alternate Surfaces", "Alternative textures to display"))
                 subMenu.add(GROUP_ALT_SURFACE, 0, Menu.NONE, CelestiaString("Default", ""))
                 alternateSurfaces.withIndex().forEach {
@@ -825,12 +826,28 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val rawQuat = FloatArray(4)
         SensorManager.getQuaternionFromVector(rawQuat, event.values)
 
-        val currentQuat = floatArrayOf(
+        val display: Display?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display = activity?.display
+        } else {
+            @Suppress("DEPRECATION")
+            display = activity?.windowManager?.defaultDisplay
+        }
+        val screenRotation = display?.rotation ?: Surface.ROTATION_0
+        val angleZ: Float = when (screenRotation) {
+            Surface.ROTATION_0 -> 0f
+            Surface.ROTATION_90 -> (Math.PI / 2.0f).toFloat()
+            Surface.ROTATION_180 -> Math.PI.toFloat()
+            Surface.ROTATION_270 -> (-Math.PI / 2.0).toFloat()
+            else -> 0f
+        }
+
+        val currentQuat = Utils.transformQuaternion(floatArrayOf(
             rawQuat[1], // x
             rawQuat[2], // y
             rawQuat[3], // z
             -rawQuat[0]  // w
-        )
+        ), angleZ)
 
         val fromQuat = lastRotationQuaternion
         lastRotationQuaternion = currentQuat.copyOf() // Defensive copy

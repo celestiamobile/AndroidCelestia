@@ -80,3 +80,20 @@ JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Utils_degFromRad(JNIEnv *env, jclass clazz, jdouble rad) {
     return static_cast<jdouble>(celestia::math::radToDeg(static_cast<double>(rad)));
 }
+
+extern "C"
+JNIEXPORT jfloatArray JNICALL
+Java_space_celestia_celestia_Utils_transformQuaternion(JNIEnv *env, jclass clazz, jfloatArray q,
+                                                       jfloat angle_z) {
+    if (angle_z == 0.0f)
+        return q;
+    float buffer[4];
+    env->GetFloatArrayRegion(q, 0, 4, buffer);
+    Eigen::Quaternionf quaternion(buffer);
+    Eigen::Quaternionf zRotation(Eigen::AngleAxisf(angle_z, Eigen::Vector3f::UnitZ()));
+    Eigen::Quaternionf transformed = zRotation * quaternion;
+    jfloatArray result = env->NewFloatArray(4);
+    float out[4] = { transformed.x(), transformed.y(), transformed.z(), transformed.w() };
+    env->SetFloatArrayRegion(result, 0, 4, out);
+    return result;
+}
