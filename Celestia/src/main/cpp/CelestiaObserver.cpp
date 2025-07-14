@@ -55,3 +55,17 @@ Java_space_celestia_celestia_Observer_c_1rotate(JNIEnv *env, jclass clazz, jlong
     t.normalize();
     observer->rotate(t * f.conjugate());
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_Observer_c_1applyQuaternion(JNIEnv *env, jclass clazz, jlong ptr,
+                                                       jfloatArray current, jfloatArray previous) {
+    float prevBuffer[4];
+    float currBuffer[4];
+    env->GetFloatArrayRegion(previous, 0, 4, prevBuffer);
+    env->GetFloatArrayRegion(current, 0, 4, currBuffer);
+    Eigen::Quaternionf prev(prevBuffer);
+    Eigen::Quaternionf curr(currBuffer);
+    auto observer = reinterpret_cast<Observer *>(ptr);
+    observer->setOrientationTransform((curr * prev.inverse()).cast<double>() * observer->getOrientationTransform());
+}

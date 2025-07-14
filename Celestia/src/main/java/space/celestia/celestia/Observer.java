@@ -43,8 +43,13 @@ public class Observer {
         c_rotate(pointer, from, to);
     }
 
+    public void applyQuaternion(float[] current, float[] previous) {
+        c_applyQuaternion(pointer, current, previous);
+    }
+
     private static native String c_getDisplayedSurface(long ptr);
     private static native void c_setDisplayedSurface(long ptr, String displayedSurface);
     private static native void c_setFrame(long ptr, int coordinateSystem, Selection reference, Selection target);
     private static native void c_rotate(long ptr, float[] from, float[] to);
+    private static native void c_applyQuaternion(long ptr, float[] current, float[] previous);
 }

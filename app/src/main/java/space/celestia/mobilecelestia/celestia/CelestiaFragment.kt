@@ -854,7 +854,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         if (fromQuat != null) {
             lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                appCore.simulation.activeObserver.rotate(fromQuat, currentQuat)
+                appCore.simulation.activeObserver.applyQuaternion(currentQuat, fromQuat)
             }
         }
     }
