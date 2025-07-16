@@ -240,6 +240,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celrender/nebularenderer.h
         ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/referencemarkrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/referencemarkrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/rendererfwd.h
         ${CELESTIA_SRC_DIR}/celrender/ringrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/ringrenderer.h

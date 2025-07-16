@@ -34,6 +34,9 @@ public class AppCore {
     public static final int JOYSTICK_AXIS_X         = 0;
     public static final int JOYSTICK_AXIS_Y         = 1;
     public static final int JOYSTICK_AXIS_Z         = 2;
+    public static final int JOYSTICK_AXIS_RX        = 3;
+    public static final int JOYSTICK_AXIS_RY        = 4;
+    public static final int JOYSTICK_AXIS_RZ        = 5;
 
     public static final int MEASUREMENT_SYSTEM_METRIC   = 0;
     public static final int MEASUREMENT_SYSTEM_IMPERIAL = 1;

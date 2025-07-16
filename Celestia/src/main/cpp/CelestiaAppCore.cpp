@@ -630,7 +630,7 @@ Java_space_celestia_celestia_AppCore_c_1joystickAxis(JNIEnv *env, jclass clazz,
                                                                 jint axis,
                                                                 jfloat amount) {
     auto core = (CelestiaCore *)ptr;
-    core->joystickAxis(axis, amount);
+    core->joystickAxis(static_cast<CelestiaCore::JoyAxis>(axis), amount);
 }
 
 extern "C"

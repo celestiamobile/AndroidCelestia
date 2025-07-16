@@ -738,29 +738,33 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         // Calculate the horizontal distance to move by
         // using the input value combined from these physical controls:
         // the left control stick and the right control stick.
-        var x = 0f
-        var y = 0f
+        var xLeft = 0f
+        var yLeft = 0f
+        var xRight = 0f
+        var yRight = 0f
         if (appSettings[PreferenceManager.PredefinedKey.ControllerEnableLeftThumbstick] != "false") {
-            x += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
-            y += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
+            xLeft += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
+            yLeft += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
         }
 
         // Calculate the vertical distance to move by
         // using the input value combined from these physical controls:
         // the left control stick and the right control stick.
         if (appSettings[PreferenceManager.PredefinedKey.ControllerEnableRightThumbstick] != "false") {
-            x += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
-            y += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
+            xRight += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
+            yRight += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
         }
 
-        if (x == 0f && y == 0f) return
+        if (xLeft == 0f && yLeft == 0f && xRight == 0f && yRight == 0f) return
 
         val shouldInvertX = appSettings[PreferenceManager.PredefinedKey.ControllerInvertX] == "true"
         val shouldInvertY = appSettings[PreferenceManager.PredefinedKey.ControllerInvertY] == "true"
 
         executor.execute {
-            appCore.joystickAxis(AppCore.JOYSTICK_AXIS_X, if (shouldInvertX) -x else x)
-            appCore.joystickAxis(AppCore.JOYSTICK_AXIS_Y, if (shouldInvertY) y else -y)
+            appCore.joystickAxis(AppCore.JOYSTICK_AXIS_X, if (shouldInvertX) -xLeft else xLeft)
+            appCore.joystickAxis(AppCore.JOYSTICK_AXIS_Y, if (shouldInvertY) yLeft else -yLeft)
+            appCore.joystickAxis(AppCore.JOYSTICK_AXIS_RX, if (shouldInvertX) -xRight else xRight)
+            appCore.joystickAxis(AppCore.JOYSTICK_AXIS_RY, if (shouldInvertY) yRight else -yRight)
         }
     }
 
