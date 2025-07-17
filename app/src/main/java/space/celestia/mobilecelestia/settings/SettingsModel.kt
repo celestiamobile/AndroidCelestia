@@ -92,6 +92,7 @@ enum class SettingsKey : PreferenceManager.Key, Serializable {
     EnableReverseWheel,
     EnableRayBasedDragging,
     EnableFocusZooming,
+    EnableAlignCameraToSurfaceOnLand,
     // Int values
     TimeZone,
     DateFormat,
@@ -180,6 +181,7 @@ enum class SettingsKey : PreferenceManager.Key, Serializable {
             EnableReverseWheel -> CelestiaString("Reverse Mouse Wheel", "")
             EnableRayBasedDragging -> CelestiaString("Ray-Based Dragging", "")
             EnableFocusZooming -> CelestiaString("Focus Zooming", "")
+            EnableAlignCameraToSurfaceOnLand -> CelestiaString("Align to Surface on Landing", "Option to align camera to surface when landing")
             TimeZone -> CelestiaString("Time Zone", "")
             DateFormat -> CelestiaString("Date Format", "")
             Resolution -> CelestiaString("Texture Resolution", "")
@@ -269,6 +271,7 @@ enum class SettingsKey : PreferenceManager.Key, Serializable {
                 EnableReverseWheel,
                 EnableRayBasedDragging,
                 EnableFocusZooming,
+                EnableAlignCameraToSurfaceOnLand,
             )
 
         val allIntCases: List<SettingsKey>
@@ -653,6 +656,16 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
                     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, displayName = CelestiaString("Context Menu", "Settings for whether context menu is enabled"), true, subtitle = CelestiaString("Context menu by long press or context click", "Description for how a context menu is triggered")),
                 ),
                 footer = CelestiaString("Some configurations will take effect after a restart.", "")
+            )
+        )
+    ),
+    SettingsCommonItem(
+        CelestiaString("Camera", "Settings for camera control"),
+        listOf(
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsSwitchItem(SettingsKey.EnableAlignCameraToSurfaceOnLand, representation = SettingsSwitchItem.Representation.Switch),
+                ),
             )
         )
     ),

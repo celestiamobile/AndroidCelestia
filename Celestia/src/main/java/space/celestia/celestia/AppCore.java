@@ -852,4 +852,10 @@ public class AppCore {
     public void setEnableReverseWheel(boolean value) { c_setEnableReverseWheel(pointer, value); }
     private static native void c_setEnableReverseWheel(long pointer, boolean value);
     private native boolean c_getEnableReverseWheel(long pointer);
+
+    public boolean getEnableAlignCameraToSurfaceOnLand() { return c_getEnableAlignCameraToSurfaceOnLand(pointer); }
+    public void setEnableAlignCameraToSurfaceOnLand(boolean value) { c_setEnableAlignCameraToSurfaceOnLand(pointer, value); }
+    private static native void c_setEnableAlignCameraToSurfaceOnLand(long pointer, boolean value);
+    private native boolean c_getEnableAlignCameraToSurfaceOnLand(long pointer);
+
 }

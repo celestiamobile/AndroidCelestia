@@ -991,6 +991,23 @@ INTERACTIONMETHODS(ReverseWheel)
 INTERACTIONMETHODS(RayBasedDragging)
 INTERACTIONMETHODS(FocusZooming)
 
+#define OBSERVERMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
+Java_space_celestia_celestia_AppCore_c_1getEnable##flag (JNIEnv *env, jclass clazz, jlong pointer) { \
+    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    return celestia::util::is_set(core->getObserverFlags(), celestia::engine::ObserverFlags::flag) ? JNI_TRUE : JNI_FALSE; \
+} \
+extern "C" \
+JNIEXPORT void JNICALL \
+Java_space_celestia_celestia_AppCore_c_1setEnable##flag (JNIEnv *env, jclass clazz, jlong pointer, \
+                                                                        jboolean value) { \
+    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    auto flags = core->getObserverFlags(); \
+    celestia::util::set_or_unset(flags, celestia::engine::ObserverFlags::flag, static_cast<bool>(value));                                                                      \
+    core->setObserverFlags(flags); \
+}                                                                   \
+
+OBSERVERMETHODS(AlignCameraToSurfaceOnLand)
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setResolution(JNIEnv *env, jclass clazz, jlong pointer,
