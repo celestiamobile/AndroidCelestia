@@ -315,8 +315,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/marker.h
         ${CELESTIA_SRC_DIR}/celengine/meshmanager.cpp
         ${CELESTIA_SRC_DIR}/celengine/meshmanager.h
-        ${CELESTIA_SRC_DIR}/celengine/mapmanager.cpp
-        ${CELESTIA_SRC_DIR}/celengine/mapmanager.h
         ${CELESTIA_SRC_DIR}/celengine/modelgeometry.cpp
         ${CELESTIA_SRC_DIR}/celengine/modelgeometry.h
         ${CELESTIA_SRC_DIR}/celengine/multitexture.cpp
@@ -413,6 +411,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/virtualtex.h
         ${CELESTIA_SRC_DIR}/celengine/visibleregion.cpp
         ${CELESTIA_SRC_DIR}/celengine/visibleregion.h
+        ${CELESTIA_SRC_DIR}/celengine/warpmesh.cpp
+        ${CELESTIA_SRC_DIR}/celengine/warpmesh.h
         )
 
 list(APPEND CELESTIA_SOURCES
