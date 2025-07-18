@@ -65,3 +65,9 @@ JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Selection_c_1getRadius(JNIEnv *env, jobject thiz) {
     return static_cast<jdouble>(javaSelectionAsSelection(env, thiz).radius());
 }
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_Selection_c_1equals(JNIEnv *env, jobject thiz, jobject other) {
+    return javaSelectionAsSelection(env, thiz) == javaSelectionAsSelection(env, other) ? JNI_TRUE : JNI_FALSE;
+}

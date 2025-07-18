@@ -16,6 +16,8 @@ import android.os.Parcelable;
 
 import androidx.annotation.Nullable;
 
+import java.util.Objects;
+
 public class Selection implements Parcelable {
     private final static int SELECTION_TYPE_NIL             = 0;
     private final static int SELECTION_TYPE_STAR            = 1;
@@ -92,6 +94,12 @@ public class Selection implements Parcelable {
         }
     };
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        return c_equals((Selection)o);
+    }
+
     private static int typeForObject(AstroObject object) {
         if (object == null) {
             return SELECTION_TYPE_NIL;
@@ -166,4 +174,5 @@ public class Selection implements Parcelable {
 
     // C functions
     private native double c_getRadius();
+    private native boolean c_equals(Selection other);
 }
