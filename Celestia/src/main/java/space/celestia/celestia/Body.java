@@ -88,6 +88,10 @@ public class Body extends AstroObject {
         return new Timeline(c_getTimeline(pointer));
     }
 
+    public boolean canBeUsedAsCockpit() {
+        return c_canBeUsedAsCockpit(pointer);
+    }
+
     // C functions
     private static native int c_getType(long pointer);
     private static native String c_getName(long pointer);
@@ -104,4 +108,6 @@ public class Body extends AstroObject {
     private static native List<String> c_getAlternateSurfaceNames(long pointer);
 
     private static native long c_getTimeline(long pointer);
+
+    private static native boolean c_canBeUsedAsCockpit(long pointer);
 }

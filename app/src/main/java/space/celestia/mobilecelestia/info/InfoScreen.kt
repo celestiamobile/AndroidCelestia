@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -37,24 +38,29 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.LinkPreview
+import space.celestia.mobilecelestia.compose.SwitchRow
 import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.info.model.InfoWebActionItem
 import space.celestia.mobilecelestia.info.model.MarkItem
 import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.info.viewmodel.InfoViewModel
+import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getOverviewForSelection
 import java.net.MalformedURLException
 import java.net.URL
 
 @Composable
-fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
+fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit,  paddingValues: PaddingValues, modifier: Modifier = Modifier) {
     val viewModel: InfoViewModel = hiltViewModel()
     var objectName by remember { mutableStateOf("") }
     var overview by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(selection) {
         objectName = if (showTitle) viewModel.appCore.simulation.universe.getNameForSelection(selection) else ""
@@ -94,6 +100,15 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> U
                 try {
                     url = URL(urlString)
                 } catch (ignored: MalformedURLException) {}
+                if (selection.body?.canBeUsedAsCockpit() == true) {
+                    var isCockpit by remember { mutableStateOf(viewModel.appCore.simulation.activeObserver.cockpit == selection) }
+                    SwitchRow(primaryText = CelestiaString("Use as Cockpit","Option to use a spacecraft as cockpit"), checked = isCockpit, onCheckedChange = {
+                        isCockpit = it
+                        scope.launch(viewModel.executor.asCoroutineDispatcher()) {
+                            viewModel.appCore.simulation.activeObserver.cockpit = if (it) selection else Selection()
+                        }
+                    }, horizontalPadding = 0.dp, canTapWholeRow = false)
+                }
                 if (hasWebInfo && url != null) {
                     LinkPreview(url = url, modifier = rowModifier.padding(bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), onClick = { finalURL ->
                         linkHandler(finalURL)

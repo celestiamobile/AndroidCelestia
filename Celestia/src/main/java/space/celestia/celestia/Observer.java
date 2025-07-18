@@ -39,6 +39,14 @@ public class Observer {
         c_setFrame(pointer, coordinateSystem, reference, target);
     }
 
+    public void setCockpit(@NonNull Selection selection) {
+        c_setCockpit(pointer, selection);
+    }
+
+    public @NonNull Selection getCockpit() {
+        return c_getCockpit(pointer);
+    }
+
     public void rotate(float[] from, float[] to) {
         c_rotate(pointer, from, to);
     }
@@ -52,4 +60,6 @@ public class Observer {
     private static native void c_setFrame(long ptr, int coordinateSystem, Selection reference, Selection target);
     private static native void c_rotate(long ptr, float[] from, float[] to);
     private static native void c_applyQuaternion(long ptr, float[] current, float[] previous);
+    private static native void c_setCockpit(long ptr, Selection selection);
+    private static native Selection c_getCockpit(long ptr);
 }

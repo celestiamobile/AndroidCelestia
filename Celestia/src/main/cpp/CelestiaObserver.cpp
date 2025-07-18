@@ -69,3 +69,18 @@ Java_space_celestia_celestia_Observer_c_1applyQuaternion(JNIEnv *env, jclass cla
     auto observer = reinterpret_cast<Observer *>(ptr);
     observer->setOrientationTransform((curr * prev.inverse()).cast<double>() * observer->getOrientationTransform());
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_Observer_c_1setCockpit(JNIEnv *env, jclass clazz, jlong ptr,
+                                                    jobject selection) {
+    auto observer = reinterpret_cast<Observer *>(ptr);
+    observer->setCockpit(javaSelectionAsSelection(env, selection));
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_celestia_Observer_c_1getCockpit(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto observer = reinterpret_cast<Observer *>(ptr);
+    return selectionAsJavaSelection(env, observer->getCockpit());
+}

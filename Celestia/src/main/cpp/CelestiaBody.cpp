@@ -144,3 +144,10 @@ Java_space_celestia_celestia_Timeline_00024Phase_c_1getEndTime(JNIEnv *env, jcla
     auto phase = reinterpret_cast<TimelinePhase *>(pointer);
     return static_cast<jdouble>(phase->endTime());
 }
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_Body_c_1canBeUsedAsCockpit(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto body = reinterpret_cast<Body *>(pointer);
+    return GetBodyFeaturesManager()->canBeUsedAsCockpit(body) ? JNI_TRUE : JNI_FALSE;
+}
