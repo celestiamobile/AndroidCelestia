@@ -23,4 +23,4 @@ import space.celestia.mobilecelestia.utils.PreferenceManager
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(val appCore: AppCore, val executor: CelestiaExecutor, @AppSettings val appSettings: PreferenceManager, @CoreSettings val coreSettings: PreferenceManager, val purchaseManager: PurchaseManager, val defaultFilePaths: FilePaths) : ViewModel()
+class SettingsViewModel @Inject constructor(val appCore: AppCore, val executor: CelestiaExecutor, @param:AppSettings val appSettings: PreferenceManager, @param:CoreSettings val coreSettings: PreferenceManager, val purchaseManager: PurchaseManager, val defaultFilePaths: FilePaths) : ViewModel()
