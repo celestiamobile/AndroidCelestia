@@ -131,8 +131,14 @@ class SettingsRefreshRateFragment : NavigationFragment.SubFragment() {
 
     private fun availableRefreshRates(): Pair<List<Pair<Int, Int>>, Int>? {
         val activity = this.activity ?: return null
-        val displayManager = DisplayManagerCompat.getInstance(activity)
-        val display = displayManager.getDisplay(Display.DEFAULT_DISPLAY) ?: return null
+        val display: Display?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display = activity.display
+        } else {
+            @Suppress("DEPRECATION")
+            display = activity.windowManager?.defaultDisplay
+        }
+        if (display == null) return null
         @Suppress("DEPRECATION")
         val supportedRefreshRates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display.supportedModes.map { it.refreshRate } else display.supportedRefreshRates.toList()
         val maxRefreshRate = supportedRefreshRates.maxOrNull()?.toInt() ?: return null
