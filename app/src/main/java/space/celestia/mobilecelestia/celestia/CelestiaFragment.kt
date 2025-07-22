@@ -38,6 +38,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -664,6 +665,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     // Actions
     override fun didTapAction(action: CelestiaControlAction) {
+        if (!isControlViewVisible) return
+
         when (action) {
             CelestiaControlAction.ShowMenu -> {
                 listener?.celestiaFragmentDidRequestActionMenu()
@@ -700,6 +703,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         animator.doOnEnd {
             hideAnimator = null
             isControlViewVisible = false
+            controlView.isVisible = false
         }
         animator.start()
         hideAnimator = animator
@@ -713,6 +717,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             hideAnimator = null
         }
 
+        controlView.isVisible = true
         val animator = ObjectAnimator.ofFloat(controlView, View.ALPHA, 0f, 1f)
         animator.duration = 200
         animator.doOnEnd {
@@ -736,6 +741,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun didToggleToMode(action: CelestiaControlAction) {
+        if (!isControlViewVisible) return
+
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
                 interactionMode = CelestiaInteraction.InteractionMode.Camera
@@ -752,6 +759,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun didStartPressingAction(action: CelestiaControlAction) {
+        if (!isControlViewVisible) return
+
         when (action) {
             CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
             CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
@@ -767,6 +776,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun didEndPressingAction(action: CelestiaControlAction) {
+        if (!isControlViewVisible) return
+
         zoomTimer?.cancel()
         zoomTimer = null
         viewInteraction.zoomMode = null
