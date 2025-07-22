@@ -26,7 +26,7 @@
     <dimen name="section_footer_margin_top">8dp</dimen>
     <dimen name="section_footer_margin_bottom">12dp</dimen>
     <dimen name="list_item_gap_horizontal">8dp</dimen>
-    <dimen name="list_item_gap_imge_text_horizontal">12dp</dimen>
+    <dimen name="list_item_gap_image_text_horizontal">12dp</dimen>
     <dimen name="list_item_gap_vertical">8dp</dimen>
 
     <dimen name="tutorial_list_item_gap_horizontal">16dp</dimen>
@@ -60,14 +60,6 @@
     <dimen name="dialog_text_input_view_padding_vertical">12dp</dimen>
     <dimen name="dialog_text_input_text_padding_horizontal">4dp</dimen>
 
-    <dimen name="bottom_control_view_item_padding">10dp</dimen>
-    <dimen name="bottom_control_view_item_dimension">48dp</dimen>
-    <dimen name="bottom_control_view_margin_horizontal">6dp</dimen>
-    <dimen name="bottom_control_view_margin_vertical">0dp</dimen>
-    <dimen name="bottom_control_view_dimension">48dp</dimen>
-    <dimen name="bottom_control_container_height">48dp</dimen>
-    <dimen name="bottom_control_container_corner_radius">8dp</dimen>
-
     <dimen name="stepper_width">94dp</dimen>
     <dimen name="stepper_height">32dp</dimen>
     <dimen name="stepper_button_padding">5dp</dimen>
@@ -99,13 +91,6 @@
     <dimen name="bottom_navigation_view_item_padding_bottom">10dp</dimen>
 
     <dimen name="control_view_container_margin_end">8dp</dimen>
-    <dimen name="control_view_container_padding_vertical">4dp</dimen>
-    <dimen name="control_view_item_width">48dp</dimen>
-    <dimen name="control_view_item_padding_horizontal">7dp</dimen>
-    <dimen name="control_view_item_padding_vertical">7dp</dimen>
-
-    <dimen name="control_view_icon_size">40dp</dimen>
-    <dimen name="control_view_icon_spacing">6dp</dimen>
 
     <dimen name="stepper_corner_radius">7dp</dimen>
 

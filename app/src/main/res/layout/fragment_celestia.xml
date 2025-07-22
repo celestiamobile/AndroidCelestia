@@ -21,15 +21,19 @@
         android:layout_height="match_parent"
         style="@style/Container"/>
 
-    <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
+    <FrameLayout
         android:id="@+id/active_control_view_container"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|center_vertical"
-        android:layout_margin="@dimen/control_view_container_margin_end">
-        <space.celestia.mobilecelestia.celestia.CelestiaControlView
-            android:id="@+id/control_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:layout_margin="@dimen/control_view_container_margin_end">
+            <space.celestia.mobilecelestia.celestia.CelestiaControlView
+                android:id="@+id/control_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

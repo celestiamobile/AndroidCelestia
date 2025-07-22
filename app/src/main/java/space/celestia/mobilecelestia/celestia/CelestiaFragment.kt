@@ -9,6 +9,8 @@
 
 package space.celestia.mobilecelestia.celestia
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -33,6 +35,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.compose.runtime.snapshotFlow
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.core.view.isVisible
@@ -108,8 +111,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     // MARK: GL View
     private lateinit var glView: CelestiaView
     private lateinit var viewInteraction: CelestiaInteraction
-
-    private var currentControlViewID = R.id.active_control_view_container
 
     // Parameters
     private var pathToLoad: String? = null
@@ -214,6 +215,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
         controlView = view.findViewById(R.id.control_view)
         controlView.listener = this
+
+        val controlViewContainer = view.findViewById<FrameLayout>(R.id.active_control_view_container)
+        controlViewContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
         if (!hasSetRenderer) {
             appCore.setRenderer(renderer)

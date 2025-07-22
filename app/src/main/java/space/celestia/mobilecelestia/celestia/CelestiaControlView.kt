@@ -14,16 +14,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.widget.ImageView
-import android.widget.Button
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.updatePadding
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.overflow.OverflowLinearLayout
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.StandardImageButton
 
 enum class CelestiaControlAction {
     ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Search, Hide, Show, Go
@@ -51,7 +45,7 @@ sealed class CelestiaControlButton {
     ) : CelestiaControlButton()
 }
 
-class CelestiaControlView(context: Context, attrs: AttributeSet) : OverflowLinearLayout(context, attrs)  {
+class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs)  {
     var buttons: List<CelestiaControlButton> = listOf()
     set(value) {
         field = value
