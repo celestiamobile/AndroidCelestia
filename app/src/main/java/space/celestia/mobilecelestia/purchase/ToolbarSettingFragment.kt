@@ -98,7 +98,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     Info -> R.drawable.control_info
                     Search -> R.drawable.control_search
                     Menu -> R.drawable.control_action_menu
-                    Hide -> R.drawable.toolbar_exit
+                    Hide -> R.drawable.control_close
                     ZoomIn -> R.drawable.control_zoom_in
                     ZoomOut -> R.drawable.control_zoom_out
                     Go -> R.drawable.control_go
@@ -190,7 +190,7 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     }
                 })
             }) {
-                Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+                Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_imge_text_horizontal))) {
                     Image(painter = painterResource(id = item.imageResource), contentDescription = "Action Icon", colorFilter = ColorFilter.tint(
                         MaterialTheme.colorScheme.onBackground
                     ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)))
