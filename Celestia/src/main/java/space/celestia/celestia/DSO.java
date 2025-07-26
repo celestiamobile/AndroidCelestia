@@ -15,6 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class DSO extends AstroObject {
+    public static final int OBJECT_TYPE_GALAXY        = 0;
+    public static final int OBJECT_TYPE_GLOBULAR      = 1;
+    public static final int OBJECT_TYPE_NEBULA        = 2;
+    public static final int OBJECT_TYPE_OPEN_CLUSTER  = 3;
+
     protected DSO(long ptr) {
         super(ptr);
     }
@@ -25,6 +30,10 @@ public class DSO extends AstroObject {
         if (web.isEmpty())
             return null;
         return c_getWebInfoURL(pointer);
+    }
+
+    public int getObjectType() {
+        return c_getObjectType(pointer);
     }
 
     @NonNull
@@ -41,6 +50,7 @@ public class DSO extends AstroObject {
     // C functions
     private static native String c_getWebInfoURL(long pointer);
     private static native String c_getType(long pointer);
+    private static native int c_getObjectType(long pointer);
     private static native Vector c_getPosition(long pointer);
     private static native String c_getDescription(long pointer);
 }

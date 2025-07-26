@@ -121,13 +121,17 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
     )
     val prefixes = listOf("SB", "S", "E", "Irr", "Neb", "Glob", "Open cluster")
 
+    val objectTypeMapping  = hashMapOf(
+        DSO.OBJECT_TYPE_GLOBULAR to "Glob",
+        DSO.OBJECT_TYPE_NEBULA to "Neb",
+        DSO.OBJECT_TYPE_OPEN_CLUSTER to "Open cluster",
+    )
+
     val tempMap = HashMap<String, HashMap<String, BrowserItem>>()
 
     for (i in 0 until dsoCatalog.count) {
         val dso = dsoCatalog.getDSO(i)
-        var matchType = prefixes.find { dso.type.startsWith(it) }
-        if (matchType == null)
-            matchType = "Unknown"
+        val matchType = objectTypeMapping[dso.objectType] ?: prefixes.find { dso.type.startsWith(it) } ?: "Unknown"
 
         val name = dsoCatalog.getDSOName(dso)
         val item =

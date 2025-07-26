@@ -54,3 +54,10 @@ Java_space_celestia_celestia_Galaxy_c_1getDetail(JNIEnv *env, jclass clazz, jlon
     auto galaxy = reinterpret_cast<Galaxy *>(pointer);
     return galaxy->getDetail();
 }
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_DSO_c_1getObjectType(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto dso = reinterpret_cast<DeepSkyObject *>(pointer);
+    return static_cast<jint>(dso->getObjType());
+}
