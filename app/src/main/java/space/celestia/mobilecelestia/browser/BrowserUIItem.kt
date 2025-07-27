@@ -177,7 +177,7 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
 
     val results = arrayListOf<BrowserItem.KeyValuePair>()
     val galaxyBrowserItems = arrayListOf<BrowserItem.KeyValuePair>()
-    for ((name, items) in listOf(barredSpiralItems, spiralItems, ellipticalItems, lenticularItems)) {
+    for ((name, items) in listOf(barredSpiralItems, spiralItems, ellipticalItems, lenticularItems, irregularItems)) {
         if (items.isEmpty()) continue
         galaxyBrowserItems.add(BrowserItem.KeyValuePair(name, BrowserItem(name, null, items)))
     }
