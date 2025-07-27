@@ -117,11 +117,11 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
     val galaxyCategory = BrowserPredefinedItem.CategoryInfo("56FF5D9F-44F1-CE1D-0615-5655E3C851EF", true)
     val nebulaCategory = BrowserPredefinedItem.CategoryInfo("3F7546F9-D225-5194-A228-C63281B5C6FD", true)
 
-    val barredSpiralItems = Pair(CelestiaString("Barred Spiral", ""), hashMapOf<String, BrowserItem>())
-    val spiralItems = Pair(CelestiaString("Spiral", ""), hashMapOf<String, BrowserItem>())
-    val ellipticalItems = Pair(CelestiaString("Elliptical", ""), hashMapOf<String, BrowserItem>())
-    val lenticularItems = Pair(CelestiaString("Lenticular", ""), hashMapOf<String, BrowserItem>())
-    val irregularItems = Pair(CelestiaString("Irregular", ""), hashMapOf<String, BrowserItem>())
+    val barredSpiralItems = Pair(CelestiaString("Barred Spiral Galaxies", ""), hashMapOf<String, BrowserItem>())
+    val spiralItems = Pair(CelestiaString("Spiral Galaxies", ""), hashMapOf<String, BrowserItem>())
+    val ellipticalItems = Pair(CelestiaString("Elliptical Galaxies", ""), hashMapOf<String, BrowserItem>())
+    val lenticularItems = Pair(CelestiaString("Lenticular Galaxies", ""), hashMapOf<String, BrowserItem>())
+    val irregularItems = Pair(CelestiaString("Irregular Galaxies", ""), hashMapOf<String, BrowserItem>())
     val galaxyItems = hashMapOf(
         "SBa" to barredSpiralItems,
         "SBb" to barredSpiralItems,
@@ -140,14 +140,14 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
         "E7" to ellipticalItems,
         "Irr" to irregularItems,
     )
-    val emissionItems = Pair(CelestiaString("Emission", ""), hashMapOf<String, BrowserItem>())
-    val reflectionItems = Pair(CelestiaString("Reflection", ""), hashMapOf<String, BrowserItem>())
-    val darkItems = Pair(CelestiaString("Dark", ""), hashMapOf<String, BrowserItem>())
-    val planetaryItems = Pair(CelestiaString("Planetary", ""), hashMapOf<String, BrowserItem>())
+    val emissionItems = Pair(CelestiaString("Emission Nebulae", ""), hashMapOf<String, BrowserItem>())
+    val reflectionItems = Pair(CelestiaString("Reflection Nebulae", ""), hashMapOf<String, BrowserItem>())
+    val darkItems = Pair(CelestiaString("Dark Nebulae", ""), hashMapOf<String, BrowserItem>())
+    val planetaryItems = Pair(CelestiaString("Planetary Nebulae", ""), hashMapOf<String, BrowserItem>())
     val supernovaRemnantItems = Pair(CelestiaString("Supernova Remnants", ""), hashMapOf<String, BrowserItem>())
-    val hiiRegionItems = Pair(CelestiaString("H II Region", ""), hashMapOf<String, BrowserItem>())
-    val protoplanetaryItems = Pair(CelestiaString("Protoplanetary", ""), hashMapOf<String, BrowserItem>())
-    val unknownItems = Pair(CelestiaString("Unknown", ""), hashMapOf<String, BrowserItem>())
+    val hiiRegionItems = Pair(CelestiaString("H II Regions", ""), hashMapOf<String, BrowserItem>())
+    val protoplanetaryItems = Pair(CelestiaString("Protoplanetary Nebulae", ""), hashMapOf<String, BrowserItem>())
+    val unknownItems = Pair(CelestiaString("Unknown Nebulae", ""), hashMapOf<String, BrowserItem>())
     val nebulaItems = hashMapOf(
         "Emission" to emissionItems,
         "Reflection" to reflectionItems,
