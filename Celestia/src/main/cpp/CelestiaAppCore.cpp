@@ -282,7 +282,7 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
     constexpr float DEFAULT_AMBIENT_LIGHT_LEVEL = 0.1f;
     constexpr float DEFAULT_VISUAL_MAGNITUDE = 8.0f;
     constexpr StarStyle DEFAULT_STAR_STYLE = StarStyle::FuzzyPointStars;
-    constexpr ColorTableType DEFAULT_STARS_COLOR = ColorTableType::Blackbody_D65;
+    constexpr ColorTableType DEFAULT_STARS_COLOR = ColorTableType::SunWhite;
     constexpr auto DEFAULT_TEXTURE_RESOLUTION = TextureResolution::medres;
     constexpr float DEFAULT_TINT_SATURATION = 0.5f;
 
