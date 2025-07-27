@@ -14,7 +14,9 @@ package space.celestia.mobilecelestia.celestia
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import space.celestia.mobilecelestia.R
@@ -65,15 +67,8 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
 
         for (index in buttons.indices) {
             val item = buttons[index]
-            val button = StandardImageButton(context)
-            button.setColorFilter(ContextCompat.getColor(context, com.google.android.material.R.color.material_on_background_emphasis_medium))
-
-            val size = resources.getDimensionPixelSize(R.dimen.control_view_icon_size)
-            val params = LayoutParams(size, size)
-            if (index != 0) {
-                params.topMargin = resources.getDimensionPixelOffset(R.dimen.control_view_icon_spacing)
-            }
-            button.layoutParams = params
+            val view = LayoutInflater.from(context).inflate(R.layout.toolbar_item, this, false)
+            val button = view.findViewById<StandardImageButton>(R.id.button)
             when (item) {
                 is CelestiaControlButton.Tap -> {
                     button.setImageResource(item.image)
@@ -105,7 +100,7 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
                     }
                 }
             }
-            addView(button)
+            addView(view)
         }
     }
 

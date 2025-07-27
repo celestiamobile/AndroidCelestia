@@ -11,6 +11,7 @@
 
 package space.celestia.mobilecelestia.control
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MotionEvent
@@ -48,6 +49,7 @@ class BottomControlRecyclerViewAdapter(
         if (position == values.size) {
             holder.imageButton.setImageResource(R.drawable.bottom_control_hide)
             holder.imageButton.contentDescription = CelestiaString("Close", "")
+            @SuppressLint("ClickableViewAccessibility")
             holder.imageButton.setOnTouchListener(null)
             holder.imageButton.setOnClickListener {
                 listener?.onBottomControlHide()
@@ -59,6 +61,7 @@ class BottomControlRecyclerViewAdapter(
         holder.imageButton.setImageResource(item.imageID ?: 0)
         holder.imageButton.contentDescription = item.contentDescription
         holder.imageButton.setOnClickListener(null)
+        @SuppressLint("ClickableViewAccessibility")
         holder.imageButton.setOnTouchListener(null)
         when (item) {
             is InstantAction -> {
@@ -68,6 +71,7 @@ class BottomControlRecyclerViewAdapter(
             }
 
             is ContinuousAction -> {
+                @SuppressLint("ClickableViewAccessibility")
                 holder.imageButton.setOnTouchListener { view, event ->
                     when (event.actionMasked) {
                         MotionEvent.ACTION_DOWN -> {
