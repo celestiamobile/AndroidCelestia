@@ -59,6 +59,10 @@ extern jmethodID selectionInitMethodID;
 extern jclass completionClz;
 extern jmethodID completionInitMethodID;
 
+// timeline phase
+extern jclass timelinePhaseClz;
+extern jmethodID timelinePhaseInitMethodID;
+
 extern pthread_key_t javaEnvKey;
 }
 

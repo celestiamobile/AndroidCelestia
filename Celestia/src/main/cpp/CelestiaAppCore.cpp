@@ -73,6 +73,9 @@ jmethodID selectionInitMethodID = nullptr;
 jclass completionClz = nullptr;
 jmethodID completionInitMethodID = nullptr;
 
+jclass timelinePhaseClz = nullptr;
+jmethodID timelinePhaseInitMethodID = nullptr;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -80,26 +83,26 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
         return JNI_ERR;
 
-    stringClz = (jclass)env->NewGlobalRef(env->FindClass("java/lang/String"));
+    stringClz = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/String")));
 
     jclass cb = env->FindClass("space/celestia/celestia/Body");
-    cbClz = (jclass)env->NewGlobalRef(cb);
+    cbClz = static_cast<jclass>(env->NewGlobalRef(cb));
     cbiMethodID = env->GetMethodID(cbClz, "<init>", "(J)V");
 
     jclass cl = env->FindClass("space/celestia/celestia/Location");
-    clClz = (jclass)env->NewGlobalRef(cl);
+    clClz = static_cast<jclass>(env->NewGlobalRef(cl));
     cliMethodID = env->GetMethodID(clClz, "<init>", "(J)V");
 
     jclass cs = env->FindClass("space/celestia/celestia/Star");
-    csClz = (jclass)env->NewGlobalRef(cs);
+    csClz = static_cast<jclass>(env->NewGlobalRef(cs));
     csiMethodID = env->GetMethodID(csClz, "<init>", "(J)V");
 
     jclass cscript = env->FindClass("space/celestia/celestia/Script");
-    cscriptClz = (jclass)env->NewGlobalRef(cscript);
+    cscriptClz = static_cast<jclass>(env->NewGlobalRef(cscript));
     cscriptiMethodID = env->GetMethodID(cscriptClz, "<init>", "(Ljava/lang/String;Ljava/lang/String;)V");
 
     jclass cv = env->FindClass("space/celestia/celestia/Vector");
-    cvClz = (jclass)env->NewGlobalRef(cv);
+    cvClz = static_cast<jclass>(env->NewGlobalRef(cv));
     cv3InitMethodID = env->GetMethodID(cvClz, "<init>", "(DDD)V");
     cv4InitMethodID = env->GetMethodID(cvClz, "<init>", "(DDDD)V");
     cvxMethodID = env->GetMethodID(cvClz, "getX", "()D");
@@ -108,26 +111,29 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     cvwMethodID = env->GetMethodID(cvClz, "getW", "()D");
 
     jclass cd = env->FindClass("space/celestia/celestia/Destination");
-    cdClz = (jclass)env->NewGlobalRef(cd);
+    cdClz = static_cast<jclass>(env->NewGlobalRef(cd));
     cdInitMethodID = env->GetMethodID(cdClz, "<init>", "(Ljava/lang/String;Ljava/lang/String;DLjava/lang/String;)V");
 
     jclass al = env->FindClass("java/util/ArrayList");
-    alClz = (jclass)env->NewGlobalRef(al);
+    alClz = static_cast<jclass>(env->NewGlobalRef(al));
     aliMethodID = env->GetMethodID(alClz, "<init>", "(I)V");
     alaMethodID = env->GetMethodID(alClz, "add", "(Ljava/lang/Object;)Z");
 
     jclass hm = env->FindClass("java/util/HashMap");
-    hmClz = (jclass)env->NewGlobalRef(hm);
+    hmClz = static_cast<jclass>(env->NewGlobalRef(hm));
     hmiMethodID = env->GetMethodID(hmClz, "<init>", "()V");
     hmpMethodID = env->GetMethodID(hmClz, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
-    selectionClz = (jclass)env->NewGlobalRef(env->FindClass("space/celestia/celestia/Selection"));
+    selectionClz = static_cast<jclass>(env->NewGlobalRef(env->FindClass("space/celestia/celestia/Selection")));
     selectionGetObjectPointerMethodID = env->GetMethodID(selectionClz, "getObjectPointer", "()J");
     selectionGetObjectTypeMethodID = env->GetMethodID(selectionClz, "getObjectType", "()I");
     selectionInitMethodID = env->GetMethodID(selectionClz, "<init>", "(JI)V");
 
-    completionClz = (jclass)env->NewGlobalRef(env->FindClass("space/celestia/celestia/Completion"));
+    completionClz = static_cast<jclass>(env->NewGlobalRef(env->FindClass("space/celestia/celestia/Completion")));
     completionInitMethodID = env->GetMethodID(completionClz, "<init>", "(Ljava/lang/String;Lspace/celestia/celestia/Selection;)V");
+
+    timelinePhaseClz = static_cast<jclass>(env->NewGlobalRef(env->FindClass("space/celestia/celestia/Timeline$Phase")));
+    timelinePhaseInitMethodID = env->GetMethodID(timelinePhaseClz, "<init>", "(DD)V");
 
     return JNI_VERSION_1_6;
 }

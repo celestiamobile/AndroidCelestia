@@ -122,27 +122,12 @@ Java_space_celestia_celestia_Timeline_c_1getPhaseCount(JNIEnv *env, jclass clazz
 }
 
 extern "C"
-JNIEXPORT jlong JNICALL
+JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Timeline_c_1getPhase(JNIEnv *env, jclass clazz, jint index,
                                                   jlong pointer) {
     auto timeline = reinterpret_cast<Timeline *>(pointer);
-    return reinterpret_cast<jlong>(timeline->getPhase(static_cast<unsigned int>(index)).get());
-}
-
-extern "C"
-JNIEXPORT jdouble JNICALL
-Java_space_celestia_celestia_Timeline_00024Phase_c_1getStartTime(JNIEnv *env, jclass clazz,
-                                                                 jlong pointer) {
-    auto phase = reinterpret_cast<TimelinePhase *>(pointer);
-    return static_cast<jdouble>(phase->startTime());
-}
-
-extern "C"
-JNIEXPORT jdouble JNICALL
-Java_space_celestia_celestia_Timeline_00024Phase_c_1getEndTime(JNIEnv *env, jclass clazz,
-                                                               jlong pointer) {
-    auto phase = reinterpret_cast<TimelinePhase *>(pointer);
-    return static_cast<jdouble>(phase->endTime());
+    const auto& phase = timeline->getPhase(static_cast<unsigned int>(index));
+    return env->NewObject(timelinePhaseClz, timelinePhaseInitMethodID, static_cast<jdouble>(phase.startTime()), static_cast<jdouble>(phase.endTime()));
 }
 
 extern "C"
