@@ -11,7 +11,14 @@
 
 package space.celestia.mobilecelestia.browser
 
-import space.celestia.celestia.*
+import space.celestia.celestia.AstroObject
+import space.celestia.celestia.BrowserItem
+import space.celestia.celestia.DSO
+import space.celestia.celestia.Observer
+import space.celestia.celestia.Simulation
+import space.celestia.celestia.Star
+import space.celestia.celestia.StarBrowser
+import space.celestia.celestia.Universe
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 private var solRoot: BrowserItem? = null
@@ -109,56 +116,83 @@ fun Universe.starBrowserRoot(observer: Observer): BrowserItem {
 private fun Universe.createDSOBrowserRoot(): BrowserItem {
     val galaxyCategory = BrowserPredefinedItem.CategoryInfo("56FF5D9F-44F1-CE1D-0615-5655E3C851EF", true)
     val nebulaCategory = BrowserPredefinedItem.CategoryInfo("3F7546F9-D225-5194-A228-C63281B5C6FD", true)
-    val typeMap: Map<String, Pair<String, BrowserPredefinedItem.CategoryInfo?>> = mapOf(
-        "SB" to Pair(CelestiaString("Galaxies (Barred Spiral)", ""), galaxyCategory),
-        "S" to Pair(CelestiaString("Galaxies (Spiral)", ""), galaxyCategory),
-        "E" to Pair(CelestiaString("Galaxies (Elliptical)", ""), galaxyCategory),
-        "Irr" to Pair(CelestiaString("Galaxies (Irregular)", ""), galaxyCategory),
-        "Neb" to Pair(CelestiaString("Nebulae", ""), nebulaCategory),
-        "Glob" to Pair(CelestiaString("Globulars", ""), null),
-        "Open cluster" to Pair(CelestiaString("Open Clusters", ""), null),
-        "Unknown" to Pair(CelestiaString("Unknown", ""), null),
-    )
-    val prefixes = listOf("SB", "S", "E", "Irr", "Neb", "Glob", "Open cluster")
 
-    val objectTypeMapping  = hashMapOf(
-        DSO.OBJECT_TYPE_GLOBULAR to "Glob",
-        DSO.OBJECT_TYPE_NEBULA to "Neb",
-        DSO.OBJECT_TYPE_OPEN_CLUSTER to "Open cluster",
+    val barredSpiralItems = Pair(CelestiaString("Barred Spiral", ""), hashMapOf<String, BrowserItem>())
+    val spiralItems = Pair(CelestiaString("Spiral", ""), hashMapOf<String, BrowserItem>())
+    val ellipticalItems = Pair(CelestiaString("Elliptical", ""), hashMapOf<String, BrowserItem>())
+    val lenticularItems = Pair(CelestiaString("Lenticular", ""), hashMapOf<String, BrowserItem>())
+    val irregularItems = Pair(CelestiaString("Irregular", ""), hashMapOf<String, BrowserItem>())
+    val galaxyItems = hashMapOf(
+        "SBa" to barredSpiralItems,
+        "SBb" to barredSpiralItems,
+        "SBc" to barredSpiralItems,
+        "Sa" to spiralItems,
+        "Sb" to spiralItems,
+        "Sc" to spiralItems,
+        "S0" to lenticularItems,
+        "E0" to ellipticalItems,
+        "E1" to ellipticalItems,
+        "E2" to ellipticalItems,
+        "E3" to ellipticalItems,
+        "E4" to ellipticalItems,
+        "E5" to ellipticalItems,
+        "E6" to ellipticalItems,
+        "E7" to ellipticalItems,
+        "Irr" to irregularItems,
     )
-
-    val tempMap = HashMap<String, HashMap<String, BrowserItem>>()
+    val emissionItems = Pair(CelestiaString("Emission", ""), hashMapOf<String, BrowserItem>())
+    val reflectionItems = Pair(CelestiaString("Reflection", ""), hashMapOf<String, BrowserItem>())
+    val darkItems = Pair(CelestiaString("Dark", ""), hashMapOf<String, BrowserItem>())
+    val planetaryItems = Pair(CelestiaString("Planetary", ""), hashMapOf<String, BrowserItem>())
+    val supernovaRemnantItems = Pair(CelestiaString("Supernova Remnants", ""), hashMapOf<String, BrowserItem>())
+    val hiiRegionItems = Pair(CelestiaString("H II Region", ""), hashMapOf<String, BrowserItem>())
+    val protoplanetaryItems = Pair(CelestiaString("Protoplanetary", ""), hashMapOf<String, BrowserItem>())
+    val unknownItems = Pair(CelestiaString("Unknown", ""), hashMapOf<String, BrowserItem>())
+    val nebulaItems = hashMapOf(
+        "Emission" to emissionItems,
+        "Reflection" to reflectionItems,
+        "Dark" to darkItems,
+        "Planetary" to planetaryItems,
+        "Supernova Remnants" to supernovaRemnantItems,
+        "HII_Region" to hiiRegionItems,
+        "Protoplanetary" to protoplanetaryItems,
+        " " to unknownItems,
+    )
+    val globularItems = hashMapOf<String, BrowserItem>()
+    val openClusterItems = hashMapOf<String, BrowserItem>()
 
     for (i in 0 until dsoCatalog.count) {
         val dso = dsoCatalog.getDSO(i)
-        val matchType = objectTypeMapping[dso.objectType] ?: prefixes.find { dso.type.startsWith(it) } ?: "Unknown"
+        val arrayListToAdd = when (dso.objectType) {
+            DSO.OBJECT_TYPE_GALAXY -> galaxyItems[dso.type]?.second
+            DSO.OBJECT_TYPE_GLOBULAR -> globularItems
+            DSO.OBJECT_TYPE_NEBULA -> nebulaItems[dso.type]?.second
+            DSO.OBJECT_TYPE_OPEN_CLUSTER -> openClusterItems
+            else -> null
+        }
 
         val name = dsoCatalog.getDSOName(dso)
-        val item =
-            BrowserItem(name, null, dso, this)
-
-        if (tempMap[matchType] != null)
-            tempMap[matchType]!![name] = item
-        else
-            tempMap[matchType] = hashMapOf(name to item)
+        arrayListToAdd?.put(name, BrowserItem(name, null, dso, this))
     }
 
-    val results = HashMap<String, BrowserItem>()
-    for (prefix in prefixes) {
-        val info = typeMap[prefix]!!
-        results[info.first] = BrowserPredefinedItem(
-            info.first,
-            null,
-            tempMap[prefix] ?: mutableMapOf(),
-            info.second
-        )
+    val results = arrayListOf<BrowserItem.KeyValuePair>()
+    val galaxyBrowserItems = arrayListOf<BrowserItem.KeyValuePair>()
+    for ((name, items) in listOf(barredSpiralItems, spiralItems, ellipticalItems, lenticularItems)) {
+        if (items.isEmpty()) continue
+        galaxyBrowserItems.add(BrowserItem.KeyValuePair(name, BrowserItem(name, null, items)))
     }
+    results.add(BrowserItem.KeyValuePair(CelestiaString("Galaxies", ""), BrowserPredefinedItem(CelestiaString("Galaxies", ""), null, galaxyBrowserItems, galaxyCategory)))
+    results.add(BrowserItem.KeyValuePair(CelestiaString("Globulars", ""), BrowserItem(CelestiaString("Globulars", ""), null, globularItems)))
+    val nebulaBrowserItems = arrayListOf<BrowserItem.KeyValuePair>()
+    for ((name, items) in listOf(emissionItems, reflectionItems, darkItems, planetaryItems, supernovaRemnantItems, hiiRegionItems, protoplanetaryItems, unknownItems)) {
+        if (items.isEmpty()) continue
+        nebulaBrowserItems.add(BrowserItem.KeyValuePair(name, BrowserItem(name, null, items)))
+    }
+    results.add(BrowserItem.KeyValuePair(CelestiaString("Nebulae", ""), BrowserPredefinedItem(CelestiaString("Nebulae", ""), null, nebulaBrowserItems, nebulaCategory)))
+    results.add(BrowserItem.KeyValuePair(CelestiaString("Open Clusters", ""), BrowserItem(CelestiaString("Open Clusters", ""), null, openClusterItems)))
 
     return BrowserItem(
-        CelestiaString(
-            "Deep Sky Objects",
-            ""
-        ), CelestiaString("DSOs", "Tab for deep sky objects in Star Browser"), results
+        CelestiaString("Deep Sky Objects", ""), CelestiaString("DSOs", "Tab for deep sky objects in Star Browser"), results
     )
 }
 
