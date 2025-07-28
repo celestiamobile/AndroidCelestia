@@ -115,7 +115,4 @@ enum class CustomActionType: Serializable {
 }
 data class CustomAction(val type: CustomActionType, override val imageID: Int?, override val contentDescription: String?): Serializable, BottomControlAction()
 
-data class GroupAction(override val contentDescription: String, val actions: List<GroupActionItem>): Serializable, BottomControlAction() {
-    override val imageID: Int
-        get() = R.drawable.common_other
-}
+data class GroupAction(override val imageID: Int, override val contentDescription: String, val actions: List<GroupActionItem>): Serializable, BottomControlAction()

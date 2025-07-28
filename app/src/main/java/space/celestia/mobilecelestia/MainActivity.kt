@@ -1925,6 +1925,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 InstantAction(CelestiaAction.Stop),
                 InstantAction(CelestiaAction.ReverseSpeed),
                 GroupAction(
+                    imageID = R.drawable.speed_presets,
                     contentDescription = CelestiaString("Speed Presets", "Action to show a list of presets in speed"),
                     actions = listOf(
                         GroupActionItem(CelestiaString("1 km/s", "Speed unit"), CelestiaContinuosAction.F2),
