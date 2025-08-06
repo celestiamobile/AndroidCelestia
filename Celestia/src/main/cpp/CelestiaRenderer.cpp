@@ -73,7 +73,7 @@ public:
     EGLDisplay display = EGL_NO_DISPLAY;
     EGLSurface surface = EGL_NO_SURFACE;
     EGLContext context = EGL_NO_CONTEXT;
-    EGLConfig config {};
+    EGLConfig config { nullptr };
     EGLint format {};
     int sampleCount { 0 };
 
@@ -138,28 +138,47 @@ bool CelestiaRenderer::initialize()
             return false;
         }
 
+        const EGLint configCount = 64;
+        EGLConfig configs[configCount];
         EGLint numConfigs;
         if (enableMultisample) {
             // Try to enable multisample but fallback if not available
-            if (!eglChooseConfig(display, multisampleAttribs, &config, 1, &numConfigs) && !eglChooseConfig(display, attribs, &config, 1, &numConfigs)) {
+            if (eglChooseConfig(display, multisampleAttribs, configs, configCount, &numConfigs)) {
+                for (EGLint i = 0; i < numConfigs; ++i) {
+                    if (eglGetConfigAttrib(display, configs[i], EGL_NATIVE_VISUAL_ID, &format)) {
+                        config = configs[i];
+                        EGLint numSamples;
+                        if (eglGetConfigAttrib(display, config, EGL_SAMPLES, &numSamples) && numSamples > 1)
+                            sampleCount = numSamples;
+                        break;
+                    } else {
+                        LOG_ERROR("eglGetConfigAttrib() returned error %d", eglGetError());
+                    }
+                }
+            } else {
                 LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
-                destroy();
-                return false;
-            }
-
-            EGLint numSamples;
-            if (eglGetConfigAttrib(display, config, EGL_SAMPLES, &numSamples) && numSamples > 1)
-                sampleCount = numSamples;
-        } else {
-            if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs)) {
-                LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
-                destroy();
-                return false;
             }
         }
 
-        if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format)) {
-            LOG_ERROR("eglGetConfigAttrib() returned error %d", eglGetError());
+        if (config == nullptr) {
+            if (!eglChooseConfig(display, attribs, configs, configCount, &numConfigs)) {
+                LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
+                destroy();
+                return false;
+            }
+
+            for (EGLint i = 0; i < numConfigs; ++i) {
+                if (eglGetConfigAttrib(display, configs[i], EGL_NATIVE_VISUAL_ID, &format)) {
+                    config = configs[i];
+                    break;
+                } else {
+                    LOG_ERROR("eglGetConfigAttrib() returned error %d", eglGetError());
+                }
+            }
+        }
+
+        if (config == nullptr) {
+            LOG_ERROR("No suitable EGLConfig found");
             destroy();
             return false;
         }
@@ -452,9 +471,9 @@ Java_space_celestia_celestia_Renderer_c_1destroy(JNIEnv *env, jobject thiz, jlon
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1start(JNIEnv *env, jobject thiz,
-                                                          jlong ptr,
-                                                          jobject activity,
-                                                          jboolean enable_multisample) {
+                                               jlong ptr,
+                                               jobject activity,
+                                               jboolean enable_multisample) {
     SwappyGL_init(env, activity);
     // By default, Swappy will adjust the swap interval based on actual frame rendering time.
     SwappyGL_setAutoSwapInterval(false);
@@ -498,8 +517,8 @@ Java_space_celestia_celestia_Renderer_c_1resume(JNIEnv *env, jobject thiz, jlong
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1setSurface(JNIEnv *env, jobject thiz,
-                                                               jlong ptr,
-                                                               jobject surface) {
+                                                    jlong ptr,
+                                                    jobject surface) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setSurface(env, surface);
@@ -508,9 +527,9 @@ Java_space_celestia_celestia_Renderer_c_1setSurface(JNIEnv *env, jobject thiz,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1setCorePointer(JNIEnv *env,
-                                                                   jobject thiz,
-                                                                   jlong ptr,
-                                                                   jlong core_ptr) {
+                                                        jobject thiz,
+                                                        jlong ptr,
+                                                        jlong core_ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setCorePointer((CelestiaCore *)core_ptr);
@@ -519,10 +538,10 @@ Java_space_celestia_celestia_Renderer_c_1setCorePointer(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1setSurfaceSize(JNIEnv *env,
-                                                                   jobject thiz,
-                                                                   jlong ptr,
-                                                                   jint width,
-                                                                   jint height) {
+                                                        jobject thiz,
+                                                        jlong ptr,
+                                                        jint width,
+                                                        jint height) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setSize(width, height);
@@ -531,8 +550,8 @@ Java_space_celestia_celestia_Renderer_c_1setSurfaceSize(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1makeContextCurrent(JNIEnv *env,
-                                                                       jobject thiz,
-                                                                       jlong ptr) {
+                                                            jobject thiz,
+                                                            jlong ptr) {
     auto renderer = (CelestiaRenderer *)ptr;
     renderer->makeContextCurrent();
 }
@@ -540,9 +559,9 @@ Java_space_celestia_celestia_Renderer_c_1makeContextCurrent(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1setFrameRateOption(JNIEnv *env,
-                                                                       jobject thiz,
-                                                                       jlong ptr,
-                                                                       jint frame_rate_option) {
+                                                            jobject thiz,
+                                                            jlong ptr,
+                                                            jint frame_rate_option) {
     auto renderer = (CelestiaRenderer *)ptr;
 
     renderer->setFrameRateOption(frame_rate_option);
@@ -551,7 +570,7 @@ Java_space_celestia_celestia_Renderer_c_1setFrameRateOption(JNIEnv *env,
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Renderer_c_1createNativeRenderObject(JNIEnv *env,
-                                                                             jclass clazz) {
+                                                                  jclass clazz) {
     return (jlong)new CelestiaRenderer;
 }
 
