@@ -1,7 +1,6 @@
-//
 // ZipUtils.cpp
 //
-// Copyright (C) 2024-present, Celestia Development Team
+// Copyright (C) 2025, Celestia Development Team
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
