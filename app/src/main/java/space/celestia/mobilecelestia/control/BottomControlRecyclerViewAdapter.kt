@@ -23,7 +23,8 @@ import space.celestia.mobilecelestia.control.BottomControlFragment.Listener
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 class BottomControlRecyclerViewAdapter(
-    private val values: List<BottomControlAction>,
+    private val items: List<BottomControlAction>,
+    private val overflowItems: List<OverflowItem>,
     private val listener: Listener?
 ) : RecyclerView.Adapter<BottomControlRecyclerViewAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -33,29 +34,54 @@ class BottomControlRecyclerViewAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (position == values.size)
-            return HIDE_ACTION
-        return when (values[position]) {
+        if (position == items.size)
+            return OVERFLOW_ACTION
+        return when (items[position]) {
             is ContinuousAction -> CONTINUOUS_ACTION
             is CustomAction -> CUSTOM_ACTION
-            is GroupAction -> GROUP_ACTION
             is InstantAction -> INSTANT_ACTION
         }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        if (position == values.size) {
-            holder.imageButton.setImageResource(R.drawable.bottom_control_hide)
-            holder.imageButton.contentDescription = CelestiaString("Close", "")
+        if (position == items.size) {
+            holder.imageButton.setImageResource(R.drawable.bottom_toolbar_overflow)
+            holder.imageButton.contentDescription = CelestiaString("More actions", "Button to show more actions to in the bottom toolbar")
             @SuppressLint("ClickableViewAccessibility")
             holder.imageButton.setOnTouchListener(null)
             holder.imageButton.setOnClickListener {
-                listener?.onBottomControlHide()
+                val popup = PopupMenu(it.context, it)
+                for (i in overflowItems.indices) {
+                    val action = overflowItems[i]
+                    popup.menu.add(Menu.NONE, i, Menu.NONE, action.title)
+                }
+                popup.menu.add(Menu.NONE, overflowItems.size, Menu.NONE, CelestiaString("Close", ""))
+                popup.setOnMenuItemClickListener { menuItem ->
+                    if (menuItem.itemId >= overflowItems.size) {
+                        listener?.onBottomControlHide()
+                    } else {
+                        val action = overflowItems[menuItem.itemId].action
+                        when (action) {
+                            is InstantAction -> {
+                                listener?.onInstantActionSelected(action.action)
+                            }
+                            is ContinuousAction -> {
+                                listener?.onContinuousActionDown(action.action)
+                                listener?.onContinuousActionUp(action.action)
+                            }
+                            is CustomAction -> {
+                                listener?.onCustomAction(action.type)
+                            }
+                        }
+                    }
+                    return@setOnMenuItemClickListener true
+                }
+                popup.show()
             }
             return
         }
 
-        val item = values[position]
+        val item = items[position]
         holder.imageButton.setImageResource(item.imageID ?: 0)
         holder.imageButton.contentDescription = item.contentDescription
         holder.imageButton.setOnClickListener(null)
@@ -83,22 +109,6 @@ class BottomControlRecyclerViewAdapter(
                 }
             }
 
-            is GroupAction -> {
-                holder.imageButton.setOnClickListener {
-                    val popup = PopupMenu(it.context, it)
-                    for (i in item.actions.indices) {
-                        val action = item.actions[i]
-                        popup.menu.add(Menu.NONE, i, Menu.NONE, action.title)
-                    }
-                    popup.setOnMenuItemClickListener { menuItem ->
-                        listener?.onContinuousActionDown(item.actions[menuItem.itemId].action)
-                        listener?.onContinuousActionUp(item.actions[menuItem.itemId].action)
-                        return@setOnMenuItemClickListener true
-                    }
-                    popup.show()
-                }
-            }
-
             is CustomAction -> {
                 holder.imageButton.setOnClickListener {
                     listener?.onCustomAction(item.type)
@@ -107,7 +117,7 @@ class BottomControlRecyclerViewAdapter(
         }
     }
 
-    override fun getItemCount(): Int = values.size + 1
+    override fun getItemCount(): Int = items.size + 1
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageButton: StandardImageButton
@@ -117,8 +127,7 @@ class BottomControlRecyclerViewAdapter(
     private companion object {
         const val INSTANT_ACTION = 0
         const val CONTINUOUS_ACTION = 1
-        const val GROUP_ACTION = 2
-        const val HIDE_ACTION = 3
+        const val OVERFLOW_ACTION = 3
         const val CUSTOM_ACTION = 4
     }
 }

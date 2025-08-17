@@ -103,10 +103,9 @@ import space.celestia.mobilecelestia.control.CameraControlFragment
 import space.celestia.mobilecelestia.control.ContinuousAction
 import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
-import space.celestia.mobilecelestia.control.GroupAction
-import space.celestia.mobilecelestia.control.GroupActionItem
 import space.celestia.mobilecelestia.control.InstantAction
 import space.celestia.mobilecelestia.control.ObserverModeFragment
+import space.celestia.mobilecelestia.control.OverflowItem
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
@@ -1887,17 +1886,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 CelestiaAction.Faster,
                 CelestiaAction.PlayPause,
                 CelestiaAction.Slower,
-                CelestiaAction.Reverse,
             )
         } else {
             listOf(
                 CelestiaAction.Slower,
                 CelestiaAction.PlayPause,
                 CelestiaAction.Faster,
-                CelestiaAction.Reverse
             )
         }
-        showToolbarFragment(BottomControlFragment.newInstance(actions.map { InstantAction(it) } + timeSettingItem))
+        showToolbarFragment(BottomControlFragment.newInstance(items = actions.map { InstantAction(it) }, overflowItems = listOf(
+            OverflowItem(title = CelestiaAction.Reverse.title, action = InstantAction(CelestiaAction.Reverse)),
+            OverflowItem(title = CelestiaString("Settings", ""), action = timeSettingItem),
+        )))
     }
 
     private fun showScriptControl() = lifecycleScope.launch {
@@ -1918,26 +1918,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ContinuousAction(CelestiaContinuosAction.TravelSlower),
             ContinuousAction(CelestiaContinuosAction.TravelFaster),
         )
-        actions.addAll(
-            listOf(
-                InstantAction(CelestiaAction.Stop),
-                InstantAction(CelestiaAction.ReverseSpeed),
-                GroupAction(
-                    imageID = R.drawable.speed_presets,
-                    contentDescription = CelestiaString("Speed Presets", "Action to show a list of presets in speed"),
-                    actions = listOf(
-                        GroupActionItem(CelestiaString("1 km/s", "Speed unit"), CelestiaContinuosAction.F2),
-                        GroupActionItem(CelestiaString("1000 km/s", "Speed unit"), CelestiaContinuosAction.F3),
-                        GroupActionItem(CelestiaString("c (lightspeed)", ""), CelestiaContinuosAction.F4),
-                        GroupActionItem(CelestiaString("10c", "Speed unit"), CelestiaContinuosAction.F5),
-                        GroupActionItem(CelestiaString("1 AU/s", "Speed unit"), CelestiaContinuosAction.F6),
-                        GroupActionItem(CelestiaString("1 ly/s", "Speed unit"), CelestiaContinuosAction.F7),
-                    )
-                )
-            )
-        )
+        actions.add(InstantAction(CelestiaAction.Stop))
         showToolbarFragment(
-            BottomControlFragment.newInstance(actions)
+            BottomControlFragment.newInstance(items = actions, overflowItems = listOf(
+                OverflowItem(title = CelestiaAction.ReverseSpeed.title, action = InstantAction(CelestiaAction.ReverseSpeed)),
+                OverflowItem(title = CelestiaString("1 km/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F2)),
+                OverflowItem(title = CelestiaString("1000 km/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F3)),
+                OverflowItem(title = CelestiaString("c (lightspeed)", ""), action = ContinuousAction(CelestiaContinuosAction.F4)),
+                OverflowItem(title = CelestiaString("10c", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F5)),
+                OverflowItem(title = CelestiaString("1 AU/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F6)),
+                OverflowItem(title = CelestiaString("1 ly/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F7)),
+            ))
         )
     }
 

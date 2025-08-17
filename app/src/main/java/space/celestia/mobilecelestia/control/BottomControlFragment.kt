@@ -26,6 +26,7 @@ class BottomControlFragment : Fragment() {
 
     private var listener: Listener? = null
     private var items: List<BottomControlAction> = listOf()
+    private var overflowItems: List<OverflowItem> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +34,8 @@ class BottomControlFragment : Fragment() {
         arguments?.let {
             @Suppress("UNCHECKED_CAST")
             items = BundleCompat.getSerializable(it, ARG_ACTIONS, ArrayList::class.java) as List<BottomControlAction>
+            @Suppress("UNCHECKED_CAST")
+            overflowItems = BundleCompat.getSerializable(it, ARG_OVERFLOW_ACTIONS, ArrayList::class.java) as List<OverflowItem>
         }
     }
 
@@ -48,7 +51,7 @@ class BottomControlFragment : Fragment() {
             val manager = LinearLayoutManager(context)
             manager.orientation = LinearLayoutManager.HORIZONTAL
             layoutManager = manager
-            adapter = BottomControlRecyclerViewAdapter(items, listener)
+            adapter = BottomControlRecyclerViewAdapter(items, overflowItems, listener)
         }
         return view
     }
@@ -77,12 +80,14 @@ class BottomControlFragment : Fragment() {
 
     companion object {
         const val ARG_ACTIONS = "action"
+        const val ARG_OVERFLOW_ACTIONS = "overflow_actions"
 
         @JvmStatic
-        fun newInstance(items: List<BottomControlAction>) =
+        fun newInstance(items: List<BottomControlAction>, overflowItems: List<OverflowItem> = listOf()) =
             BottomControlFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ACTIONS, ArrayList<BottomControlAction>(items))
+                    putSerializable(ARG_OVERFLOW_ACTIONS, ArrayList<OverflowItem>(overflowItems))
                 }
             }
     }

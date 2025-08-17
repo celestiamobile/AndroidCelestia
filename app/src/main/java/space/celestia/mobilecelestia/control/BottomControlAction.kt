@@ -35,12 +35,6 @@ data class InstantAction(val action: CelestiaAction): Serializable, BottomContro
             CelestiaAction.CancelScript -> {
                 R.drawable.time_stop
             }
-            CelestiaAction.Reverse -> {
-                R.drawable.time_reverse
-            }
-            CelestiaAction.ReverseSpeed -> {
-                R.drawable.time_reverse
-            }
             CelestiaAction.Stop -> {
                 R.drawable.time_stop
             }
@@ -106,11 +100,9 @@ data class ContinuousAction(val action: CelestiaContinuosAction): Serializable, 
         }
 }
 
-data class GroupActionItem(val title: String, val action: CelestiaContinuosAction): Serializable
+data class OverflowItem(val title: String, val action: BottomControlAction): Serializable
 
 enum class CustomActionType: Serializable {
     ShowTimeSettings
 }
 data class CustomAction(val type: CustomActionType, override val imageID: Int?, override val contentDescription: String?): Serializable, BottomControlAction()
-
-data class GroupAction(override val imageID: Int, override val contentDescription: String, val actions: List<GroupActionItem>): Serializable, BottomControlAction()
