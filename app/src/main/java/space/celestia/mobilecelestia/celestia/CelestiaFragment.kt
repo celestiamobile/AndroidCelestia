@@ -9,6 +9,8 @@
 
 package space.celestia.mobilecelestia.celestia
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -33,7 +35,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.compose.runtime.snapshotFlow
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.core.view.isVisible
@@ -109,8 +111,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     // MARK: GL View
     private lateinit var glView: CelestiaView
     private lateinit var viewInteraction: CelestiaInteraction
-
-    private var currentControlViewID = R.id.active_control_view_container
 
     // Parameters
     private var pathToLoad: String? = null
@@ -216,6 +216,9 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         controlView = view.findViewById(R.id.control_view)
         controlView.listener = this
 
+        val controlViewContainer = view.findViewById<FrameLayout>(R.id.active_control_view_container)
+        controlViewContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+
         if (!hasSetRenderer) {
             appCore.setRenderer(renderer)
             renderer.setEngineStartedListener { samples ->
@@ -307,16 +310,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val insets = savedInsets.scaleBy(scaleFactor)
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             appCore.setSafeAreaInsets(insets)
-        }
-
-        val ltr = resources.configuration.layoutDirection != View.LAYOUT_DIRECTION_RTL
-        val safeInsetEnd = if (ltr) newInsets.right else newInsets.left
-
-        val controlView = thisView.findViewById<FrameLayout>(currentControlViewID) ?: return
-        val params = controlView.layoutParams as? ConstraintLayout.LayoutParams
-        if (params != null) {
-            params.marginEnd = resources.getDimensionPixelOffset(R.dimen.control_view_container_margin_end) + safeInsetEnd
-            controlView.layoutParams = params
         }
     }
 
@@ -458,7 +451,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             ToolbarSettingFragment.ToolbarAction.Info to CelestiaControlButton.Tap(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
             ToolbarSettingFragment.ToolbarAction.Search to CelestiaControlButton.Tap(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
             ToolbarSettingFragment.ToolbarAction.Menu to CelestiaControlButton.Tap(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "Menu button")),
-            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaControlButton.Tap(R.drawable.toolbar_exit, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
+            ToolbarSettingFragment.ToolbarAction.Hide to CelestiaControlButton.Tap(R.drawable.control_close, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
             ToolbarSettingFragment.ToolbarAction.Go to CelestiaControlButton.Tap(R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", "Go to an object"))
         )
         val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null

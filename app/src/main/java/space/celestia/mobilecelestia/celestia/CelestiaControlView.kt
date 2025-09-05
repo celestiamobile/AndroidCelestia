@@ -14,11 +14,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.StandardImageButton
 
 enum class CelestiaControlAction {
     ZoomIn, ZoomOut, ShowMenu, ToggleModeToCamera, ToggleModeToObject, Info, Search, Hide, Show, Go
@@ -62,19 +61,18 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
         removeAllViews()
 
         orientation = VERTICAL
-
+        val inflater = LayoutInflater.from(context)
         for (index in buttons.indices) {
             val item = buttons[index]
-            val view = LayoutInflater.from(context).inflate(R.layout.toolbar_item, this, false)
-            val button = view.findViewById<StandardImageButton>(R.id.button)
+            val button = inflater.inflate(R.layout.floating_toolbar_button, this, false) as MaterialButton
             when (item) {
                 is CelestiaControlButton.Tap -> {
-                    button.setImageResource(item.image)
+                    button.icon = ContextCompat.getDrawable(context, item.image)
                     button.contentDescription = item.contentDescription
                     button.setOnClickListener { listener?.didTapAction(item.action) }
                 }
                 is CelestiaControlButton.Press -> {
-                    button.setImageResource(item.image)
+                    button.icon = ContextCompat.getDrawable(context, item.image)
                     button.contentDescription = item.contentDescription
                     button.setOnTouchListener { view, event ->
                         when (event.actionMasked) {
@@ -91,14 +89,14 @@ class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(
                 is CelestiaControlButton.Toggle -> {
                     button.isSelected = item.currentState
                     button.contentDescription = item.contentDescription
-                    button.setImageResource(item.image)
+                    button.icon = ContextCompat.getDrawable(context, item.image)
                     button.setOnClickListener { btn ->
                         btn.isSelected = !btn.isSelected
                         listener?.didToggleToMode(if (btn.isSelected) item.onAction else item.offAction)
                     }
                 }
             }
-            addView(view)
+            addView(button)
         }
     }
 

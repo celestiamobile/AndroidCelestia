@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -92,11 +93,11 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
         val imageResource: Int
             get() {
                 return when (this) {
-                    Mode -> R.drawable.tutorial_switch_mode
+                    Mode -> R.drawable.control_mode_object
                     Info -> R.drawable.control_info
                     Search -> R.drawable.control_search
                     Menu -> R.drawable.control_action_menu
-                    Hide -> R.drawable.toolbar_exit
+                    Hide -> R.drawable.control_close
                     ZoomIn -> R.drawable.control_zoom_in
                     ZoomOut -> R.drawable.control_zoom_out
                     Go -> R.drawable.control_go
@@ -188,10 +189,10 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     }
                 })
             }) {
-                Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+                Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_image_text_horizontal))) {
                     Image(painter = painterResource(id = item.imageResource), contentDescription = "Action Icon", colorFilter = ColorFilter.tint(
                         MaterialTheme.colorScheme.onBackground
-                    ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)))
+                    ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)).scale(0.8f))
                     Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f).padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
                     if (isDraggable) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = CelestiaString("Drag Handle", "Accessibility description for the drag handle for reorder"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
