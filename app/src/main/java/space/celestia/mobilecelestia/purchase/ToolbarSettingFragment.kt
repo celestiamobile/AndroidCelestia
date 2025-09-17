@@ -54,7 +54,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.ContextMenuContainer
 import space.celestia.mobilecelestia.compose.DraggableItem

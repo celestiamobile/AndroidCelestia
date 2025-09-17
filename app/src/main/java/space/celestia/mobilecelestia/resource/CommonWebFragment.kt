@@ -1,7 +1,6 @@
 package space.celestia.mobilecelestia.resource
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
@@ -11,9 +10,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.*
+import android.webkit.SslErrorHandler
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -21,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -34,6 +41,8 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
+import space.celestia.celestiafoundation.resource.model.ResourceItem
+import space.celestia.celestiafoundation.utils.commonHandler
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
@@ -41,14 +50,11 @@ import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
-import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.celestiafoundation.utils.commonHandler
 import java.io.File
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.Date
 import javax.inject.Inject
-import androidx.core.net.toUri
 
 @AndroidEntryPoint
 open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInterface.MessageHandler {
@@ -147,7 +153,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         val queryKeys = matchingQueryKeys
         webView.addJavascriptInterface(CelestiaJavascriptInterface(this), "AndroidCelestia")
         webView.webViewClient = object: WebViewClient() {
-            @TargetApi(Build.VERSION_CODES.N)
+            @RequiresApi(Build.VERSION_CODES.N)
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
                 request: WebResourceRequest?
