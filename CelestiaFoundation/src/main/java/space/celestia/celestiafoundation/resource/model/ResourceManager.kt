@@ -184,7 +184,7 @@ class ResourceManager {
             try {
                 val response = call.execute()
                 val body = response.body
-                if (!response.isSuccessful || body == null) {
+                if (!response.isSuccessful) {
                     return@executeAsyncTask Result.Success
                 }
 

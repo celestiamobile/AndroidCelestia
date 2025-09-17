@@ -157,6 +157,7 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
