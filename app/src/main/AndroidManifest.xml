@@ -14,7 +14,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
     android:versionCode="637"
-    android:versionName="1.8.9">
+    android:versionName="1.9.0">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
