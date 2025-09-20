@@ -37,7 +37,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.loadingindicator.LoadingIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
@@ -126,7 +126,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
     }
 
     private fun configureWebView(view: View, savedInstanceState: Bundle?) {
-        val loadingIndicator = view.findViewById<CircularProgressIndicator>(R.id.loading_indicator)
+        val loadingIndicator = view.findViewById<LoadingIndicator>(R.id.loading_indicator)
         val fallbackContainer = view.findViewById<FrameLayout>(R.id.fallback)
 
         val webView = view.findViewById<WebView>(R.id.webview)

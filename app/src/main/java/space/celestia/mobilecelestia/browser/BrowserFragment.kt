@@ -20,8 +20,8 @@ import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.loadingindicator.LoadingIndicator
 import com.google.android.material.navigation.NavigationBarView
-import com.google.android.material.progressindicator.CircularProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -45,7 +45,7 @@ interface BrowserRootFragment {
 class BrowserFragment : Fragment(), BrowserRootFragment, NavigationBarView.OnItemSelectedListener {
     private var currentPath = ""
     private var selectedItemIndex = 0
-    private lateinit var loadingIndicator: CircularProgressIndicator
+    private lateinit var loadingIndicator: LoadingIndicator
     private lateinit var browserContainer: LinearLayout
     private lateinit var navigation: BottomNavigationView
     private var tabs = listOf<Tab>()

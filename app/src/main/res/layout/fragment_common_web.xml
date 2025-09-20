@@ -43,11 +43,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"/>
-        <com.google.android.material.progressindicator.CircularProgressIndicator
+        <com.google.android.material.loadingindicator.LoadingIndicator
             android:id="@+id/loading_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminate="true"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"/>
     </RelativeLayout>
