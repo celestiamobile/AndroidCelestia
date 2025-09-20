@@ -13,6 +13,7 @@ class URLHelper {
                 .appendQueryParameter("lang", language)
                 .appendQueryParameter("platform", "android")
                 .appendQueryParameter("theme", "dark")
+                .appendQueryParameter("transparentBackground", "true")
             if (shareable != null) {
                 builder = builder.appendQueryParameter("share", if (shareable) "true" else "false")
             }
@@ -27,6 +28,7 @@ class URLHelper {
                 .appendQueryParameter("lang", language)
                 .appendQueryParameter("platform", "android")
                 .appendQueryParameter("theme", "dark")
+                .appendQueryParameter("transparentBackground", "true")
             if (shareable != null) {
                 builder = builder.appendQueryParameter("share", if (shareable) "true" else "false")
             }
@@ -41,6 +43,7 @@ class URLHelper {
                 .appendQueryParameter("lang", language)
                 .appendQueryParameter("platform", "android")
                 .appendQueryParameter("theme", "dark")
+                .appendQueryParameter("transparentBackground", "true")
                 .appendQueryParameter("titleVisibility", "collapsed")
                 .build()
         }

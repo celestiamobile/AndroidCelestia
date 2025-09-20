@@ -2037,6 +2037,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .appendQueryParameter("lang", AppCore.getLanguage())
             .appendQueryParameter("platform", "android")
             .appendQueryParameter("theme", "dark")
+            .appendQueryParameter("transparentBackground", "true")
             .appendQueryParameter("api", "1")
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
@@ -2052,6 +2053,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .appendQueryParameter("lang", language)
             .appendQueryParameter("platform", "android")
             .appendQueryParameter("theme", "dark")
+            .appendQueryParameter("transparentBackground", "true")
         builder = if (info.isLeaf)
             builder.appendQueryParameter("category", info.id)
         else
