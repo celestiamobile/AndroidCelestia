@@ -2040,7 +2040,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .appendQueryParameter("platform", "android")
             .appendQueryParameter("theme", "dark")
             .appendQueryParameter("transparentBackground", "true")
-            .appendQueryParameter("api", "1")
+            .appendQueryParameter("api", "2")
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
