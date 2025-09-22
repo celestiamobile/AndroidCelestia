@@ -826,7 +826,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val lang = AppCore.getLanguage()
         if (guide != null) {
             lifecycleScope.launch {
-                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(guide, lang), listOf("guide")))
+                val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
+                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = guide, language = lang, additionalQueryParameters = additionalQueryParameters), listOf("guide")))
             }
             cleanup()
             return
@@ -849,7 +850,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
-                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(result.id, lang), listOf("guide")))
+                val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
+                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, additionalQueryParameters = additionalQueryParameters), listOf("guide")))
             } catch (ignored: Throwable) {}
         }
     }

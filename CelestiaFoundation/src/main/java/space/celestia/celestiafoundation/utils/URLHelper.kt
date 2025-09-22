@@ -5,7 +5,7 @@ import androidx.core.net.toUri
 
 class URLHelper {
     companion object {
-        fun buildInAppGuideURI(id: String, language: String, shareable: Boolean? = null): Uri {
+        fun buildInAppGuideURI(id: String, language: String, shareable: Boolean? = null, additionalQueryParameters: Map<String, String>? = null): Uri {
             val baseURL = "https://celestia.mobi/resources/guide"
             var builder = baseURL.toUri()
                 .buildUpon()
@@ -16,6 +16,11 @@ class URLHelper {
                 .appendQueryParameter("transparentBackground", "true")
             if (shareable != null) {
                 builder = builder.appendQueryParameter("share", if (shareable) "true" else "false")
+            }
+            if (additionalQueryParameters != null) {
+                for ((key, value) in additionalQueryParameters) {
+                    builder = builder.appendQueryParameter(key, value)
+                }
             }
             return builder.build()
         }
