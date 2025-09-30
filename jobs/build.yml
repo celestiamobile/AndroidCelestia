@@ -6,7 +6,7 @@ jobs:
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
-    contentCommitHash: ${{ '10bd43b0e8925f6ee9bb9687522708a95338d664' }}
+    contentCommitHash: ${{ '00a1e8f33ceb90a02367429651eccc0ca6e6ceb8' }}
     dependencyVersion: '1.0.7'
 
   steps:
