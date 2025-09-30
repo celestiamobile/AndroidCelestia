@@ -482,8 +482,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         bottomSheetContainer.edgeInsets = EdgeInsets(windowInsets?.systemWindowInsets)
         bottomSheetContainer.useLandscapeLayout = hasRegularHorizontalSpace
         bottomSheetContainer.requestLayout()
-
-        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.handleInsetsChanged(safeInsets)
     }
 
     private fun loadExternalConfig(savedInstanceState: Bundle?) {
@@ -1890,22 +1888,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showTimeControl() = lifecycleScope.launch {
-        val timeSettingItem = CustomAction(type = CustomActionType.ShowTimeSettings, imageID = R.drawable.time_settings, contentDescription = CelestiaString("Settings", ""))
+        val timeSettingItem = CustomAction(type = CustomActionType.ShowTimeSettings, imageID = null, contentDescription = CelestiaString("Settings", ""))
         val actions: List<CelestiaAction> = if (resources.configuration.layoutDirection == LayoutDirection.RTL) {
             listOf(
                 CelestiaAction.Faster,
                 CelestiaAction.PlayPause,
                 CelestiaAction.Slower,
+                CelestiaAction.Reverse,
             )
         } else {
             listOf(
                 CelestiaAction.Slower,
                 CelestiaAction.PlayPause,
                 CelestiaAction.Faster,
+                CelestiaAction.Reverse,
             )
         }
         showToolbarActions(actions = actions.map { InstantAction(it) }, overflowItems = listOf(
-            OverflowItem(title = CelestiaAction.Reverse.title, action = InstantAction(CelestiaAction.Reverse)),
             OverflowItem(title = CelestiaString("Settings", ""), action = timeSettingItem),
         ))
     }
@@ -1927,8 +1926,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             ContinuousAction(CelestiaContinuosAction.TravelFaster),
         )
         actions.add(InstantAction(CelestiaAction.Stop))
+        actions.add(InstantAction(CelestiaAction.ReverseSpeed))
         showToolbarActions(actions = actions, overflowItems = listOf(
-            OverflowItem(title = CelestiaAction.ReverseSpeed.title, action = InstantAction(CelestiaAction.ReverseSpeed)),
             OverflowItem(title = CelestiaString("1 km/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F2)),
             OverflowItem(title = CelestiaString("1000 km/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F3)),
             OverflowItem(title = CelestiaString("c (lightspeed)", ""), action = ContinuousAction(CelestiaContinuosAction.F4)),

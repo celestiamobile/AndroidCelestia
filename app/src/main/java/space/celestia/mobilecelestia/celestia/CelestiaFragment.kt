@@ -38,6 +38,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -62,6 +63,8 @@ import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
+import space.celestia.mobilecelestia.common.RoundedCorners
+import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.purchase.PurchaseManager
@@ -228,6 +231,19 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
 
         setUpGLView(view.findViewById(R.id.celestia_gl_view))
+
+        val weakSelf = WeakReference(this)
+        ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
+            val self = weakSelf.get() ?: return@setOnApplyWindowInsetsListener insets
+            val hasRegularHorizontalSpace =  self.resources.configuration.screenWidthDp > SheetLayout.sheetMaxFullWidthDp
+            val safeInsets = EdgeInsets(
+                insets,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RoundedCorners(insets) else RoundedCorners(0, 0, 0, 0),
+                hasRegularHorizontalSpace
+            )
+            handleInsetsChanged(safeInsets)
+            return@setOnApplyWindowInsetsListener insets
+        }
         return view
     }
 
@@ -236,7 +252,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         appCore.setContextMenuHandler(null)
         appCore.setFatalErrorHandler(null)
         appCore.setSystemAccessHandler(null)
-
         super.onDestroyView()
     }
 
@@ -302,9 +317,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         }
     }
 
-    fun handleInsetsChanged(newInsets: EdgeInsets) {
+    private fun handleInsetsChanged(newInsets: EdgeInsets) {
         savedInsets = newInsets
-        val thisView = view ?: return
         if (!loadSuccess) { return }
 
         val insets = savedInsets.scaleBy(scaleFactor)

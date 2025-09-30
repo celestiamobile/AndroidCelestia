@@ -24,19 +24,25 @@ data class InstantAction(val action: CelestiaAction): Serializable, BottomContro
     override val imageID: Int?
         get() = when (action) {
             CelestiaAction.Faster -> {
-                R.drawable.time_faster
+                R.drawable.bottom_toolbar_faster
             }
             CelestiaAction.Slower -> {
-                R.drawable.time_slower
+                R.drawable.bottom_toolbar_slower
             }
             CelestiaAction.PlayPause -> {
-                R.drawable.time_playpause
+                R.drawable.bottom_toolbar_playpause
             }
             CelestiaAction.CancelScript -> {
-                R.drawable.time_stop
+                R.drawable.bottom_toolbar_stop
             }
             CelestiaAction.Stop -> {
-                R.drawable.time_stop
+                R.drawable.bottom_toolbar_stop
+            }
+            CelestiaAction.Reverse -> {
+                R.drawable.bottom_toolbar_reverse
+            }
+            CelestiaAction.ReverseSpeed -> {
+                R.drawable.bottom_toolbar_reverse
             }
             else -> {
                 null
@@ -76,10 +82,10 @@ data class ContinuousAction(val action: CelestiaContinuosAction): Serializable, 
     override val imageID: Int?
         get() = when (action) {
             CelestiaContinuosAction.TravelFaster -> {
-                R.drawable.time_faster
+                R.drawable.bottom_toolbar_faster
             }
             CelestiaContinuosAction.TravelSlower -> {
-                R.drawable.time_slower
+                R.drawable.bottom_toolbar_slower
             }
             else -> {
                 null
