@@ -7,6 +7,7 @@ jobs:
   variables:
     outputFormat: ${{ parameters.outputFormat }}
     contentCommitHash: ${{ '10bd43b0e8925f6ee9bb9687522708a95338d664' }}
+    dependencyVersion: '1.0.7'
 
   steps:
   - checkout: Celestia
@@ -20,7 +21,7 @@ jobs:
 
   - script: |
       sudo apt update
-      sudo apt install -y gettext gperf imagemagick
+      sudo apt install -y gettext gperf imagemagick wget
     displayName: 'Install Dependencies'
 
   - script: |
@@ -57,18 +58,10 @@ jobs:
     displayName: 'Running gperf'
 
   - script: |
+      wget https://github.com/celestiamobile/apple-android-dependencies/releases/download/$(dependencyVersion)/android-dependencies.tar.gz -O /tmp/android-dependencies.tar.gz
       mkdir -p AndroidCelestia/dependencies
-    displayName: 'Creating Directories for Third Party Dependencies'
-
-  - task: UniversalPackages@0
-    inputs:
-      command: 'download'
-      downloadDirectory: 'AndroidCelestia/dependencies'
-      feedsToUse: 'internal'
-      vstsFeed: '9f9dcde1-dcba-4537-8214-71c8a03b99a0/14bb1031-e6b2-40ac-b287-73e7fcb5900e'
-      vstsFeedPackage: '8024e780-0af6-4980-8246-df6550e8d1b6'
-      vstsPackageVersion: '0.0.26'
-    displayName: 'Download Dependencies'
+      tar -xzf /tmp/android-dependencies.tar.gz -C AndroidCelestia/dependencies
+    displayName: 'Download Pre-built Dependencies'
 
   - script: |
       TO_REPLACE="SENTRY-DSN"
