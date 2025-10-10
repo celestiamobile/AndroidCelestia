@@ -28,7 +28,6 @@ material = "1.13.0"
 min_sdk = "23"
 ndk = "28.2.13676358"
 okhttp = "5.1.0"
-recyclerview = "1.4.0"
 retrofit = "3.0.0"
 sentry-android = "8.17.0"
 target_sdk = "36"
@@ -53,7 +52,6 @@ androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-com
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "junit-version" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-runtime" }
-androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billing-ktx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
