@@ -117,9 +117,9 @@ class LPMetadataProvider {
         currentTask?.cancel()
     }
 
-    private companion object {
-        const val DEFAULT_TIMEOUT = 30000
-        const val MAX_REDIRECT_COUNT = 40
-        const val DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36"
+    companion object {
+        private const val DEFAULT_TIMEOUT = 30000
+        private const val MAX_REDIRECT_COUNT = 40
+        const val DEFAULT_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) EdgiOS/135.0.3179.54 Version/18.0 Mobile/15E148 Safari/604.1"
     }
 }
