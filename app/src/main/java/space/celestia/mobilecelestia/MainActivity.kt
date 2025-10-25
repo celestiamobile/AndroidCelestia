@@ -11,7 +11,6 @@ package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -23,7 +22,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
@@ -35,7 +33,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
@@ -1748,7 +1745,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun  hideKeyboard() {
-        (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+        (getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
     private fun showInfo(selection: Selection) = lifecycleScope.launch {
@@ -2198,8 +2195,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "112"
-        // 112: 1.9.2, Data update (commit 00a1e8f33ceb90a02367429651eccc0ca6e6ceb8)
+        private const val CURRENT_DATA_VERSION = "113"
+        // 113: 1.9.2, Data update (commit ea14adef2617536df5ed793fe4bfb61b8818d1ee)
         // 111: 1.9.0, Localization update data update (commit 10bd43b0e8925f6ee9bb9687522708a95338d664)
         // 107: 1.8.8, Localization update data update (commit fe433a479a366cde21441344c00cef4b7851e124) config update
         // 101: 1.8.7, Localization update data update (commit 1586549653454b456f24680657475ba453f99689) config update

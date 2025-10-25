@@ -6,8 +6,8 @@ jobs:
 
   variables:
     outputFormat: ${{ parameters.outputFormat }}
-    contentCommitHash: ${{ '00a1e8f33ceb90a02367429651eccc0ca6e6ceb8' }}
-    dependencyVersion: '1.0.7'
+    contentCommitHash: ${{ 'ea14adef2617536df5ed793fe4bfb61b8818d1ee' }}
+    dependencyVersion: '1.0.14'
 
   steps:
   - checkout: Celestia
