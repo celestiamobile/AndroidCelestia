@@ -13,15 +13,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -117,7 +118,7 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
                         Text(text = CelestiaString("Search", ""))
                     },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                        Icon(painter = painterResource(id = R.drawable.search_24px), contentDescription = null)
                     },
                 )
             },
@@ -125,6 +126,7 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
             onExpandedChange = {
                 isSearchActive = it
             },
+            windowInsets = SearchBarDefaults.windowInsets.only(WindowInsetsSides.Horizontal),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(

@@ -37,10 +37,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -60,7 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -194,7 +190,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun Item(item: FavoriteBaseItem, index: Int, dragDropState: DragDropState, isDraggable: Boolean, modifier: Modifier = Modifier) {
+    private fun Item(item: FavoriteBaseItem, index: Int, dragDropState: DragDropState, isDraggable: Boolean) {
         var showMenu by remember { mutableStateOf(false) }
         var title by remember { mutableStateOf(item.title) }
         var rowModifier = Modifier
@@ -232,11 +228,11 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .weight(1.0f)
-                            .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical),)
+                            .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))
                     )
                     if (isDraggable) {
                         Icon(
-                            imageVector = Icons.Default.Menu,
+                            painter = painterResource(id = R.drawable.drag_handle_24px),
                             contentDescription = CelestiaString(
                                 "Drag Handle",
                                 "Accessibility description for the drag handle for reorder"
@@ -270,17 +266,17 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
             val swipeState = rememberSwipeToDismissBoxState()
             val color: Color?
             val iconColor: Color?
-            val icon: ImageVector?
+            val icon: Painter?
             val alignment: Alignment?
             if (item.supportedItemActions.contains(FavoriteItemAction.Delete) && swipeState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
                 color = MaterialTheme.colorScheme.errorContainer
                 iconColor = MaterialTheme.colorScheme.onErrorContainer
-                icon = Icons.Outlined.Delete
+                icon = painterResource(id = R.drawable.delete_24px)
                 alignment = Alignment.CenterEnd
             } else if (item.supportedItemActions.contains(FavoriteItemAction.Rename) && swipeState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
                 color = MaterialTheme.colorScheme.secondaryContainer
                 iconColor = MaterialTheme.colorScheme.onSecondaryContainer
-                icon = Icons.Outlined.Edit
+                icon = painterResource(id = R.drawable.edit_24px)
                 alignment = Alignment.CenterStart
             } else {
                 color = null
@@ -300,7 +296,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
                         ) {
                             Icon(
                                 modifier = Modifier.minimumInteractiveComponentSize(),
-                                imageVector = icon, contentDescription = null,
+                                painter = icon, contentDescription = null,
                                 tint = iconColor
                             )
                         }

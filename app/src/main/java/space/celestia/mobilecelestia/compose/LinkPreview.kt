@@ -102,9 +102,9 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, onClick: (URL) -> Unit)
             val client = OkHttpClient()
             val image = withContext(Dispatchers.IO) {
                 try {
-                    val req = Request.Builder().url(imageURL).build()
+                    val req = Request.Builder().url(imageURL).addHeader("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) EdgiOS/135.0.3179.54 Version/18.0 Mobile/15E148 Safari/604.1").build()
                     val res = client.newCall(req).execute()
-                    val stream = res.body?.byteStream() ?: return@withContext null
+                    val stream = res.body.byteStream()
                     return@withContext BitmapFactory.decodeStream(stream)
                 } catch(ignored: Throwable) {
                     return@withContext null

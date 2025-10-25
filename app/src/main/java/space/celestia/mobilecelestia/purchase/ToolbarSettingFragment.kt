@@ -29,9 +29,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -195,9 +192,9 @@ class ToolbarSettingFragment: SubscriptionBackingFragment() {
                     ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)).scale(0.8f))
                     Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f).padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
                     if (isDraggable) {
-                        Icon(imageVector = Icons.Default.Menu, contentDescription = CelestiaString("Drag Handle", "Accessibility description for the drag handle for reorder"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
+                        Icon(painter = painterResource(id = R.drawable.drag_handle_24px), contentDescription = CelestiaString("Drag Handle", "Accessibility description for the drag handle for reorder"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
                     } else {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = CelestiaString("Add Button", "Accessibility description for an add button"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.clip(CircleShape).clickable {
+                        Icon(painter = painterResource(id = R.drawable.add_24px), contentDescription = CelestiaString("Add Button", "Accessibility description for an add button"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.clip(CircleShape).clickable {
                             if (!list.contains(item)) {
                                 list = list.toMutableList().apply {
                                     add(item)
