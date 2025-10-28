@@ -15,6 +15,14 @@ downsize_texture()
 {
     find hires/ -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.dds" \) | while read -r FILE; do
         FILENAME=$(basename "$FILE")
+
+        # Skip normal maps (case-insensitive)
+        echo "$FILENAME" | grep -iq "normal"
+        if [ $? -eq 0 ]; then
+            echo "Skipping resize for normal map: $FILE"
+            continue
+        fi
+
         ALPHA=$(identify -format "%A" "$FILE" 2>/dev/null)
         ALPHA_LOWER=$(echo "$ALPHA" | tr '[:upper:]' '[:lower:]')
 
