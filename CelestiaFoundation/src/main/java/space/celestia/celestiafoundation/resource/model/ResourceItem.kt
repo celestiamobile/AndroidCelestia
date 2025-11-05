@@ -20,6 +20,7 @@ class ResourceItem(
     val type: String?,
     val description: String,
     val item: String,
+    val checksum: String?,
     val image: String?,
     val authors: List<String>?,
     val publishTime: Date?,
