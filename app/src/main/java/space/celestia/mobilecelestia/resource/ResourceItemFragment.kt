@@ -25,19 +25,19 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
+import space.celestia.celestiafoundation.resource.model.ResourceItem
+import space.celestia.celestiafoundation.resource.model.ResourceManager
+import space.celestia.celestiafoundation.utils.URLHelper
+import space.celestia.celestiafoundation.utils.commonHandler
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
-import space.celestia.celestiafoundation.resource.model.ResourceItem
-import space.celestia.celestiafoundation.resource.model.ResourceManager
-import space.celestia.celestiafoundation.utils.URLHelper
-import space.celestia.celestiafoundation.utils.commonHandler
-import space.celestia.mobilecelestia.utils.*
+import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.showAlert
 import java.io.File
 import java.lang.ref.WeakReference
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -48,10 +48,11 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     lateinit var resourceAPI: ResourceAPIService
 
     private lateinit var item: ResourceItem
-    private lateinit var lastUpdateDate: Date
     private lateinit var statusButton: Button
+    private lateinit var updateButton: Button
     private lateinit var goToButton: Button
     private lateinit var progressIndicator: LinearProgressIndicator
+    private var installedAddonChecksum: String? = null
     private var currentState: ResourceItemState = ResourceItemState.None
 
     private var listener: Listener? = null
@@ -65,7 +66,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     }
 
     interface UpdateListener {
-        fun onResourceItemUpdated(resourceItem: ResourceItem, updateDate: Date)
+        fun onResourceItemUpdated(resourceItem: ResourceItem)
     }
 
     enum class ResourceItemState {
@@ -75,12 +76,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (savedInstanceState != null) {
-            item = BundleCompat.getSerializable(savedInstanceState, ARG_ITEM, ResourceItem::class.java)!!
-            lastUpdateDate = BundleCompat.getSerializable(savedInstanceState, ARG_UPDATED_DATE, Date::class.java)!!
+        item = if (savedInstanceState != null) {
+            BundleCompat.getSerializable(savedInstanceState, ARG_ITEM, ResourceItem::class.java)!!
         } else {
-            item = BundleCompat.getSerializable(requireArguments(), ARG_ITEM, ResourceItem::class.java)!!
-            lastUpdateDate = BundleCompat.getSerializable(requireArguments(), ARG_UPDATED_DATE, Date::class.java)!!
+            BundleCompat.getSerializable(requireArguments(), ARG_ITEM, ResourceItem::class.java)!!
         }
     }
 
@@ -109,6 +108,12 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         goToButton = view.findViewById(R.id.go_to_button)
         goToButton.text = if (item.type == "script") CelestiaString("Run", "Run a script") else CelestiaString("Go", "Go to an object")
         goToButton.visibility = View.GONE
+        updateButton = view.findViewById(R.id.update_button)
+        updateButton.text = CelestiaString("Update", "")
+        updateButton.visibility = View.GONE
+        updateButton.setOnClickListener {
+            onUpdateClick()
+        }
         progressIndicator = view.findViewById(R.id.progress_indicator)
 
         updateUI()
@@ -129,29 +134,12 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             replace(CommonWebFragment.newInstance(uri, listOf("item"), resourceManager.contextDirectory(item)), R.id.webview_container, false)
         }
 
-        if (Date().time - lastUpdateDate.time > UPDATE_INTERVAL_MILLISECONDS) {
-            // Fetch the latest item, this is needed as user might come
-            // here from Installed where the URL might be incorrect
-            val weakSelf = WeakReference(this)
-            val resourceAPI = this.resourceAPI
-            val itemID = item.id
-            lifecycleScope.launch {
-                try {
-                    val result = resourceAPI.item(AppCore.getLanguage(), itemID).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
-                    val self = weakSelf.get() ?: return@launch
-                    self.item = result
-                    self.lastUpdateDate = Date()
-                    self.updateListener?.onResourceItemUpdated(self.item, self.lastUpdateDate)
-                    self.title = self.item.name
-                    self.updateUI()
-                } catch (ignored: Throwable) {}
-            }
-        }
+        reloadItemOnDisk()
+        reloadItemFromOnline()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable(ARG_ITEM, item)
-        outState.putSerializable(ARG_UPDATED_DATE, lastUpdateDate)
         super.onSaveInstanceState(outState)
     }
 
@@ -182,6 +170,36 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
             } else -> {}
         }
         return true
+    }
+
+    private fun reloadItemOnDisk() {
+        val weakSelf = WeakReference(this)
+        val item = this.item
+        val resourceManager = this.resourceManager
+
+        lifecycleScope.launch {
+            val installedItem = resourceManager.installedResourceAsync(item)
+            val self = weakSelf.get() ?: return@launch
+            self.installedAddonChecksum = installedItem?.checksum
+            self.updateUI()
+        }
+    }
+
+    private fun reloadItemFromOnline() {
+        val weakSelf = WeakReference(this)
+        val item = this.item
+        val resourceAPI = this.resourceAPI
+
+        lifecycleScope.launch {
+            try {
+                val result = resourceAPI.item(AppCore.getLanguage(), item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                val self = weakSelf.get() ?: return@launch
+                self.item = result
+                self.updateListener?.onResourceItemUpdated(self.item)
+                self.title = self.item.name
+                self.updateUI()
+            } catch (ignored: Throwable) {}
+        }
     }
 
     private fun onProgressViewClick() {
@@ -222,6 +240,15 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         updateUI()
     }
 
+    private fun onUpdateClick() {
+        val activity = this.activity ?: return
+
+        resourceManager.uninstall(item)
+        resourceManager.download(item, File(activity.cacheDir, item.id))
+        currentState = ResourceItemState.Downloading
+        updateUI()
+    }
+
     override fun onResourceFetchError(identifier: String, errorContext: ResourceManager.ErrorContext) {
         if (identifier != item.id) { return }
 
@@ -250,8 +277,10 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     override fun onFileUnzipped(identifier: String) {
         if (identifier != item.id) { return }
 
+        installedAddonChecksum = null
         currentState = ResourceItemState.Installed
         updateUI()
+        reloadItemOnDisk()
     }
 
     override fun onProgressUpdate(identifier: String, progress: Float) {
@@ -272,15 +301,18 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         when (currentState) {
             ResourceItemState.None -> {
+                updateButton.visibility = View.GONE
                 progressIndicator.visibility = View.GONE
                 progressIndicator.progress = 0
                 statusButton.text = CelestiaString("Install", "Install an add-on")
             }
             ResourceItemState.Downloading -> {
+                updateButton.visibility = View.GONE
                 progressIndicator.visibility = View.VISIBLE
                 statusButton.text = CelestiaString("Cancel", "")
             }
             ResourceItemState.Installed -> {
+                updateButton.visibility = if (installedAddonChecksum != null && item.checksum != null && installedAddonChecksum != item.checksum) View.VISIBLE else View.GONE
                 progressIndicator.visibility = View.GONE
                 progressIndicator.progress = 0
                 statusButton.text = CelestiaString("Uninstall", "Uninstall an add-on")
@@ -317,16 +349,13 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
     companion object {
         private const val ARG_ITEM = "item"
-        private const val ARG_UPDATED_DATE = "date"
-        private const val UPDATE_INTERVAL_MILLISECONDS = 1800000L
         private const val SHARE_BAR_BUTTON_ID = 4214
 
         @JvmStatic
-        fun newInstance(item: ResourceItem, lastUpdateDate: Date) =
+        fun newInstance(item: ResourceItem) =
             ResourceItemFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_ITEM, item)
-                    putSerializable(ARG_UPDATED_DATE, lastUpdateDate)
                 }
             }
     }

@@ -54,6 +54,13 @@
                 android:layout_height="wrap_content"/>
 
             <Button
+                android:id="@+id/update_button"
+                style="@style/Button"
+                android:layout_marginTop="@dimen/common_page_button_gap_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <Button
                 style="@style/Button"
                 android:id="@+id/status_button"
                 android:layout_marginTop="@dimen/common_page_button_gap_vertical"

@@ -21,8 +21,7 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun pushItem(item: ResourceItem) {
-        // Installed item, update time is unknown so set to epoch time here
-        val frag = ResourceItemFragment.newInstance(item, Date(0))
+        val frag = ResourceItemFragment.newInstance(item)
         pushFragment(frag)
     }
 

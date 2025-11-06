@@ -91,6 +91,31 @@ class ResourceManager {
         }
     }
 
+    suspend fun installedResourceAsync(item: ResourceItem): ResourceItem? {
+        return withContext(Dispatchers.IO) {
+            installedResource(item)
+        }
+    }
+
+    private fun installedResource(item: ResourceItem): ResourceItem? {
+        val contextDir = contextDirectory(item)
+        if (!contextDir.exists())
+            return null
+        val jsonDescriptionFile = File(contextDir, "description.json")
+        if (!jsonDescriptionFile.exists() || jsonDescriptionFile.isDirectory)
+            return null
+        try {
+            val reader = FileReader(jsonDescriptionFile)
+            reader.use {
+                val gson = GsonBuilder().create()
+                val item = gson.fromJson(it, ResourceItem::class.java)
+                return item
+            }
+        } catch (ignored: Throwable) {
+            return null
+        }
+    }
+
     private fun installedResources(): List<ResourceItem> {
         val items = arrayListOf<ResourceItem>()
         val scriptDirPath = scriptDirectory

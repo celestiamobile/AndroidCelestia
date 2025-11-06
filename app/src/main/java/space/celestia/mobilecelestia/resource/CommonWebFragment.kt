@@ -389,7 +389,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 val frag = parentFragment
                 // Do not push another ResourceItemFragment if it is the top
                 if (frag is NavigationFragment && frag.top !is ResourceItemFragment) {
-                    frag.pushFragment(ResourceItemFragment.newInstance(result, Date()))
+                    frag.pushFragment(ResourceItemFragment.newInstance(result))
                 }
             } catch (ignored: Throwable) {}
         }
