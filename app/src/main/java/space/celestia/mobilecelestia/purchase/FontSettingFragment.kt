@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +45,6 @@ import space.celestia.mobilecelestia.settings.boldFont
 import space.celestia.mobilecelestia.settings.normalFont
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.PreferenceManager
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class FontSettingFragment : SubscriptionBackingFragment() {
@@ -80,8 +79,7 @@ class FontSettingFragment : SubscriptionBackingFragment() {
             val nestedScrollInterop = rememberNestedScrollInteropConnection()
             LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = WindowInsets.systemBars.asPaddingValues()) {
                 item {
-                    // TODO: Replace with SegmentedButton
-                    TabRow(selectedTabIndex = selectedTabIndex) {
+                    PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
                         val tabTitleModifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.tab_title_text_padding_vertical))
                         Tab(selected = selectedTabIndex == 0, onClick = {
                             selectedTabIndex = 0
