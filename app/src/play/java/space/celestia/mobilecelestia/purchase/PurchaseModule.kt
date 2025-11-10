@@ -1,6 +1,7 @@
 package space.celestia.mobilecelestia.purchase
 
 import android.content.Context
+import androidx.annotation.Keep
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.PendingPurchasesParams
@@ -15,7 +16,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-import space.celestia.celestiafoundation.utils.BaseResult
+import java.io.Serializable
 import java.lang.ref.WeakReference
 import javax.inject.Singleton
 
@@ -53,10 +54,13 @@ class PurchaseModule {
     }
 }
 
+@Keep
+class PurchaseStatus(val valid: Boolean, val planId: String?): Serializable
 
 interface PurchaseAPIService {
     @GET("play")
     suspend fun subscriptionStatus(
         @Query("purchaseToken") purchaseToken: String,
-    ): BaseResult
+        @Query("errorAsHttpStatus") errorAsHttpStatus: String = "true"
+    ): PurchaseStatus
 }

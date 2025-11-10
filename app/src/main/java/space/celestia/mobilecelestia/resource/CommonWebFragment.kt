@@ -41,19 +41,15 @@ import com.google.android.material.loadingindicator.LoadingIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
-import space.celestia.celestiafoundation.resource.model.ResourceItem
-import space.celestia.celestiafoundation.utils.commonHandler
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
-import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.File
 import java.lang.ref.WeakReference
-import java.util.Date
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -385,7 +381,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         val lang = AppCore.getLanguage()
         lifecycleScope.launch {
             try {
-                val result = resourceAPI.item(lang, id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                val result = resourceAPI.item(lang, id)
                 val frag = parentFragment
                 // Do not push another ResourceItemFragment if it is the top
                 if (frag is NavigationFragment && frag.top !is ResourceItemFragment) {

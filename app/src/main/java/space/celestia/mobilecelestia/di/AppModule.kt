@@ -1,6 +1,11 @@
 package space.celestia.mobilecelestia.di
 
 import android.content.Context
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,13 +15,15 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
-import space.celestia.mobilecelestia.common.CelestiaExecutor
-import space.celestia.celestiafoundation.utils.FilePaths
-import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.celestiafoundation.resource.model.ResourceManager
+import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.celestia.SessionSettings
+import space.celestia.mobilecelestia.common.CelestiaExecutor
+import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.PreferenceManager
+import java.lang.reflect.Type
+import java.util.Date
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -34,9 +41,25 @@ object AppModule {
     @Singleton
     @Provides
     fun provideResourceAPI(): ResourceAPIService {
+        class DateAdapter : JsonDeserializer<Date> {
+            override fun deserialize(
+                json: JsonElement?,
+                typeOfT: Type?,
+                context: JsonDeserializationContext?
+            ): Date {
+                try {
+                    val seconds = json?.asDouble ?: return Date()
+                    return Date((seconds * 1000.0).toLong())
+                } catch(e: Throwable) {
+                    throw JsonParseException(e)
+                }
+            }
+        }
+
+        val gson = GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create()
         return Retrofit.Builder()
             .baseUrl("https://celestia.mobi/api/resource/")
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ResourceAPIService::class.java)
     }

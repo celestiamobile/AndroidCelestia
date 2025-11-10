@@ -84,7 +84,6 @@ import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.FileUtils
 import space.celestia.celestiafoundation.utils.URLHelper
-import space.celestia.celestiafoundation.utils.commonHandler
 import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
@@ -831,7 +830,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (addon != null) {
             lifecycleScope.launch {
                 try {
-                    val result = resourceAPI.item(lang, addon).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                    val result = resourceAPI.item(lang, addon)
                     showBottomSheetFragment(ResourceItemNavigationFragment.newInstance(result))
                 } catch (ignored: Throwable) {}
             }
@@ -842,7 +841,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // Check news
         lifecycleScope.launch {
             try {
-                val result = resourceAPI.latest("news", lang).commonHandler(GuideItem::class.java, ResourceAPI.gson)
+                val result = resourceAPI.latest("news", lang)
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
                 val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null

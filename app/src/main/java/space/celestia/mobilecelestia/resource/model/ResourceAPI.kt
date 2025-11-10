@@ -12,7 +12,8 @@ package space.celestia.mobilecelestia.resource.model
 import com.google.gson.*
 import retrofit2.http.GET
 import retrofit2.http.Query
-import space.celestia.celestiafoundation.utils.BaseResult
+import space.celestia.celestiafoundation.resource.model.GuideItem
+import space.celestia.celestiafoundation.resource.model.ResourceItem
 import java.lang.reflect.Type
 import java.util.*
 
@@ -39,12 +40,14 @@ interface ResourceAPIService {
     @GET("latest")
     suspend fun latest(
         @Query("type") type: String,
-        @Query("lang") lang: String
-    ): BaseResult
+        @Query("lang") lang: String,
+        @Query("errorAsHttpStatus") errorAsHttpStatus: String = "true"
+    ): GuideItem
 
     @GET("item")
     suspend fun item(
         @Query("lang") lang: String,
-        @Query("item") item: String
-    ): BaseResult
+        @Query("item") item: String,
+        @Query("errorAsHttpStatus") errorAsHttpStatus: String = "true"
+    ): ResourceItem
 }

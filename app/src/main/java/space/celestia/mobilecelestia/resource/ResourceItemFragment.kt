@@ -28,7 +28,6 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.URLHelper
-import space.celestia.celestiafoundation.utils.commonHandler
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.common.replace
@@ -192,7 +191,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
 
         lifecycleScope.launch {
             try {
-                val result = resourceAPI.item(AppCore.getLanguage(), item.id).commonHandler(ResourceItem::class.java, ResourceAPI.gson)
+                val result = resourceAPI.item(AppCore.getLanguage(), item.id)
                 val self = weakSelf.get() ?: return@launch
                 self.item = result
                 self.updateListener?.onResourceItemUpdated(self.item)

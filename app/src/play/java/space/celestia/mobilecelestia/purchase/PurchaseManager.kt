@@ -2,7 +2,6 @@ package space.celestia.mobilecelestia.purchase
 
 import android.app.Activity
 import android.content.Context
-import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener
@@ -26,8 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.BuildConfig
 import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.celestiafoundation.utils.commonHandler
-import java.io.Serializable
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -198,32 +195,22 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     }
 
     private fun verifyStatus(purchaseToken: String, handler: (() -> Unit)? = null) {
-        @Keep
-        class Status(val valid: Boolean, val planId: String?): Serializable
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                val result = purchaseAPI.subscriptionStatus(purchaseToken)
-                try {
-                    val status = result.commonHandler(Status::class.java)
-                    if (status.valid) {
-                        val plan = when (status.planId) {
-                            yearlyPlanId -> PlanType.Yearly
-                            monthlyPlanId -> PlanType.Monthly
-                            else -> null
-                        }
-                        changeSubscriptionStatus(SubscriptionStatus.Good.Verified(purchaseToken, plan))
-                    } else {
-                        changeSubscriptionStatus(SubscriptionStatus.Good.None)
+                val status = purchaseAPI.subscriptionStatus(purchaseToken)
+                if (status.valid) {
+                    val plan = when (status.planId) {
+                        yearlyPlanId -> PlanType.Yearly
+                        monthlyPlanId -> PlanType.Monthly
+                        else -> null
                     }
-                    if (handler != null)
-                        handler()
-                } catch (ignored: Throwable) {
-                    // API error
-                    changeSubscriptionStatus(SubscriptionStatus.Error.Unknown)
-                    if (handler != null)
-                        handler()
+                    changeSubscriptionStatus(SubscriptionStatus.Good.Verified(purchaseToken, plan))
+                } else {
+                    changeSubscriptionStatus(SubscriptionStatus.Good.None)
                 }
-            } catch(ignored: Throwable) {
+                if (handler != null)
+                    handler()
+            } catch (ignored: Throwable) {
                 changeSubscriptionStatus(SubscriptionStatus.Good.NotVerified(purchaseToken))
                 if (handler != null)
                     handler()
