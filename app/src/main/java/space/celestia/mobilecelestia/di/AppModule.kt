@@ -58,7 +58,7 @@ object AppModule {
 
         val gson = GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create()
         return Retrofit.Builder()
-            .baseUrl("https://celestia.mobi/api/resource/")
+            .baseUrl("https://celestia.mobi/api/2/resource/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ResourceAPIService::class.java)

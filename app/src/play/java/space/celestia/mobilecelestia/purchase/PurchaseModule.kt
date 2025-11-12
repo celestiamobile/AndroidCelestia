@@ -47,7 +47,7 @@ class PurchaseModule {
     @Provides
     fun providePurchaseAPI(): PurchaseAPIService {
         return Retrofit.Builder()
-            .baseUrl("https://celestia.mobi/api/subscription/")
+            .baseUrl("https://celestia.mobi/api/2/subscription/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(PurchaseAPIService::class.java)
@@ -60,7 +60,6 @@ class PurchaseStatus(val valid: Boolean, val planId: String?): Serializable
 interface PurchaseAPIService {
     @GET("play")
     suspend fun subscriptionStatus(
-        @Query("purchaseToken") purchaseToken: String,
-        @Query("errorAsHttpStatus") errorAsHttpStatus: String = "true"
+        @Query("purchaseToken") purchaseToken: String
     ): PurchaseStatus
 }

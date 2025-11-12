@@ -40,14 +40,12 @@ interface ResourceAPIService {
     @GET("latest")
     suspend fun latest(
         @Query("type") type: String,
-        @Query("lang") lang: String,
-        @Query("errorAsHttpStatus") errorAsHttpStatus: String = "true"
+        @Query("lang") lang: String
     ): GuideItem
 
     @GET("item")
     suspend fun item(
         @Query("lang") lang: String,
-        @Query("item") item: String,
-        @Query("errorAsHttpStatus") errorAsHttpStatus: String = "true"
+        @Query("item") item: String
     ): ResourceItem
 }
