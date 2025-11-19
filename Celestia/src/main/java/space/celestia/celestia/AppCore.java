@@ -655,6 +655,10 @@ public class AppCore {
     public void setShowChasmaLabels(boolean showChasmaLabels) { c_setShowChasmaLabels(pointer, showChasmaLabels); }
     private static native void c_setShowChasmaLabels(long pointer, boolean showChasmaLabels);
     private native boolean c_getShowChasmaLabels(long pointer);
+    public boolean getShowCollumLabels() { return c_getShowCollumLabels(pointer); }
+    public void setShowCollumLabels(boolean showCollumLabels) { c_setShowCollumLabels(pointer, showCollumLabels); }
+    private static native void c_setShowCollumLabels(long pointer, boolean showChasmaLabels);
+    private native boolean c_getShowCollumLabels(long pointer);
     public boolean getShowPateraLabels() { return c_getShowPateraLabels(pointer); }
     public void setShowPateraLabels(boolean showPateraLabels) { c_setShowPateraLabels(pointer, showPateraLabels); }
     private static native void c_setShowPateraLabels(long pointer, boolean showPateraLabels);
