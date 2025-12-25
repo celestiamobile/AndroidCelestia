@@ -69,6 +69,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/binaryread.h
         ${CELESTIA_SRC_DIR}/celutil/binarywrite.h
         ${CELESTIA_SRC_DIR}/celutil/blockarray.h
+        ${CELESTIA_SRC_DIR}/celutil/buffile.cpp
+        ${CELESTIA_SRC_DIR}/celutil/buffile.h
         ${CELESTIA_SRC_DIR}/celutil/bytes.h
         ${CELESTIA_SRC_DIR}/celutil/color.cpp
         ${CELESTIA_SRC_DIR}/celutil/color.h
@@ -259,6 +261,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/asterism.cpp
         ${CELESTIA_SRC_DIR}/celengine/asterism.h
         ${CELESTIA_SRC_DIR}/celengine/astroobj.h
+        ${CELESTIA_SRC_DIR}/celengine/atmosphere.cpp
         ${CELESTIA_SRC_DIR}/celengine/atmosphere.h
         ${CELESTIA_SRC_DIR}/celengine/axisarrow.cpp
         ${CELESTIA_SRC_DIR}/celengine/axisarrow.h
