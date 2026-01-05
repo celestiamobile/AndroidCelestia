@@ -114,7 +114,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/uniquedel.h
         ${CELESTIA_SRC_DIR}/celutil/utf8.cpp
         ${CELESTIA_SRC_DIR}/celutil/utf8.h
-        ${CELESTIA_SRC_DIR}/celutil/watcher.h
         )
 
 list(APPEND CELESTIA_SOURCES
@@ -164,8 +163,6 @@ list(APPEND CELESTIA_SOURCES
 
 list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celcompat/charconv.h
-        ${CELESTIA_SRC_DIR}/celcompat/charconv_impl.cpp
-        ${CELESTIA_SRC_DIR}/celcompat/charconv_impl.h
         ${CELESTIA_SRC_DIR}/celcompat/numbers.h
         ${CELESTIA_SRC_DIR}/celcompat/numbers_impl.h
         )
@@ -301,6 +298,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/galaxy.h
         ${CELESTIA_SRC_DIR}/celengine/galaxyform.cpp
         ${CELESTIA_SRC_DIR}/celengine/galaxyform.h
+        ${CELESTIA_SRC_DIR}/celengine/geometry.cpp
         ${CELESTIA_SRC_DIR}/celengine/geometry.h
         ${CELESTIA_SRC_DIR}/celengine/glsupport.cpp
         ${CELESTIA_SRC_DIR}/celengine/glsupport.h
@@ -510,6 +508,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/cspice
         ${THIRD_PARTY_INCLUDE_DIR}/luajit
         ${THIRD_PARTY_INCLUDE_DIR}/eigen3
+        ${THIRD_PARTY_INCLUDE_DIR}/fast_float
         ${THIRD_PARTY_INCLUDE_DIR}/fmt
         ${THIRD_PARTY_INCLUDE_DIR}/gettext
         ${THIRD_PARTY_INCLUDE_DIR}/jpeg

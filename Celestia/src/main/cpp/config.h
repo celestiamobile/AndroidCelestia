@@ -8,8 +8,7 @@
 // of the License, or (at your option) any later version.
 
 #define HAVE_BYTESWAP_H
-#define HAVE_CHARCONV
-//#define HAVE_FLOAT_CHARCONV
+//#define HAVE_CHARCONV
 //#define HAVE_WORDEXP
 #define HAVE_MESHOPTIMIZER
 //#define HAVE_CONSTEXPR_CMATH
