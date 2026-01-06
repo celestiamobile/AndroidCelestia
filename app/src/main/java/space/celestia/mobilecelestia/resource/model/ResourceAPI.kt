@@ -10,8 +10,12 @@
 package space.celestia.mobilecelestia.resource.model
 
 import com.google.gson.*
+import com.google.gson.annotations.SerializedName
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Query
+import space.celestia.celestiafoundation.resource.model.AddonUpdate
 import space.celestia.celestiafoundation.resource.model.GuideItem
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import java.lang.reflect.Type
@@ -36,6 +40,12 @@ object ResourceAPI {
     val gson: Gson by lazy { GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create() }
 }
 
+data class UpdateRequest(
+    val lang: String,
+    val items: List<String>,
+    @SerializedName("purchaseTokenAndroid") val purchaseToken: String
+)
+
 interface ResourceAPIService {
     @GET("latest")
     suspend fun latest(
@@ -48,4 +58,9 @@ interface ResourceAPIService {
         @Query("lang") lang: String,
         @Query("item") item: String
     ): ResourceItem
+
+    @POST("updates")
+    suspend fun updates(
+        @Body body: UpdateRequest
+    ): Map<String, AddonUpdate>
 }

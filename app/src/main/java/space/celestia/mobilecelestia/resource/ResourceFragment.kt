@@ -25,6 +25,11 @@ class ResourceFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
         pushFragment(frag)
     }
 
+    fun showUpdates() {
+        val frag = AddonUpdateListFragment.newInstance()
+        pushFragment(frag)
+    }
+
     companion object {
         fun newInstance() = ResourceFragment()
     }

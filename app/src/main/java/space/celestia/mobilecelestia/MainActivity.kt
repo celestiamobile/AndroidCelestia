@@ -142,6 +142,7 @@ import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.purchase.SubscriptionBackingFragment
+import space.celestia.mobilecelestia.resource.AddonUpdateListFragment
 import space.celestia.mobilecelestia.resource.CommonWebFragment
 import space.celestia.mobilecelestia.resource.CommonWebNavigationFragment
 import space.celestia.mobilecelestia.resource.InstalledAddonListFragment
@@ -202,6 +203,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     EventFinderInputFragment.Listener,
     EventFinderResultFragment.Listener,
     InstalledAddonListFragment.Listener,
+    AddonUpdateListFragment.Listener,
     DestinationDetailFragment.Listener,
     GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
@@ -2025,6 +2027,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onOpenAddonDownload() {
         openAddonDownload()
+    }
+
+    override fun onOpenAddonUpdateList() {
+        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+        if (frag is ResourceFragment) {
+            frag.showUpdates()
+        }
     }
 
     private fun openAddonDownload() {

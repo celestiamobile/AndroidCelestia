@@ -49,6 +49,7 @@ import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.TextRow
+import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.utils.CelestiaString
 import javax.inject.Inject
 
@@ -56,6 +57,8 @@ import javax.inject.Inject
 class InstalledAddonListFragment: NavigationFragment.SubFragment() {
     @Inject
     lateinit var resourceManager: ResourceManager
+    @Inject
+    lateinit var purchaseManager: PurchaseManager
 
     private var installedAddons = mutableStateListOf<ResourceItem>()
     private var needRefresh = mutableStateOf(true)
@@ -65,6 +68,7 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment() {
     interface Listener {
         fun onInstalledAddonSelected(addon: ResourceItem)
         fun onOpenAddonDownload()
+        fun onOpenAddonUpdateList()
     }
 
     override fun onCreateView(
@@ -89,6 +93,18 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         title = CelestiaString("Installed", "Title for the list of installed add-ons")
+        rightNavigationBarItems = if (purchaseManager.canUseInAppPurchase()) listOf(
+            NavigationFragment.BarButtonItem(id = MENU_ITEM_UPDATES, title = CelestiaString("Updates", "View the list of add-ons that have pending updates."))
+        ) else listOf()
+    }
+
+    override fun menuItemClicked(groupId: Int, id: Int): Boolean {
+        when (id) {
+            MENU_ITEM_UPDATES -> {
+                listener?.onOpenAddonUpdateList()
+            } else -> {}
+        }
+        return true
     }
 
     override fun onAttach(context: Context) {
@@ -154,6 +170,8 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment() {
     }
 
     companion object {
+        const val MENU_ITEM_UPDATES = 0
+
         fun newInstance() = InstalledAddonListFragment()
     }
 }
