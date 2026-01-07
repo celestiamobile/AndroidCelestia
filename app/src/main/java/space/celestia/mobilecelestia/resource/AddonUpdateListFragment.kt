@@ -166,7 +166,7 @@ class AddonUpdateListFragment : SubscriptionBackingFragment(), ResourceManager.L
         val state = rememberPullToRefreshState()
         val scope = rememberCoroutineScope()
 
-        val formatter by remember { mutableStateOf(DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())) }
+        val formatter by remember { mutableStateOf(DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())) }
 
         PullToRefreshBox(
             isRefreshing = addonUpdateManager.isCheckingUpdates.value,
