@@ -14,7 +14,13 @@ import android.icu.text.RuleBasedCollator
 import android.os.Build
 import android.util.Log
 import com.google.gson.GsonBuilder
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import space.celestia.ziputils.ZipExceptionContext
@@ -23,7 +29,6 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
-import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
 fun <P, R> CoroutineScope.executeAsyncTask(
@@ -66,6 +71,7 @@ class ResourceManager {
         fun onFileDownloaded(identifier: String)
         fun onFileUnzipped(identifier: String)
         fun onResourceFetchError(identifier: String, errorContext: ErrorContext)
+        fun onAddonUninstalled(identifier: String)
     }
 
     fun addListener(listener: Listener) {
@@ -187,7 +193,22 @@ class ResourceManager {
     }
 
     fun uninstall(item: ResourceItem): Boolean {
+        val result = uninstallInternally(item)
+        if (result) {
+            for (listener in listeners) {
+                listener.onAddonUninstalled(item.id)
+            }
+        }
+        return result
+    }
+
+    private fun uninstallInternally(item: ResourceItem): Boolean {
         return contextDirectory(item).deleteRecursively()
+    }
+
+    fun reinstall(item: ResourceItem, destination: File) {
+        uninstallInternally(item)
+        download(item, destination)
     }
 
     fun cancel(identifier: String) {
@@ -225,7 +246,7 @@ class ResourceManager {
                             publishProgress(Progress(State.Downloading, writtenLength, totalLength))
 
                             // Check if user has canceled
-                            if (!coroutineContext.isActive)
+                            if (!currentCoroutineContext().isActive)
                                 return@executeAsyncTask Result.Failure(errorContext = ErrorContext.Cancelled)
                             bytes = input.read(buffer)
                         }
@@ -241,7 +262,7 @@ class ResourceManager {
                 if (!unzipDestination.exists() && !unzipDestination.mkdir()) {
                     return@executeAsyncTask Result.Failure(errorContext = ErrorContext.CreateDirectory(unzipDestination.path))
                 }
-            } catch (e: Throwable) {
+            } catch (ignored: Throwable) {
                 return@executeAsyncTask Result.Failure(errorContext = ErrorContext.CreateDirectory(unzipDestination.path))
             }
 

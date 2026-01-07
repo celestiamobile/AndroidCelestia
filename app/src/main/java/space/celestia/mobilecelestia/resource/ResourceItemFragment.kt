@@ -242,8 +242,7 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
     private fun onUpdateClick() {
         val activity = this.activity ?: return
 
-        resourceManager.uninstall(item)
-        resourceManager.download(item, File(activity.cacheDir, item.id))
+        resourceManager.reinstall(item, File(activity.cacheDir, item.id))
         currentState = ResourceItemState.Downloading
         updateUI()
     }
@@ -281,6 +280,8 @@ class ResourceItemFragment : NavigationFragment.SubFragment(), ResourceManager.L
         updateUI()
         reloadItemOnDisk()
     }
+
+    override fun onAddonUninstalled(identifier: String) {}
 
     override fun onProgressUpdate(identifier: String, progress: Float) {
         if (identifier != item.id) { return }

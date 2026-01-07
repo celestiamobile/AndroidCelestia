@@ -19,6 +19,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.celestia.SessionSettings
 import space.celestia.mobilecelestia.common.CelestiaExecutor
+import space.celestia.mobilecelestia.resource.model.AddonUpdateManager
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.PreferenceManager
@@ -68,6 +69,12 @@ object AppModule {
     @Provides
     fun provideResourceManager(): ResourceManager {
         return ResourceManager()
+    }
+
+    @Singleton
+    @Provides
+    fun provideAddonUpdateManager(resourceAPI: ResourceAPIService, resourceManager: ResourceManager): AddonUpdateManager {
+        return AddonUpdateManager(resourceManager = resourceManager, resourceAPI = resourceAPI)
     }
 
     @Singleton
