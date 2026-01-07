@@ -7,7 +7,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 
 class AddonUpdateManager(val resourceManager: ResourceManager, val resourceAPI: ResourceAPIService) {
-    class PendingAddonUpdate(val update: AddonUpdate, val addon: ResourceItem)
+    data class PendingAddonUpdate(val update: AddonUpdate, val addon: ResourceItem)
 
     private var addonUpdates = mapOf<String, AddonUpdate>()
     private var didCheckOnViewAppear = false
