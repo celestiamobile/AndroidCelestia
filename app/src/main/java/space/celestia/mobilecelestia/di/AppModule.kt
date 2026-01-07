@@ -74,7 +74,7 @@ object AppModule {
     @Singleton
     @Provides
     fun provideAddonUpdateManager(resourceAPI: ResourceAPIService, resourceManager: ResourceManager): AddonUpdateManager {
-        return AddonUpdateManager(resourceAPI = resourceAPI, resourceManager = resourceManager)
+        return AddonUpdateManager(resourceManager = resourceManager, resourceAPI = resourceAPI)
     }
 
     @Singleton
