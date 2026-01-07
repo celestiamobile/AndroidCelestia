@@ -223,7 +223,7 @@ class AddonUpdateListFragment : SubscriptionBackingFragment(), ResourceManager.L
                             trailingContent = {
                                 Icon(
                                     painter = painterResource(R.drawable.accessory_full_disclosure),
-                                    contentDescription = ""
+                                    contentDescription = null
                                 )
                             }
                         )
