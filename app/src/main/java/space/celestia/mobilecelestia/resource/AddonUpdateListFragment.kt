@@ -111,7 +111,7 @@ class AddonUpdateListFragment : SubscriptionBackingFragment(), ResourceManager.L
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement InstalledAddonListFragment.Listener")
+            throw RuntimeException("$context must implement AddonUpdateListFragment.Listener")
         }
     }
 
