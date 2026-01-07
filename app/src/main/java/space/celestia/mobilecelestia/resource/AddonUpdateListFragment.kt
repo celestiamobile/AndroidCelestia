@@ -101,7 +101,7 @@ class AddonUpdateListFragment : SubscriptionBackingFragment(), ResourceManager.L
         when (id) {
             MENU_ITEM_HELP -> {
                 activity?.showAlert(title = CelestiaString("Add-on Updates", ""), message = CelestiaString("Add-on updates are only supported for add-ons installed on version 1.9.3 or above.", "Hint for requirement for updating add-ons."))
-            } else -> {}
+            }
         }
         return true
     }
