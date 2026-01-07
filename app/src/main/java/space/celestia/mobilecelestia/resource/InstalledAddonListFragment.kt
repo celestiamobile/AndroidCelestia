@@ -102,7 +102,7 @@ class InstalledAddonListFragment: NavigationFragment.SubFragment() {
         when (id) {
             MENU_ITEM_UPDATES -> {
                 listener?.onOpenAddonUpdateList()
-            } else -> {}
+            }
         }
         return true
     }
