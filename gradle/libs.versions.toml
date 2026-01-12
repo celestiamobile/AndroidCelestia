@@ -32,6 +32,7 @@ retrofit = "3.0.0"
 sentry-android = "8.29.0"
 target_sdk = "36"
 webkit = "1.15.0"
+navigation3 = "1.0.0"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
@@ -68,6 +69,8 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentry-android" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
+androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 
 [plugins]
 android-application = { id = "com.android.application" }

@@ -150,6 +150,9 @@ dependencies {
     implementation(project(":Celestia"))
     implementation(project(":CelestiaFoundation"))
 
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+
     playImplementation(libs.sentry.android)
     sideloadImplementation(libs.sentry.android)
 
