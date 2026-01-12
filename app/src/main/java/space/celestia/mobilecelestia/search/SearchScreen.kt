@@ -53,7 +53,7 @@ import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.info.InfoScreen
 import space.celestia.mobilecelestia.info.model.InfoActionItem
-import space.celestia.mobilecelestia.settings.viewmodel.SearchViewModel
+import space.celestia.mobilecelestia.search.viewmodel.SearchViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.net.URL
 
