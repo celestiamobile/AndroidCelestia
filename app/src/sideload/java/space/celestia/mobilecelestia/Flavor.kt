@@ -26,3 +26,5 @@ fun CelestiaApplication.setUpFlavor() {
         options.proguardUuid = "PROGUARD_UUID"
     }
 }
+
+suspend fun MainActivity.registerForPushNotification(): String? { return null }

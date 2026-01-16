@@ -582,6 +582,10 @@ class SettingsToolbarItem : SettingsItem, Serializable {
         get() = CelestiaString("Toolbar", "Toolbar customization entry in Settings")
 }
 
+class SettingsPushNotificationItem : SettingsItem, Serializable {
+    override val name: String
+        get() = CelestiaString("Notifications", "Title for settings for push notifications")
+}
 
 class SettingsRefreshRateItem : SettingsItem, Serializable {
     override val name: String
@@ -742,6 +746,7 @@ private val staticOtherItems: List<SettingsItem> = listOf(
 
 val celestiaPlusSettingSection: List<CommonSectionV2<SettingsItem>> by lazy {
     val items = arrayListOf<SettingsItem>()
+    items.add(SettingsPushNotificationItem())
     items.add(SettingsToolbarItem())
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         items.add(SettingsFontItem())

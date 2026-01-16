@@ -9,7 +9,9 @@
 
 package space.celestia.mobilecelestia
 
+import com.google.firebase.messaging.FirebaseMessaging
 import io.sentry.android.core.SentryAndroid
+import kotlinx.coroutines.tasks.await
 
 fun CelestiaApplication.setUpFlavor() {
     SentryAndroid.init(this) { options ->
@@ -24,5 +26,13 @@ fun CelestiaApplication.setUpFlavor() {
         options.addBundleId("LINK_PREVIEW_BUNDLE_UUID")
         options.addBundleId("ZIP_UTILS_BUNDLE_UUID")
         options.proguardUuid = "PROGUARD_UUID"
+    }
+}
+
+suspend fun MainActivity.registerForPushNotification(): String? {
+    return try {
+        return FirebaseMessaging.getInstance().token.await()
+    } catch (ignored: Throwable) {
+        null
     }
 }

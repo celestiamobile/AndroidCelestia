@@ -12,6 +12,7 @@ package space.celestia.mobilecelestia.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import java.util.UUID
 
 class PreferenceManager(context: Context, name: String) {
     private val sp: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
@@ -58,6 +59,12 @@ class PreferenceManager(context: Context, name: String) {
         MigrationSourceDirectory,
         MigrationTargetDirectory,
         UseMediaDirForAddons,
+
+        EnablePushNotifications,
+        EnablePushNotificationsAddonCreation,
+        EnablePushNotificationsAddonModification,
+        PushNotificationToken,
+        HasAskedForNotificationPermission
         ;
 
         override val valueString: String
@@ -69,8 +76,33 @@ class PreferenceManager(context: Context, name: String) {
             get() = key
     }
 
+    open class ChangeListener(val key: Key) {
+        internal val id = UUID.randomUUID()
+        open fun preferenceChanged(newValue: String?) {}
+    }
+
+    private val changeListeners = hashMapOf<UUID, SharedPreferences.OnSharedPreferenceChangeListener>()
+
     operator fun get(key: Key): String? {
         return sp.getString(key.valueString, null)
+    }
+
+    fun registerOnPreferenceChangeListener(changeListener: ChangeListener) {
+        if (changeListeners.get(changeListener.id) != null)
+            return
+        val actualListener: SharedPreferences.OnSharedPreferenceChangeListener = { sp, key ->
+            if (changeListener.key.valueString == key) {
+                changeListener.preferenceChanged(sp.getString(key, null))
+            }
+        }
+        sp.registerOnSharedPreferenceChangeListener(actualListener)
+        changeListeners[changeListener.id] = actualListener
+    }
+
+    fun unregisterOnPreferenceChangeListener(changeListener: ChangeListener) {
+        val actualListener = changeListeners[changeListener.id] ?: return
+        sp.unregisterOnSharedPreferenceChangeListener(actualListener)
+        changeListeners.remove(changeListener.id)
     }
 
     @SuppressLint("CommitPrefEdits")

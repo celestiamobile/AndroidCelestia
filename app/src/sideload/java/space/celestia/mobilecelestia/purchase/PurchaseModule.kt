@@ -19,6 +19,15 @@ class PurchaseManager {
     fun purchaseToken(): String? {
         return null
     }
+
+    data object SubscriptionStatus
+
+    interface Listener {
+        fun subscriptionStatusChanged(newStatus: SubscriptionStatus)
+    }
+
+    fun addListener(listener: Listener) {}
+    fun removeListener(listener: Listener) {}
 }
 
 @Module

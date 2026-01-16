@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.Dp
 import space.celestia.mobilecelestia.R
 
 @Composable
-fun SwitchRow(primaryText: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, horizontalPadding: Dp? = null, canTapWholeRow: Boolean = true) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = (if (canTapWholeRow) modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange) else modifier).padding(
+fun SwitchRow(primaryText: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, primaryTextColor: Color? = null, secondaryText: String? = null, horizontalPadding: Dp? = null, canTapWholeRow: Boolean = true) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = (if (canTapWholeRow && enabled) modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange) else modifier).padding(
         horizontal = horizontalPadding ?: dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
     )) {
         Column(modifier = Modifier.weight(1.0f).padding(
@@ -49,6 +49,6 @@ fun SwitchRow(primaryText: String, checked: Boolean, onCheckedChange: (Boolean) 
             }
         }
         Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.list_item_gap_horizontal)))
-        Switch(checked = checked, onCheckedChange = if (canTapWholeRow) null else onCheckedChange, modifier = if (canTapWholeRow) Modifier.minimumInteractiveComponentSize() else Modifier)
+        Switch(enabled = enabled, checked = checked, onCheckedChange = if (canTapWholeRow) null else onCheckedChange, modifier = if (canTapWholeRow) Modifier.minimumInteractiveComponentSize() else Modifier)
     }
 }

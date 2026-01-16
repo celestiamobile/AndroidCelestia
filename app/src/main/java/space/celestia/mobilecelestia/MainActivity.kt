@@ -9,6 +9,7 @@
 
 package space.celestia.mobilecelestia
 
+import android.Manifest
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -30,6 +31,7 @@ import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
@@ -145,9 +147,11 @@ import space.celestia.mobilecelestia.resource.ResourceFragment
 import space.celestia.mobilecelestia.resource.ResourceItemFragment
 import space.celestia.mobilecelestia.resource.ResourceItemNavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
+import space.celestia.mobilecelestia.resource.model.UpdateUserRequest
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.AboutFragment
 import space.celestia.mobilecelestia.settings.CustomFont
+import space.celestia.mobilecelestia.settings.PushNotificationSettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsCurrentTimeNavigationFragment
 import space.celestia.mobilecelestia.settings.SettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsItem
@@ -199,7 +203,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
     ObserverModeFragment.Listener,
-    SubscriptionBackingFragment.Listener {
+    SubscriptionBackingFragment.Listener,
+    PushNotificationSettingsFragment.Listener {
 
     @AppSettings
     @Inject
@@ -263,6 +268,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var currentToolbarActions: List<BottomControlAction> = listOf()
     private var currentToolbarOverflowActions: List<OverflowItem> = listOf()
+
+    private var resourceManagerListener: ResourceManager.Listener? = null
+    private var purchaseManagerListener: PurchaseManager.Listener? = null
+    private var lastUserUpdateRequest: UpdateUserRequest? = null
+
+    private val pushNotificationRequestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            handlePushNotificationPermissionGranted(fetchPushNotificationToken = true)
+        } else {
+            handleDisablePushNotification()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -406,6 +425,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         appStatusReporter.unregister(this)
         onBackPressedCallback?.remove()
         onBackPressedCallback = null
+        resourceManagerListener?.let {
+            resourceManager.removeListener(it)
+        }
+        resourceManagerListener = null
+        purchaseManagerListener?.let {
+            purchaseManager.removeListener(it)
+        }
+        purchaseManagerListener = null
 
         Log.d(TAG, "Destroying MainActivity")
 
@@ -554,8 +581,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .commitAllowingStateLoss()
         }
 
+        val weakSelf = WeakReference(this)
         if (onBackPressedCallback == null) {
-            val weakSelf = WeakReference(this)
             val backPressedCallback = object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     val self = weakSelf.get() ?: return
@@ -596,8 +623,130 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (!initialURLCheckPerformed) {
             initialURLCheckPerformed = true
+
+            handlePushNotificationSettings(requestPermissionIfNeeded = true)
+            if (resourceManagerListener == null) {
+                val resourceManagerListener = object : ResourceManager.Listener {
+                    override fun onProgressUpdate(identifier: String, progress: Float) {}
+                    override fun onFileDownloaded(identifier: String) {}
+                    override fun onResourceFetchError(identifier: String, errorContext: ResourceManager.ErrorContext) {}
+
+                    override fun onAddonUninstalled(identifier: String) {
+                        val self = weakSelf.get() ?: return
+                        self.handlePushNotificationSettings(requestPermissionIfNeeded = false)
+                    }
+
+                    override fun onFileUnzipped(identifier: String) {
+                        val self = weakSelf.get() ?: return
+                        self.handlePushNotificationSettings(requestPermissionIfNeeded = false)
+                    }
+                }
+                resourceManager.addListener(resourceManagerListener)
+                this.resourceManagerListener = resourceManagerListener
+            }
+            if (purchaseManagerListener == null) {
+                val purchaseManagerListener = object : PurchaseManager.Listener {
+                    override fun subscriptionStatusChanged(newStatus: PurchaseManager.SubscriptionStatus) {
+                        val self = weakSelf.get() ?: return
+                        self.handlePushNotificationSettings(requestPermissionIfNeeded = true)
+                    }
+                }
+                purchaseManager.addListener(purchaseManagerListener)
+                this.purchaseManagerListener = purchaseManagerListener
+            }
+
             openURLOrScriptOrGreeting()
         }
+    }
+
+    private fun handlePushNotificationSettings(requestPermissionIfNeeded: Boolean) {
+        val token = if (purchaseManager.canUseInAppPurchase()) purchaseManager.purchaseToken() else null
+
+        val weakSelf = WeakReference(this)
+        if (token != null) {
+            val isPushNotificationEnabled = appSettings[PreferenceManager.PredefinedKey.EnablePushNotifications] != "false"
+            val isNewAddonPushNotificationEnabled = isPushNotificationEnabled && appSettings[PreferenceManager.PredefinedKey.EnablePushNotificationsAddonCreation] != "false"
+            val isAddonUpdatePushNotificationEnabled = isPushNotificationEnabled && appSettings[PreferenceManager.PredefinedKey.EnablePushNotificationsAddonModification] != "false"
+            if (isNewAddonPushNotificationEnabled || isAddonUpdatePushNotificationEnabled) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                        PackageManager.PERMISSION_GRANTED
+                    ) {
+                        handlePushNotificationPermissionGranted(fetchPushNotificationToken = requestPermissionIfNeeded)
+                    } else if (requestPermissionIfNeeded) {
+                        val hasAskedForPermissionBefore = appSettings[PreferenceManager.PredefinedKey.HasAskedForNotificationPermission] == "true"
+                        if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                            showAlert(CelestiaString("Stay Updated", "Rationale title string for push notification permission"), message = CelestiaString("Enable notifications for real-time updates on new content and cosmic discoveries.", "Rationale message string for push notification permission"), handler = {
+                                val self = weakSelf.get() ?: return@showAlert
+                                self.appSettings[PreferenceManager.PredefinedKey.HasAskedForNotificationPermission] == "true"
+                                self.pushNotificationRequestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            })
+                        } else if (!hasAskedForPermissionBefore) {
+                            appSettings[PreferenceManager.PredefinedKey.HasAskedForNotificationPermission] == "true"
+                            pushNotificationRequestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    } else {
+                        // Not requesting permission, if it is not previously granted, we disable push notifications
+                        handleDisablePushNotification()
+                    }
+                } else {
+                    handlePushNotificationPermissionGranted(fetchPushNotificationToken = requestPermissionIfNeeded)
+                }
+            }
+        } else {
+            handleDisablePushNotification()
+        }
+    }
+
+    private fun handlePushNotificationPermissionGranted(fetchPushNotificationToken: Boolean) {
+        lifecycleScope.launch {
+            val isPushNotificationEnabled = appSettings[PreferenceManager.PredefinedKey.EnablePushNotifications] != "false"
+            val isNewAddonPushNotificationEnabled = isPushNotificationEnabled && appSettings[PreferenceManager.PredefinedKey.EnablePushNotificationsAddonCreation] != "false"
+            val isAddonUpdatePushNotificationEnabled = isPushNotificationEnabled && appSettings[PreferenceManager.PredefinedKey.EnablePushNotificationsAddonModification] != "false"
+            val token: String
+            if (fetchPushNotificationToken) {
+                token = registerForPushNotification() ?: return@launch
+                appSettings[PreferenceManager.PredefinedKey.PushNotificationToken] = token
+            } else {
+                token = appSettings[PreferenceManager.PredefinedKey.PushNotificationToken] ?:return@launch
+            }
+            try {
+                val requestBody = UpdateUserRequest(
+                    lang = AppCore.getLanguage(),
+                    token = token,
+                    items = resourceManager.installedResourcesAsync().map { it.id },
+                    enableAddonCreationNotification = isAddonUpdatePushNotificationEnabled,
+                    enableAddonModificationNotification = isNewAddonPushNotificationEnabled,
+                    purchaseToken = purchaseManager.purchaseToken()
+                )
+                if (lastUserUpdateRequest == requestBody) return@launch
+                resourceAPI.updateUser(requestBody)
+                lastUserUpdateRequest = requestBody
+            } catch (ignored: Throwable) {}
+        }
+    }
+
+    private fun handleDisablePushNotification() {
+        val token = appSettings[PreferenceManager.PredefinedKey.PushNotificationToken] ?: return
+        lifecycleScope.launch {
+            try {
+                val requestBody = UpdateUserRequest(
+                    lang = AppCore.getLanguage(),
+                    token = token,
+                    items = listOf(),
+                    enableAddonCreationNotification = false,
+                    enableAddonModificationNotification = false,
+                    purchaseToken = null
+                )
+                if (lastUserUpdateRequest == requestBody) return@launch
+                resourceAPI.updateUser(requestBody)
+                lastUserUpdateRequest = requestBody
+            } catch (ignored: Throwable) {}
+        }
+    }
+
+    override fun pushNotificationSettingsChanged() {
+        handlePushNotificationSettings(requestPermissionIfNeeded = true)
     }
 
     private fun celestiaLoadingFailed() {

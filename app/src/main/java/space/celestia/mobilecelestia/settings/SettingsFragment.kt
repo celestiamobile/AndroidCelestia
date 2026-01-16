@@ -60,6 +60,9 @@ class SettingsFragment : NavigationFragment() {
             is SettingsToolbarItem -> {
                 pushFragment(ToolbarSettingFragment.newInstance())
             }
+            is SettingsPushNotificationItem -> {
+                pushFragment(PushNotificationSettingsFragment.newInstance())
+            }
             else -> {
                 throw RuntimeException("SettingsFragment cannot handle item $item")
             }

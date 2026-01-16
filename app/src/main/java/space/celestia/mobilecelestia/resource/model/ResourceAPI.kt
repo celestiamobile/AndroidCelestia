@@ -46,6 +46,15 @@ data class UpdateRequest(
     @SerializedName("purchaseTokenAndroid") val purchaseToken: String
 )
 
+data class UpdateUserRequest(
+    val lang: String,
+    val token: String,
+    val items: List<String>,
+    val enableAddonCreationNotification: Boolean,
+    val enableAddonModificationNotification: Boolean,
+    @SerializedName("purchaseTokenAndroid") val purchaseToken: String?
+)
+
 interface ResourceAPIService {
     @GET("latest")
     suspend fun latest(
@@ -63,4 +72,9 @@ interface ResourceAPIService {
     suspend fun updates(
         @Body body: UpdateRequest
     ): Map<String, AddonUpdate>
+
+    @POST("updateUser")
+    suspend fun updateUser(
+        @Body body: UpdateUserRequest
+    )
 }
