@@ -67,17 +67,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
-import space.celestia.celestia.Body
 import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Destination
-import space.celestia.celestia.EclipseFinder
 import space.celestia.celestia.GoToLocation
 import space.celestia.celestia.Renderer
 import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
 import space.celestia.celestiafoundation.favorite.BookmarkNode
-import space.celestia.celestiafoundation.resource.model.GuideItem
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
@@ -147,7 +144,6 @@ import space.celestia.mobilecelestia.resource.InstalledAddonListFragment
 import space.celestia.mobilecelestia.resource.ResourceFragment
 import space.celestia.mobilecelestia.resource.ResourceItemFragment
 import space.celestia.mobilecelestia.resource.ResourceItemNavigationFragment
-import space.celestia.mobilecelestia.resource.model.ResourceAPI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.AboutFragment
@@ -166,17 +162,14 @@ import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.currentBookmark
-import space.celestia.mobilecelestia.utils.julianDay
 import space.celestia.mobilecelestia.utils.showAlert
 import space.celestia.mobilecelestia.utils.showError
-import space.celestia.mobilecelestia.utils.showLoading
 import space.celestia.mobilecelestia.utils.showOptions
 import space.celestia.mobilecelestia.utils.showTextInput
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.URL
-import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -392,7 +385,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             AppStatusReporter.State.FINISHED -> {
                 celestiaLoadingFinished()
             }
-            else -> {}
         }
 
         val rootView = findViewById<View>(android.R.id.content).rootView
