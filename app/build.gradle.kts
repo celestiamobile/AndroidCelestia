@@ -18,6 +18,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -54,6 +55,15 @@ android {
             ndk {
                 abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
             }
+        }
+    }
+
+    androidComponents {
+        // Only Play flavor should have Google services
+        onVariants { variant ->
+            val googleTask =
+                tasks.findByName("process${variant.name.replaceFirstChar(Char::uppercase)}GoogleServices")
+            googleTask?.enabled = variant.flavorName?.contains("play") ?: false
         }
     }
 
@@ -169,6 +179,11 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     playImplementation(libs.billing.ktx)
+
+    val firebaseBom = platform(libs.firebase.bom)
+    playImplementation(firebaseBom)
+    playImplementation(libs.firebase.analytics)
+    playImplementation(libs.firebase.messaging)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -133,6 +133,18 @@ jobs:
       jdkSourceOption: 'PreInstalled'
     displayName: 'Install Java 21'
 
+  - task: DownloadSecureFile@1
+    name: googleServicesJson
+    displayName: 'Download Google Services JSON'
+    inputs:
+      secureFile: 'google-services.json'
+    condition: eq( variables['outputFormat'], 'aab' )
+
+  - script: |
+      cp $(googleServicesJson.secureFilePath) $(system.defaultworkingdirectory)/AndroidCelestia/app/google-services.json
+    displayName: 'Copy Google Services JSON'
+    condition: eq( variables['outputFormat'], 'aab' )
+
   - task: Gradle@3
     inputs:
       workingDirectory: '$(system.defaultWorkingDirectory)/AndroidCelestia'
