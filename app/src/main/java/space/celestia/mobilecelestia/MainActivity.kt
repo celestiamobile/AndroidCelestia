@@ -692,6 +692,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 } else {
                     handlePushNotificationPermissionGranted(fetchPushNotificationToken = requestPermissionIfNeeded)
                 }
+            } else {
+                handleDisablePushNotification()
             }
         } else {
             handleDisablePushNotification()
@@ -704,19 +706,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val isNewAddonPushNotificationEnabled = isPushNotificationEnabled && appSettings[PreferenceManager.PredefinedKey.EnablePushNotificationsAddonCreation] != "false"
             val isAddonUpdatePushNotificationEnabled = isPushNotificationEnabled && appSettings[PreferenceManager.PredefinedKey.EnablePushNotificationsAddonModification] != "false"
             val token: String
+            val oldToken: String?
             if (fetchPushNotificationToken) {
                 token = registerForPushNotification() ?: return@launch
+                oldToken = appSettings[PreferenceManager.PredefinedKey.PushNotificationToken]
                 appSettings[PreferenceManager.PredefinedKey.PushNotificationToken] = token
             } else {
                 token = appSettings[PreferenceManager.PredefinedKey.PushNotificationToken] ?:return@launch
+                oldToken = null
             }
             try {
                 val requestBody = UpdateUserRequest(
                     lang = AppCore.getLanguage(),
                     token = token,
+                    oldToken = if (oldToken == token) null else oldToken,
                     items = resourceManager.installedResourcesAsync().map { it.id },
-                    enableAddonCreationNotification = isAddonUpdatePushNotificationEnabled,
-                    enableAddonModificationNotification = isNewAddonPushNotificationEnabled,
+                    enableAddonCreationNotification = isNewAddonPushNotificationEnabled,
+                    enableAddonModificationNotification = isAddonUpdatePushNotificationEnabled,
                     purchaseToken = purchaseManager.purchaseToken()
                 )
                 if (lastUserUpdateRequest == requestBody) return@launch
@@ -733,6 +739,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val requestBody = UpdateUserRequest(
                     lang = AppCore.getLanguage(),
                     token = token,
+                    oldToken = null,
                     items = listOf(),
                     enableAddonCreationNotification = false,
                     enableAddonModificationNotification = false,
@@ -740,6 +747,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 )
                 if (lastUserUpdateRequest == requestBody) return@launch
                 resourceAPI.updateUser(requestBody)
+                appSettings[PreferenceManager.PredefinedKey.PushNotificationToken] = null
                 lastUserUpdateRequest = requestBody
             } catch (ignored: Throwable) {}
         }
@@ -822,6 +830,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun handleIntent(intent: Intent) {
+        val addonId = intent.extras?.getString("celestia.addon-id")
+        if (addonId != null) {
+            requestOpenAddon(addonId)
+            return
+        }
+
         val uri = intent.data ?: return
 
         showToast(CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT)

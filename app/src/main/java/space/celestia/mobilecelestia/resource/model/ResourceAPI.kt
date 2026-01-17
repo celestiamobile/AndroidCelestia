@@ -49,9 +49,11 @@ data class UpdateRequest(
 data class UpdateUserRequest(
     val lang: String,
     val token: String,
+    val oldToken: String?,
     val items: List<String>,
     val enableAddonCreationNotification: Boolean,
     val enableAddonModificationNotification: Boolean,
+    val api: Int = 1,
     @SerializedName("purchaseTokenAndroid") val purchaseToken: String?
 )
 

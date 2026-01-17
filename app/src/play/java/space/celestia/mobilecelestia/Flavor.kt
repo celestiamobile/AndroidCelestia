@@ -9,7 +9,16 @@
 
 package space.celestia.mobilecelestia
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
 import io.sentry.android.core.SentryAndroid
 import kotlinx.coroutines.tasks.await
 
@@ -34,5 +43,52 @@ suspend fun MainActivity.registerForPushNotification(): String? {
         return FirebaseMessaging.getInstance().token.await()
     } catch (ignored: Throwable) {
         null
+    }
+}
+
+class CelestiaMessagingService: FirebaseMessagingService() {
+    override fun onNewToken(token: String) {}
+
+    override fun onMessageReceived(message: RemoteMessage) {
+        val addonId = message.data["celestia.addon-id"] ?: return
+
+        val title = message.notification?.title
+        val body = message.notification?.body
+
+        showNotification(title, body, addonId)
+    }
+
+    private fun showNotification(title: String?, body: String?, addonId: String) {
+        val channelId = "default_channel_id"
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        // Create the Channel (Required for Android 8.0+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId, "Notifications", NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // Create the PendingIntent
+        val intent = Intent(Intent.ACTION_VIEW, Uri.Builder().scheme("celaddon").authority("item").appendQueryParameter("item", addonId).build())
+        val requestCode = System.currentTimeMillis().toInt()
+        val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            requestCode,
+            intent,
+            flags
+        )
+
+        val builder: NotificationCompat.Builder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+
+        notificationManager.notify(0, builder.build())
     }
 }
