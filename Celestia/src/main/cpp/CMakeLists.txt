@@ -72,6 +72,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/buffile.cpp
         ${CELESTIA_SRC_DIR}/celutil/buffile.h
         ${CELESTIA_SRC_DIR}/celutil/bytes.h
+        ${CELESTIA_SRC_DIR}/celutil/classops.h
         ${CELESTIA_SRC_DIR}/celutil/color.cpp
         ${CELESTIA_SRC_DIR}/celutil/color.h
         ${CELESTIA_SRC_DIR}/celutil/dateformatter.cpp
@@ -97,14 +98,13 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celutil/r128.h
         ${CELESTIA_SRC_DIR}/celutil/r128util.cpp
         ${CELESTIA_SRC_DIR}/celutil/r128util.h
-        ${CELESTIA_SRC_DIR}/celutil/reshandle.h
-        ${CELESTIA_SRC_DIR}/celutil/resmanager.h
         ${CELESTIA_SRC_DIR}/celutil/stringutils.h
         ${CELESTIA_SRC_DIR}/celutil/stringutils.cpp
         ${CELESTIA_SRC_DIR}/celutil/strnatcmp.h
         ${CELESTIA_SRC_DIR}/celutil/strnatcmp.cpp
         ${CELESTIA_SRC_DIR}/celutil/timer.cpp
         ${CELESTIA_SRC_DIR}/celutil/timer.h
+        ${CELESTIA_SRC_DIR}/celutil/texhandle.h
         ${CELESTIA_SRC_DIR}/celutil/tokenizer.cpp
         ${CELESTIA_SRC_DIR}/celutil/tokenizer.h
         ${CELESTIA_SRC_DIR}/celutil/tzutil.cpp
@@ -168,7 +168,6 @@ list(APPEND CELESTIA_SOURCES
         )
 
 list(APPEND CELESTIA_SOURCES
-        ${CELESTIA_SRC_DIR}/celmodel/material.cpp
         ${CELESTIA_SRC_DIR}/celmodel/material.h
         ${CELESTIA_SRC_DIR}/celmodel/mesh.cpp
         ${CELESTIA_SRC_DIR}/celmodel/mesh.h
@@ -318,8 +317,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/meshmanager.h
         ${CELESTIA_SRC_DIR}/celengine/modelgeometry.cpp
         ${CELESTIA_SRC_DIR}/celengine/modelgeometry.h
-        ${CELESTIA_SRC_DIR}/celengine/multitexture.cpp
-        ${CELESTIA_SRC_DIR}/celengine/multitexture.h
         ${CELESTIA_SRC_DIR}/celengine/name.cpp
         ${CELESTIA_SRC_DIR}/celengine/name.h
         ${CELESTIA_SRC_DIR}/celengine/nebula.cpp

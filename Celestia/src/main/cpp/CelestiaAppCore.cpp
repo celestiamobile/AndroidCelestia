@@ -271,7 +271,7 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
                                                                  jlong ptr) {
     auto core = (CelestiaCore *)ptr;
 
-    if (!core->initRenderer())
+    if (!core->initRenderer(celestia::engine::TextureResolution::medres))
         return JNI_FALSE;
 
     // start with default values
@@ -281,7 +281,6 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
     constexpr float DEFAULT_VISUAL_MAGNITUDE = 8.0f;
     constexpr StarStyle DEFAULT_STAR_STYLE = StarStyle::FuzzyPointStars;
     constexpr ColorTableType DEFAULT_STARS_COLOR = ColorTableType::SunWhite;
-    constexpr auto DEFAULT_TEXTURE_RESOLUTION = TextureResolution::medres;
     constexpr float DEFAULT_TINT_SATURATION = 0.5f;
 
     core->getRenderer()->setRenderFlags(RenderFlags::DefaultRenderFlags);
@@ -290,7 +289,6 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
     core->getRenderer()->setAmbientLightLevel(DEFAULT_AMBIENT_LIGHT_LEVEL);
     core->getRenderer()->setTintSaturation(DEFAULT_TINT_SATURATION);
     core->getRenderer()->setStarStyle(DEFAULT_STAR_STYLE);
-    core->getRenderer()->setResolution(DEFAULT_TEXTURE_RESOLUTION);
     core->getRenderer()->setStarColorTable(DEFAULT_STARS_COLOR);
 
     core->getSimulation()->setFaintestVisible(DEFAULT_VISUAL_MAGNITUDE);
@@ -1018,7 +1016,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setResolution(JNIEnv *env, jclass clazz, jlong pointer,
                                                                  jint value) {
     auto core = (CelestiaCore *)pointer;
-    core->getRenderer()->setResolution(static_cast<TextureResolution>(value));
+    core->getRenderer()->setResolution(static_cast<celestia::engine::TextureResolution>(value));
 }
 
 extern "C"
