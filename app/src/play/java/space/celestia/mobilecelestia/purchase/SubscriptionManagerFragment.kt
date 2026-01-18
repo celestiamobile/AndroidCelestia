@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
@@ -66,6 +67,14 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 
 @AndroidEntryPoint
 class SubscriptionManagerFragment: Fragment() {
+    private var preferredPlayOfferId: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        preferredPlayOfferId = arguments?.getString(PREFERRED_PLAY_OFFER_ID_ARG, null)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -151,6 +160,7 @@ class SubscriptionManagerFragment: Fragment() {
             }
         }
 
+        val resources = LocalResources.current
         val scroll = rememberScrollState(0)
         Column(modifier = modifier
             .fillMaxWidth()
@@ -162,7 +172,7 @@ class SubscriptionManagerFragment: Fragment() {
             )) {
             if (needsRefreshing) {
                 LaunchedEffect(true) {
-                    val subscriptionResult = viewModel.purchaseManager.getSubscriptionDetails()
+                    val subscriptionResult = viewModel.purchaseManager.getSubscriptionDetails(preferredPlayOfferId, resources)
                     viewModel.purchaseManager.getValidSubscription()
                     val subscriptionValue = subscriptionResult?.subscription
                     needsRefreshing = false
@@ -392,7 +402,11 @@ class SubscriptionManagerFragment: Fragment() {
                     PurchaseManager.PlanType.Monthly -> CelestiaString("Monthly", "Monthly subscription")
                 }, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
-                Text(text = plan.formattedPrice, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyMedium)
+                Text(text = plan.formattedPriceLine1, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyMedium)
+                if (plan.formattedPriceLine2 != null) {
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
+                    Text(text = plan.formattedPriceLine2, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodySmall)
+                }
             }
             if (!actionButtonHidden) {
                 Button(onClick = action, enabled = actionButtonEnabled) {
@@ -403,6 +417,12 @@ class SubscriptionManagerFragment: Fragment() {
     }
 
     companion object {
-        fun newInstance() = SubscriptionManagerFragment()
+        private const val PREFERRED_PLAY_OFFER_ID_ARG = "preferred-play-offer-id"
+
+        fun newInstance(preferredPlayOfferId: String?) = SubscriptionManagerFragment().apply {
+            arguments = Bundle().apply {
+                putString("", preferredPlayOfferId)
+            }
+        }
     }
 }

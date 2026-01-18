@@ -12,7 +12,7 @@ class PurchaseManager {
         return false
     }
 
-    fun createInAppPurchaseFragment(): Fragment? {
+    fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment? {
         return null
     }
 
