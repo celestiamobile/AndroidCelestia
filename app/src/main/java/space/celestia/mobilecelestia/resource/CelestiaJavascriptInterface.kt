@@ -12,7 +12,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         fun receivedACK(id: String)
         fun openAddonNext(id: String)
         fun runDemo()
-        fun openSubscriptionPage()
+        fun openSubscriptionPage(preferredPlayOfferId: String?)
     }
 
     @Keep
@@ -33,7 +33,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     @Keep
     class RunDemoContext
     @Keep
-    class OpenSubscriptionPageContext
+    class OpenSubscriptionPageContext(val preferredPlayOfferId: String?)
 
     abstract class JavascriptHandler<T>(private val clazz: Class<T>): BaseJavascriptHandler() {
         abstract fun execute(context: T, handler: MessageHandler)
@@ -96,7 +96,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
             get() = "openSubscriptionPage"
 
         override fun execute(context: OpenSubscriptionPageContext, handler: MessageHandler) {
-            handler.openSubscriptionPage()
+            handler.openSubscriptionPage(preferredPlayOfferId = context.preferredPlayOfferId)
         }
     }
 

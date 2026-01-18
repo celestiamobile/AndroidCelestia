@@ -1155,17 +1155,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             }
             ToolbarAction.CelestiaPlus -> {
-                showInAppPurchase()
+                showInAppPurchase(null)
             }
         }
     }
 
     override fun requestOpenSubscriptionManagement() {
-        showInAppPurchase()
+        showInAppPurchase(null)
     }
 
-    private fun showInAppPurchase() = lifecycleScope.launch {
-        val fragment = purchaseManager.createInAppPurchaseFragment() ?: return@launch
+    private fun showInAppPurchase(preferredPlayOfferId: String?) = lifecycleScope.launch {
+        val fragment = purchaseManager.createInAppPurchaseFragment(preferredPlayOfferId) ?: return@launch
         showBottomSheetFragment(fragment)
     }
 
@@ -1282,8 +1282,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onOpenSubscriptionPage() {
-        showInAppPurchase()
+    override fun onOpenSubscriptionPage(preferredPlayOfferId: String?) {
+        showInAppPurchase(preferredPlayOfferId)
     }
 
     override fun onObjectNotFound() {

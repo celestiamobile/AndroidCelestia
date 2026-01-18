@@ -1,4 +1,27 @@
 <resources>
     <string name="app_name">Celestia</string>
     <string name="celestia_language">zh_TW</string>
+
+    <string name="subscription_offer_price_template_per_year">%s/年</string>
+    <string name="subscription_offer_price_template_per_month">%s/月</string>
+    <string name="subscription_offer_price_template_per_week">%s/週</string>
+    <string name="subscription_offer_price_template_per_day">%s/日</string>
+    <string name="subscription_offer_price_template_thereafter">之後 %s</string>
+    <string name="subscription_offer_price_unavailable">價格不可用</string>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_month">
+        <item quantity="other">%1$s 訂閱 %2$d 月</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_year">
+        <item quantity="other">%1$s 訂閱 %2$d 年</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_week">
+        <item quantity="other">%1$s 訂閱 %2$d 週</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_day">
+        <item quantity="other">%1$s 訂閱 %2$d 天</item>
+    </plurals>
 </resources>

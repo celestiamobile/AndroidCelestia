@@ -17,4 +17,31 @@
     <string name="privacy_policy_alert_show_policy_button_title">View Policy</string>
     <string name="privacy_policy_alert_accept_button_title">Agree</string>
     <string name="privacy_policy_alert_decline_button_title">Not Now</string>
+
+    <string name="subscription_offer_price_template_per_year">%s/year</string>
+    <string name="subscription_offer_price_template_per_month">%s/mo</string>
+    <string name="subscription_offer_price_template_per_week">%s/week</string>
+    <string name="subscription_offer_price_template_per_day">%s/day</string>
+    <string name="subscription_offer_price_template_thereafter">then %s thereafter</string>
+    <string name="subscription_offer_price_unavailable">Price Unavailable</string>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_month">
+        <item quantity="one">%1$s for %2$d month</item>
+        <item quantity="other">%1$s for %2$d months</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_year">
+        <item quantity="one">%1$s for %2$d year</item>
+        <item quantity="other">%1$s for %2$d years</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_week">
+        <item quantity="one">%1$s for %2$d week</item>
+        <item quantity="other">%1$s for %2$d weeks</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_day">
+        <item quantity="one">%1$s for %2$d day</item>
+        <item quantity="other">%1$s for %2$d days</item>
+    </plurals>
 </resources>

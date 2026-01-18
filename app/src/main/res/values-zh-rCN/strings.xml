@@ -17,4 +17,27 @@
     <string name="privacy_policy_alert_title">隐私政策与服务协议</string>
     <string name="privacy_policy_alert_detail">请您务必仔细阅读，充分理解服务协议和隐私政策各条款。如果您同意，请点击下方的\"同意\"按钮。</string>
     <string name="privacy_policy_alert_accept_button_title">同意</string>
+
+    <string name="subscription_offer_price_template_per_year">%s/年</string>
+    <string name="subscription_offer_price_template_per_month">%s/月</string>
+    <string name="subscription_offer_price_template_per_week">%s/周</string>
+    <string name="subscription_offer_price_template_per_day">%s/日</string>
+    <string name="subscription_offer_price_template_thereafter">随后 %s</string>
+    <string name="subscription_offer_price_unavailable">价格不可用</string>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_month">
+        <item quantity="other">%1$s 订阅 %2$d 月</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_year">
+        <item quantity="other">%1$s 订阅 %2$d 年</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_week">
+        <item quantity="other">%1$s 订阅 %2$d 周</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_day">
+        <item quantity="other">%1$s 订阅 %2$d 天</item>
+    </plurals>
 </resources>

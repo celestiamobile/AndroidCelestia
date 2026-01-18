@@ -2,6 +2,7 @@ package space.celestia.mobilecelestia.purchase
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.Resources
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener
@@ -24,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.BuildConfig
+import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resume
@@ -44,8 +46,8 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         return true
     }
 
-    fun createInAppPurchaseFragment(): Fragment? {
-        return SubscriptionManagerFragment.newInstance()
+    fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment? {
+        return SubscriptionManagerFragment.newInstance(preferredPlayOfferId)
     }
 
     fun purchaseToken(): String? {
@@ -95,7 +97,7 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         Monthly(0)
     }
 
-    class Plan(val type: PlanType, val offerToken: String, val formattedPrice: String, val productId: String)
+    class Plan(val type: PlanType, val offerToken: String, val formattedPriceLine1: String, val formattedPriceLine2: String?, val productId: String)
     class Subscription(val productDetails: ProductDetails, val plans: List<Plan>)
     class PlanResult(val billingResult: BillingResult, val subscription: Subscription?)
 
@@ -229,7 +231,7 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
        }
     }
 
-    suspend fun getSubscriptionDetails(): PlanResult? {
+    suspend fun getSubscriptionDetails(preferredPlayOfferId: String?, resources: Resources): PlanResult? {
         if (!connected)
             return null
         val subscriptionProduct = QueryProductDetailsParams.Product.newBuilder().setProductId(
@@ -242,19 +244,15 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         }
         val product = productLists[0]
         val plans = arrayListOf<Plan>()
-        val yearlyPlan = product.subscriptionOfferDetails?.firstOrNull { it.basePlanId == yearlyPlanId }
+        val preferredYearlyPlan = if (preferredPlayOfferId != null) product.subscriptionOfferDetails?.firstOrNull { it.offerId == preferredPlayOfferId && it.basePlanId == yearlyPlanId } else null
+        val yearlyPlan = preferredYearlyPlan ?: product.subscriptionOfferDetails?.firstOrNull { it.basePlanId == yearlyPlanId }
         if (yearlyPlan != null) {
-            val yearlyPlanPrice = yearlyPlan.pricingPhases.pricingPhaseList.lastOrNull()?.formattedPrice
-            if (yearlyPlanPrice != null) {
-                plans.add(Plan(PlanType.Yearly, yearlyPlan.offerToken, yearlyPlanPrice, product.productId))
-            }
+            plans.add(Plan(PlanType.Yearly, yearlyPlan.offerToken, yearlyPlan.formattedPriceLine1(resources), yearlyPlan.formattedPriceLine2(resources), product.productId))
         }
-        val monthlyPlan = product.subscriptionOfferDetails?.firstOrNull { it.basePlanId == monthlyPlanId }
+        val preferredMonthlyPlan = if (preferredPlayOfferId != null) product.subscriptionOfferDetails?.firstOrNull { it.offerId == preferredPlayOfferId && it.basePlanId == monthlyPlanId } else null
+        val monthlyPlan = preferredMonthlyPlan ?: product.subscriptionOfferDetails?.firstOrNull { it.basePlanId == monthlyPlanId }
         if (monthlyPlan != null) {
-            val monthlyPlanPrice = monthlyPlan.pricingPhases.pricingPhaseList.lastOrNull()?.formattedPrice
-            if (monthlyPlanPrice != null) {
-                plans.add(Plan(PlanType.Monthly, monthlyPlan.offerToken, monthlyPlanPrice, product.productId))
-            }
+            plans.add(Plan(PlanType.Monthly, monthlyPlan.offerToken, monthlyPlan.formattedPriceLine1(resources), monthlyPlan.formattedPriceLine2(resources), product.productId))
         }
         if (plans.isEmpty()) {
             return PlanResult(result.billingResult, null)
@@ -306,3 +304,52 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         val purchaseTokenCacheKey = PreferenceManager.CustomKey("purchase_token_cache")
     }
 }
+
+private fun ProductDetails.SubscriptionOfferDetails.formattedPriceLine1(resources: Resources): String {
+    val phases = this.pricingPhases.pricingPhaseList
+    if (phases.isEmpty()) return resources.getString(R.string.subscription_offer_price_unavailable)
+    val phase = phases[0]
+    if (phases.size < 2) return phase.formattedPrice
+    val isBillingCycleYear = phase.billingPeriod.contains("Y")
+    return resources.getQuantityString(
+        phase.cyclePriceTemplateWithPhase,
+        phase.billingCycleCount,
+        resources.getString(phase.cyclePriceTemplate, phase.formattedPrice),
+        phase.billingCycleCount
+    )
+}
+
+private fun ProductDetails.SubscriptionOfferDetails.formattedPriceLine2(resources: Resources): String? {
+    val phases = this.pricingPhases.pricingPhaseList
+    if (phases.size < 2) return null
+    val phase = phases[1]
+    return resources.getString(R.string.subscription_offer_price_template_thereafter, resources.getString(phase.cyclePriceTemplate, phase.formattedPrice))
+}
+
+private val ProductDetails.PricingPhase.cyclePriceTemplate: Int
+    get() {
+        if (billingPeriod.contains("Y")) {
+            return R.string.subscription_offer_price_template_per_year
+        } else if (billingPeriod.contains("M")) {
+            return R.string.subscription_offer_price_template_per_month
+        } else if (billingPeriod.contains("W")) {
+            return R.string.subscription_offer_price_template_per_week
+        } else if (billingPeriod.contains("D")) {
+            return R.string.subscription_offer_price_template_per_day
+        }
+        return 0
+    }
+
+private val ProductDetails.PricingPhase.cyclePriceTemplateWithPhase: Int
+    get() {
+        if (billingPeriod.contains("Y")) {
+            return R.plurals.subscription_offer_price_with_phase_template_per_year
+        } else if (billingPeriod.contains("M")) {
+            return R.plurals.subscription_offer_price_with_phase_template_per_month
+        } else if (billingPeriod.contains("W")) {
+            return R.plurals.subscription_offer_price_with_phase_template_per_week
+        } else if (billingPeriod.contains("D")) {
+            return R.plurals.subscription_offer_price_with_phase_template_per_day
+        }
+        return 0
+    }
