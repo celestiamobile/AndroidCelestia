@@ -95,7 +95,7 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         Monthly(0)
     }
 
-    class Plan(val type: PlanType, val offerToken: String, val formattedPrice: String)
+    class Plan(val type: PlanType, val offerToken: String, val formattedPrice: String, val productId: String)
     class Subscription(val productDetails: ProductDetails, val plans: List<Plan>)
     class PlanResult(val billingResult: BillingResult, val subscription: Subscription?)
 
@@ -164,12 +164,13 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
 
     fun createSubscription(plan: Plan, productDetails: ProductDetails, currentPurchaseToken: String?, activity: Activity) {
         if (!connected) return
-        val productDetailsParams = ProductDetailsParams.newBuilder().setProductDetails(productDetails).setOfferToken(plan.offerToken).build()
+        val productDetailsParamsBuilder = ProductDetailsParams.newBuilder().setProductDetails(productDetails).setOfferToken(plan.offerToken)
         val billingFlowParams: BillingFlowParams = if (currentPurchaseToken != null) {
-            val subscriptionUpdateParams = SubscriptionUpdateParams.newBuilder().setOldPurchaseToken(currentPurchaseToken).setSubscriptionReplacementMode(ReplacementMode.WITHOUT_PRORATION).build()
-            BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(productDetailsParams)).setSubscriptionUpdateParams(subscriptionUpdateParams).build()
+            val replacementParams = ProductDetailsParams.SubscriptionProductReplacementParams.newBuilder().setOldProductId(productDetails.productId).setReplacementMode(ReplacementMode.WITHOUT_PRORATION).build()
+            val subscriptionUpdateParams = SubscriptionUpdateParams.newBuilder().setOldPurchaseToken(currentPurchaseToken).build()
+            BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(productDetailsParamsBuilder.setSubscriptionProductReplacementParams(replacementParams).build())).setSubscriptionUpdateParams(subscriptionUpdateParams).build()
         } else {
-            BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(productDetailsParams)).build()
+            BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(productDetailsParamsBuilder.build())).build()
         }
         requireNotNull(billingClient).launchBillingFlow(activity, billingFlowParams)
     }
@@ -245,14 +246,14 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         if (yearlyPlan != null) {
             val yearlyPlanPrice = yearlyPlan.pricingPhases.pricingPhaseList.lastOrNull()?.formattedPrice
             if (yearlyPlanPrice != null) {
-                plans.add(Plan(PlanType.Yearly, yearlyPlan.offerToken, yearlyPlanPrice))
+                plans.add(Plan(PlanType.Yearly, yearlyPlan.offerToken, yearlyPlanPrice, product.productId))
             }
         }
         val monthlyPlan = product.subscriptionOfferDetails?.firstOrNull { it.basePlanId == monthlyPlanId }
         if (monthlyPlan != null) {
             val monthlyPlanPrice = monthlyPlan.pricingPhases.pricingPhaseList.lastOrNull()?.formattedPrice
             if (monthlyPlanPrice != null) {
-                plans.add(Plan(PlanType.Monthly, monthlyPlan.offerToken, monthlyPlanPrice))
+                plans.add(Plan(PlanType.Monthly, monthlyPlan.offerToken, monthlyPlanPrice, product.productId))
             }
         }
         if (plans.isEmpty()) {
