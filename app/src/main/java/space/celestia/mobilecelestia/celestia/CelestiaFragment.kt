@@ -45,7 +45,6 @@ import kotlinx.coroutines.runBlocking
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Body
 import space.celestia.celestia.BrowserItem
-import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
 import space.celestia.celestia.Utils
@@ -84,6 +83,8 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     lateinit var purchaseManager: PurchaseManager
     @Inject
     lateinit var sessionSettings: SessionSettings
+    @Inject
+    lateinit var rendererSettings: RendererSettings
 
     private lateinit var sensorManager: SensorManager
     private var gyroscope: Sensor? = null
@@ -98,9 +99,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     private var pathToLoad: String? = null
     private var cfgToLoad: String? = null
     private var addonDirsToLoad: List<String> = listOf()
-    private var enableMultisample = false
-    private var enableFullResolution = false
-    private var frameRateOption = Renderer.FRAME_60FPS
     private lateinit var languageOverride: String
 
     // MARK: Celestia
@@ -111,9 +109,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     private var isControlViewVisible = true
     private var hideAnimator: ObjectAnimator? = null
     private var showAnimator: ObjectAnimator? = null
-
-    private var scaleFactor: Float = 1f
-    private var density: Float = 1f
 
     private var zoomTimer: Timer? = null
 
@@ -142,30 +137,21 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
-        density = resources.displayMetrics.density
-
         arguments?.let {
             pathToLoad = it.getString(ARG_DATA_DIR)
             cfgToLoad = it.getString(ARG_CFG_FILE)
             addonDirsToLoad = it.getStringArrayList(ARG_ADDON_DIR) ?: listOf()
-            enableMultisample = it.getBoolean(ARG_MULTI_SAMPLE)
-            enableFullResolution = it.getBoolean(ARG_FULL_RESOLUTION)
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
-            frameRateOption = it.getInt(ARG_FRAME_RATE_OPTION)
         }
 
         isContextMenuEnabled = appSettings[PreferenceManager.PredefinedKey.ContextMenu] != "false"
 
-        if (savedInstanceState != null) {
-            frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, Renderer.FRAME_60FPS)
-            if (savedInstanceState.containsKey(ARG_INTERACTION_MODE)) {
-                interactionMode = CelestiaInteraction.InteractionMode.fromButton(savedInstanceState.getInt(ARG_INTERACTION_MODE))
-            }
+        if (savedInstanceState != null && savedInstanceState.containsKey(ARG_INTERACTION_MODE)) {
+            interactionMode = CelestiaInteraction.InteractionMode.fromButton(savedInstanceState.getInt(ARG_INTERACTION_MODE))
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
         outState.putInt(ARG_INTERACTION_MODE, interactionMode.button)
         super.onSaveInstanceState(outState)
     }
@@ -187,7 +173,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             val cfg = cfgToLoad
             if (data != null && cfg != null) {
                 val rendererFragment = CelestiaRendererFragment.newInstance(
-                    data, cfg, addonDirsToLoad, enableMultisample, enableFullResolution, frameRateOption, languageOverride
+                    data, cfg, addonDirsToLoad, languageOverride
                 )
                 childFragmentManager.beginTransaction()
                     .replace(R.id.celestia_renderer_container, rendererFragment, TAG_RENDERER_FRAGMENT)
@@ -263,7 +249,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     }
 
     fun updateFrameRateOption(newFrameRateOption: Int) {
-        frameRateOption = newFrameRateOption
         val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
         rendererFragment?.updateFrameRateOption(newFrameRateOption)
     }
@@ -279,9 +264,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         listener?.celestiaFragmentLoadingFromFallback()
     }
 
-    override fun celestiaRendererReady(scaleFactor: Float, density: Float) {
-        this.scaleFactor = scaleFactor
-        this.density = density
+    override fun celestiaRendererReady() {
         setUpInteractions()
     }
 
@@ -306,7 +289,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         controlView.buttons = actions.mapNotNull { buttonMap[it] }
 
         val weakSelf = WeakReference(this)
-        val interaction = CelestiaInteraction(requireActivity(), appCore, executor, interactionMode, appSettings, canAcceptKeyEvents = {
+        val interaction = CelestiaInteraction(requireActivity(), appCore, executor, interactionMode, appSettings, rendererSettings, canAcceptKeyEvents = {
             val self = weakSelf.get() ?: return@CelestiaInteraction false
             return@CelestiaInteraction self.listener?.celestiaFragmentCanAcceptKeyEvents() ?: false
         }, showMenu = {
@@ -314,8 +297,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             self.listener?.celestiaFragmentDidRequestActionMenu()
         })
         viewInteraction = interaction
-        interaction.scaleFactor = scaleFactor
-        interaction.density = density
         interaction.isReady = true
 
         // All interaction listeners on the container - no need for GL view reference
@@ -633,7 +614,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         // Show context menu on main thread
         lifecycleScope.launch {
             // Context menu needs to be shown on the renderer container
-            rendererContainer?.showContextMenu(x / scaleFactor, y / scaleFactor)
+            rendererContainer?.showContextMenu(x / rendererSettings.scaleFactor, y / rendererSettings.scaleFactor)
         }
     }
 
@@ -715,9 +696,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         private const val ARG_DATA_DIR = "data"
         private const val ARG_CFG_FILE = "cfg"
         private const val ARG_ADDON_DIR = "addon"
-        private const val ARG_MULTI_SAMPLE = "multisample"
-        private const val ARG_FULL_RESOLUTION = "fullresolution"
-        private const val ARG_FRAME_RATE_OPTION = "framerateoption"
         private const val ARG_INTERACTION_MODE = "interaction-mode"
         private const val ARG_LANG_OVERRIDE = "lang"
         private const val GROUP_ACTION = 0
@@ -751,15 +729,12 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
 
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance(data: String, cfg: String, addons: List<String>, enableMultisample: Boolean, enableFullResolution: Boolean, frameRateOption: Int, languageOverride: String) =
+        fun newInstance(data: String, cfg: String, addons: List<String>, languageOverride: String) =
             CelestiaFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)
                     putString(ARG_CFG_FILE, cfg)
-                    putBoolean(ARG_MULTI_SAMPLE, enableMultisample)
-                    putBoolean(ARG_FULL_RESOLUTION, enableFullResolution)
                     putString(ARG_LANG_OVERRIDE, languageOverride)
-                    putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
                     putStringArrayList(ARG_ADDON_DIR, ArrayList(addons))
                 }
             }

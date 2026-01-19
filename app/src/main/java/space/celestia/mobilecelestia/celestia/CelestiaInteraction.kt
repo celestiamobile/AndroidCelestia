@@ -31,7 +31,7 @@ import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
-class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode, private val appSettings: PreferenceManager, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnHoverListener {
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val executor: CelestiaExecutor, interactionMode: InteractionMode, private val appSettings: PreferenceManager, private val rendererSettings: RendererSettings, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnHoverListener {
     enum class InteractionMode {
         Object, Camera;
 
@@ -76,8 +76,6 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
     var isReady = false
     var zoomMode: ZoomMode? = null
-    var scaleFactor: Float = 1f
-    var density: Float = 1f
     private var isLeftTriggerPressed = false
     private var isRightTriggerPressed = false
 
@@ -111,7 +109,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
                 handleMouseButtonMove = { _, event ->
                     val self = weakSelf.get() ?: return@PointerCaptureListener
                     if (self.currentPressedMouseButton != 0) {
-                        val point = PointF(event.x, event.y).scaleBy(self.scaleFactor)
+                        val point = PointF(event.x, event.y).scaleBy(self.rendererSettings.scaleFactor)
                         val current = self.currentPressedMouseButton
                         val modifier = event.keyModifier()
                         self.executor.execute {
@@ -241,7 +239,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             val modifier = event.keyModifier()
             val current = currentPressedMouseButton
             currentPressedMouseButton = newButton
-            val point = (if (captured) capturedPoint else PointF(event.x, event.y).scaleBy(scaleFactor)) ?: PointF(0f, 0f)
+            val point = (if (captured) capturedPoint else PointF(event.x, event.y).scaleBy(rendererSettings.scaleFactor)) ?: PointF(0f, 0f)
             executor.execute {
                 if (current != 0)
                     appCore.mouseButtonUp(current, point, modifier)
@@ -262,7 +260,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             val modifier = event.keyModifier()
             val current = currentPressedMouseButton
             currentPressedMouseButton = 0
-            val point = (if (captured) capturedPoint else PointF(event.x, event.y).scaleBy(scaleFactor)) ?: PointF(0f, 0f)
+            val point = (if (captured) capturedPoint else PointF(event.x, event.y).scaleBy(rendererSettings.scaleFactor)) ?: PointF(0f, 0f)
             executor.execute {
                 appCore.mouseButtonUp(current, point, modifier)
             }
@@ -312,7 +310,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             if (isHoveredOn && event.actionMasked == MotionEvent.ACTION_SCROLL) {
                 val y = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
                 executor.execute {
-                    appCore.mouseWheel(-y * scaleFactor, event.keyModifier())
+                    appCore.mouseWheel(-y * rendererSettings.scaleFactor, event.keyModifier())
                 }
                 return true
             }/* else if (event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS) {
@@ -342,7 +340,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
                 val lastPoint = lastMousePoint
                 if (lastPoint != null) {
                     val current = PointF(event.x, event.y)
-                    val offset = PointF(current.x - lastPoint.x, current.y - lastPoint.y).scaleBy(scaleFactor)
+                    val offset = PointF(current.x - lastPoint.x, current.y - lastPoint.y).scaleBy(rendererSettings.scaleFactor)
                     val button = currentPressedMouseButton
                     val modifier = event.keyModifier()
                     lastMousePoint = current
@@ -448,7 +446,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
         val isCameraMode = internalInteractionMode == InteractionMode.Camera
-        val focus = PointF(detector.focusX, detector.focusY).scaleBy(scaleFactor)
+        val focus = PointF(detector.focusX, detector.focusY).scaleBy(rendererSettings.scaleFactor)
         val scale = detector.scaleFactor
         executor.execute {
             appCore.pinchUpdate(focus, scale, isCameraMode)
@@ -458,7 +456,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     override fun onSingleTapUp(e: MotionEvent): Boolean {
-        val point = PointF(e.x, e.y).scaleBy(scaleFactor)
+        val point = PointF(e.x, e.y).scaleBy(rendererSettings.scaleFactor)
         executor.execute {
             appCore.mouseButtonDown(AppCore.MOUSE_BUTTON_LEFT, point, 0)
             appCore.mouseButtonUp(AppCore.MOUSE_BUTTON_LEFT, point, 0)
@@ -488,9 +486,9 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         }
 
         val button = internalInteractionMode.button
-        val offset = PointF(-distanceX, -distanceY).scaleBy(scaleFactor)
-        val originalPoint = PointF(event1.x, event1.y).scaleBy(scaleFactor)
-        val newPoint = PointF(event2.x, event2.y).scaleBy(scaleFactor)
+        val offset = PointF(-distanceX, -distanceY).scaleBy(rendererSettings.scaleFactor)
+        val originalPoint = PointF(event1.x, event1.y).scaleBy(rendererSettings.scaleFactor)
+        val newPoint = PointF(event2.x, event2.y).scaleBy(rendererSettings.scaleFactor)
 
         if (!isScrolling) {
             scrollingMouseButton = button
@@ -514,7 +512,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             return
 
         // Bring up the context menu
-        val point = PointF(e.x, e.y).scaleBy(scaleFactor)
+        val point = PointF(e.x, e.y).scaleBy(rendererSettings.scaleFactor)
         val button = AppCore.MOUSE_BUTTON_RIGHT
         executor.execute {
             appCore.mouseButtonDown(button, point, 0)

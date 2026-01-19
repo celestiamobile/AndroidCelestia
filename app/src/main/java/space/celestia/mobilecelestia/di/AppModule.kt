@@ -17,6 +17,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.FilePaths
+import space.celestia.mobilecelestia.celestia.RendererSettings
 import space.celestia.mobilecelestia.celestia.SessionSettings
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.resource.model.AddonUpdateManager
@@ -87,6 +88,18 @@ object AppModule {
     @Provides
     fun provideRenderer(): Renderer {
         return Renderer()
+    }
+
+    @Singleton
+    @Provides
+    fun provideRendererSettings(@AppSettings appSettings: PreferenceManager): RendererSettings {
+        return RendererSettings(
+            density = 0.0f,
+            fontScale = 0.0f,
+            frameRateOption = appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS,
+            enableFullResolution = appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false", // default on
+            enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true"
+        )
     }
 
     @Singleton

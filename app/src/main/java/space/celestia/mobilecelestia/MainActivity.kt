@@ -70,7 +70,6 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Destination
 import space.celestia.celestia.GoToLocation
-import space.celestia.celestia.Renderer
 import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
@@ -661,10 +660,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         )
 
         language = getString(R.string.celestia_language)
-
-        enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true"
-        enableHiDPI =
-            appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false" // default on
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -1049,17 +1044,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun loadConfigSuccess() {
-        val customFrameRateOption =
-            appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull()
-                ?: Renderer.FRAME_60FPS
         // Add gl fragment
         val celestiaFragment = CelestiaFragment.newInstance(
             celestiaDataDirPath,
             celestiaConfigFilePath,
             addonPaths,
-            enableMultisample,
-            enableHiDPI,
-            customFrameRateOption,
             language
         )
         supportFragmentManager
@@ -2236,8 +2225,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var language: String = "en"
         private var addonPaths: List<String> = listOf()
         private var extraScriptPaths: List<String> = listOf()
-        private var enableMultisample = false
-        private var enableHiDPI = false
 
         var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
         var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null

@@ -50,6 +50,8 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     @Inject
     lateinit var renderer: Renderer
     @Inject
+    lateinit var rendererSettings: RendererSettings
+    @Inject
     lateinit var executor: CelestiaExecutor
     @AppSettings
     @Inject
@@ -66,21 +68,12 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     private var pathToLoad: String? = null
     private var cfgToLoad: String? = null
     private var addonDirsToLoad: List<String> = listOf()
-    private var enableMultisample = false
-    private var enableFullResolution = false
-    private var frameRateOption = Renderer.FRAME_60FPS
     private lateinit var languageOverride: String
 
     private var density: Float = 1f
     private var fontScale: Float = 1f
-    private var previousDensity: Float = 0f
-    private var previousFontScale: Float = 0f
     private var savedInsets = EdgeInsets()
     private var hasSetRenderer: Boolean = false
-
-    private val scaleFactor: Float
-        get() = if (enableFullResolution) 1.0f else (1.0f / density)
-
     private var loadSuccess = false
     private var haveSurface = false
 
@@ -88,7 +81,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
 
     interface Listener {
         fun celestiaRendererLoadingFromFallback()
-        fun celestiaRendererReady(scaleFactor: Float, density: Float)
+        fun celestiaRendererReady()
     }
 
     private var listener: Listener? = null
@@ -103,10 +96,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
             pathToLoad = it.getString(ARG_DATA_DIR)
             cfgToLoad = it.getString(ARG_CFG_FILE)
             addonDirsToLoad = it.getStringArrayList(ARG_ADDON_DIR) ?: listOf()
-            enableMultisample = it.getBoolean(ARG_MULTI_SAMPLE)
-            enableFullResolution = it.getBoolean(ARG_FULL_RESOLUTION)
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
-            frameRateOption = it.getInt(ARG_FRAME_RATE_OPTION)
         }
 
         val pickSensitivity = appSettings[PreferenceManager.PredefinedKey.PickSensitivity]?.toDoubleOrNull()
@@ -115,17 +105,11 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         }
 
         if (savedInstanceState != null) {
-            previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
-            previousFontScale = savedInstanceState.getFloat(KEY_PREVIOUS_FONT_SCALE, 0f)
-            frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, Renderer.FRAME_60FPS)
             hasSetRenderer = savedInstanceState.getBoolean(ARG_HAS_SET_RENDERER, false)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putFloat(KEY_PREVIOUS_FONT_SCALE, fontScale)
-        outState.putFloat(KEY_PREVIOUS_DENSITY, density)
-        outState.putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
         outState.putBoolean(ARG_HAS_SET_RENDERER, hasSetRenderer)
         super.onSaveInstanceState(outState)
     }
@@ -189,7 +173,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     override fun celestiaLoadingProgress(status: String) {}
 
     fun updateFrameRateOption(newFrameRateOption: Int) {
-        frameRateOption = newFrameRateOption
+        rendererSettings.frameRateOption = newFrameRateOption
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             renderer.setFrameRateOption(newFrameRateOption)
         }
@@ -199,18 +183,19 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         savedInsets = newInsets
         if (!loadSuccess) { return }
 
-        val insets = savedInsets.scaleBy(scaleFactor)
+        val insets = savedInsets.scaleBy(rendererSettings.scaleFactor)
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             appCore.setSafeAreaInsets(insets)
         }
     }
 
     private fun setUpGLView(container: FrameLayout) {
-        val view = CelestiaView(requireActivity(), scaleFactor)
+        // Cannot use rendererSettings.scaleFactor here because it is before any updateContentScale call
+        val view = CelestiaView(requireActivity(), if (rendererSettings.enableFullResolution) 1.0f else (1.0f / density))
 
         glView = view
 
-        renderer.startConditionally(requireActivity(), enableMultisample)
+        renderer.startConditionally(requireActivity(), rendererSettings.enableMultisample)
         container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         view.holder?.addCallback(this)
     }
@@ -278,14 +263,16 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     }
 
     fun updateContentScale() {
-        if (density == previousDensity && fontScale == previousFontScale) return
+        if (density == rendererSettings.density && fontScale == rendererSettings.fontScale) return
+        rendererSettings.density = density
+        rendererSettings.fontScale = fontScale
 
         renderer.makeContextCurrent()
 
-        appCore.setDPI((96 * density * scaleFactor).toInt())
-        appCore.setPickTolerance(sensitivity * density * scaleFactor)
+        appCore.setDPI((96 * rendererSettings.density * rendererSettings.scaleFactor).toInt())
+        appCore.setPickTolerance(sensitivity * rendererSettings.density * rendererSettings.scaleFactor)
 
-        appCore.setSafeAreaInsets(savedInsets.scaleBy(scaleFactor))
+        appCore.setSafeAreaInsets(savedInsets.scaleBy(rendererSettings.scaleFactor))
 
         // Use installed font
         val locale = AppCore.getLanguage()
@@ -298,15 +285,13 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
             boldFont = boldFont ?: preferredInstalledFont.second
         }
         if (normalFont != null) {
-            appCore.setFont(normalFont.path, normalFont.ttcIndex, (9 * fontScale).toInt())
-            appCore.setRendererFont(normalFont.path, normalFont.ttcIndex, (9 * fontScale).toInt(), AppCore.RENDER_FONT_STYLE_NORMAL)
+            appCore.setFont(normalFont.path, normalFont.ttcIndex, (9 * rendererSettings.fontScale).toInt())
+            appCore.setRendererFont(normalFont.path, normalFont.ttcIndex, (9 * rendererSettings.fontScale).toInt(), AppCore.RENDER_FONT_STYLE_NORMAL)
         }
         if (boldFont != null) {
-            appCore.setTitleFont(boldFont.path, boldFont.ttcIndex, (15 * fontScale).toInt())
-            appCore.setRendererFont(boldFont.path, boldFont.ttcIndex, (15 * fontScale).toInt(), AppCore.RENDER_FONT_STYLE_LARGE)
+            appCore.setTitleFont(boldFont.path, boldFont.ttcIndex, (15 * rendererSettings.fontScale).toInt())
+            appCore.setRendererFont(boldFont.path, boldFont.ttcIndex, (15 * rendererSettings.fontScale).toInt(), AppCore.RENDER_FONT_STYLE_LARGE)
         }
-        previousDensity = density
-        previousFontScale = fontScale
     }
 
     private fun loadingFinished() = lifecycleScope.launch {
@@ -320,14 +305,14 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         handleInsetsChanged(savedInsets)
         
         // Notify parent that rendering is ready (no need to pass GL view)
-        listener?.celestiaRendererReady(scaleFactor, density)
+        listener?.celestiaRendererReady()
 
         Log.d(TAG, "Ready to display")
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         renderer.setSurface(holder.surface)
-        renderer.setFrameRateOption(frameRateOption)
+        renderer.setFrameRateOption(rendererSettings.frameRateOption)
         haveSurface = true
         if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
             loadingFinished()
@@ -347,25 +332,17 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         private const val ARG_DATA_DIR = "data"
         private const val ARG_CFG_FILE = "cfg"
         private const val ARG_ADDON_DIR = "addon"
-        private const val ARG_MULTI_SAMPLE = "multisample"
-        private const val ARG_FULL_RESOLUTION = "fullresolution"
-        private const val ARG_FRAME_RATE_OPTION = "framerateoption"
         private const val ARG_HAS_SET_RENDERER = "has-set-renderer"
         private const val ARG_LANG_OVERRIDE = "lang"
-        private const val KEY_PREVIOUS_DENSITY = "density"
-        private const val KEY_PREVIOUS_FONT_SCALE = "fontscale"
 
         private const val TAG = "CelestiaRendererFragment"
 
-        fun newInstance(data: String, cfg: String, addons: List<String>, enableMultisample: Boolean, enableFullResolution: Boolean, frameRateOption: Int, languageOverride: String) =
+        fun newInstance(data: String, cfg: String, addons: List<String>, languageOverride: String) =
             CelestiaRendererFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)
                     putString(ARG_CFG_FILE, cfg)
-                    putBoolean(ARG_MULTI_SAMPLE, enableMultisample)
-                    putBoolean(ARG_FULL_RESOLUTION, enableFullResolution)
                     putString(ARG_LANG_OVERRIDE, languageOverride)
-                    putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
                     putStringArrayList(ARG_ADDON_DIR, ArrayList(addons))
                 }
             }
