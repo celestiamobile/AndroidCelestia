@@ -11,9 +11,11 @@ package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -84,6 +86,7 @@ import space.celestia.mobilecelestia.browser.BrowserFragment
 import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
 import space.celestia.mobilecelestia.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
+import space.celestia.mobilecelestia.celestia.CelestiaPresentation
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
@@ -176,6 +179,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @Inject
     lateinit var appCore: AppCore
     @Inject
+    lateinit var renderer: Renderer
+    @Inject
     lateinit var resourceAPI: ResourceAPIService
     @Inject
     lateinit var resourceManager: ResourceManager
@@ -224,6 +229,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var currentToolbarActions: List<BottomControlAction> = listOf()
     private var currentToolbarOverflowActions: List<OverflowItem> = listOf()
 
+    private lateinit var displayManager: DisplayManager
+    private var activePresentation: CelestiaPresentation? = null
+
+    private var displayListener: DisplayManager.DisplayListener? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
 
@@ -235,6 +245,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         super.onCreate(savedState)
 
+        displayManager = getSystemService(DISPLAY_SERVICE) as DisplayManager
         drawerLayout = findViewById(R.id.drawer_container)
 
         Log.d(TAG, "Creating MainActivity")
@@ -362,6 +373,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onSaveInstanceState(outState)
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        setUpDisplayListenerIfNeeded()
+    }
+
+    override fun onPause() {
+        displayListener?.let {
+            displayManager.unregisterDisplayListener(it)
+        }
+        displayListener = null
+
+        super.onPause()
+    }
+
     override fun onDestroy() {
         appStatusReporter.unregister(this)
         onBackPressedCallback?.remove()
@@ -382,6 +408,49 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
+    }
+
+    private fun setUpDisplayListenerIfNeeded() {
+        if (!readyForInteraction) return
+
+        if (displayListener == null) {
+            val displayListener = object: DisplayManager.DisplayListener {
+                override fun onDisplayAdded(displayId: Int) {
+                    val dm = getSystemService(DISPLAY_SERVICE) as DisplayManager
+                    val display = dm.getDisplay(displayId)
+
+                    // Check if the new display is suitable for presentations
+                    if (display?.flags?.and(Display.FLAG_PRESENTATION) != 0) {
+                        showExternalDisplayPresentation(display)
+                    }
+                }
+
+                override fun onDisplayChanged(displayId: Int) {}
+
+                override fun onDisplayRemoved(displayId: Int) {
+                    if (activePresentation?.display?.displayId == displayId) {
+                        activePresentation?.dismiss()
+                        activePresentation = null
+                    }
+                }
+            }
+            displayManager.registerDisplayListener(displayListener, null)
+            this.displayListener = displayListener
+        }
+
+        if (activePresentation == null) {
+            // Check if a screen is ALREADY plugged in when the app starts
+            val displays = displayManager.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION)
+            if (displays.isNotEmpty()) {
+                showExternalDisplayPresentation(displays[0])
+            }
+        }
+    }
+
+    private fun showExternalDisplayPresentation(display: Display) {
+        if (activePresentation != null) return
+        activePresentation = CelestiaPresentation(this@MainActivity, display, appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false", appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS, renderer)
+        activePresentation?.show()
     }
 
     private fun showPrivacyAlertIfNeeded() {
@@ -557,6 +626,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (!initialURLCheckPerformed) {
             initialURLCheckPerformed = true
             openURLOrScriptOrGreeting()
+            setUpDisplayListenerIfNeeded()
         }
     }
 

@@ -91,12 +91,19 @@ public class Renderer implements AutoCloseable {
         c_setSurface(pointer, surface);
     }
 
+    public void setPresentationSurface(@Nullable Surface surface) {
+        c_setPresentationSurface(pointer, surface);
+    }
+
     protected void setCorePointer(long ptr) {
         c_setCorePointer(pointer, ptr);
     }
 
     public void setSurfaceSize(int width, int height) {
         c_setSurfaceSize(pointer, width, height);
+    }
+    public void setPresentationSurfaceSize(int width, int height) {
+        c_setPresentationSurfaceSize(pointer, width, height);
     }
 
     public interface EngineStartedListener {
@@ -135,8 +142,10 @@ public class Renderer implements AutoCloseable {
     private native void c_pause(long pointer);
     private native void c_resume(long pointer);
     private native void c_setSurface(long pointer, Surface surface);
+    private native void c_setPresentationSurface(long pointer, Surface surface);
     private native void c_setCorePointer(long pointer, long corePtr);
     private native void c_setSurfaceSize(long pointer, int width, int height);
+    private native void c_setPresentationSurfaceSize(long pointer, int width, int height);
     private native void c_makeContextCurrent(long pointer);
     private native void c_setFrameRateOption(long pointer, int frameRateOption);
     private native void c_setHasPendingTasks(long pointer, boolean hasPendingTasks);
