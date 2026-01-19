@@ -628,8 +628,8 @@ void *CelestiaRenderer::threadCallback(void *self)
         bool needsDrawn = false;
         bool hasPendingTasks = renderer->hasPendingTasks;
         CelestiaSurface &s = renderer->presentationSurface.surface != EGL_NO_SURFACE ? renderer->presentationSurface : renderer->surface;
-        int newWindowWidth = s.windowWidth;
-        int newWindowHeight =s.windowHeight;
+        int newWindowWidth  = s.windowWidth;
+        int newWindowHeight = s.windowHeight;
         if (renderer->engineStartedCalled && s.surface != EGL_NO_SURFACE && renderer->core)
             needsDrawn = true;
         renderer->unlock();

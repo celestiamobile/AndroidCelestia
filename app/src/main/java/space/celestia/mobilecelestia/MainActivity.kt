@@ -15,7 +15,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.hardware.display.DisplayManager
+import android.media.MediaRouter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -233,10 +233,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var currentToolbarActions: List<BottomControlAction> = listOf()
     private var currentToolbarOverflowActions: List<OverflowItem> = listOf()
 
-    private lateinit var displayManager: DisplayManager
+    private lateinit var mediaRouter: MediaRouter
     private var activePresentation: CelestiaPresentation? = null
+    private var pendingDisplay: Display? = null
 
-    private var displayListener: DisplayManager.DisplayListener? = null
+    private var mediaRouterCallback: MediaRouter.SimpleCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -249,7 +250,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         super.onCreate(savedState)
 
-        displayManager = getSystemService(DISPLAY_SERVICE) as DisplayManager
+        mediaRouter = getSystemService(MEDIA_ROUTER_SERVICE) as MediaRouter
         drawerLayout = findViewById(R.id.drawer_container)
 
         Log.d(TAG, "Creating MainActivity")
@@ -384,10 +385,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onPause() {
-        displayListener?.let {
-            displayManager.unregisterDisplayListener(it)
+        mediaRouterCallback?.let {
+            mediaRouter.removeCallback(it)
         }
-        displayListener = null
+        mediaRouterCallback = null
 
         super.onPause()
     }
@@ -417,58 +418,69 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun setUpDisplayListenerIfNeeded() {
         if (!readyForInteraction) return
 
-        if (displayListener == null) {
-            val displayListener = object: DisplayManager.DisplayListener {
-                override fun onDisplayAdded(displayId: Int) {
-                    val dm = getSystemService(DISPLAY_SERVICE) as DisplayManager
-                    val display = dm.getDisplay(displayId)
-
-                    // Check if the new display is suitable for presentations
-                    if (display?.flags?.and(Display.FLAG_PRESENTATION) != 0) {
+        if (mediaRouterCallback == null) {
+            val callback = object: MediaRouter.SimpleCallback() {
+                override fun onRouteSelected(router: MediaRouter, type: Int, info: MediaRouter.RouteInfo) {
+                    val display = info.presentationDisplay
+                    if (display != null) {
                         showExternalDisplayPresentation(display)
                     }
                 }
 
-                override fun onDisplayChanged(displayId: Int) {}
-
-                override fun onDisplayRemoved(displayId: Int) {
-                    if (activePresentation?.display?.displayId == displayId) {
+                override fun onRouteUnselected(router: MediaRouter, type: Int, info: MediaRouter.RouteInfo) {
+                    if (info.presentationDisplay == activePresentation?.display) {
                         activePresentation?.dismiss()
                         activePresentation = null
                     }
+                    if (info.presentationDisplay == pendingDisplay) {
+                        pendingDisplay = null
+                    }
                 }
             }
-            displayManager.registerDisplayListener(displayListener, null)
-            this.displayListener = displayListener
+            mediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, callback)
+            this.mediaRouterCallback = callback
         }
 
-        if (activePresentation == null) {
-            // Check if a screen is ALREADY plugged in when the app starts
-            val displays = displayManager.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION)
-            if (displays.isNotEmpty()) {
-                showExternalDisplayPresentation(displays[0])
-            }
+        val selectedRoute = mediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO)
+        val display = selectedRoute.presentationDisplay
+        if (display != null) {
+            showExternalDisplayPresentation(display)
         }
     }
 
     private fun showExternalDisplayPresentation(display: Display) {
-        if (activePresentation != null) return
-        activePresentation = CelestiaPresentation(
-            this,
-            display,
-            rendererSettings,
-            appCore,
-            renderer,
-            executor,
-            purchaseManager,
-            appSettings,
-            onDismissed = {
-                // Reapply content scale to main surface when presentation is dismissed
-                val celestiaFragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
-                celestiaFragment?.reapplyContentScale()
+        if (activePresentation?.display == display || pendingDisplay == display) return
+        pendingDisplay = display
+
+        activePresentation?.dismiss()
+        activePresentation = null
+
+        showAlert(
+            CelestiaString("External screen connected", ""),
+            message = CelestiaString("An external screen is connected, do you want to display Celestia on the external screen?", ""),
+            handler = {
+                if (pendingDisplay != display) return@showAlert
+                activePresentation = CelestiaPresentation(
+                    this,
+                    display,
+                    rendererSettings,
+                    appCore,
+                    renderer,
+                    executor,
+                    purchaseManager,
+                    appSettings,
+                    onDismissed = {
+                        // Reapply content scale to main surface when presentation is dismissed
+                        val celestiaFragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
+                        celestiaFragment?.reapplyContentScale()
+                    }
+                )
+                activePresentation?.show()
+            },
+            cancelHandler = {
+                pendingDisplay = null
             }
         )
-        activePresentation?.show()
     }
 
     private fun showPrivacyAlertIfNeeded() {
