@@ -9,11 +9,7 @@
 
 package space.celestia.mobilecelestia.celestia
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -21,7 +17,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
-import android.util.LayoutDirection
 import android.util.Log
 import android.view.ContextMenu
 import android.view.Display
@@ -29,13 +24,11 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.Surface
-import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.compose.runtime.snapshotFlow
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
@@ -49,17 +42,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Body
 import space.celestia.celestia.BrowserItem
-import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
 import space.celestia.celestia.Utils
-import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.showToast
-import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
@@ -70,30 +59,21 @@ import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.purchase.ToolbarSettingFragment
 import space.celestia.mobilecelestia.purchase.toolbarItems
-import space.celestia.mobilecelestia.settings.boldFont
-import space.celestia.mobilecelestia.settings.normalFont
 import space.celestia.mobilecelestia.utils.AlertResult
-import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.showAlert
 import space.celestia.mobilecelestia.utils.showAlertAsync
 import java.lang.ref.WeakReference
-import java.util.Locale
 import java.util.Timer
 import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
 @AndroidEntryPoint
-class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.Listener, AppStatusReporter.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler, AppCore.SystemAccessHandler, SensorEventListener {
-    private var activity: Activity? = null
+class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRendererFragment.Listener, AppCore.ContextMenuHandler, AppCore.FatalErrorHandler, AppCore.SystemAccessHandler, SensorEventListener {
 
     @Inject
     lateinit var appCore: AppCore
-    @Inject
-    lateinit var appStatusReporter: AppStatusReporter
-    @Inject
-    lateinit var renderer: Renderer
     @Inject
     lateinit var executor: CelestiaExecutor
     @AppSettings
@@ -102,54 +82,41 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     @Inject
     lateinit var purchaseManager: PurchaseManager
     @Inject
-    lateinit var defaultFilePaths: FilePaths
-    @Inject
     lateinit var sessionSettings: SessionSettings
+    @Inject
+    lateinit var rendererSettings: RendererSettings
 
     private lateinit var sensorManager: SensorManager
     private var gyroscope: Sensor? = null
     private var isGyroscopeActive = false
     private var lastRotationQuaternion: FloatArray? = null
 
-    // MARK: GL View
-    private lateinit var glView: CelestiaView
-    private lateinit var viewInteraction: CelestiaInteraction
+    // MARK: Interaction
+    private var rendererContainer: FrameLayout? = null
+    private var viewInteraction: CelestiaInteraction? = null
 
-    // Parameters
+    // Parameters for child fragment
     private var pathToLoad: String? = null
     private var cfgToLoad: String? = null
     private var addonDirsToLoad: List<String> = listOf()
-    private var enableMultisample = false
-    private var enableFullResolution = false
-    private var frameRateOption = Renderer.FRAME_60FPS
     private lateinit var languageOverride: String
 
     // MARK: Celestia
     private var pendingTarget: Selection? = null
     private var browserItems: ArrayList<BrowserItem> = arrayListOf()
-    private var density: Float = 1f
-    private var fontScale: Float = 1f
-    private var previousDensity: Float = 0f
-    private var previousFontScale: Float = 0f
     private var savedInsets = EdgeInsets()
-    private var hasSetRenderer: Boolean = false
 
     private var isControlViewVisible = true
     private var hideAnimator: ObjectAnimator? = null
     private var showAnimator: ObjectAnimator? = null
 
-    private val scaleFactor: Float
-        get() = if (enableFullResolution) 1.0f else (1.0f / density)
-
     private var zoomTimer: Timer? = null
 
     private var loadSuccess = false
-    private var haveSurface = false
     private var interactionMode = CelestiaInteraction.InteractionMode.Object
     private lateinit var controlView: CelestiaControlView
 
     private var isContextMenuEnabled = true
-    private var sensitivity = 10.0f
 
     interface Listener {
         fun celestiaFragmentDidRequestActionMenu()
@@ -170,42 +137,22 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
-        density = resources.displayMetrics.density
-        fontScale = resources.configuration.fontScale
-
         arguments?.let {
             pathToLoad = it.getString(ARG_DATA_DIR)
             cfgToLoad = it.getString(ARG_CFG_FILE)
             addonDirsToLoad = it.getStringArrayList(ARG_ADDON_DIR) ?: listOf()
-            enableMultisample = it.getBoolean(ARG_MULTI_SAMPLE)
-            enableFullResolution = it.getBoolean(ARG_FULL_RESOLUTION)
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
-            frameRateOption = it.getInt(ARG_FRAME_RATE_OPTION)
         }
 
         isContextMenuEnabled = appSettings[PreferenceManager.PredefinedKey.ContextMenu] != "false"
-        val pickSensitivity = appSettings[PreferenceManager.PredefinedKey.PickSensitivity]?.toDoubleOrNull()
-        if (pickSensitivity != null) {
-            sensitivity = pickSensitivity.toFloat()
-        }
 
-        if (savedInstanceState != null) {
-            previousDensity = savedInstanceState.getFloat(KEY_PREVIOUS_DENSITY, 0f)
-            previousFontScale = savedInstanceState.getFloat(KEY_PREVIOUS_FONT_SCALE, 0f)
-            frameRateOption = savedInstanceState.getInt(ARG_FRAME_RATE_OPTION, Renderer.FRAME_60FPS)
-            hasSetRenderer = savedInstanceState.getBoolean(ARG_HAS_SET_RENDERER, false)
-            if (savedInstanceState.containsKey(ARG_INTERACTION_MODE)) {
-                interactionMode = CelestiaInteraction.InteractionMode.fromButton(savedInstanceState.getInt(ARG_INTERACTION_MODE))
-            }
+        if (savedInstanceState != null && savedInstanceState.containsKey(ARG_INTERACTION_MODE)) {
+            interactionMode = CelestiaInteraction.InteractionMode.fromButton(savedInstanceState.getInt(ARG_INTERACTION_MODE))
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putFloat(KEY_PREVIOUS_FONT_SCALE, fontScale)
-        outState.putFloat(KEY_PREVIOUS_DENSITY, density)
-        outState.putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
         outState.putInt(ARG_INTERACTION_MODE, interactionMode.button)
-        outState.putBoolean(ARG_HAS_SET_RENDERER, hasSetRenderer)
         super.onSaveInstanceState(outState)
     }
 
@@ -213,8 +160,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        appStatusReporter.register(this)
-
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
         controlView = view.findViewById(R.id.control_view)
         controlView.listener = this
@@ -222,15 +167,22 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val controlViewContainer = view.findViewById<FrameLayout>(R.id.active_control_view_container)
         controlViewContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
-        if (!hasSetRenderer) {
-            appCore.setRenderer(renderer)
-            renderer.setEngineStartedListener { samples ->
-                loadCelestia(samples)
+        // Create and add the renderer fragment
+        if (savedInstanceState == null) {
+            val data = pathToLoad
+            val cfg = cfgToLoad
+            if (data != null && cfg != null) {
+                val rendererFragment = CelestiaRendererFragment.newInstance(
+                    data, cfg, addonDirsToLoad, languageOverride
+                )
+                childFragmentManager.beginTransaction()
+                    .replace(R.id.celestia_renderer_container, rendererFragment, TAG_RENDERER_FRAGMENT)
+                    .commit()
             }
-            hasSetRenderer = true
         }
 
-        setUpGLView(view.findViewById(R.id.celestia_gl_view))
+        // Store reference to renderer container for touch handling
+        rendererContainer = view.findViewById(R.id.celestia_renderer_container)
 
         val weakSelf = WeakReference(this)
         ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
@@ -248,7 +200,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
     }
 
     override fun onDestroyView() {
-        appStatusReporter.unregister(this)
         appCore.setContextMenuHandler(null)
         appCore.setFatalErrorHandler(null)
         appCore.setSystemAccessHandler(null)
@@ -269,8 +220,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             lastRotationQuaternion = null
             isGyroscopeActive = false // Mark as inactive
         }
-
-        renderer.pause()
     }
 
     override fun onResume() {
@@ -279,8 +228,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         if (sessionSettings.isGyroscopeEnabled) {
             updateGyroscope(true)
         }
-
-        renderer.resume()
     }
 
     override fun onAttach(context: Context) {
@@ -291,172 +238,39 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         } else {
             throw RuntimeException("$context must implement CelestiaFragment.Listener")
         }
-        activity = context as? Activity
     }
 
     override fun onDetach() {
         super.onDetach()
 
         listener = null
-        activity = null
         zoomTimer?.cancel()
         zoomTimer = null
     }
 
-    override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
-        if (newState == AppStatusReporter.State.LOADING_SUCCESS)
-            loadingFinished()
-    }
-
-    override fun celestiaLoadingProgress(status: String) {}
-
     fun updateFrameRateOption(newFrameRateOption: Int) {
-        frameRateOption = newFrameRateOption
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            renderer.setFrameRateOption(newFrameRateOption)
-        }
+        val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
+        rendererFragment?.updateFrameRateOption(newFrameRateOption)
     }
 
     private fun handleInsetsChanged(newInsets: EdgeInsets) {
         savedInsets = newInsets
-        if (!loadSuccess) { return }
-
-        val insets = savedInsets.scaleBy(scaleFactor)
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.setSafeAreaInsets(insets)
-        }
+        val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
+        rendererFragment?.handleInsetsChanged(newInsets)
     }
 
-    private fun setUpGLView(container: FrameLayout) {
-        val activity = this.activity ?: return
-        val view = CelestiaView(activity, scaleFactor)
-
-        registerForContextMenu(view)
-
-        val weakSelf = WeakReference(this)
-        val interaction = CelestiaInteraction(activity, appCore, executor, interactionMode, appSettings, canAcceptKeyEvents = {
-            val self = weakSelf.get() ?: return@CelestiaInteraction false
-            return@CelestiaInteraction self.listener?.celestiaFragmentCanAcceptKeyEvents() ?: false
-        }, showMenu = {
-            val self = weakSelf.get() ?: return@CelestiaInteraction
-            self.listener?.celestiaFragmentDidRequestActionMenu()
-        })
-        glView = view
-        viewInteraction = interaction
-
-        interaction.scaleFactor = scaleFactor
-        interaction.density = density
-        renderer.startConditionally(activity, enableMultisample)
-        container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-        view.holder?.addCallback(this)
+    // Callback from CelestiaRendererFragment when rendering is ready
+    override fun celestiaRendererLoadingFromFallback() {
+        listener?.celestiaFragmentLoadingFromFallback()
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun loadCelestia(samples: Int): Boolean {
-        val data = pathToLoad
-        val cfg = cfgToLoad
-        val addonDirs = addonDirsToLoad.toTypedArray()
-
-        if (data == null || cfg == null) {
-            appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
-            return false
-        }
-
-        appStatusReporter.updateState(AppStatusReporter.State.LOADING)
-
-        AppCore.initGL()
-        AppCore.chdir(data)
-
-        val countryCode = Locale.getDefault().country
-
-        // Set up locale
-        AppCore.setLocaleDirectoryPath("$data/locale", languageOverride, countryCode)
-
-        // Reading config, data
-        if (!appCore.startSimulation(cfg, addonDirs, appStatusReporter)) {
-            val lis = listener
-            if (lis != null) {
-                // Read from fallback
-                val fallbackConfigPath = defaultFilePaths.configFilePath
-                val fallbackDataPath = defaultFilePaths.dataDirectoryPath
-                if (fallbackConfigPath != cfg || fallbackDataPath != data) {
-                    lis.celestiaFragmentLoadingFromFallback()
-                    AppCore.chdir(fallbackDataPath)
-                    AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", languageOverride, countryCode)
-                    if (!appCore.startSimulation(fallbackConfigPath, addonDirs, appStatusReporter)) {
-                        appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
-                        return false
-                    }
-                } else {
-                    appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
-                    return false
-                }
-            } else {
-                appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
-                return false
-            }
-        }
-
-        // Prepare renderer
-        if (!appCore.startRenderer()) {
-            appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
-            return false
-        }
-
-        updateContentScale()
-
-        // Display
-        appCore.tick()
-        appCore.start()
-
-        appStatusReporter.updateState(AppStatusReporter.State.LOADING_SUCCESS)
-
-        return true
-    }
-
-    private fun updateContentScale() {
-        if (density == previousDensity && fontScale == previousFontScale) return
-
-        renderer.makeContextCurrent()
-
-        appCore.setDPI((96 * density * scaleFactor).toInt())
-        appCore.setPickTolerance(sensitivity * density * scaleFactor)
-
-        appCore.setSafeAreaInsets(savedInsets.scaleBy(scaleFactor))
-
-        // Use installed font
-        val locale = AppCore.getLanguage()
-        val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
-        var normalFont = if (hasCelestiaPlus) appSettings.normalFont else null
-        var boldFont = if (hasCelestiaPlus) appSettings.boldFont else null
-        val preferredInstalledFont = MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
-        if (preferredInstalledFont != null) {
-            normalFont = normalFont ?: preferredInstalledFont.first
-            boldFont = boldFont ?: preferredInstalledFont.second
-        }
-        if (normalFont != null) {
-            appCore.setFont(normalFont.path, normalFont.ttcIndex, (9 * fontScale).toInt())
-            appCore.setRendererFont(normalFont.path, normalFont.ttcIndex, (9 * fontScale).toInt(), AppCore.RENDER_FONT_STYLE_NORMAL)
-        }
-        if (boldFont != null) {
-            appCore.setTitleFont(boldFont.path, boldFont.ttcIndex, (15 * fontScale).toInt())
-            appCore.setRendererFont(boldFont.path, boldFont.ttcIndex, (15 * fontScale).toInt(), AppCore.RENDER_FONT_STYLE_LARGE)
-        }
-        previousDensity = density
-        previousFontScale = fontScale
-    }
-
-    private fun loadingFinished() = lifecycleScope.launch {
-        if (!haveSurface) return@launch
-        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        withContext(executor.asCoroutineDispatcher()) {
-            updateContentScale()
-            appCore.layoutDirection = if (isRTL) AppCore.LAYOUT_DIRECTION_RTL else AppCore.LAYOUT_DIRECTION_LTR
-        }
+    override fun celestiaRendererReady() {
         setUpInteractions()
     }
 
     private fun setUpInteractions() {
+        val container = rendererContainer ?: return
+
         // Set up control buttons
         val buttonMap = hashMapOf(
             ToolbarSettingFragment.ToolbarAction.Mode to CelestiaControlButton.Toggle(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), interactionMode == CelestiaInteraction.InteractionMode.Camera),
@@ -474,38 +288,53 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
             actions.add(ToolbarSettingFragment.ToolbarAction.Menu)
         controlView.buttons = actions.mapNotNull { buttonMap[it] }
 
-        glView.isReady = true
-        if (isContextMenuEnabled)
-            glView.isContextClickable = true
-        viewInteraction.isReady = true
+        val weakSelf = WeakReference(this)
+        val interaction = CelestiaInteraction(requireActivity(), appCore, executor, interactionMode, appSettings, rendererSettings, canAcceptKeyEvents = {
+            val self = weakSelf.get() ?: return@CelestiaInteraction false
+            return@CelestiaInteraction self.listener?.celestiaFragmentCanAcceptKeyEvents() ?: false
+        }, showMenu = {
+            val self = weakSelf.get() ?: return@CelestiaInteraction
+            self.listener?.celestiaFragmentDidRequestActionMenu()
+        })
+        viewInteraction = interaction
+        interaction.isReady = true
+
+        // All interaction listeners on the container - no need for GL view reference
         @Suppress("ClickableViewAccessibility")
-        glView.setOnTouchListener { v, event ->
+        container.setOnTouchListener { v, event ->
             showControlViewIfNeeded()
-            viewInteraction.onTouch(v, event)
+            interaction.onTouch(v, event)
         }
+
+        // Make container focusable for keyboard/gamepad input
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            glView.defaultFocusHighlightEnabled = false
-            glView.isFocusable = true
-            glView.isFocusableInTouchMode = true
-            glView.requestFocus()
+            container.defaultFocusHighlightEnabled = false
+            container.isFocusable = true
+            container.isFocusableInTouchMode = true
+            container.requestFocus()
         }
-        glView.setOnKeyListener(viewInteraction)
-        glView.setOnGenericMotionListener(viewInteraction)
+        container.setOnKeyListener(interaction)
+        container.setOnGenericMotionListener(interaction)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val pointerCaptureListener = viewInteraction.pointerCaptureListener as? View.OnCapturedPointerListener
+            val pointerCaptureListener = interaction.pointerCaptureListener as? View.OnCapturedPointerListener
             if (pointerCaptureListener != null) {
-                glView.setOnCapturedPointerListener(pointerCaptureListener)
+                container.setOnCapturedPointerListener(pointerCaptureListener)
             }
         }
-        glView.setOnHoverListener(viewInteraction)
+        container.setOnHoverListener(interaction)
+
+        // Register context menu on container
+        if (isContextMenuEnabled) {
+            registerForContextMenu(container)
+            container.isContextClickable = true
+        }
+
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             if (isContextMenuEnabled)
                 appCore.setContextMenuHandler(this@CelestiaFragment)
             appCore.setFatalErrorHandler(this@CelestiaFragment)
             appCore.setSystemAccessHandler(this@CelestiaFragment)
         }
-        if (isContextMenuEnabled)
-            registerForContextMenu(glView)
 
         snapshotFlow { sessionSettings.isGyroscopeEnabled }
             .onEach { isEnabled ->
@@ -650,24 +479,6 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         return true
     }
 
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        renderer.setSurface(holder.surface)
-        renderer.setFrameRateOption(frameRateOption)
-        haveSurface = true
-        if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
-            loadingFinished()
-        }
-    }
-
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        Log.d(TAG, "Resize to $width x $height")
-        renderer.setSurfaceSize(width, height)
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        renderer.setSurface(null)
-    }
-
     // Actions
     override fun didTapAction(action: CelestiaControlAction) {
         if (!isControlViewVisible) return
@@ -751,13 +562,13 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         when (action) {
             CelestiaControlAction.ToggleModeToCamera -> {
                 interactionMode = CelestiaInteraction.InteractionMode.Camera
-                viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
-                activity?.showToast(CelestiaString("Switched to camera mode", "Move/zoom camera FOV"), Toast.LENGTH_SHORT)
+                viewInteraction?.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
+                requireActivity().showToast(CelestiaString("Switched to camera mode", "Move/zoom camera FOV"), Toast.LENGTH_SHORT)
             }
             CelestiaControlAction.ToggleModeToObject -> {
                 interactionMode = CelestiaInteraction.InteractionMode.Object
-                viewInteraction.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
-                activity?.showToast(CelestiaString("Switched to object mode", "Move/zoom on an object"), Toast.LENGTH_SHORT)
+                viewInteraction?.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
+                requireActivity().showToast(CelestiaString("Switched to object mode", "Move/zoom on an object"), Toast.LENGTH_SHORT)
             }
             else -> {}
         }
@@ -765,10 +576,11 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
     override fun didStartPressingAction(action: CelestiaControlAction) {
         if (!isControlViewVisible) return
+        val interaction = viewInteraction ?: return
 
         when (action) {
-            CelestiaControlAction.ZoomIn -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.In; viewInteraction.callZoom() }
-            CelestiaControlAction.ZoomOut -> { viewInteraction.zoomMode = CelestiaInteraction.ZoomMode.Out; viewInteraction.callZoom() }
+            CelestiaControlAction.ZoomIn -> { interaction.zoomMode = CelestiaInteraction.ZoomMode.In; interaction.callZoom() }
+            CelestiaControlAction.ZoomOut -> { interaction.zoomMode = CelestiaInteraction.ZoomMode.Out; interaction.callZoom() }
             else -> {}
         }
 
@@ -776,7 +588,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         val weakSelf = WeakReference(this)
         zoomTimer = fixedRateTimer("zoom", false, 0, 100) {
             val self = weakSelf.get() ?: return@fixedRateTimer
-            self.viewInteraction.callZoom()
+            self.viewInteraction?.callZoom()
         }
     }
 
@@ -785,7 +597,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         zoomTimer?.cancel()
         zoomTimer = null
-        viewInteraction.zoomMode = null
+        viewInteraction?.zoomMode = null
     }
 
     override fun requestContextMenu(x: Float, y: Float, selection: Selection) {
@@ -801,7 +613,8 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         // Show context menu on main thread
         lifecycleScope.launch {
-            glView.showContextMenu(x / scaleFactor, y / scaleFactor)
+            // Context menu needs to be shown on the renderer container
+            rendererContainer?.showContextMenu(x / rendererSettings.scaleFactor, y / rendererSettings.scaleFactor)
         }
     }
 
@@ -844,10 +657,10 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         val display: Display?
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            display = activity?.display
+            display = requireActivity().display
         } else {
             @Suppress("DEPRECATION")
-            display = activity?.windowManager?.defaultDisplay
+            display = requireActivity().windowManager?.defaultDisplay
         }
         val screenRotation = display?.rotation ?: Surface.ROTATION_0
         val angleZ: Float = when (screenRotation) {
@@ -883,11 +696,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         private const val ARG_DATA_DIR = "data"
         private const val ARG_CFG_FILE = "cfg"
         private const val ARG_ADDON_DIR = "addon"
-        private const val ARG_MULTI_SAMPLE = "multisample"
-        private const val ARG_FULL_RESOLUTION = "fullresolution"
-        private const val ARG_FRAME_RATE_OPTION = "framerateoption"
         private const val ARG_INTERACTION_MODE = "interaction-mode"
-        private const val ARG_HAS_SET_RENDERER = "has-set-renderer"
         private const val ARG_LANG_OVERRIDE = "lang"
         private const val GROUP_ACTION = 0
         private const val GROUP_ALT_SURFACE_TOP = 1
@@ -897,8 +706,7 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
         private const val GROUP_BROWSER_ITEM_GO = 6
         private const val GROUP_BROWSER_ITEM = 7
         private const val GROUP_GET_INFO = 8
-        private const val KEY_PREVIOUS_DENSITY = "density"
-        private const val KEY_PREVIOUS_FONT_SCALE = "fontscale"
+        private const val TAG_RENDERER_FRAGMENT = "renderer_fragment"
 
         fun getAvailableMarkers(): List<String> {
             return listOf(
@@ -921,15 +729,12 @@ class CelestiaFragment: Fragment(), SurfaceHolder.Callback, CelestiaControlView.
 
         private const val TAG = "CelestiaFragment"
 
-        fun newInstance(data: String, cfg: String, addons: List<String>, enableMultisample: Boolean, enableFullResolution: Boolean, frameRateOption: Int, languageOverride: String) =
+        fun newInstance(data: String, cfg: String, addons: List<String>, languageOverride: String) =
             CelestiaFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DATA_DIR, data)
                     putString(ARG_CFG_FILE, cfg)
-                    putBoolean(ARG_MULTI_SAMPLE, enableMultisample)
-                    putBoolean(ARG_FULL_RESOLUTION, enableFullResolution)
                     putString(ARG_LANG_OVERRIDE, languageOverride)
-                    putInt(ARG_FRAME_RATE_OPTION, frameRateOption)
                     putStringArrayList(ARG_ADDON_DIR, ArrayList(addons))
                 }
             }
