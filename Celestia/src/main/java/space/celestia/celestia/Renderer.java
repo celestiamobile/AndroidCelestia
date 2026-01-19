@@ -106,6 +106,18 @@ public class Renderer implements AutoCloseable {
         c_setPresentationSurfaceSize(pointer, width, height);
     }
 
+    public float getRenderingScaleX() {
+        return c_getRenderingScaleX(pointer);
+    }
+
+    public float getRenderingScaleY() {
+        return c_getRenderingScaleY(pointer);
+    }
+
+    public boolean hasPresentationSurface() {
+        return c_hasPresentationSurface(pointer);
+    }
+
     public interface EngineStartedListener {
         boolean onEngineStarted(int samples);
     }
@@ -149,4 +161,7 @@ public class Renderer implements AutoCloseable {
     private native void c_makeContextCurrent(long pointer);
     private native void c_setFrameRateOption(long pointer, int frameRateOption);
     private native void c_setHasPendingTasks(long pointer, boolean hasPendingTasks);
+    private native float c_getRenderingScaleX(long pointer);
+    private native float c_getRenderingScaleY(long pointer);
+    private native boolean c_hasPresentationSurface(long pointer);
 }

@@ -70,6 +70,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Renderer
 import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
 import space.celestia.celestiafoundation.favorite.BookmarkNode
@@ -87,6 +88,7 @@ import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
 import space.celestia.mobilecelestia.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaPresentation
+import space.celestia.mobilecelestia.celestia.RendererSettings
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
@@ -180,6 +182,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var appCore: AppCore
     @Inject
     lateinit var renderer: Renderer
+    @Inject
+    lateinit var rendererSettings: RendererSettings
     @Inject
     lateinit var resourceAPI: ResourceAPIService
     @Inject
@@ -449,7 +453,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showExternalDisplayPresentation(display: Display) {
         if (activePresentation != null) return
-        activePresentation = CelestiaPresentation(this@MainActivity, display, appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false", appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS, renderer)
+        activePresentation = CelestiaPresentation(
+            this,
+            display,
+            rendererSettings,
+            appCore,
+            renderer,
+            executor,
+            purchaseManager,
+            appSettings,
+            onDismissed = {
+                // Reapply content scale to main surface when presentation is dismissed
+                val celestiaFragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
+                celestiaFragment?.reapplyContentScale()
+            }
+        )
         activePresentation?.show()
     }
 
@@ -1386,6 +1404,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun settingsProvidePreferredDisplay(): Display? {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return display
         } else {

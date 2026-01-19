@@ -45,6 +45,7 @@ import kotlinx.coroutines.runBlocking
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Body
 import space.celestia.celestia.BrowserItem
+import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
 import space.celestia.celestia.Utils
@@ -74,6 +75,8 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
 
     @Inject
     lateinit var appCore: AppCore
+    @Inject
+    lateinit var renderer: Renderer
     @Inject
     lateinit var executor: CelestiaExecutor
     @AppSettings
@@ -253,6 +256,11 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         rendererFragment?.updateFrameRateOption(newFrameRateOption)
     }
 
+    fun reapplyContentScale() {
+        val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
+        rendererFragment?.reapplyContentScale()
+    }
+
     private fun handleInsetsChanged(newInsets: EdgeInsets) {
         savedInsets = newInsets
         val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
@@ -289,7 +297,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         controlView.buttons = actions.mapNotNull { buttonMap[it] }
 
         val weakSelf = WeakReference(this)
-        val interaction = CelestiaInteraction(requireActivity(), appCore, executor, interactionMode, appSettings, rendererSettings, canAcceptKeyEvents = {
+        val interaction = CelestiaInteraction(requireActivity(), appCore, renderer, executor, interactionMode, appSettings, rendererSettings, canAcceptKeyEvents = {
             val self = weakSelf.get() ?: return@CelestiaInteraction false
             return@CelestiaInteraction self.listener?.celestiaFragmentCanAcceptKeyEvents() ?: false
         }, showMenu = {

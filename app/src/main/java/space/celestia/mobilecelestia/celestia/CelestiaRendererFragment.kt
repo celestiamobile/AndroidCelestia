@@ -78,7 +78,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     private var haveSurface = false
 
     private val renderChanges: RenderChanges
-        get() = RenderChanges(scaling = density != rendererSettings.density || fontScale != rendererSettings.fontScale, safeArea = savedInsets != rendererSettings.safeAreaInsets)
+        get() = if (renderer.hasPresentationSurface()) RenderChanges() else RenderChanges(scaling = density != rendererSettings.density || fontScale != rendererSettings.fontScale, safeArea = savedInsets != rendererSettings.safeAreaInsets)
 
     interface Listener {
         fun celestiaRendererLoadingFromFallback()
@@ -177,8 +177,15 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
 
     fun handleInsetsChanged(newInsets: EdgeInsets) {
         savedInsets = newInsets
-        if (!loadSuccess) { return }
+        if (!loadSuccess || renderer.hasPresentationSurface()) { return }
 
+        val changes = applyRenderChanges(renderChanges)
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+            updateContentScale(changes)
+        }
+    }
+
+    fun reapplyContentScale() {
         val changes = applyRenderChanges(renderChanges)
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             updateContentScale(changes)
@@ -332,7 +339,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     }
 }
 
-data class RenderChanges(val scaling: Boolean, val safeArea: Boolean)
+data class RenderChanges(val scaling: Boolean = false, val safeArea: Boolean = false)
 
 fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges, purchaseManager: PurchaseManager, appSettings: PreferenceManager) {
     if (changes.scaling) {

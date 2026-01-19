@@ -28,3 +28,7 @@ class CelestiaView(context: Context, private val scaleFactor: Float) : SurfaceVi
 fun PointF.scaleBy(factor: Float): PointF {
     return PointF(x * factor, y * factor)
 }
+
+fun PointF.scaleByRatio(scaleX: Float, scaleY: Float): PointF {
+    return PointF(x * scaleX, y * scaleY)
+}

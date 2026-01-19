@@ -853,3 +853,41 @@ Java_space_celestia_celestia_Renderer_c_1setHasPendingTasks(JNIEnv *env, jobject
     auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
     renderer->setHasPendingTasks(static_cast<bool>(has_pending_tasks));
 }
+
+extern "C"
+JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_Renderer_c_1getRenderingScaleX(JNIEnv *env, jobject thiz,
+                                                             jlong pointer) {
+    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    // Return width ratio (presentationSurface / surface) if both surfaces exist, otherwise 1.0
+    if (renderer->presentationSurface.surface != EGL_NO_SURFACE && 
+        renderer->surface.surface != EGL_NO_SURFACE &&
+        renderer->surface.windowWidth > 0) {
+        return static_cast<jfloat>(renderer->presentationSurface.windowWidth) / 
+               static_cast<jfloat>(renderer->surface.windowWidth);
+    }
+    return 1.0f;
+}
+
+extern "C"
+JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_Renderer_c_1getRenderingScaleY(JNIEnv *env, jobject thiz,
+                                                             jlong pointer) {
+    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    // Return height ratio (presentationSurface / surface) if both surfaces exist, otherwise 1.0
+    if (renderer->presentationSurface.surface != EGL_NO_SURFACE && 
+        renderer->surface.surface != EGL_NO_SURFACE &&
+        renderer->surface.windowHeight > 0) {
+        return static_cast<jfloat>(renderer->presentationSurface.windowHeight) / 
+               static_cast<jfloat>(renderer->surface.windowHeight);
+    }
+    return 1.0f;
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_Renderer_c_1hasPresentationSurface(JNIEnv *env, jobject thiz,
+                                                                 jlong pointer) {
+    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    return renderer->presentationSurface.surface != EGL_NO_SURFACE;
+}
