@@ -98,7 +98,8 @@ object AppModule {
             fontScale = 0.0f,
             frameRateOption = appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS,
             enableFullResolution = appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false", // default on
-            enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true"
+            enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true",
+            pickSensitivity = appSettings[PreferenceManager.PredefinedKey.PickSensitivity]?.toFloatOrNull() ?: 10.0f
         )
     }
 

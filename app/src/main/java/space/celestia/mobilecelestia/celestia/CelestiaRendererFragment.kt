@@ -77,8 +77,6 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     private var loadSuccess = false
     private var haveSurface = false
 
-    private var sensitivity = 10.0f
-
     interface Listener {
         fun celestiaRendererLoadingFromFallback()
         fun celestiaRendererReady()
@@ -97,11 +95,6 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
             cfgToLoad = it.getString(ARG_CFG_FILE)
             addonDirsToLoad = it.getStringArrayList(ARG_ADDON_DIR) ?: listOf()
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
-        }
-
-        val pickSensitivity = appSettings[PreferenceManager.PredefinedKey.PickSensitivity]?.toDoubleOrNull()
-        if (pickSensitivity != null) {
-            sensitivity = pickSensitivity.toFloat()
         }
 
         if (savedInstanceState != null) {
@@ -251,7 +244,9 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
             return false
         }
 
-        updateContentScale()
+        if (updateRendererSettings()) {
+            updateContentScale()
+        }
 
         // Display
         appCore.tick()
@@ -262,15 +257,18 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         return true
     }
 
-    fun updateContentScale() {
-        if (density == rendererSettings.density && fontScale == rendererSettings.fontScale) return
+    private fun updateRendererSettings(): Boolean {
+        if (density == rendererSettings.density && fontScale == rendererSettings.fontScale) return false
         rendererSettings.density = density
         rendererSettings.fontScale = fontScale
+        return true
+    }
 
+    private fun updateContentScale() {
         renderer.makeContextCurrent()
 
         appCore.setDPI((96 * rendererSettings.density * rendererSettings.scaleFactor).toInt())
-        appCore.setPickTolerance(sensitivity * rendererSettings.density * rendererSettings.scaleFactor)
+        appCore.setPickTolerance(rendererSettings.pickSensitivity * rendererSettings.density * rendererSettings.scaleFactor)
 
         appCore.setSafeAreaInsets(savedInsets.scaleBy(rendererSettings.scaleFactor))
 
@@ -297,8 +295,11 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     private fun loadingFinished() = lifecycleScope.launch {
         if (!haveSurface) return@launch
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
+        val needsUpdateContentScale = updateRendererSettings()
         withContext(executor.asCoroutineDispatcher()) {
-            updateContentScale()
+            if (needsUpdateContentScale) {
+                updateContentScale()
+            }
             appCore.layoutDirection = if (isRTL) AppCore.LAYOUT_DIRECTION_RTL else AppCore.LAYOUT_DIRECTION_LTR
         }
         loadSuccess = true
