@@ -20,6 +20,7 @@ import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.celestia.RendererSettings
 import space.celestia.mobilecelestia.celestia.SessionSettings
 import space.celestia.mobilecelestia.common.CelestiaExecutor
+import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.resource.model.AddonUpdateManager
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.utils.AppStatusReporter
@@ -96,6 +97,7 @@ object AppModule {
         return RendererSettings(
             density = 0.0f,
             fontScale = 0.0f,
+            safeAreaInsets = EdgeInsets(),
             frameRateOption = appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS,
             enableFullResolution = appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false", // default on
             enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true",

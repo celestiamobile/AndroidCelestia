@@ -77,6 +77,9 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     private var loadSuccess = false
     private var haveSurface = false
 
+    private val renderChanges: RenderChanges
+        get() = RenderChanges(scaling = density != rendererSettings.density || fontScale != rendererSettings.fontScale, safeArea = savedInsets != rendererSettings.safeAreaInsets)
+
     interface Listener {
         fun celestiaRendererLoadingFromFallback()
         fun celestiaRendererReady()
@@ -176,9 +179,9 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         savedInsets = newInsets
         if (!loadSuccess) { return }
 
-        val insets = savedInsets.scaleBy(rendererSettings.scaleFactor)
+        val changes = applyRenderChanges(renderChanges)
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.setSafeAreaInsets(insets)
+            updateContentScale(changes)
         }
     }
 
@@ -244,9 +247,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
             return false
         }
 
-        if (updateRendererSettings()) {
-            updateContentScale()
-        }
+        updateContentScale(changes = applyRenderChanges(renderChanges))
 
         // Display
         appCore.tick()
@@ -257,54 +258,35 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         return true
     }
 
-    private fun updateRendererSettings(): Boolean {
-        if (density == rendererSettings.density && fontScale == rendererSettings.fontScale) return false
-        rendererSettings.density = density
-        rendererSettings.fontScale = fontScale
-        return true
+    private fun applyRenderChanges(changes: RenderChanges): RenderChanges {
+        if (changes.scaling) {
+            rendererSettings.density = density
+            rendererSettings.fontScale = fontScale
+        }
+
+        if (changes.safeArea) {
+            rendererSettings.safeAreaInsets = savedInsets
+        }
+        return changes
     }
 
-    private fun updateContentScale() {
+    private fun updateContentScale(changes: RenderChanges) {
+        if (!changes.scaling && !changes.safeArea) return
+
         renderer.makeContextCurrent()
-
-        appCore.setDPI((96 * rendererSettings.density * rendererSettings.scaleFactor).toInt())
-        appCore.setPickTolerance(rendererSettings.pickSensitivity * rendererSettings.density * rendererSettings.scaleFactor)
-
-        appCore.setSafeAreaInsets(savedInsets.scaleBy(rendererSettings.scaleFactor))
-
-        // Use installed font
-        val locale = AppCore.getLanguage()
-        val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
-        var normalFont = if (hasCelestiaPlus) appSettings.normalFont else null
-        var boldFont = if (hasCelestiaPlus) appSettings.boldFont else null
-        val preferredInstalledFont = MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
-        if (preferredInstalledFont != null) {
-            normalFont = normalFont ?: preferredInstalledFont.first
-            boldFont = boldFont ?: preferredInstalledFont.second
-        }
-        if (normalFont != null) {
-            appCore.setFont(normalFont.path, normalFont.ttcIndex, (9 * rendererSettings.fontScale).toInt())
-            appCore.setRendererFont(normalFont.path, normalFont.ttcIndex, (9 * rendererSettings.fontScale).toInt(), AppCore.RENDER_FONT_STYLE_NORMAL)
-        }
-        if (boldFont != null) {
-            appCore.setTitleFont(boldFont.path, boldFont.ttcIndex, (15 * rendererSettings.fontScale).toInt())
-            appCore.setRendererFont(boldFont.path, boldFont.ttcIndex, (15 * rendererSettings.fontScale).toInt(), AppCore.RENDER_FONT_STYLE_LARGE)
-        }
+        appCore.updateContentScale(rendererSettings, changes, purchaseManager, appSettings)
     }
 
     private fun loadingFinished() = lifecycleScope.launch {
         if (!haveSurface) return@launch
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        val needsUpdateContentScale = updateRendererSettings()
+        val changes = applyRenderChanges(renderChanges)
         withContext(executor.asCoroutineDispatcher()) {
-            if (needsUpdateContentScale) {
-                updateContentScale()
-            }
+            updateContentScale(changes)
             appCore.layoutDirection = if (isRTL) AppCore.LAYOUT_DIRECTION_RTL else AppCore.LAYOUT_DIRECTION_LTR
         }
         loadSuccess = true
-        handleInsetsChanged(savedInsets)
-        
+
         // Notify parent that rendering is ready (no need to pass GL view)
         listener?.celestiaRendererReady()
 
@@ -347,5 +329,53 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
                     putStringArrayList(ARG_ADDON_DIR, ArrayList(addons))
                 }
             }
+    }
+}
+
+data class RenderChanges(val scaling: Boolean, val safeArea: Boolean)
+
+fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges, purchaseManager: PurchaseManager, appSettings: PreferenceManager) {
+    if (changes.scaling) {
+        setDPI((96 * rendererSettings.density * rendererSettings.scaleFactor).toInt())
+        setPickTolerance(rendererSettings.pickSensitivity * rendererSettings.density * rendererSettings.scaleFactor)
+
+        // Use installed font
+        val locale = AppCore.getLanguage()
+        val hasCelestiaPlus =
+            purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
+        var normalFont = if (hasCelestiaPlus) appSettings.normalFont else null
+        var boldFont = if (hasCelestiaPlus) appSettings.boldFont else null
+        val preferredInstalledFont =
+            MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
+        if (preferredInstalledFont != null) {
+            normalFont = normalFont ?: preferredInstalledFont.first
+            boldFont = boldFont ?: preferredInstalledFont.second
+        }
+        if (normalFont != null) {
+            setFont(normalFont.path, normalFont.ttcIndex, (9 * rendererSettings.fontScale).toInt())
+            setRendererFont(
+                normalFont.path,
+                normalFont.ttcIndex,
+                (9 * rendererSettings.fontScale).toInt(),
+                AppCore.RENDER_FONT_STYLE_NORMAL
+            )
+        }
+        if (boldFont != null) {
+            setTitleFont(
+                boldFont.path,
+                boldFont.ttcIndex,
+                (15 * rendererSettings.fontScale).toInt()
+            )
+            setRendererFont(
+                boldFont.path,
+                boldFont.ttcIndex,
+                (15 * rendererSettings.fontScale).toInt(),
+                AppCore.RENDER_FONT_STYLE_LARGE
+            )
+        }
+    }
+
+    if (changes.scaling || changes.safeArea) {
+        setSafeAreaInsets(rendererSettings.safeAreaInsets.scaleBy(rendererSettings.scaleFactor))
     }
 }
