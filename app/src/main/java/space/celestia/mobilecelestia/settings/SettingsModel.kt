@@ -722,7 +722,7 @@ class SettingsRenderInfoItem : SettingsItem, Serializable {
 
 class SettingsAboutItem : SettingsItem, Serializable {
     override val name: String
-        get() = CelestiaString("About", "About Celstia...")
+        get() = CelestiaString("About", "About Celestia")
 }
 
 class SettingsUnknownTextItem(override val name: String, val id: String) : SettingsItem, Serializable

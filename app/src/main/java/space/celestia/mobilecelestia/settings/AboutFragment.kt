@@ -73,7 +73,7 @@ class AboutFragment : NavigationFragment.SubFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        title = CelestiaString("About", "About Celstia...")
+        title = CelestiaString("About", "About Celestia")
     }
 
     @Composable

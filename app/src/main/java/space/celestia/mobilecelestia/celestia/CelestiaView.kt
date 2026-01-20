@@ -13,9 +13,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PointF
 import android.view.SurfaceView
-import dagger.hilt.android.AndroidEntryPoint
-import space.celestia.celestia.Renderer
-import javax.inject.Inject
 
 @SuppressLint("ViewConstructor")
 class CelestiaView(context: Context, private val scaleFactor: Float) : SurfaceView(context) {
