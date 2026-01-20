@@ -177,7 +177,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
 
     fun handleInsetsChanged(newInsets: EdgeInsets) {
         savedInsets = newInsets
-        if (!loadSuccess || renderer.hasPresentationSurface()) { return }
+        if (!loadSuccess) { return }
 
         val changes = applyRenderChanges(renderChanges)
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
