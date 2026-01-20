@@ -11,7 +11,6 @@ package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -421,36 +420,46 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (mediaRouterCallback == null) {
             val callback = object: MediaRouter.SimpleCallback() {
                 override fun onRouteSelected(router: MediaRouter, type: Int, info: MediaRouter.RouteInfo) {
-                    val display = info.presentationDisplay
-                    if (display != null) {
-                        showExternalDisplayPresentation(display)
-                    }
+                    Log.d(TAG, "onRouteSelected: type=$type, info=$info")
+                    updatePresentation()
                 }
 
                 override fun onRouteUnselected(router: MediaRouter, type: Int, info: MediaRouter.RouteInfo) {
-                    if (info.presentationDisplay == activePresentation?.display) {
-                        activePresentation?.dismiss()
-                        activePresentation = null
-                    }
-                    if (info.presentationDisplay == pendingDisplay) {
-                        pendingDisplay = null
-                    }
+                    Log.d(TAG, "onRouteUnselected: type=$type, info=$info")
+                    updatePresentation()
+                }
+
+                override fun onRoutePresentationDisplayChanged(
+                    router: MediaRouter?,
+                    info: MediaRouter.RouteInfo?
+                ) {
+                    Log.d(TAG, "onRoutePresentationDisplayChanged: info=$info")
+                    updatePresentation()
                 }
             }
             mediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, callback)
             this.mediaRouterCallback = callback
         }
 
-        val selectedRoute = mediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO)
-        val display = selectedRoute.presentationDisplay
-        if (display != null) {
-            showExternalDisplayPresentation(display)
-        }
+        updatePresentation()
     }
 
-    private fun showExternalDisplayPresentation(display: Display) {
-        if (activePresentation?.display == display || pendingDisplay == display) return
-        pendingDisplay = display
+    private fun updatePresentation() {
+        // Get the current route and its presentation display.
+        val route: MediaRouter.RouteInfo? = mediaRouter.getSelectedRoute(
+            MediaRouter.ROUTE_TYPE_LIVE_VIDEO
+        )
+
+        val presentationDisplay = route?.presentationDisplay
+
+        if (activePresentation?.display != presentationDisplay) {
+            Log.i(TAG, "Dismissing presentation because the current route no longer has a presentation display.");
+            activePresentation?.dismiss()
+            activePresentation = null
+        }
+
+        if (presentationDisplay == null || presentationDisplay == pendingDisplay) return
+        pendingDisplay = presentationDisplay
 
         activePresentation?.dismiss()
         activePresentation = null
@@ -459,23 +468,30 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             CelestiaString("External screen connected", ""),
             message = CelestiaString("An external screen is connected, do you want to display Celestia on the external screen?", ""),
             handler = {
-                if (pendingDisplay != display) return@showAlert
+                if (pendingDisplay != presentationDisplay) return@showAlert
                 activePresentation = CelestiaPresentation(
                     this,
-                    display,
+                    presentationDisplay,
                     rendererSettings,
                     appCore,
                     renderer,
                     executor,
                     purchaseManager,
-                    appSettings,
-                    onDismissed = {
-                        // Reapply content scale to main surface when presentation is dismissed
-                        val celestiaFragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
-                        celestiaFragment?.reapplyContentScale()
-                    }
+                    appSettings
                 )
-                activePresentation?.show()
+                activePresentation?.setOnDismissListener {
+                    // Reapply content scale to main surface when presentation is dismissed
+                    Log.i(TAG, "Presentation was dismissed.")
+                    activePresentation = null
+                    val celestiaFragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
+                    celestiaFragment?.reapplyContentScale()
+                }
+                pendingDisplay = null
+                try {
+                    activePresentation?.show()
+                } catch (ignored: Throwable) {
+                    activePresentation = null
+                }
             },
             cancelHandler = {
                 pendingDisplay = null

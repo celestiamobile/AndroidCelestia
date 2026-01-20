@@ -28,8 +28,7 @@ class CelestiaPresentation(
     private val renderer: Renderer,
     private val executor: CelestiaExecutor,
     private val purchaseManager: PurchaseManager,
-    private val appSettings: PreferenceManager,
-    private val onDismissed: () -> Unit
+    private val appSettings: PreferenceManager
 ): Presentation(context, display) {
     private var density: Float = 1f
     private var fontScale: Float = 1f
@@ -100,7 +99,5 @@ class CelestiaPresentation(
     override fun onStop() {
         super.onStop()
         presentationScope.cancel()
-        // Notify that presentation is dismissed so main surface can reapply content scale
-        onDismissed()
     }
 }
