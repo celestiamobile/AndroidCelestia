@@ -62,12 +62,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_21
-        }
-    }
-
     namespace = "space.celestia.mobilecelestia"
 
     flavorDimensions += "distribution"
@@ -85,6 +79,12 @@ android {
             dimension = "distribution"
             assetPacks += listOf(":base_assets")
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
     }
 }
 
