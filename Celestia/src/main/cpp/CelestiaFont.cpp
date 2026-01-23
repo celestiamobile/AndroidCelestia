@@ -23,7 +23,7 @@ Java_space_celestia_celestia_Font_c_1getFontNames(JNIEnv *env, jclass, jstring p
 
     FT_Long faceNum = face->num_faces;
     FT_Done_Face(face);
-    if (face->num_faces <= 0)
+    if (faceNum <= 0)
         return nullptr;
 
     std::vector<std::string> fontNames;
