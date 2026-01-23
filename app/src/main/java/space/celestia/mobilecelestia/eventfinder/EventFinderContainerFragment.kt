@@ -30,9 +30,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
@@ -51,24 +49,21 @@ import space.celestia.celestia.EclipseFinder
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.eventfinder.viewmodel.EventFinderViewModel
+import space.celestia.mobilecelestia.eventfinder.viewmodel.Page
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.julianDay
 import space.celestia.mobilecelestia.utils.showAlert
 import space.celestia.mobilecelestia.utils.showLoading
 
-private sealed class Page {
-    data object Home : Page()
-    class Results(val results: List<EclipseFinder.Eclipse>) : Page()
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EventFinder() {
-    val backStack = rememberSaveable { mutableStateListOf<Page>(Page.Home) }
     val scope = rememberCoroutineScope()
     val viewModel: EventFinderViewModel = hiltViewModel()
     val activity = LocalActivity.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
+    val backStack = viewModel.backStack
 
     Scaffold(
         topBar = {
