@@ -117,8 +117,8 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
 
             val infoText = CelestiaString("Flight mode decides how you move around in Celestia. Learn more…", "")
             val infoLinkText = CelestiaString("Learn more…", "Text for the link in Flight mode decides how you move around in Celestia. Learn more…")
-            FooterLink(text = infoText, linkText = infoLinkText, link = "https://celestia.mobi/help/flight-mode?lang=${AppCore.getLanguage()}", action = { link ->
-                listener?.onObserverModeLearnMoreClicked(link)
+            FooterLink(text = infoText, linkText = infoLinkText, link = "https://celestia.mobi/help/flight-mode", action = { link ->
+                listener?.onObserverModeLearnMoreClicked(link, true)
             })
 
             FilledTonalButton(modifier = internalViewModifier, onClick = {
@@ -155,7 +155,7 @@ class ObserverModeFragment: NavigationFragment.SubFragment() {
     }
 
     interface Listener {
-        fun onObserverModeLearnMoreClicked(link: String)
+        fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean)
     }
 
     companion object {
