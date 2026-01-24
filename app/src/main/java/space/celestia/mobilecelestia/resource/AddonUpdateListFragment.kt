@@ -20,10 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -38,7 +35,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -48,6 +44,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.EmptyHint
+import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.purchase.SubscriptionBackingFragment
 import space.celestia.mobilecelestia.resource.model.AddonUpdateManager
@@ -210,22 +207,13 @@ class AddonUpdateListFragment : SubscriptionBackingFragment(), ResourceManager.L
                         .background(color = MaterialTheme.colorScheme.background)
                 ) {
                     items(addonUpdateManager.pendingUpdates) {
-                        ListItem(
+                        TextRow(
                             modifier = Modifier.clickable(onClick = {
                                 listener?.onInstalledAddonSelected(it.addon)
                             }),
-                            headlineContent = {
-                                Text(text = it.addon.name)
-                            },
-                            supportingContent = {
-                                Text(text = formatter.format(it.update.modificationDate))
-                            },
-                            trailingContent = {
-                                Icon(
-                                    painter = painterResource(R.drawable.accessory_full_disclosure),
-                                    contentDescription = null
-                                )
-                            }
+                            primaryText = it.addon.name,
+                            secondaryText = formatter.format(it.update.modificationDate),
+                            accessoryResource = R.drawable.accessory_full_disclosure
                         )
                     }
                 }
