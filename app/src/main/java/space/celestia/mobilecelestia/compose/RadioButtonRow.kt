@@ -3,6 +3,7 @@ package space.celestia.mobilecelestia.compose
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
@@ -23,7 +24,7 @@ fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondary
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.toggleable(selected, role = Role.RadioButton, onValueChange = { newValue ->
         if (newValue)
             onClick?.invoke()
-    }).padding(
+    }).defaultMinSize(minHeight = dimensionResource(id = if (secondaryText != null) R.dimen.list_item_two_line_min_height else R.dimen.list_item_one_line_min_height)).padding(
         start = dimensionResource(id = R.dimen.list_item_small_margin_horizontal),
         end = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)
     )) {

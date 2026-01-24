@@ -12,6 +12,7 @@ package space.celestia.mobilecelestia.compose
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -32,7 +33,7 @@ import space.celestia.mobilecelestia.R
 
 @Composable
 fun SwitchRow(primaryText: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, horizontalPadding: Dp? = null, canTapWholeRow: Boolean = true) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = (if (canTapWholeRow) modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange) else modifier).padding(
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = (if (canTapWholeRow) modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange) else modifier).defaultMinSize(minHeight = dimensionResource(id = if (secondaryText != null) R.dimen.list_item_two_line_min_height else R.dimen.list_item_one_line_min_height)).padding(
         horizontal = horizontalPadding ?: dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
     )) {
         Column(modifier = Modifier.weight(1.0f).padding(
