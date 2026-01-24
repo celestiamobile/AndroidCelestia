@@ -147,6 +147,7 @@ import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.AboutFragment
 import space.celestia.mobilecelestia.settings.CustomFont
+import space.celestia.mobilecelestia.settings.SettingsCommonFragment
 import space.celestia.mobilecelestia.settings.SettingsCurrentTimeNavigationFragment
 import space.celestia.mobilecelestia.settings.SettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsItem
@@ -198,7 +199,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
     ObserverModeFragment.Listener,
-    SubscriptionBackingFragment.Listener {
+    SubscriptionBackingFragment.Listener,
+    SettingsCommonFragment.Listener {
 
     @AppSettings
     @Inject
@@ -1380,8 +1382,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         frag.pushFragment(ObserverModeFragment.newInstance())
     }
 
-    override fun onObserverModeLearnMoreClicked(link: String) {
-        openURL(link)
+    override fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean) {
+        openLink(link, localizable)
+    }
+
+    override fun onOpenSettingsLink(link: String, localizable: Boolean) {
+        openLink(link, localizable)
     }
 
     override fun onHelpActionSelected(action: HelpAction) {
@@ -1412,6 +1418,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (item is FavoriteBookmarkItem && item.bookmark.isLeaf) {
             shareURLDirect(item.bookmark.name, item.bookmark.url)
         }
+    }
+
+    private fun openLink(link: String, localizable: Boolean) {
+        var uri = link.toUri()
+        if (localizable)
+            uri = uri.buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
+        openURI(uri)
     }
 
     private fun readFavorites() {
@@ -1492,10 +1505,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onAboutURLSelected(url: String, localizable: Boolean) {
-        var uri = url.toUri()
-        if (localizable)
-            uri = uri.buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
-        openURI(uri)
+        openLink(url, localizable)
     }
 
     private fun showUnsupportedAction() {

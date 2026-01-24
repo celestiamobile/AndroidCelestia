@@ -37,7 +37,7 @@ fun FooterLink(text: String, linkText: String, link: String, action: (String) ->
         append(text)
         addStyle(
             style = SpanStyle(
-                color = MaterialTheme.colorScheme.onBackground,
+                color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
                 fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
                 fontSize = MaterialTheme.typography.labelMedium.fontSize,
                 fontWeight = MaterialTheme.typography.labelMedium.fontWeight,

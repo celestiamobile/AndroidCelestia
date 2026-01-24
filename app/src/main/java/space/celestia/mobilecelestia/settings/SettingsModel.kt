@@ -19,6 +19,11 @@ import java.io.Serializable
 
 const val settingUnmarkAllID = "UnmarkAll"
 
+sealed class Footer: Serializable {
+    data class Text(val text: String): Footer(), Serializable
+    data class TextWithLink(val text: String, val linkText: String, val link: String, val localizable: Boolean): Footer(), Serializable
+}
+
 enum class SettingsKey : PreferenceManager.Key, Serializable {
     // Boolean values
     ShowStars,
@@ -507,7 +512,7 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
                     SettingsSwitchItem("ShowPlanetographicGrid", CelestiaString("Show Planetographic Grid", "Reference vector"), true),
                     SettingsSwitchItem("ShowTerminator", CelestiaString("Show Terminator", "Reference vector"), true)
                 ),
-                footer = CelestiaString("Reference vectors are only visible for the current selected solar system object.", "")
+                footer = Footer.Text(CelestiaString("Reference vectors are only visible for the current selected solar system object.", ""))
             )
         )
     )
@@ -616,7 +621,7 @@ private val staticRendererItems: List<SettingsItem> = listOf(
                         Pair(3, CelestiaString("Blackbody (Vega Whitepoint)", "Star colors option")),
                     ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 1),
                     SettingsSliderItem(SettingsKey.TintSaturation, 0.0, 1.0),
-                ), footer = CelestiaString("Tinted illumination saturation setting is only effective with Blackbody star colors.", "")
+                ), footer = Footer.Text(CelestiaString("Tinted illumination saturation setting is only effective with Blackbody star colors.", ""))
             )
         )
     ),
@@ -636,7 +641,7 @@ private val staticRendererItems: List<SettingsItem> = listOf(
         SettingsCommonItem.Section(listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, CelestiaString("HiDPI", "HiDPI support in display"), true),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", ""))
-        ),  footer =  CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
+        ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart")))
     )),
     SettingsRenderInfoItem()
 )
@@ -653,7 +658,7 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
                     SettingsPreferenceSliderItem(PreferenceManager.PredefinedKey.PickSensitivity, displayName = CelestiaString("Sensitivity", "Setting for sensitivity for selecting an object"), subtitle = CelestiaString("Sensitivity for object selection", "Notes for the sensitivity setting"), minValue = 1.0, maxValue = 20.0, defaultValue = 10.0),
                     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.ContextMenu, displayName = CelestiaString("Context Menu", "Settings for whether context menu is enabled"), true, subtitle = CelestiaString("Context menu by long press or context click", "Description for how a context menu is triggered")),
                 ),
-                footer = CelestiaString("Some configurations will take effect after a restart.", "")
+                footer = Footer.Text(CelestiaString("Some configurations will take effect after a restart.", ""))
             )
         )
     ),
@@ -765,7 +770,7 @@ val mainSettingSectionsAfterPlus: List<CommonSectionV2<SettingsItem>> = listOf(
 )
 
 class SettingsCommonItem(override val name: String, val sections: List<Section>) : SettingsItem, Serializable {
-    class Section(val rows: List<SettingsItem>, val header: String? = "", val footer: String? = null) : Serializable
+    class Section(val rows: List<SettingsItem>, val header: String? = "", val footer: Footer? = null) : Serializable
 
     companion object {
         fun create(name: String, items: List<SettingsItem>): SettingsCommonItem {
