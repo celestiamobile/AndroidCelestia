@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.5.0)
 
 set(CELESTIA_DIR ${CMAKE_SOURCE_DIR}/../../../../../Celestia)
 set(CELESTIA_SRC_DIR "${CELESTIA_DIR}/src")
@@ -562,6 +562,8 @@ add_library(
         celestia
         SHARED
         ${CELESTIA_SOURCES} )
+
+set_property(TARGET celestia PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
 find_library(
         log-lib
