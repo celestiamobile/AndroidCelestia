@@ -14,7 +14,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
@@ -93,20 +92,20 @@ val copyLocalizedFiles by tasks.registering(Exec::class) {
     println("Copying localized files")
     workingDir = projectDir
     executable = "/bin/sh"
-    setArgs(listOf("copy_localized_files.sh"))
+    args = listOf("copy_localized_files.sh")
 }
 
 val copyGeneralData by tasks.registering(Exec::class) {
     workingDir = projectDir
     executable = "/bin/sh"
-    setArgs(listOf("copy_general_data.sh"))
+    args = listOf("copy_general_data.sh")
 }
 
 val convertPO by tasks.registering(Exec::class) {
     println("Converting PO")
     workingDir = projectDir
     executable = "/bin/sh"
-    setArgs(listOf("convert_po.sh"))
+    args = listOf("convert_po.sh")
 }
 
 // Task ordering
