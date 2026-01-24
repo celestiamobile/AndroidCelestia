@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -196,8 +197,9 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
         var rowModifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
+            .defaultMinSize(minHeight = dimensionResource(R.dimen.list_item_one_line_min_height))
             .padding(
-                horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
+                horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)
             )
         if (isDraggable) {
             rowModifier = Modifier
@@ -232,7 +234,7 @@ class FavoriteItemFragment : NavigationFragment.SubFragment() {
                     )
                     if (isDraggable) {
                         Icon(
-                            painter = painterResource(id = R.drawable.drag_handle_24px),
+                            painter = painterResource(id = R.drawable.reorder_24px),
                             contentDescription = CelestiaString(
                                 "Drag Handle",
                                 "Accessibility description for the drag handle for reorder"
