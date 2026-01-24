@@ -2,6 +2,7 @@ package space.celestia.mobilecelestia.compose
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -17,7 +18,7 @@ import space.celestia.mobilecelestia.R
 
 @Composable
 fun SliderRow(primaryText: String, value: Float, valueRange: ClosedFloatingPointRange<Float>, onValueChange: (Float) -> Unit, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null) {
-    Column(horizontalAlignment = Alignment.Start, modifier = modifier.padding(
+    Column(horizontalAlignment = Alignment.Start, modifier = modifier.defaultMinSize(minHeight = dimensionResource(id = if (secondaryText != null) R.dimen.list_slider_item_two_line_min_height else R.dimen.list_slider_item_one_line_min_height)).padding(
         horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
         vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
     )) {

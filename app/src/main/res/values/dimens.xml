@@ -28,6 +28,10 @@
     <dimen name="list_item_gap_horizontal">8dp</dimen>
     <dimen name="list_item_gap_image_text_horizontal">12dp</dimen>
     <dimen name="list_item_gap_vertical">8dp</dimen>
+    <dimen name="list_item_one_line_min_height">56dp</dimen>
+    <dimen name="list_item_two_line_min_height">72dp</dimen>
+    <dimen name="list_slider_item_one_line_min_height">84dp</dimen>
+    <dimen name="list_slider_item_two_line_min_height">100dp</dimen>
 
     <dimen name="tutorial_list_item_gap_horizontal">16dp</dimen>
     <dimen name="tutorial_list_icon_dimension">44dp</dimen>

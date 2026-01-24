@@ -17,7 +17,7 @@ import space.celestia.mobilecelestia.R
 
 @Composable
 fun TextRow(primaryText: String, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, @DrawableRes accessoryResource: Int = 0, accessoryContentDescription: String = "") {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.defaultMinSize(minHeight = dimensionResource(id = if (secondaryText != null) R.dimen.list_item_two_line_min_height else R.dimen.list_item_one_line_min_height)).padding(
         horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
         vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
     )) {
