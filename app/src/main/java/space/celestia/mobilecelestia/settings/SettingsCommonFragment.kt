@@ -9,6 +9,7 @@
 
 package space.celestia.mobilecelestia.settings
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -45,6 +46,7 @@ import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.NavigationFragment
 import space.celestia.mobilecelestia.compose.CheckboxRow
 import space.celestia.mobilecelestia.compose.Footer
+import space.celestia.mobilecelestia.compose.FooterLink
 import space.celestia.mobilecelestia.compose.Header
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.RadioButtonRow
@@ -73,6 +75,12 @@ class SettingsCommonFragment : NavigationFragment.SubFragment() {
     @CoreSettings
     @Inject
     lateinit var coreSettings: PreferenceManager
+
+    interface Listener {
+        fun onOpenSettingsLink(link: String, localizable: Boolean)
+    }
+
+    private var listener: Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +112,22 @@ class SettingsCommonFragment : NavigationFragment.SubFragment() {
         title = item?.name ?: ""
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        if (context is Listener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement SettingsCommonFragment.Listener")
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+
+        listener = null
+    }
+
     @Composable
     private fun MainScreen() {
         val settingItem = item ?: return
@@ -124,8 +148,16 @@ class SettingsCommonFragment : NavigationFragment.SubFragment() {
                 }
                 item {
                     val footer = section.footer
-                    if (!footer.isNullOrEmpty()) {
-                        Footer(text = footer)
+                    when (footer) {
+                        is Footer.Text -> {
+                            Footer(text = footer.text)
+                        }
+                        is Footer.TextWithLink -> {
+                            FooterLink(text = footer.text, link = footer.link, linkText = footer.linkText, action = {
+                                listener?.onOpenSettingsLink(it, footer.localizable)
+                            })
+                        }
+                        else -> {}
                     }
                     if (index == settingItem.sections.size - 1) {
                         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
@@ -133,7 +165,7 @@ class SettingsCommonFragment : NavigationFragment.SubFragment() {
                          val nextHeader = settingItem.sections[index + 1].header
                          if (nextHeader.isNullOrEmpty()) {
                              Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-                             if (footer.isNullOrEmpty()) {
+                             if (footer == null) {
                                  Separator()
                              }
                          }
