@@ -140,6 +140,7 @@ import space.celestia.mobilecelestia.utils.showOptions
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
+import java.lang.reflect.Method
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -444,6 +445,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         updatePresentation()
     }
 
+    @SuppressLint("DiscouragedPrivateApi")
     private fun updatePresentation() {
         // Get the current route and its presentation display.
         val route: MediaRouter.RouteInfo? = mediaRouter.getSelectedRoute(
@@ -451,6 +453,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         )
 
         val presentationDisplay = route?.presentationDisplay
+        if (presentationDisplay != null && ignoredDisplayIds.contains(presentationDisplay.displayId)) {
+            return
+        }
+
+        if (presentationDisplay != null && appSettings[PreferenceManager.PredefinedKey.DetectVirtualDisplay] != "true") {
+            try {
+                var method = getDisplayTypeMethod
+                if (method == null) {
+                    val newMethod = Display::class.java.getDeclaredMethod("getType")
+                    getDisplayTypeMethod = newMethod
+                    method = newMethod
+                }
+                val displayType = method.invoke(presentationDisplay) as Int
+                if (displayType == 5) return
+            } catch (ignored: Throwable) {}
+        }
 
         if (activePresentation?.display != presentationDisplay) {
             Log.i(TAG, "Dismissing presentation because the current route no longer has a presentation display.");
@@ -459,6 +477,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         if (presentationDisplay == null || presentationDisplay == pendingDisplay) return
+
         pendingDisplay = presentationDisplay
 
         activePresentation?.dismiss()
@@ -494,6 +513,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             },
             cancelHandler = {
+                ignoredDisplayIds.add(presentationDisplay.displayId)
                 pendingDisplay = null
             }
         )
@@ -1432,7 +1452,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun settingsProvidePreferredDisplay(): Display? {
-
+        val presentation = activePresentation
+        if (presentation != null)
+            return presentation.display
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return display
         } else {
@@ -2135,6 +2157,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var language: String = "en"
         private var addonPaths: List<String> = listOf()
         private var extraScriptPaths: List<String> = listOf()
+
+        private var ignoredDisplayIds = hashSetOf<Int>()
+        private var getDisplayTypeMethod: Method? = null
 
         var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
         var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
