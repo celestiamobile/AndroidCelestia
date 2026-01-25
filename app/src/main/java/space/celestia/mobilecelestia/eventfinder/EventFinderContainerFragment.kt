@@ -103,7 +103,7 @@ private fun EventFinder() {
             entryProvider = { route ->
                 when (route) {
                     is Page.Home -> NavEntry(route) {
-                        EventFinderInput(paddingValues) { objectName, startDate, endDate ->
+                        EventFinderInputScreen(paddingValues) { objectName, startDate, endDate ->
                             scope.launch {
                                 val body = withContext(viewModel.executor.asCoroutineDispatcher()) {
                                     viewModel.appCore.simulation.findObject(objectName).`object` as? Body
@@ -130,7 +130,7 @@ private fun EventFinder() {
                         }
                     }
                     is Page.Results -> NavEntry(route) {
-                        EventFinderResults(results = route.results, paddingValues = paddingValues) { eclipse ->
+                        EventFinderResultsScreen(results = route.results, paddingValues = paddingValues) { eclipse ->
                             scope.launch(viewModel.executor.asCoroutineDispatcher()) {
                                 viewModel.appCore.simulation.goToEclipse(eclipse)
                             }

@@ -16,8 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -38,7 +38,7 @@ import space.celestia.mobilecelestia.control.viewmodel.CameraControlViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 @Composable
-fun ObserverMode(paddingValues: PaddingValues, observerModeLearnMoreClicked: (String, Boolean) -> Unit) {
+fun ObserverModeScreen(paddingValues: PaddingValues, observerModeLearnMoreClicked: (String, Boolean) -> Unit) {
     val viewModel: CameraControlViewModel = hiltViewModel()
     val internalViewModifier = Modifier
         .fillMaxWidth()
@@ -46,19 +46,19 @@ fun ObserverMode(paddingValues: PaddingValues, observerModeLearnMoreClicked: (St
             horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
             vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
         )
-    var referenceObjectName by remember {
+    var referenceObjectName by rememberSaveable {
         mutableStateOf("")
     }
-    var referenceObject by remember {
+    var referenceObject by rememberSaveable {
         mutableStateOf(Selection())
     }
-    var targetObjectName by remember {
+    var targetObjectName by rememberSaveable {
         mutableStateOf("")
     }
-    var selectedCoordinateIndex by remember {
+    var selectedCoordinateIndex by rememberSaveable {
         mutableIntStateOf(0)
     }
-    var targetObject by remember {
+    var targetObject by rememberSaveable {
         mutableStateOf(Selection())
     }
     val scope = rememberCoroutineScope()

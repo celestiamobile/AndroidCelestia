@@ -1,4 +1,4 @@
-// SettingsHome.kt
+// SettingsHomeScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -29,7 +29,7 @@ import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 
 @Composable
-fun SettingsHome(paddingValues: PaddingValues, itemSelected: (SettingsItem) -> Unit) {
+fun SettingsHomeScreen(paddingValues: PaddingValues, itemSelected: (SettingsItem) -> Unit) {
     val viewModel: SettingsViewModel = hiltViewModel()
     val sections = if (viewModel.purchaseManager.canUseInAppPurchase()) mainSettingSectionsBeforePlus + celestiaPlusSettingSection + mainSettingSectionsAfterPlus else mainSettingSectionsBeforePlus + mainSettingSectionsAfterPlus
     LazyColumn(modifier = Modifier

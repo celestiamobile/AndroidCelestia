@@ -1,4 +1,4 @@
-// DataLocation.kt
+// DataLocationSettingsScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -48,7 +48,7 @@ import space.celestia.mobilecelestia.utils.showOptions
 import kotlin.system.exitProcess
 
 @Composable
-fun DataLocation(paddingValues: PaddingValues) {
+fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
     val viewModel: SettingsViewModel = hiltViewModel()
     var customConfigFilePath by remember { mutableStateOf(viewModel.appSettings[PreferenceManager.PredefinedKey.ConfigFilePath]) }
     var customDataDirPath by remember { mutableStateOf(viewModel.appSettings[PreferenceManager.PredefinedKey.DataDirPath]) }

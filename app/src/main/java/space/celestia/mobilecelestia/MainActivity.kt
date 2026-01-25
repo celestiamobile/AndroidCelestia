@@ -109,7 +109,6 @@ import space.celestia.mobilecelestia.favorite.updateCurrentBookmarks
 import space.celestia.mobilecelestia.favorite.updateCurrentDestinations
 import space.celestia.mobilecelestia.favorite.updateCurrentScripts
 import space.celestia.mobilecelestia.help.HelpAction
-import space.celestia.mobilecelestia.help.HelpFragment
 import space.celestia.mobilecelestia.help.NewHelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
@@ -123,18 +122,15 @@ import space.celestia.mobilecelestia.info.model.MarkItem
 import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.purchase.SubscriptionBackingFragment
-import space.celestia.mobilecelestia.resource.AddonUpdateListFragment
 import space.celestia.mobilecelestia.resource.CommonWebFragment
-import space.celestia.mobilecelestia.resource.CommonWebNavigationFragment
-import space.celestia.mobilecelestia.resource.InstalledAddonListFragment
-import space.celestia.mobilecelestia.resource.ResourceFragment
-import space.celestia.mobilecelestia.resource.ResourceItemFragment
-import space.celestia.mobilecelestia.resource.ResourceItemNavigationFragment
+import space.celestia.mobilecelestia.resource.WebBrowserFragment
+import space.celestia.mobilecelestia.resource.AddonManagerFragment
+import space.celestia.mobilecelestia.resource.AddonFragment
+import space.celestia.mobilecelestia.resource.SimpleWebFragment
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.CustomFont
-import space.celestia.mobilecelestia.settings.SettingsCurrentTimeNavigationFragment
+import space.celestia.mobilecelestia.settings.TimeSettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsKey
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
@@ -165,17 +161,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SearchFragment.Listener,
     BrowserFragment.Listener,
     SubsystemBrowserFragment.Listener,
-    HelpFragment.Listener,
+    NewHelpFragment.Listener,
     FavoriteFragment.Listener,
     SettingsFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    InstalledAddonListFragment.Listener,
-    AddonUpdateListFragment.Listener,
-    ResourceItemFragment.Listener,
+    AddonFragment.Listener,
+    AddonManagerFragment.Listener,
+    WebBrowserFragment.Listener,
     CommonWebFragment.Listener,
-    CameraControlContainerFragment.Listener,
-    SubscriptionBackingFragment.Listener {
+    CameraControlContainerFragment.Listener {
 
     @AppSettings
     @Inject
@@ -784,7 +779,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (guide != null) {
             lifecycleScope.launch {
                 val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
-                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = guide, language = lang, additionalQueryParameters = additionalQueryParameters), listOf("guide")))
+                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = guide, language = lang, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
             }
             cleanup()
             return
@@ -794,7 +789,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             lifecycleScope.launch {
                 try {
                     val result = resourceAPI.item(lang, addon)
-                    showBottomSheetFragment(ResourceItemNavigationFragment.newInstance(result))
+                    showBottomSheetFragment(AddonFragment.newInstance(result))
                 } catch (ignored: Throwable) {}
             }
             cleanup()
@@ -808,7 +803,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
                 val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
-                showBottomSheetFragment(CommonWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, additionalQueryParameters = additionalQueryParameters), listOf("guide")))
+                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
             } catch (ignored: Throwable) {}
         }
     }
@@ -1127,10 +1122,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun requestOpenSubscriptionManagement() {
-        showInAppPurchase(null)
-    }
-
     private fun showInAppPurchase(preferredPlayOfferId: String?) = lifecycleScope.launch {
         val fragment = purchaseManager.createInAppPurchaseFragment(preferredPlayOfferId) ?: return@launch
         showBottomSheetFragment(fragment)
@@ -1197,8 +1188,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openURL(url.toString())
     }
 
-    override fun onRunScript(file: File) {
-        openCelestiaURL(file.absolutePath)
+    override fun webRequestRunScript(script: File) {
+        openCelestiaURL(script.absolutePath)
+    }
+
+    override fun webRequestOpenAddonDownload() {
+        openAddonDownload()
+    }
+
+    override fun webRequestOpenSubscriptionManagement() {
+        showInAppPurchase(null)
     }
 
     override fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
@@ -1269,31 +1268,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         when (type) {
             CustomActionType.ShowTimeSettings -> {
                 lifecycleScope.launch {
-                    showBottomSheetFragment(SettingsCurrentTimeNavigationFragment.newInstance())
+                    showBottomSheetFragment(TimeSettingsFragment.newInstance())
                 }
             }
         }
     }
 
-    override fun objectExistsWithName(name: String): Boolean {
-        return !appCore.simulation.findObject(name).isEmpty
-    }
-
-    override fun onGoToObject(name: String) {
-        hideKeyboard()
-
-        val sel = appCore.simulation.findObject(name)
-        if (sel.isEmpty) {
-            showAlert(CelestiaString("Object not found", ""))
-            return
-        }
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.simulation.selection = sel
-            appCore.charEnter(CelestiaAction.GoTo.value)
-        }
-    }
-
-    override fun onShareAddon(name: String, id: String) {
+    override fun webRequestShareAddon(name: String, id: String) {
         val baseURL = "https://celestia.mobi/resources/item"
         val uri = baseURL.toUri().buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", AppCore.getLanguage()).build()
         shareURLDirect(name, uri.toString())
@@ -1335,7 +1316,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openLink(link, localizable)
     }
 
-    override fun onHelpActionSelected(action: HelpAction) {
+    override fun helpActionSelected(action: HelpAction) {
         when (action) {
             HelpAction.RunDemo -> {
                 lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.runDemo() }
@@ -1343,8 +1324,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onHelpURLSelected(url: String) {
-        openURL(url)
+    override fun helpLinkClicked(link: String) {
+        openURL(link)
     }
 
     override fun shareFavoriteItem(item: MutableFavoriteBaseItem) {
@@ -1413,7 +1394,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun settingsOpenSubscriptionManagement() {
-        requestOpenSubscriptionManagement()
+        showInAppPurchase(null)
     }
 
     private fun showUnsupportedAction() {
@@ -1874,25 +1855,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     // Resource
     private fun showInstalledAddons() = lifecycleScope.launch {
-        showBottomSheetFragment(ResourceFragment.newInstance())
-    }
-
-    override fun onInstalledAddonSelected(addon: ResourceItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is ResourceFragment) {
-            frag.pushItem(addon)
-        }
-    }
-
-    override fun onOpenAddonDownload() {
-        openAddonDownload()
-    }
-
-    override fun onOpenAddonUpdateList() {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is ResourceFragment) {
-            frag.showUpdates()
-        }
+        showBottomSheetFragment(AddonManagerFragment.newInstance())
     }
 
     private fun openAddonDownload() {
@@ -1907,7 +1870,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
-            showBottomSheetFragment(CommonWebNavigationFragment.newInstance(builder.build()))
+            showBottomSheetFragment(WebBrowserFragment.newInstance(builder.build()))
         }
     }
 
@@ -1926,7 +1889,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
-            showBottomSheetFragment(CommonWebNavigationFragment.newInstance(builder.build()))
+            showBottomSheetFragment(WebBrowserFragment.newInstance(builder.build()))
         }
     }
 

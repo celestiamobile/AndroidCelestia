@@ -136,12 +136,12 @@ private fun FavoriteContainer(renameRequested: (MutableFavoriteBaseItem, (String
                 when (route) {
                     is Page.Item -> {
                         NavEntry(route) {
-                            FavoriteItem(route.item, paddingValues, renameRequested = renameRequested, shareRequested = shareRequested, openBookmarkRequested = openBookmarkRequested, openScriptRequested = openScriptRequested)
+                            FavoriteItemScreen(route.item, paddingValues, renameRequested = renameRequested, shareRequested = shareRequested, openBookmarkRequested = openBookmarkRequested, openScriptRequested = openScriptRequested)
                         }
                     }
                     is Page.Destination -> {
                         NavEntry(route) {
-                            DestinationDetail(item = route.destination, paddingValues = paddingValues)
+                            DestinationDetailScreen(item = route.destination, paddingValues = paddingValues)
                         }
                     }
                 }

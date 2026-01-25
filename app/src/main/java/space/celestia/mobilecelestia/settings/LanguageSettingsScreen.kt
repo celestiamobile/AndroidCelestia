@@ -1,4 +1,4 @@
-// Language.kt
+// LanguageSettingsScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -45,7 +45,7 @@ import java.io.File
 import java.util.Locale
 
 @Composable
-fun Language(paddingValues: PaddingValues) {
+fun LanguageSettingsScreen(paddingValues: PaddingValues) {
     val viewModel: SettingsViewModel = hiltViewModel()
 
     fun getAvailableLanguageCodes(): List<String> {

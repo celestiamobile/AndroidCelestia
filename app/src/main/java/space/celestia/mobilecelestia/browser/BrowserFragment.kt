@@ -74,7 +74,9 @@ fun Browser(linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Select
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     var showObjectNotFoundDialog by remember { mutableStateOf(false)  }
     LaunchedEffect(Unit) {
-        viewModel.loadRootBrowserItems()
+        if (viewModel.tabs.isEmpty()) {
+            viewModel.loadRootBrowserItems()
+        }
     }
 
     if (viewModel.tabs.isEmpty()) {
@@ -157,7 +159,7 @@ fun Browser(linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Select
                             NavEntry(route) {
                                 BrowserEntry(item = route.item, paddingValues = paddingValues, itemSelected = { item, isLeaf ->
                                     if (isLeaf) {
-                                        val obj = route.item.`object`
+                                        val obj = item.`object`
                                         if (obj != null) {
                                             backStack.add(Page.Info(Selection(obj)))
                                         } else {
