@@ -10,43 +10,116 @@
 package space.celestia.mobilecelestia.travel
 
 import android.os.Bundle
-import androidx.core.os.BundleCompat
-import space.celestia.celestia.Selection
-import space.celestia.mobilecelestia.common.NavigationFragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
+import androidx.fragment.app.Fragment
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.travel.viewmodel.GoToViewModel
+import space.celestia.mobilecelestia.travel.viewmodel.Page
+import space.celestia.mobilecelestia.utils.CelestiaString
 
-class GoToContainerFragment : NavigationFragment() {
-    private val goToData: GoToInputFragment.GoToData
-        get() = requireNotNull(_goToData)
-    private var _goToData: GoToInputFragment.GoToData? = null
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GoToContainer() {
+    val viewModel: GoToViewModel = hiltViewModel()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val backStack = viewModel.backStack
 
-    private val selection: Selection
-        get() = requireNotNull(_selection)
-    private var _selection: Selection? = null
+    Scaffold(
+        topBar = {
+            TopAppBar(title = {
+                Text(CelestiaString("Go to Object", ""))
+            }, navigationIcon = {
+                if (backStack.count() > 1) {
+                    IconButton(onClick = {
+                        backStack.removeLastOrNull()
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_action_arrow_back),
+                            contentDescription = null
+                        )
+                    }
+                }
+            }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
+        },
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+    ) { paddingValues ->
+        NavDisplay(
+            backStack = backStack,
+            onBack = { backStack.removeLastOrNull() },
+            transitionSpec = {
+                slideInHorizontally(initialOffsetX = { it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { -it })
+            },
+            popTransitionSpec = {
+                slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { it })
+            },
+            predictivePopTransitionSpec = {
+                slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { it })
+            },
+            entryProvider = { route ->
+                when (route) {
+                    is Page.GoTo -> {
+                        NavEntry(route) {
+                            GoTo(paddingValues)
+                        }
+                    }
+                }
+            }
+        )
+    }
+}
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            _selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)
-            _goToData = BundleCompat.getSerializable(it, ARG_DATA, GoToInputFragment.GoToData::class.java)
+class GoToContainerFragment : Fragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    GoToContainer()
+                }
+            }
         }
     }
 
-    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return GoToInputFragment.newInstance(goToData, selection)
-    }
-
     companion object {
-        private const val ARG_DATA = "data"
-        private const val ARG_OBJECT = "object"
-
         @JvmStatic
-        fun newInstance(goToData: GoToInputFragment.GoToData, selection: Selection) =
-            GoToContainerFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelable(ARG_OBJECT, selection)
-                    putSerializable(ARG_DATA, goToData)
-                }
-            }
+        fun newInstance() =
+            GoToContainerFragment()
     }
 }
