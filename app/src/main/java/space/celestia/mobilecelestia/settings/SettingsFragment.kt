@@ -44,9 +44,9 @@ import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Mdc3Theme
-import space.celestia.mobilecelestia.purchase.Fonts
+import space.celestia.mobilecelestia.purchase.FontSettingsScreen
 import space.celestia.mobilecelestia.purchase.SubscriptionBacking
-import space.celestia.mobilecelestia.purchase.Toolbar
+import space.celestia.mobilecelestia.purchase.ToolbarSettingsScreen
 import space.celestia.mobilecelestia.settings.viewmodel.Page
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -130,7 +130,7 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
             entryProvider = { route ->
                 when (route) {
                     is Page.Home -> NavEntry(route) {
-                        SettingsHome(paddingValues = paddingValues) { item ->
+                        SettingsHomeScreen(paddingValues = paddingValues) { item ->
                             when (item) {
                                 is SettingsCommonItem -> {
                                     viewModel.backStack.add(Page.Common(item))
@@ -167,36 +167,36 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
                         }
                     }
                     is Page.Common -> NavEntry(route) {
-                        SettingsCommon(item = route.item, paddingValues = paddingValues, linkClicked = linkClicked)
+                        SettingsEntryScreen(item = route.item, paddingValues = paddingValues, linkClicked = linkClicked)
                     }
                     is Page.CurrentTime -> NavEntry(route) {
-                        TimeSettings(paddingValues)
+                        TimeSettingsScreen(paddingValues)
                     }
                     is Page.RenderInfo -> NavEntry(route) {
-                        RenderInfo(paddingValues)
+                        RenderInfoScreen(paddingValues)
                     }
                     is Page.RefreshRate -> NavEntry(route) {
-                        RefreshRate(paddingValues = paddingValues, providePreferredDisplay = providePreferredDisplay, refreshRateChanged = refreshRateChanged)
+                        RefreshRateSettingsScreen(paddingValues = paddingValues, providePreferredDisplay = providePreferredDisplay, refreshRateChanged = refreshRateChanged)
                     }
                     is Page.About -> NavEntry(route) {
-                        About(paddingValues, linkClicked = linkClicked)
+                        AboutScreen(paddingValues, linkClicked = linkClicked)
                     }
                     is Page.DataLocation -> NavEntry(route) {
-                        DataLocation(paddingValues)
+                        DataLocationSettingsScreen(paddingValues)
                     }
                     is Page.Language -> NavEntry(route) {
-                        Language(paddingValues)
+                        LanguageSettingsScreen(paddingValues)
                     }
                     is Page.Font -> NavEntry(route) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             SubscriptionBacking(paddingValues = paddingValues, openSubscriptionManagement = openSubscriptionManagement) {
-                                Fonts(it)
+                                FontSettingsScreen(it)
                             }
                         }
                     }
                     is Page.Toolbar -> NavEntry(route) {
                         SubscriptionBacking(paddingValues = paddingValues, openSubscriptionManagement = openSubscriptionManagement) {
-                            Toolbar(it)
+                            ToolbarSettingsScreen(it)
                         }
                     }
                 }

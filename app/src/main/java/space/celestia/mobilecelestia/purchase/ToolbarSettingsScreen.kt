@@ -1,4 +1,4 @@
-// Toolbar.kt
+// ToolbarSettingsScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -125,7 +125,7 @@ enum class ToolbarAction(val id: String) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Toolbar(paddingValues: PaddingValues) {
+fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
     val viewModel: SettingsViewModel = hiltViewModel()
 
     var list by remember {

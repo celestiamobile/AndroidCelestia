@@ -1,4 +1,4 @@
-// TimeSettings.kt
+// TimeSettingsScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -49,7 +49,7 @@ import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
-fun TimeSettings(paddingValues: PaddingValues) {
+fun TimeSettingsScreen(paddingValues: PaddingValues) {
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
     val displayNumberFormat by remember {
         val numberFormat = NumberFormat.getNumberInstance()

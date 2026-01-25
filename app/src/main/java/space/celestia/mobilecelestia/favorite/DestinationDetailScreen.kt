@@ -1,4 +1,4 @@
-// DestinationDetail.kt
+// DestinationDetailScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -41,7 +41,7 @@ import space.celestia.mobilecelestia.favorite.viewmodel.FavoriteViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 @Composable
-fun DestinationDetail(item: Destination, paddingValues: PaddingValues) {
+fun DestinationDetailScreen(item: Destination, paddingValues: PaddingValues) {
     val viewModel: FavoriteViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
     val scroll = rememberScrollState(0)

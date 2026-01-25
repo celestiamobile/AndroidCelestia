@@ -1,4 +1,4 @@
-// RefreshRate.kt
+// RenderInfoScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -36,7 +36,7 @@ import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.text.NumberFormat
 
 @Composable
-fun RefreshRate(paddingValues: PaddingValues, providePreferredDisplay: () -> Display?, refreshRateChanged: (Int) -> Unit) {
+fun RefreshRateSettingsScreen(paddingValues: PaddingValues, providePreferredDisplay: () -> Display?, refreshRateChanged: (Int) -> Unit) {
     fun availableRefreshRates(): Pair<List<Pair<Int, Int>>, Int>? {
         val display = providePreferredDisplay() ?: return null
         @Suppress("DEPRECATION")

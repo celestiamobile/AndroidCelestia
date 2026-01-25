@@ -134,7 +134,7 @@ import space.celestia.mobilecelestia.resource.ResourceItemNavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.CustomFont
-import space.celestia.mobilecelestia.settings.SettingsCurrentTimeNavigationFragment
+import space.celestia.mobilecelestia.settings.TimeSettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsKey
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
@@ -1268,7 +1268,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         when (type) {
             CustomActionType.ShowTimeSettings -> {
                 lifecycleScope.launch {
-                    showBottomSheetFragment(SettingsCurrentTimeNavigationFragment.newInstance())
+                    showBottomSheetFragment(TimeSettingsFragment.newInstance())
                 }
             }
         }

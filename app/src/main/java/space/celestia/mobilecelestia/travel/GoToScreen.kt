@@ -1,4 +1,4 @@
-// GoTo.kt
+// GoToScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -47,7 +47,7 @@ import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.text.NumberFormat
 
 @Composable
-fun GoTo(paddingValues: PaddingValues) {
+fun GoToScreen(paddingValues: PaddingValues) {
     var parseNumberFormat by remember {
         val numberFormat = NumberFormat.getNumberInstance()
         numberFormat.isGroupingUsed = false
