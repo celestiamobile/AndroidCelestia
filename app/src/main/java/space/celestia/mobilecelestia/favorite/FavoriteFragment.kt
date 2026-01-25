@@ -11,37 +11,193 @@ package space.celestia.mobilecelestia.favorite
 
 import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
-import space.celestia.mobilecelestia.common.NavigationFragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
+import androidx.fragment.app.Fragment
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.favorite.viewmodel.FavoriteViewModel
+import space.celestia.mobilecelestia.favorite.viewmodel.Page
+import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.mobilecelestia.utils.currentBookmark
 
-class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FavoriteContainer(renameRequested: (MutableFavoriteBaseItem, (String) -> Unit) -> Unit, shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
+    val viewModel: FavoriteViewModel = hiltViewModel()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val backStack = viewModel.backStack
+    val scope = rememberCoroutineScope()
+    var showCannotAddObjectDialog by remember { mutableStateOf(false)  }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(title = {
+                backStack.lastOrNull()?.let {
+                    when (it) {
+                        is Page.Item -> {
+                            Text(it.item.title)
+                        }
+                        is Page.Destination -> {
+                            Text(it.destination.name)
+                        }
+                    }
+                }
+            }, navigationIcon = {
+                if (backStack.count() > 1) {
+                    IconButton(onClick = {
+                        backStack.removeLastOrNull()
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_action_arrow_back),
+                            contentDescription = null
+                        )
+                    }
+                }
+            }, actions = {
+                val current = backStack.lastOrNull() ?: return@TopAppBar
+                if (current !is Page.Item || current.item !is MutableFavoriteBaseItem) return@TopAppBar
+                IconButton(onClick = {
+                    when (current.item) {
+                        is FavoriteBookmarkItem -> {
+                            scope.launch {
+                                val bookmark = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.currentBookmark }
+                                if (bookmark == null) {
+                                    showCannotAddObjectDialog = true
+                                    return@launch
+                                }
+                                current.item.append(FavoriteBookmarkItem(bookmark))
+                            }
+                        }
+                    }
+                }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add),
+                        contentDescription = CelestiaString("Add", "Add a new item (bookmark)")
+                    )
+                }
+            }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
+        },
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+    ) { paddingValues ->
+        NavDisplay(
+            backStack = backStack,
+            onBack = { backStack.removeLastOrNull() },
+            transitionSpec = {
+                slideInHorizontally(initialOffsetX = { it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { -it })
+            },
+            popTransitionSpec = {
+                slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { it })
+            },
+            predictivePopTransitionSpec = {
+                slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { it })
+            },
+            entryProvider = { route ->
+                when (route) {
+                    is Page.Item -> {
+                        NavEntry(route) {
+                            FavoriteItem(route.item, paddingValues, renameRequested = renameRequested, shareRequested = shareRequested, openBookmarkRequested = openBookmarkRequested, openScriptRequested = openScriptRequested)
+                        }
+                    }
+                    is Page.Destination -> {
+                        NavEntry(route) {
+                            DestinationDetail(item = route.destination, paddingValues = paddingValues)
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    if (showCannotAddObjectDialog) {
+        AlertDialog(onDismissRequest = {
+            showCannotAddObjectDialog = false
+        }, confirmButton = {
+            TextButton(onClick = {
+                showCannotAddObjectDialog = false
+            }) {
+                Text(text = CelestiaString("OK", ""))
+            }
+        }, title = {
+            Text(text = CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
+        })
+    }
+}
+
+class FavoriteFragment : Fragment() {
+    interface Listener {
+        fun saveFavorites()
+        fun renameFavorite(item: MutableFavoriteBaseItem, completion: (String) -> Unit)
+        fun shareFavoriteItem(item: MutableFavoriteBaseItem)
+        fun openFavoriteBookmark(item: FavoriteBookmarkItem)
+        fun openFavoriteScript(item: FavoriteScriptItem)
+    }
+
     private var listener: Listener? = null
 
-    private val current: FavoriteItemFragment
-        get() = requireNotNull(top) as FavoriteItemFragment
-
-    override fun createInitialFragment(savedInstanceState: Bundle?): SubFragment {
-        return FavoriteItemFragment.newInstance(FavoriteRoot())
-    }
-
-    fun pushItem(item: FavoriteBaseItem) {
-        val frag = FavoriteItemFragment.newInstance(item)
-        pushFragment(frag)
-    }
-
-    fun add(item: FavoriteBaseItem) {
-        (current.favoriteItem as MutableFavoriteBaseItem).append(item)
-        current.reload()
-    }
-
-    fun remove(index: Int) {
-        (current.favoriteItem as MutableFavoriteBaseItem).remove(index)
-        current.reload()
-    }
-
-    fun move(fromIndex: Int, toIndex: Int) {
-        (current.favoriteItem as MutableFavoriteBaseItem).move(fromIndex, toIndex)
-        current.reload()
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    FavoriteContainer(renameRequested = { item, completion ->
+                        listener?.renameFavorite(item, completion)
+                    }, shareRequested = { item ->
+                        listener?.shareFavoriteItem(item)
+                    }, openBookmarkRequested = { item ->
+                        listener?.openFavoriteBookmark(item)
+                    }, openScriptRequested = { item ->
+                        listener?.openFavoriteScript(item)
+                    })
+                }
+            }
+        }
     }
 
     override fun onAttach(context: Context) {
@@ -57,10 +213,6 @@ class FavoriteFragment : NavigationFragment(), Toolbar.OnMenuItemClickListener {
         super.onDetach()
         listener?.saveFavorites()
         listener = null
-    }
-
-    interface Listener {
-        fun saveFavorites()
     }
 
     companion object {

@@ -9,6 +9,8 @@
 
 package space.celestia.mobilecelestia.favorite
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.toMutableStateList
 import space.celestia.celestia.Destination
 import space.celestia.celestia.Script
 import space.celestia.celestiafoundation.favorite.BookmarkNode
@@ -29,7 +31,7 @@ enum class FavoriteItemAction {
         }
 }
 
-interface FavoriteBaseItem : Serializable {
+sealed interface FavoriteBaseItem : Serializable {
     val children: List<FavoriteBaseItem>
     val isLeaf: Boolean
     val title: String
@@ -42,7 +44,7 @@ interface FavoriteBaseItem : Serializable {
     val hasFullPageRepresentation: Boolean
 }
 
-interface MutableFavoriteBaseItem : FavoriteBaseItem {
+sealed interface MutableFavoriteBaseItem : FavoriteBaseItem {
     fun insert(newItem: FavoriteBaseItem, index: Int)
 
     fun append(newItem: FavoriteBaseItem) {
@@ -124,9 +126,10 @@ class FavoriteDestinationItem(val destination: Destination): FavoriteBaseItem {
 }
 
 open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBaseItem {
-    override val children: ArrayList<FavoriteBaseItem> by lazy { if (bookmark.isLeaf) arrayListOf() else ArrayList(bookmark.children!!.map { FavoriteBookmarkItem(it) }) }
+    override val children = (if (bookmark.isLeaf) listOf() else bookmark.children!!.map { FavoriteBookmarkItem(it) }).toMutableStateList()
+    private val _name = mutableStateOf(bookmark.name)
     override val title: String
-        get() = bookmark.name
+        get() = _name.value
     override val isLeaf: Boolean
         get() = bookmark.isLeaf
     override val supportedItemActions: List<FavoriteItemAction>
@@ -147,6 +150,7 @@ open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBas
     }
 
     override fun rename(newName: String) {
+        _name.value = newName
         bookmark.name = newName
     }
 
