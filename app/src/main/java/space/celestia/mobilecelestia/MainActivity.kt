@@ -68,8 +68,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.BrowserItem
-import space.celestia.celestia.Destination
-import space.celestia.celestia.GoToLocation
 import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
@@ -105,12 +103,8 @@ import space.celestia.mobilecelestia.control.OverflowItem
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
-import space.celestia.mobilecelestia.favorite.DestinationDetailFragment
-import space.celestia.mobilecelestia.favorite.FavoriteBaseItem
 import space.celestia.mobilecelestia.favorite.FavoriteBookmarkItem
-import space.celestia.mobilecelestia.favorite.FavoriteDestinationItem
 import space.celestia.mobilecelestia.favorite.FavoriteFragment
-import space.celestia.mobilecelestia.favorite.FavoriteItemFragment
 import space.celestia.mobilecelestia.favorite.FavoriteScriptItem
 import space.celestia.mobilecelestia.favorite.MutableFavoriteBaseItem
 import space.celestia.mobilecelestia.favorite.getCurrentBookmarks
@@ -157,7 +151,6 @@ import space.celestia.mobilecelestia.travel.GoToContainerFragment
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.mobilecelestia.utils.currentBookmark
 import space.celestia.mobilecelestia.utils.showAlert
 import space.celestia.mobilecelestia.utils.showError
 import space.celestia.mobilecelestia.utils.showOptions
@@ -181,14 +174,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     BrowserCommonFragment.Listener,
     HelpFragment.Listener,
     FavoriteFragment.Listener,
-    FavoriteItemFragment.Listener,
     SettingsItemFragment.Listener,
     AboutFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
     InstalledAddonListFragment.Listener,
     AddonUpdateListFragment.Listener,
-    DestinationDetailFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
@@ -1379,18 +1370,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openURL(url)
     }
 
-    override fun addFavoriteItem(item: MutableFavoriteBaseItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is FavoriteFragment && item is FavoriteBookmarkItem) {
-            val bookmark = appCore.currentBookmark
-            if (bookmark == null) {
-                showAlert(CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
-                return
-            }
-            frag.add(FavoriteBookmarkItem(bookmark))
-        }
-    }
-
     override fun shareFavoriteItem(item: MutableFavoriteBaseItem) {
         if (item is FavoriteBookmarkItem && item.bookmark.isLeaf) {
             shareURLDirect(item.bookmark.name, item.bookmark.url)
@@ -1424,49 +1403,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } catch (ignored: Throwable) { }
     }
 
-    override fun onFavoriteItemSelected(item: FavoriteBaseItem) {
-        if (item.isLeaf) {
-            if (item is FavoriteScriptItem) {
-                openCelestiaURL(item.script.filename)
-            } else if (item is FavoriteBookmarkItem) {
-                openCelestiaURL(item.bookmark.url)
-            } else if (item is FavoriteDestinationItem) {
-                val destination = item.destination
-                val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-                if (frag is FavoriteFragment) {
-                    frag.pushFragment(DestinationDetailFragment.newInstance(destination))
-                }
-            }
-        } else {
-            val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-            if (frag is FavoriteFragment) {
-                frag.pushItem(item)
-            }
-        }
+    override fun openFavoriteBookmark(item: FavoriteBookmarkItem) {
+        openCelestiaURL(item.bookmark.url)
     }
 
-    override fun onGoToDestination(destination: Destination) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.goTo(destination) }
+    override fun openFavoriteScript(item: FavoriteScriptItem) {
+        openCelestiaURL(item.script.filename)
     }
 
-    override fun deleteFavoriteItem(index: Int) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is FavoriteFragment) {
-            frag.remove(index)
-        }
-    }
-
-    override fun renameFavoriteItem(item: MutableFavoriteBaseItem, completion: (String) -> Unit) {
+    override fun renameFavorite(item: MutableFavoriteBaseItem, completion: (String) -> Unit) {
         showTextInput(CelestiaString("Rename", "Rename a favorite item (currently bookmark)"), item.title) { text ->
             item.rename(text)
             completion(text)
-        }
-    }
-
-    override fun moveFavoriteItem(fromIndex: Int, toIndex: Int) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is FavoriteFragment) {
-            frag.move(fromIndex, toIndex)
         }
     }
 
