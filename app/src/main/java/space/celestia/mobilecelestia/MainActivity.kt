@@ -96,14 +96,11 @@ import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.control.BottomControlAction
-import space.celestia.mobilecelestia.control.CameraControlAction
 import space.celestia.mobilecelestia.control.CameraControlContainerFragment
-import space.celestia.mobilecelestia.control.CameraControlFragment
 import space.celestia.mobilecelestia.control.ContinuousAction
 import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
 import space.celestia.mobilecelestia.control.InstantAction
-import space.celestia.mobilecelestia.control.ObserverModeFragment
 import space.celestia.mobilecelestia.control.OverflowItem
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
@@ -183,7 +180,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     InfoFragment.Listener,
     SearchFragment.Listener,
     BrowserCommonFragment.Listener,
-    CameraControlFragment.Listener,
     HelpFragment.Listener,
     FavoriteFragment.Listener,
     FavoriteItemFragment.Listener,
@@ -198,7 +194,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
-    ObserverModeFragment.Listener,
+    CameraControlContainerFragment.Listener,
     SubscriptionBackingFragment.Listener,
     SettingsCommonFragment.Listener {
 
@@ -1363,23 +1359,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo) {
         openAddonCategory(categoryInfo)
-    }
-
-    override fun onCameraActionClicked(action: CameraControlAction) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.simulation.reverseObserverOrientation() }
-    }
-
-    override fun onCameraActionStepperTouchDown(action: CameraControlAction) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyDown(action.value) }
-    }
-
-    override fun onCameraActionStepperTouchUp(action: CameraControlAction) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyUp(action.value) }
-    }
-
-    override fun onCameraControlObserverModeClicked() {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet) as? CameraControlContainerFragment ?: return
-        frag.pushFragment(ObserverModeFragment.newInstance())
     }
 
     override fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean) {
