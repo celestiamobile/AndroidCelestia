@@ -154,7 +154,6 @@ import space.celestia.mobilecelestia.settings.SettingsRefreshRateFragment
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
-import space.celestia.mobilecelestia.travel.GoToInputFragment
 import space.celestia.mobilecelestia.utils.AppStatusReporter
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.PreferenceManager
@@ -190,7 +189,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     InstalledAddonListFragment.Listener,
     AddonUpdateListFragment.Listener,
     DestinationDetailFragment.Listener,
-    GoToInputFragment.Listener,
     ResourceItemFragment.Listener,
     SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
@@ -2002,32 +2000,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showGoTo() = lifecycleScope.launch {
-        val inputData = GoToInputFragment.GoToData(
-            objectName = "",
-            0.0f,
-            0.0f,
-            8.0,
-            GoToLocation.DistanceUnit.radii
-        )
-        showBottomSheetFragment(GoToContainerFragment.newInstance(inputData, Selection()))
-    }
-
-    override fun onGoToObject(goToData: GoToInputFragment.GoToData, selection: Selection) {
-        if (selection.isEmpty) {
-            showAlert(CelestiaString("Object not found", ""))
-            return
-        }
-
-        val location = GoToLocation(
-            selection,
-            goToData.longitude,
-            goToData.latitude,
-            goToData.distance,
-            goToData.distanceUnit
-        )
-        lifecycleScope.launch {
-            withContext(executor.asCoroutineDispatcher()) { appCore.simulation.goToLocation(location) }
-        }
+        showBottomSheetFragment(GoToContainerFragment.newInstance())
     }
 
     // Utilities
