@@ -67,7 +67,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
-import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
@@ -82,12 +81,9 @@ import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
 import space.celestia.celestiafoundation.utils.versionName
-import space.celestia.mobilecelestia.browser.BrowserCommonFragment
 import space.celestia.mobilecelestia.browser.BrowserFragment
-import space.celestia.mobilecelestia.browser.BrowserPredefinedItem
-import space.celestia.mobilecelestia.browser.BrowserRootFragment
-import space.celestia.mobilecelestia.browser.BrowserUIItem
 import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
+import space.celestia.mobilecelestia.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
@@ -171,7 +167,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     ToolbarFragment.Listener,
     InfoFragment.Listener,
     SearchFragment.Listener,
-    BrowserCommonFragment.Listener,
+    BrowserFragment.Listener,
+    SubsystemBrowserFragment.Listener,
     HelpFragment.Listener,
     FavoriteFragment.Listener,
     SettingsItemFragment.Listener,
@@ -1166,13 +1163,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     openURL(url)
             }
             is SubsystemActionItem -> {
-                val entry = item.`object` ?: return
+                if (item.`object` == null) return
                 lifecycleScope.launch {
-                    val name = withContext(executor.asCoroutineDispatcher()) {
-                        appCore.simulation.universe.getNameForSelection(item)
-                    }
-                    val browserItem = BrowserItem(name, null, entry, appCore.simulation.universe)
-                    showBottomSheetFragment(SubsystemBrowserFragment.newInstance(browserItem))
+                    showBottomSheetFragment(SubsystemBrowserFragment.newInstance(item))
                 }
             }
             is AlternateSurfacesItem -> {
@@ -1333,22 +1326,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onBrowserItemSelected(item: BrowserUIItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet) as? BrowserRootFragment ?: return
-        if (!item.isLeaf) {
-            frag.pushItem(item.item)
-        } else {
-            val obj = item.item.`object`
-            if (obj != null) {
-                frag.showInfo(Selection(obj))
-            } else {
-                showAlert(CelestiaString("Object not found", ""))
-            }
-        }
+    override fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo) {
+        openAddonCategory(addonCategory)
     }
 
-    override fun onBrowserAddonCategoryRequested(categoryInfo: BrowserPredefinedItem.CategoryInfo) {
-        openAddonCategory(categoryInfo)
+    override fun browserLinkClicked(url: URL) {
+        onInfoLinkMetaDataClicked(url)
+    }
+
+    override fun browserActionRequested(action: InfoActionItem, selection: Selection) {
+        onInfoActionSelected(action, selection)
     }
 
     override fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean) {

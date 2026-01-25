@@ -1,13 +1,4 @@
-// BrowserUIItem.kt
-//
-// Copyright (C) 2025, Celestia Development Team
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-
-package space.celestia.mobilecelestia.browser
+package space.celestia.mobilecelestia.browser.viewmodel
 
 import space.celestia.celestia.AstroObject
 import space.celestia.celestia.BrowserItem
@@ -30,7 +21,9 @@ fun Simulation.createStaticBrowserItems(observer: Observer) {
     if (dsoRoot == null)
         dsoRoot = universe.createDSOBrowserRoot()
     if (brightestStars == null)
-        brightestStars = universe.createStarBrowserRootItem(StarBrowser.KIND_BRIGHTEST, observer, CelestiaString("Brightest Stars (Absolute Magnitude)",""), true, null)
+        brightestStars = universe.createStarBrowserRootItem(
+            StarBrowser.KIND_BRIGHTEST, observer,
+            CelestiaString("Brightest Stars (Absolute Magnitude)", ""), true, null)
 }
 
 fun Universe.createDynamicBrowserItems(observer: Observer) {
@@ -44,7 +37,8 @@ private fun Simulation.createSolBrowserRoot(): BrowserItem? {
     return BrowserPredefinedItem(
         catalog.getStarName(
             sol
-        ), CelestiaString("Solar System", "Tab for solar system in Star Browser"), sol, universe, BrowserPredefinedItem.CategoryInfo("B2E44BE0-9DF7-FAB9-92D4-F8D323D31250", false)
+        ),
+        CelestiaString("Solar System", "Tab for solar system in Star Browser"), sol, universe, BrowserPredefinedItem.CategoryInfo("B2E44BE0-9DF7-FAB9-92D4-F8D323D31250", false)
     )
 }
 
@@ -72,7 +66,10 @@ private fun Universe.createStarBrowserRootItem(kind: Int, observer: Observer, ti
         val list = arrayListOf<BrowserItem.KeyValuePair>()
         for (item in this) {
             val name = starCatalog.getStarName(item)
-            list.add(BrowserItem.KeyValuePair(name, BrowserItem(name, null, item, this@createStarBrowserRootItem)))
+            list.add(
+                BrowserItem.KeyValuePair(name,
+                    BrowserItem(name, null, item, this@createStarBrowserRootItem)
+                ))
         }
         return list
     }
@@ -91,9 +88,15 @@ private fun Universe.createStarBrowserRootItem(kind: Int, observer: Observer, ti
 }
 
 private fun Universe.createStarBrowserRoot(observer: Observer): BrowserItem {
-    val nearest = createStarBrowserRootItem(StarBrowser.KIND_NEAREST, observer, CelestiaString("Nearest Stars", ""), true, null)
-    val brighter = createStarBrowserRootItem(StarBrowser.KIND_BRIGHTER, observer, CelestiaString("Brightest Stars", ""), true, null)
-    val hasPlanets = createStarBrowserRootItem(StarBrowser.KIND_WITH_PLANETS, observer, CelestiaString("Stars with Planets",""), true, BrowserPredefinedItem.CategoryInfo("1B0E1953-C21C-D628-7FA6-33A3ABBD1B40", false))
+    val nearest = createStarBrowserRootItem(
+        StarBrowser.KIND_NEAREST, observer,
+        CelestiaString("Nearest Stars", ""), true, null)
+    val brighter = createStarBrowserRootItem(
+        StarBrowser.KIND_BRIGHTER, observer,
+        CelestiaString("Brightest Stars", ""), true, null)
+    val hasPlanets = createStarBrowserRootItem(
+        StarBrowser.KIND_WITH_PLANETS, observer,
+        CelestiaString("Stars with Planets", ""), true, BrowserPredefinedItem.CategoryInfo("1B0E1953-C21C-D628-7FA6-33A3ABBD1B40", false))
     val hashMap = hashMapOf(
         nearest.name to nearest,
         brighter.name to brighter,
@@ -115,11 +118,27 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
     val galaxyCategory = BrowserPredefinedItem.CategoryInfo("56FF5D9F-44F1-CE1D-0615-5655E3C851EF", true)
     val nebulaCategory = BrowserPredefinedItem.CategoryInfo("3F7546F9-D225-5194-A228-C63281B5C6FD", true)
 
-    val barredSpiralItems = Pair(CelestiaString("Barred Spiral Galaxies", ""), hashMapOf<String, BrowserItem>())
+    val barredSpiralItems = Pair(
+        CelestiaString(
+            "Barred Spiral Galaxies",
+            ""
+        ), hashMapOf<String, BrowserItem>())
     val spiralItems = Pair(CelestiaString("Spiral Galaxies", ""), hashMapOf<String, BrowserItem>())
-    val ellipticalItems = Pair(CelestiaString("Elliptical Galaxies", ""), hashMapOf<String, BrowserItem>())
-    val lenticularItems = Pair(CelestiaString("Lenticular Galaxies", ""), hashMapOf<String, BrowserItem>())
-    val irregularItems = Pair(CelestiaString("Irregular Galaxies", ""), hashMapOf<String, BrowserItem>())
+    val ellipticalItems = Pair(
+        CelestiaString(
+            "Elliptical Galaxies",
+            ""
+        ), hashMapOf<String, BrowserItem>())
+    val lenticularItems = Pair(
+        CelestiaString(
+            "Lenticular Galaxies",
+            ""
+        ), hashMapOf<String, BrowserItem>())
+    val irregularItems = Pair(
+        CelestiaString(
+            "Irregular Galaxies",
+            ""
+        ), hashMapOf<String, BrowserItem>())
     val galaxyItems = hashMapOf(
         "SBa" to barredSpiralItems,
         "SBb" to barredSpiralItems,
@@ -139,12 +158,28 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
         "Irr" to irregularItems,
     )
     val emissionItems = Pair(CelestiaString("Emission Nebulae", ""), hashMapOf<String, BrowserItem>())
-    val reflectionItems = Pair(CelestiaString("Reflection Nebulae", ""), hashMapOf<String, BrowserItem>())
+    val reflectionItems = Pair(
+        CelestiaString(
+            "Reflection Nebulae",
+            ""
+        ), hashMapOf<String, BrowserItem>())
     val darkItems = Pair(CelestiaString("Dark Nebulae", ""), hashMapOf<String, BrowserItem>())
-    val planetaryItems = Pair(CelestiaString("Planetary Nebulae", ""), hashMapOf<String, BrowserItem>())
-    val supernovaRemnantItems = Pair(CelestiaString("Supernova Remnants", ""), hashMapOf<String, BrowserItem>())
+    val planetaryItems = Pair(
+        CelestiaString(
+            "Planetary Nebulae",
+            ""
+        ), hashMapOf<String, BrowserItem>())
+    val supernovaRemnantItems = Pair(
+        CelestiaString(
+            "Supernova Remnants",
+            ""
+        ), hashMapOf<String, BrowserItem>())
     val hiiRegionItems = Pair(CelestiaString("H II Regions", ""), hashMapOf<String, BrowserItem>())
-    val protoplanetaryItems = Pair(CelestiaString("Protoplanetary Nebulae", ""), hashMapOf<String, BrowserItem>())
+    val protoplanetaryItems = Pair(
+        CelestiaString(
+            "Protoplanetary Nebulae",
+            ""
+        ), hashMapOf<String, BrowserItem>())
     val unknownItems = Pair(CelestiaString("Unknown Nebulae", ""), hashMapOf<String, BrowserItem>())
     val nebulaItems = hashMapOf(
         "Emission" to emissionItems,
@@ -179,18 +214,34 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
         if (items.isEmpty()) continue
         galaxyBrowserItems.add(BrowserItem.KeyValuePair(name, BrowserItem(name, null, items)))
     }
-    results.add(BrowserItem.KeyValuePair(CelestiaString("Galaxies", ""), BrowserPredefinedItem(CelestiaString("Galaxies", ""), null, galaxyBrowserItems, galaxyCategory)))
-    results.add(BrowserItem.KeyValuePair(CelestiaString("Globulars", ""), BrowserItem(CelestiaString("Globulars", ""), null, globularItems)))
+    results.add(
+        BrowserItem.KeyValuePair(
+            CelestiaString("Galaxies", ""), BrowserPredefinedItem(
+                CelestiaString("Galaxies", ""), null, galaxyBrowserItems, galaxyCategory)))
+    results.add(
+        BrowserItem.KeyValuePair(
+            CelestiaString("Globulars", ""),
+            BrowserItem(CelestiaString("Globulars", ""), null, globularItems)
+        ))
     val nebulaBrowserItems = arrayListOf<BrowserItem.KeyValuePair>()
     for ((name, items) in listOf(emissionItems, reflectionItems, darkItems, planetaryItems, supernovaRemnantItems, hiiRegionItems, protoplanetaryItems, unknownItems)) {
         if (items.isEmpty()) continue
         nebulaBrowserItems.add(BrowserItem.KeyValuePair(name, BrowserItem(name, null, items)))
     }
-    results.add(BrowserItem.KeyValuePair(CelestiaString("Nebulae", ""), BrowserPredefinedItem(CelestiaString("Nebulae", ""), null, nebulaBrowserItems, nebulaCategory)))
-    results.add(BrowserItem.KeyValuePair(CelestiaString("Open Clusters", ""), BrowserItem(CelestiaString("Open Clusters", ""), null, openClusterItems)))
+    results.add(
+        BrowserItem.KeyValuePair(
+            CelestiaString("Nebulae", ""), BrowserPredefinedItem(
+                CelestiaString("Nebulae", ""), null, nebulaBrowserItems, nebulaCategory)))
+    results.add(
+        BrowserItem.KeyValuePair(
+            CelestiaString("Open Clusters", ""),
+            BrowserItem(CelestiaString("Open Clusters", ""), null, openClusterItems)
+        ))
 
     return BrowserItem(
-        CelestiaString("Deep Sky Objects", ""), CelestiaString("DSOs", "Tab for deep sky objects in Star Browser"), results
+        CelestiaString("Deep Sky Objects", ""),
+        CelestiaString("DSOs", "Tab for deep sky objects in Star Browser"),
+        results
     )
 }
 
@@ -217,5 +268,3 @@ class BrowserPredefinedItem: BrowserItem {
         this.categoryInfo = categoryInfo
     }
 }
-
-class BrowserUIItem(val item: BrowserItem, val isLeaf: Boolean)
