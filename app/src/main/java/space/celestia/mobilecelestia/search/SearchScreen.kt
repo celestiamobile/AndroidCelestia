@@ -170,7 +170,7 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkHan
             CircularProgressIndicator()
         }
     } else if (selection != null) {
-        InfoScreen(selection = selection, showTitle = true, linkHandler = linkHandler, actionHandler = actionHandler, paddingValues = paddingValues)
+        InfoScreen(selection = selection, showTitle = true, linkHandler = linkHandler, actionHandler = { actionHandler(it, selection) }, paddingValues = paddingValues)
     }
 }
 
