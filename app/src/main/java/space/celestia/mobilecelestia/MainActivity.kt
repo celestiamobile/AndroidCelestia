@@ -19,6 +19,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
+import android.view.Display
 import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
@@ -132,15 +133,10 @@ import space.celestia.mobilecelestia.resource.ResourceItemFragment
 import space.celestia.mobilecelestia.resource.ResourceItemNavigationFragment
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.search.SearchFragment
-import space.celestia.mobilecelestia.settings.AboutFragment
 import space.celestia.mobilecelestia.settings.CustomFont
-import space.celestia.mobilecelestia.settings.SettingsCommonFragment
 import space.celestia.mobilecelestia.settings.SettingsCurrentTimeNavigationFragment
 import space.celestia.mobilecelestia.settings.SettingsFragment
-import space.celestia.mobilecelestia.settings.SettingsItem
-import space.celestia.mobilecelestia.settings.SettingsItemFragment
 import space.celestia.mobilecelestia.settings.SettingsKey
-import space.celestia.mobilecelestia.settings.SettingsRefreshRateFragment
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
@@ -171,18 +167,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     SubsystemBrowserFragment.Listener,
     HelpFragment.Listener,
     FavoriteFragment.Listener,
-    SettingsItemFragment.Listener,
-    AboutFragment.Listener,
+    SettingsFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
     InstalledAddonListFragment.Listener,
     AddonUpdateListFragment.Listener,
     ResourceItemFragment.Listener,
-    SettingsRefreshRateFragment.Listener,
     CommonWebFragment.Listener,
     CameraControlContainerFragment.Listener,
-    SubscriptionBackingFragment.Listener,
-    SettingsCommonFragment.Listener {
+    SubscriptionBackingFragment.Listener {
 
     @AppSettings
     @Inject
@@ -1341,10 +1334,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openLink(link, localizable)
     }
 
-    override fun onOpenSettingsLink(link: String, localizable: Boolean) {
-        openLink(link, localizable)
-    }
-
     override fun onHelpActionSelected(action: HelpAction) {
         when (action) {
             HelpAction.RunDemo -> {
@@ -1405,19 +1394,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onMainSettingItemSelected(item: SettingsItem) {
-        val frag = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (frag is SettingsFragment) {
-            frag.pushMainSettingItem(item)
+    override fun settingsLinkClicked(link: String, localizable: Boolean) {
+        openLink(link, localizable)
+    }
+
+    override fun settingsProvidePreferredDisplay(): Display? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return display
+        } else {
+            @Suppress("DEPRECATION")
+            return windowManager?.defaultDisplay
         }
     }
 
-    override fun onRefreshRateChanged(frameRateOption: Int) {
+    override fun settingsRefreshRateChanged(frameRateOption: Int) {
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
     }
 
-    override fun onAboutURLSelected(url: String, localizable: Boolean) {
-        openLink(url, localizable)
+    override fun settingsOpenSubscriptionManagement() {
+        requestOpenSubscriptionManagement()
     }
 
     private fun showUnsupportedAction() {

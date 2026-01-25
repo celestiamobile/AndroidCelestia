@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -159,7 +160,7 @@ class AddonUpdateListFragment : SubscriptionBackingFragment(), ResourceManager.L
     }
 
     @Composable
-    override fun MainView() {
+    override fun MainView(paddingValues: PaddingValues) {
         val state = rememberPullToRefreshState()
         val scope = rememberCoroutineScope()
 
@@ -187,17 +188,16 @@ class AddonUpdateListFragment : SubscriptionBackingFragment(), ResourceManager.L
                 Box(modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .systemBarsPadding(), contentAlignment = Alignment.Center) {
+                    .padding(paddingValues), contentAlignment = Alignment.Center) {
                     EmptyHint(text = CelestiaString("No Update Available", "Hint that there is no update for installed add-ons."))
                 }
             } else {
-                val systemPadding = WindowInsets.systemBars.asPaddingValues()
                 val direction = LocalLayoutDirection.current
                 val contentPadding = PaddingValues(
-                    start = systemPadding.calculateStartPadding(direction),
-                    top = dimensionResource(id = R.dimen.list_spacing_short) + systemPadding.calculateTopPadding(),
-                    end = systemPadding.calculateEndPadding(direction),
-                    bottom = dimensionResource(id = R.dimen.list_spacing_tall) + systemPadding.calculateBottomPadding(),
+                    start = paddingValues.calculateStartPadding(direction),
+                    top = dimensionResource(id = R.dimen.list_spacing_short) + paddingValues.calculateTopPadding(),
+                    end = paddingValues.calculateEndPadding(direction),
+                    bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding(),
                 )
                 LazyColumn(
                     contentPadding = contentPadding,
