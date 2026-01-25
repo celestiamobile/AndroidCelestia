@@ -1,4 +1,4 @@
-// SettingsCurrentTimeFragment.kt
+// TimeSettings.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -9,20 +9,13 @@
 
 package space.celestia.mobilecelestia.settings
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -34,19 +27,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.Utils
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
@@ -136,36 +124,5 @@ fun TimeSettings(paddingValues: PaddingValues) {
             }
         }))
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
-    }
-}
-
-@AndroidEntryPoint
-class SettingsCurrentTimeFragment : NavigationFragment.SubFragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    TimeSettings(paddingValues = WindowInsets.systemBars.asPaddingValues())
-                }
-            }
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        title = CelestiaString("Current Time", "")
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance() =
-            SettingsCurrentTimeFragment()
     }
 }
