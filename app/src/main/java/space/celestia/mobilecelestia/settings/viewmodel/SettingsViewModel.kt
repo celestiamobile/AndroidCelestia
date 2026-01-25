@@ -9,6 +9,9 @@
 
 package space.celestia.mobilecelestia.settings.viewmodel
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import space.celestia.celestia.AppCore
@@ -17,8 +20,25 @@ import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.purchase.PurchaseManager
+import space.celestia.mobilecelestia.settings.SettingsCommonItem
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import javax.inject.Inject
 
+sealed class Page {
+    data object Home: Page()
+    data class Common(val item: SettingsCommonItem): Page()
+    data object CurrentTime: Page()
+    data object RefreshRate: Page()
+    data object RenderInfo: Page()
+    data object DataLocation: Page()
+    data object About: Page()
+    data object Language: Page()
+    data object Toolbar: Page()
+    @RequiresApi(Build.VERSION_CODES.Q)
+    data object Font: Page()
+}
+
 @HiltViewModel
-class SettingsViewModel @Inject constructor(val appCore: AppCore, val executor: CelestiaExecutor, @param:AppSettings val appSettings: PreferenceManager, @param:CoreSettings val coreSettings: PreferenceManager, val purchaseManager: PurchaseManager, val defaultFilePaths: FilePaths) : ViewModel()
+class SettingsViewModel @Inject constructor(val appCore: AppCore, val executor: CelestiaExecutor, @param:AppSettings val appSettings: PreferenceManager, @param:CoreSettings val coreSettings: PreferenceManager, val purchaseManager: PurchaseManager, val defaultFilePaths: FilePaths) : ViewModel() {
+    val backStack = mutableStateListOf<Page>(Page.Home)
+}

@@ -15,8 +15,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +32,25 @@ import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
+
+
+@Composable
+fun SubscriptionBacking(paddingValues: PaddingValues, openSubscriptionManagement: () -> Unit, content: @Composable (PaddingValues) -> Unit) {
+    val viewModel: SettingsViewModel = hiltViewModel()
+    if (!viewModel.purchaseManager.canUseInAppPurchase()) {
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+            EmptyHint(text = CelestiaString("This feature is not supported.", ""))
+        }
+    } else if (viewModel.purchaseManager.purchaseToken() == null) {
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+            EmptyHint(text = CelestiaString("This feature is only available to Celestia PLUS users.", ""), actionText = CelestiaString("Get Celestia PLUS", "")) {
+                openSubscriptionManagement()
+            }
+        }
+    } else {
+        content(paddingValues)
+    }
+}
 
 abstract class SubscriptionBackingFragment : NavigationFragment.SubFragment() {
     private var listener: Listener? = null
@@ -46,32 +69,18 @@ abstract class SubscriptionBackingFragment : NavigationFragment.SubFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    MainScreen()
+                    SubscriptionBacking(paddingValues = WindowInsets.systemBars.asPaddingValues(), openSubscriptionManagement = {
+                        listener?.requestOpenSubscriptionManagement()
+                    }) {
+                        MainView(it)
+                    }
                 }
             }
         }
     }
 
     @Composable
-    private fun MainScreen() {
-        val viewModel: SettingsViewModel = hiltViewModel()
-        if (!viewModel.purchaseManager.canUseInAppPurchase()) {
-            Box(modifier = Modifier.fillMaxSize().systemBarsPadding(), contentAlignment = Alignment.Center) {
-                EmptyHint(text = CelestiaString("This feature is not supported.", ""))
-            }
-        } else if (viewModel.purchaseManager.purchaseToken() == null) {
-            Box(modifier = Modifier.fillMaxSize().systemBarsPadding(), contentAlignment = Alignment.Center) {
-                EmptyHint(text = CelestiaString("This feature is only available to Celestia PLUS users.", ""), actionText = CelestiaString("Get Celestia PLUS", "")) {
-                    listener?.requestOpenSubscriptionManagement()
-                }
-            }
-        } else {
-            MainView()
-        }
-    }
-
-    @Composable
-    abstract fun MainView()
+    abstract fun MainView(paddingValues: PaddingValues)
 
     override fun onDetach() {
         super.onDetach()
