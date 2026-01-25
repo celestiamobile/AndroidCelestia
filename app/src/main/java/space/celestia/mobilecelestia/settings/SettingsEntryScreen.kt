@@ -1,4 +1,4 @@
-// SettingsCommon.kt
+// SettingsEntryScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -46,7 +46,7 @@ import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.showOptions
 
 @Composable
-fun SettingsCommon(item: SettingsCommonItem, paddingValues: PaddingValues, linkClicked: (String, Boolean) -> Unit) {
+fun SettingsEntryScreen(item: SettingsCommonItem, paddingValues: PaddingValues, linkClicked: (String, Boolean) -> Unit) {
     LazyColumn(modifier = Modifier
         .nestedScroll(rememberNestedScrollInteropConnection()), contentPadding = paddingValues) {
         for (index in item.sections.indices) {

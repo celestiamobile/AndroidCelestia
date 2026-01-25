@@ -1,4 +1,4 @@
-// EventFinderResults.kt
+// EventFinderResultsScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -38,7 +38,7 @@ import java.text.DateFormat
 import java.util.Locale
 
 @Composable
-fun EventFinderResults(results: List<EclipseFinder.Eclipse>, paddingValues: PaddingValues, handler: (eclipse: EclipseFinder.Eclipse) -> Unit) {
+fun EventFinderResultsScreen(results: List<EclipseFinder.Eclipse>, paddingValues: PaddingValues, handler: (eclipse: EclipseFinder.Eclipse) -> Unit) {
     val formatter by remember { mutableStateOf(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())) }
     if (results.isEmpty()) {
         Box(modifier = Modifier

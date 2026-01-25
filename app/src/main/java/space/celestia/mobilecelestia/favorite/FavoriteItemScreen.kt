@@ -1,4 +1,4 @@
-// FavoriteItem.kt
+// FavoriteItemScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -69,7 +69,7 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FavoriteItem(parent: FavoriteBaseItem, paddingValues: PaddingValues, renameRequested: (MutableFavoriteBaseItem, (String) -> Unit) -> Unit, shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
+fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, renameRequested: (MutableFavoriteBaseItem, (String) -> Unit) -> Unit, shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
     val viewModel: FavoriteViewModel = hiltViewModel()
     if (parent.children.isEmpty()) {
         Box(modifier = Modifier

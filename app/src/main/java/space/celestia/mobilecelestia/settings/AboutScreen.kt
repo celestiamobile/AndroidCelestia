@@ -1,4 +1,4 @@
-// About.kt
+// AboutScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -43,7 +43,7 @@ import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
 
 @Composable
-fun About(paddingValues: PaddingValues, linkClicked: (String, Boolean) -> Unit) {
+fun AboutScreen(paddingValues: PaddingValues, linkClicked: (String, Boolean) -> Unit) {
     val context = LocalContext.current
     val aboutSections by remember {
         mutableStateOf(createAboutItems(context))

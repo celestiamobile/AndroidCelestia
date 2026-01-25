@@ -39,13 +39,13 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 
 @Composable
-fun RenderInfo(paddingValues: PaddingValues) {
+fun RenderInfoScreen(paddingValues: PaddingValues) {
     val viewModel: SettingsViewModel = hiltViewModel()
     val scroll = rememberScrollState(0)
     var renderInfo: String? by remember {
         mutableStateOf(null)
     }
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
         renderInfo = withContext(viewModel.executor.asCoroutineDispatcher()) {
             viewModel.appCore.renderInfo
         }

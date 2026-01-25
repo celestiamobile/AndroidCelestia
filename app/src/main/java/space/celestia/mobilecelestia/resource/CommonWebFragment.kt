@@ -21,39 +21,111 @@ import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import com.google.android.material.loadingindicator.LoadingIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
+import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.NavigationFragment
-import space.celestia.mobilecelestia.common.replace
 import space.celestia.mobilecelestia.compose.EmptyHint
-import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.resource.CommonWebFragment.Companion.ARG_CONTEXT_DIRECTORY
+import space.celestia.mobilecelestia.resource.CommonWebFragment.Companion.ARG_FILTER_URL
+import space.celestia.mobilecelestia.resource.CommonWebFragment.Companion.ARG_MATCHING_QUERY_KEYS
+import space.celestia.mobilecelestia.resource.CommonWebFragment.Companion.ARG_URI
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.File
+import java.io.Serializable
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 
+sealed class WebError: Serializable {
+    data object NotAvailable: WebError(), Serializable {
+        private fun readResolve(): Any = NotAvailable
+    }
+    data object Loading: WebError(), Serializable {
+        private fun readResolve(): Any = Loading
+    }
+}
+
+@Composable
+fun WebPage(uri: Uri, modifier: Modifier = Modifier, matchingQueryKeys: List<String> = listOf(), contextDirectory: File? = null, filterURL: Boolean = false, fallbackContent: (@Composable (Modifier, PaddingValues) -> Unit)? = null, paddingValues: PaddingValues, titleChanged: ((String) -> Unit)? = null, canGoBackChanged: ((Boolean) -> Unit)? = null, goBackRequest: ((() -> Unit) -> Unit)? = null, openAddon: ((ResourceItem) -> Unit)? = null) {
+    var error by rememberSaveable { mutableStateOf<WebError?>(null) }
+    var initialLoadingFinished by rememberSaveable { mutableStateOf(false) }
+    when (error) {
+        is WebError.NotAvailable -> {
+            Box(modifier = modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                EmptyHint(text = CelestiaString("WebView is not available.", "WebView component is missing or disabled"))
+            }
+        }
+        is WebError.Loading -> {
+            if (fallbackContent != null) {
+                fallbackContent(modifier, paddingValues)
+            } else {
+                Box(modifier = modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                    EmptyHint(text = CelestiaString("Failed to load page.", "WebView failed to load content"))
+                }
+            }
+        }
+        else -> {
+            Box(modifier = modifier.fillMaxSize()) {
+                AndroidFragment<CommonWebFragment>(
+                    modifier = modifier.fillMaxSize().padding(paddingValues),
+                    arguments = Bundle().apply {
+                        putParcelable(ARG_URI, uri)
+                        putSerializable(ARG_CONTEXT_DIRECTORY, contextDirectory)
+                        putStringArrayList(ARG_MATCHING_QUERY_KEYS, ArrayList(matchingQueryKeys))
+                        putBoolean(ARG_FILTER_URL, filterURL)
+                    }
+                ) { fragment ->
+                    fragment.titleChanged = {
+                        titleChanged?.invoke(it)
+                    }
+                    fragment.canGoBackChanged = {
+                        canGoBackChanged?.invoke(it)
+                    }
+                    fragment.openAddon = {
+                        openAddon?.invoke(it)
+                    }
+                    fragment.loadingFailed = {
+                        error = it
+                    }
+                    fragment.initialLoadingFinished = {
+                        initialLoadingFinished = true
+                    }
+                    goBackRequest?.invoke {
+                        fragment.goBack()
+                    }
+                }
+                if (!initialLoadingFinished) {
+                    Box(modifier = modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+        }
+    }
+}
+
 @AndroidEntryPoint
-open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascriptInterface.MessageHandler {
+class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler {
     private lateinit var uri: Uri
     private lateinit var matchingQueryKeys: List<String>
     private var filterURL = true
@@ -63,12 +135,17 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
     private var webView: WebView? = null
     private var webViewState: Bundle? = null
     private var initialLoadFinished = false
-    private var showFallbackContainer = false
 
     @Inject
     lateinit var resourceAPI: ResourceAPIService
 
     private var onBackPressedCallback: OnBackPressedCallback? = null
+
+    var titleChanged: ((String) -> Unit)? = null
+    var canGoBackChanged: ((Boolean) -> Unit)? = null
+    var initialLoadingFinished: (() -> Unit)? = null
+    var loadingFailed: ((WebError) -> Unit)? = null
+    var openAddon: ((ResourceItem) -> Unit)? = null
 
     interface Listener {
         fun onExternalWebLinkClicked(url: String)
@@ -77,10 +154,6 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         fun onReceivedACK(id: String)
         fun onRunDemo()
         fun onOpenSubscriptionPage(preferredPlayOfferId: String?)
-    }
-
-    open fun createFallbackFragment(): Fragment? {
-        return null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,7 +165,6 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         filterURL = requireArguments().getBoolean(ARG_FILTER_URL, true)
         if (savedInstanceState != null) {
             initialLoadFinished = savedInstanceState.getBoolean(ARG_INITIAL_LOAD_FINISHED, false)
-            showFallbackContainer = savedInstanceState.getBoolean(ARG_SHOW_FALLBACK, false)
         }
     }
 
@@ -106,25 +178,12 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             configureWebView(view, savedInstanceState)
             view
         } catch (ignored: Throwable) {
-            ComposeView(requireContext()).apply {
-                // Dispose of the Composition when the view's LifecycleOwner
-                // is destroyed
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-                setContent {
-                    Mdc3Theme {
-                        Box(modifier = Modifier.fillMaxSize().systemBarsPadding(), contentAlignment = Alignment.Center) {
-                            EmptyHint(text = CelestiaString("WebView is not available.", "WebView component is missing or disabled"))
-                        }
-                    }
-                }
-            }
+            loadingFailed?.invoke(WebError.NotAvailable)
+            FrameLayout(requireContext())
         }
     }
 
     private fun configureWebView(view: View, savedInstanceState: Bundle?) {
-        val loadingIndicator = view.findViewById<LoadingIndicator>(R.id.loading_indicator)
-        val fallbackContainer = view.findViewById<FrameLayout>(R.id.fallback)
-
         val webView = view.findViewById<WebView>(R.id.webview)
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.isHorizontalScrollBarEnabled = false
@@ -141,9 +200,6 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         }
 
         val weakSelf = WeakReference(this)
-
-        val bottomSafeArea = view.findViewById<FrameLayout>(R.id.bottom_safe_area)
-
         val defaultUri = uri
         val shouldFilterURL = filterURL
         val queryKeys = matchingQueryKeys
@@ -189,17 +245,15 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             override fun onPageCommitVisible(view: WebView?, url: String?) {
                 val wv = view ?: return
                 val self = weakSelf.get() ?: return
-                weakSelf.get()?.initialLoadFinished = true
-                loadingIndicator.isVisible = false
-                self.leftNavigationBarItem  = if (wv.canGoBack()) NavigationFragment.BarButtonItem(MENU_ITEM_BACK_BUTTON, null, R.drawable.ic_action_arrow_back) else null
+                self.initialLoadFinished = true
+                self.initialLoadingFinished?.invoke()
+                self.canGoBackChanged?.invoke(wv.canGoBack())
                 self.onBackPressedCallback?.isEnabled = !self.isHidden && self.canGoBack()
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 val self = weakSelf.get() ?: return
-                if ((self.parentFragment as? NavigationFragment)?.top == self) {
-                    self.title = view?.title ?: ""
-                }
+                self.titleChanged?.invoke(view?.title ?: "")
             }
 
             @Deprecated("Deprecated in Java")
@@ -211,7 +265,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             ) {
                 @Suppress("DEPRECATION")
                 super.onReceivedError(view, errorCode, description, failingUrl)
-                onError(webView)
+                onError()
             }
 
             override fun onReceivedError(
@@ -221,7 +275,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             ) {
                 super.onReceivedError(view, request, error)
                 if (request != null && request.isForMainFrame)
-                    onError(webView)
+                    onError()
             }
 
             override fun onReceivedHttpError(
@@ -231,7 +285,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             ) {
                 super.onReceivedHttpError(view, request, errorResponse)
                 if (request != null && request.isForMainFrame)
-                    onError(webView)
+                    onError()
             }
 
             override fun onReceivedSslError(
@@ -240,20 +294,11 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 error: SslError?
             ) {
                 super.onReceivedSslError(view, handler, error)
-                onError(webView)
+                onError()
             }
 
-            fun onError(webView: WebView?) {
-                if (fallbackContainer.isVisible) return
-                val fragment = createFallbackFragment()
-                if (fragment != null) {
-                    replace(fragment, R.id.fallback, false)
-                    fallbackContainer.isVisible = true
-                    webView?.isVisible = false
-                    bottomSafeArea.isVisible = false
-                    loadingIndicator.isVisible = false
-                    weakSelf.get()?.showFallbackContainer = true
-                }
+            fun onError() {
+                loadingFailed?.invoke(WebError.Loading)
             }
         }
 
@@ -261,31 +306,14 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
                 val self = weakSelf.get() ?: return
-                if ((self.parentFragment as? NavigationFragment)?.top == self) {
-                    self.title = title ?: ""
-                }
+                self.titleChanged?.invoke(title ?: "")
             }
         }
-
-        ViewCompat.setOnApplyWindowInsetsListener(bottomSafeArea) { container, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            container.updatePadding(bottom = insets.bottom)
-            WindowInsetsCompat.CONSUMED
-        }
-
         this.webView = webView
 
         val savedState = webViewState ?: savedInstanceState
         if (savedState != null) {
             webView.restoreState(savedState)
-            if (showFallbackContainer) {
-                fallbackContainer.isVisible = true
-                webView.isVisible = false
-                bottomSafeArea.isVisible = false
-                loadingIndicator.isVisible = false
-            } else if (initialLoadFinished) {
-                loadingIndicator.isVisible = false
-            }
         } else {
             webView.loadUrl(uri.toString())
         }
@@ -296,11 +324,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
 
         val savedState = webViewState ?: savedInstanceState
         val wv = webView
-        leftNavigationBarItem = if (savedState != null && wv != null) {
-            if (wv.canGoBack()) NavigationFragment.BarButtonItem(MENU_ITEM_BACK_BUTTON, null, R.drawable.ic_action_arrow_back) else null
-        } else {
-            null
-        }
+        canGoBackChanged?.invoke(savedState != null && wv != null && wv.canGoBack())
 
         if (onBackPressedCallback == null) {
             val weakSelf = WeakReference(this)
@@ -358,7 +382,6 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
     override fun onSaveInstanceState(outState: Bundle) {
         webView?.saveState(outState)
         outState.putBoolean(ARG_INITIAL_LOAD_FINISHED, initialLoadFinished)
-        outState.putBoolean(ARG_SHOW_FALLBACK, showFallbackContainer)
         super.onSaveInstanceState(outState)
     }
 
@@ -384,11 +407,7 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         lifecycleScope.launch {
             try {
                 val result = resourceAPI.item(lang, id)
-                val frag = parentFragment
-                // Do not push another ResourceItemFragment if it is the top
-                if (frag is NavigationFragment && frag.top !is ResourceItemFragment) {
-                    frag.pushFragment(ResourceItemFragment.newInstance(result))
-                }
+                openAddon?.invoke(result)
             } catch (ignored: Throwable) {}
         }
     }
@@ -401,15 +420,6 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
         listener?.onOpenSubscriptionPage(preferredPlayOfferId)
     }
 
-    override fun menuItemClicked(groupId: Int, id: Int): Boolean {
-        when (id) {
-            MENU_ITEM_BACK_BUTTON -> {
-                goBack()
-            }
-        }
-        return true
-    }
-
     fun canGoBack(): Boolean {
         return webView?.canGoBack() ?: false
     }
@@ -419,27 +429,10 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
     }
 
     companion object {
-        private const val ARG_URI = "uri"
-        private const val ARG_MATCHING_QUERY_KEYS = "query_keys"
-        private const val ARG_CONTEXT_DIRECTORY = "context_directory"
-        private const val ARG_FILTER_URL = "filter_url"
+        const val ARG_URI = "uri"
+        const val ARG_MATCHING_QUERY_KEYS = "query_keys"
+        const val ARG_CONTEXT_DIRECTORY = "context_directory"
+        const val ARG_FILTER_URL = "filter_url"
         private const val ARG_INITIAL_LOAD_FINISHED = "initial_load_finished"
-        private const val ARG_SHOW_FALLBACK = "show_fallback_container"
-        private const val MENU_ITEM_BACK_BUTTON = 12425
-
-        fun newInstance(uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File? = null) = create({ CommonWebFragment() }, uri, matchingQueryKeys, contextDirectory, true)
-        fun newInstance(uri: Uri) = create({ CommonWebFragment() }, uri, listOf(), null, false)
-
-        fun <T: Fragment> create(fragmentCreator: () -> T, uri: Uri, matchingQueryKeys: List<String>, contextDirectory: File?, filterURL: Boolean): T {
-            val fragment = fragmentCreator().apply {
-                arguments = Bundle().apply {
-                    putParcelable(ARG_URI, uri)
-                    putSerializable(ARG_CONTEXT_DIRECTORY, contextDirectory)
-                    putStringArrayList(ARG_MATCHING_QUERY_KEYS, ArrayList(matchingQueryKeys))
-                    putBoolean(ARG_FILTER_URL, filterURL)
-                }
-            }
-            return fragment
-        }
     }
 }

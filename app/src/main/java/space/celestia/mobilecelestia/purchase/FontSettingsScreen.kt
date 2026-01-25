@@ -43,7 +43,7 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun Fonts(paddingValues: PaddingValues) {
+fun FontSettingsScreen(paddingValues: PaddingValues) {
     class Font(val path: String, val name: String, val ttcIndex: Int)
 
     val viewModel: SettingsViewModel = hiltViewModel()
@@ -120,7 +120,7 @@ fun Fonts(paddingValues: PaddingValues) {
             }
         }
     } else {
-        LaunchedEffect(true) {
+        LaunchedEffect(Unit) {
             val fonts = withContext(Dispatchers.IO) {
                 val availableFonts = SystemFonts.getAvailableFonts()
                 val fontPaths = mutableSetOf<String>()

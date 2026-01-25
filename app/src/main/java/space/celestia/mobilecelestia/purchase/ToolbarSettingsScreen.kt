@@ -1,4 +1,4 @@
-// Toolbar.kt
+// ToolbarSettingsScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -125,7 +126,7 @@ enum class ToolbarAction(val id: String) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Toolbar(paddingValues: PaddingValues) {
+fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
     val viewModel: SettingsViewModel = hiltViewModel()
 
     var list by remember {
@@ -151,6 +152,7 @@ fun Toolbar(paddingValues: PaddingValues) {
         var showMenu by remember { mutableStateOf(false) }
         var rowModifier = Modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = dimensionResource(id = R.dimen.list_item_one_line_min_height))
             .padding(
                 horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
             )

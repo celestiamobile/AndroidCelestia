@@ -1,4 +1,4 @@
-// SettingsCurrentTimeNavigationFragment.kt
+// TimeSettingsFragment.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -90,7 +90,7 @@ fun TimeSettingsContainer() {
             entryProvider = { route ->
                 when (route) {
                     is TimeSettingsPage.Home -> NavEntry(route) {
-                        TimeSettings(paddingValues = paddingValues)
+                        TimeSettingsScreen(paddingValues = paddingValues)
                     }
                 }
             }
@@ -98,7 +98,7 @@ fun TimeSettingsContainer() {
     }
 }
 
-class SettingsCurrentTimeNavigationFragment: Fragment() {
+class TimeSettingsFragment: Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -117,6 +117,6 @@ class SettingsCurrentTimeNavigationFragment: Fragment() {
     }
 
     companion object {
-        fun newInstance() = SettingsCurrentTimeNavigationFragment()
+        fun newInstance() = TimeSettingsFragment()
     }
 }

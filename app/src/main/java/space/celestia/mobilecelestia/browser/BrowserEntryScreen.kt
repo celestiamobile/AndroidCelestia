@@ -1,4 +1,4 @@
-// BrowserEntry.kt
+// BrowserEntryScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //

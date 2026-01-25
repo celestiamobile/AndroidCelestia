@@ -1,4 +1,4 @@
-// EventFinderInput.kt
+// EventFinderInputScreen.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -46,7 +46,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun EventFinderInput(paddingValues: PaddingValues, handler: (objectName: String, startDate: Date, endDate: Date) -> Unit) {
+fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: String, startDate: Date, endDate: Date) -> Unit) {
     val defaultSearchingInterval: Long = 365L * 24 * 60 * 60 * 1000
     var startTime by rememberSaveable { mutableStateOf(Date(Date().time - defaultSearchingInterval)) }
     var endTime by rememberSaveable { mutableStateOf(Date()) }

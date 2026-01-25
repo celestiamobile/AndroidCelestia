@@ -90,7 +90,7 @@ private fun GoToContainer() {
                 when (route) {
                     is Page.GoTo -> {
                         NavEntry(route) {
-                            GoTo(paddingValues)
+                            GoToScreen(paddingValues)
                         }
                     }
                 }

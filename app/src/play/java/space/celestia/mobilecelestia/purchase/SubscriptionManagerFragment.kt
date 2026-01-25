@@ -171,7 +171,7 @@ class SubscriptionManagerFragment: Fragment() {
                 vertical = dimensionResource(id = R.dimen.common_page_small_margin_vertical)
             )) {
             if (needsRefreshing) {
-                LaunchedEffect(true) {
+                LaunchedEffect(Unit) {
                     val subscriptionResult = viewModel.purchaseManager.getSubscriptionDetails(preferredPlayOfferId, resources)
                     viewModel.purchaseManager.getValidSubscription()
                     val subscriptionValue = subscriptionResult?.subscription

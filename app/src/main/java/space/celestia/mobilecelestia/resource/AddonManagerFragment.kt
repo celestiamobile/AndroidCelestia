@@ -1,4 +1,4 @@
-// SubsystemBrowserFragment.kt
+// ResourceFragment.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -7,7 +7,7 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 
-package space.celestia.mobilecelestia.browser
+package space.celestia.mobilecelestia.resource
 
 import android.content.Context
 import android.os.Bundle
@@ -32,7 +32,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,47 +41,42 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
-import space.celestia.celestia.BrowserItem
-import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.browser.viewmodel.BrowserPredefinedItem
-import space.celestia.mobilecelestia.browser.viewmodel.SubsystemPage
-import space.celestia.mobilecelestia.browser.viewmodel.SubsystemViewModel
 import space.celestia.mobilecelestia.compose.Mdc3Theme
-import space.celestia.mobilecelestia.info.InfoScreen
-import space.celestia.mobilecelestia.info.model.InfoActionItem
+import space.celestia.mobilecelestia.purchase.SubscriptionBackingScreen
+import space.celestia.mobilecelestia.resource.viewmodel.AddonManagerPage
+import space.celestia.mobilecelestia.resource.viewmodel.AddonManagerViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
-import java.net.URL
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubsystemBrowser(selection: Selection, linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit) {
-    val viewModel: SubsystemViewModel = hiltViewModel()
+fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, openSubscriptionManagement: () -> Unit, requestOpenAddonDownload: () -> Unit) {
+    val viewModel: AddonManagerViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    var showObjectNotFoundDialog by remember { mutableStateOf(false)  }
     val backStack = viewModel.backStack
-    LaunchedEffect(Unit) {
-        if (backStack.isEmpty())
-            backStack.add(SubsystemPage.Item(BrowserItem(viewModel.appCore.simulation.universe.getNameForSelection(selection), null, requireNotNull(selection.`object`), viewModel.appCore.simulation.universe)))
-    }
 
     if (backStack.isEmpty()) return
+
+    var showAddonUpdatesHelp by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(title = {
-                val current = backStack.lastOrNull() ?: return@TopAppBar
-                when (current) {
-                    is SubsystemPage.Item -> {
-                        Text(current.item.alternativeName ?: current.item.name)
+                val lastEntry = backStack.lastOrNull() ?: return@TopAppBar
+                when (lastEntry) {
+                    is AddonManagerPage.Home -> {
+                        Text(CelestiaString("Installed", "Title for the list of installed add-ons"))
                     }
-                    is SubsystemPage.Info -> {
-                        Text(viewModel.appCore.simulation.universe.getNameForSelection(current.info))
+                    is AddonManagerPage.Updates -> {
+                        Text(CelestiaString("Updates", "View the list of add-ons that have pending updates."))
+                    }
+                    is AddonManagerPage.Addon -> {
+                        Text(lastEntry.title.value)
                     }
                 }
             }, navigationIcon = {
@@ -94,6 +88,41 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (URL) -> Unit, actionReq
                             painter = painterResource(R.drawable.ic_action_arrow_back),
                             contentDescription = null
                         )
+                    }
+                }
+            }, actions = {
+                val lastEntry = backStack.lastOrNull() ?: return@TopAppBar
+                when (lastEntry) {
+                    is AddonManagerPage.Home -> {
+                        if (viewModel.purchaseManager.canUseInAppPurchase()) {
+                            TextButton({
+                                backStack.add(AddonManagerPage.Updates)
+                            }) {
+                                Text(CelestiaString("Updates", "View the list of add-ons that have pending updates."))
+                            }
+                        }
+                    }
+                    is AddonManagerPage.Updates -> {
+                        if (viewModel.purchaseManager.canUseInAppPurchase() && viewModel.purchaseManager.purchaseToken() != null) {
+                            IconButton({
+                                showAddonUpdatesHelp = true
+                            }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.help_24px),
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    }
+                    is AddonManagerPage.Addon -> {
+                        IconButton({
+                            requestShareAddon(lastEntry.title.value, lastEntry.addon.id)
+                        }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_share),
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
             }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
@@ -118,58 +147,53 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (URL) -> Unit, actionReq
             },
             entryProvider = { route ->
                 when (route) {
-                    is SubsystemPage.Item -> {
-                        NavEntry(route) {
-                            BrowserEntry(item = route.item, paddingValues = paddingValues, itemSelected = { item, isLeaf ->
-                                if (isLeaf) {
-                                    val obj = item.`object`
-                                    if (obj != null) {
-                                        backStack.add(SubsystemPage.Info(Selection(obj)))
-                                    } else {
-                                        showObjectNotFoundDialog = true
-                                    }
-                                } else {
-                                    backStack.add(SubsystemPage.Item(item))
-                                }
-                            }, addonCategoryRequested = {
-                                addonCategoryRequested(it)
+                    is AddonManagerPage.Addon -> NavEntry(route) {
+                        AddonScreen(item = route.addon, paddingValues = paddingValues, addonInfoUpdated = { info ->
+                            route.title.value = info.name
+                        }, requestRunScript = requestRunScript)
+                    }
+                    is AddonManagerPage.Home -> NavEntry(route) {
+                        InstalledAddonListScreen(paddingValues = paddingValues, requestOpenAddonDownload = requestOpenAddonDownload, requestOpenInstalledAddon = {
+                            backStack.add(AddonManagerPage.Addon(it))
+                        })
+                    }
+                    is AddonManagerPage.Updates -> NavEntry(route) {
+                        SubscriptionBackingScreen(paddingValues, openSubscriptionManagement = openSubscriptionManagement) {
+                            AddonUpdatesScreen(paddingValues, requestOpenAddon = {
+                                backStack.add(AddonManagerPage.Addon(it))
                             })
                         }
-                    }
-                    is SubsystemPage.Info -> NavEntry(route) {
-                        InfoScreen(selection = route.info, showTitle = false, linkHandler = {
-                            linkClicked(it)
-                        }, actionHandler = { action ->
-                            actionRequested(action, route.info)
-                        }, paddingValues = paddingValues)
                     }
                 }
             }
         )
     }
 
-    if (showObjectNotFoundDialog) {
+    if (showAddonUpdatesHelp) {
         AlertDialog(onDismissRequest = {
-            showObjectNotFoundDialog = false
+            showAddonUpdatesHelp = false
         }, confirmButton = {
             TextButton(onClick = {
-                showObjectNotFoundDialog = false
+                showAddonUpdatesHelp = false
             }) {
                 Text(text = CelestiaString("OK", ""))
             }
         }, title = {
-            Text(text = CelestiaString("Object not found", ""))
+            Text(text = CelestiaString("Add-on Updates", ""))
+        }, text = {
+            Text(CelestiaString("Add-on updates are only supported for add-ons installed on version 1.9.3 or above.", "Hint for requirement for updating add-ons."))
         })
     }
 }
 
-class SubsystemBrowserFragment : Fragment() {
+class AddonManagerFragment : Fragment() {
     interface Listener {
-        fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo)
-        fun browserLinkClicked(url: URL)
-        fun browserActionRequested(action: InfoActionItem, selection: Selection)
+        fun webRequestRunScript(script: File)
+        fun webRequestShareAddon(name: String, id: String)
+        fun webRequestOpenSubscriptionManagement()
+        fun webRequestOpenAddonDownload()
     }
-    private lateinit var selection: Selection
+
     private var listener: Listener? = null
 
     override fun onAttach(context: Context) {
@@ -177,7 +201,7 @@ class SubsystemBrowserFragment : Fragment() {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement SubsystemBrowserFragment.Listener")
+            throw RuntimeException("$context must implement AddonFragment.Listener")
         }
     }
 
@@ -186,13 +210,6 @@ class SubsystemBrowserFragment : Fragment() {
         listener = null
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)!!
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -205,27 +222,22 @@ class SubsystemBrowserFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    SubsystemBrowser(selection = selection, linkClicked = {
-                        listener?.browserLinkClicked(it)
-                    }, actionRequested = { action, selection ->
-                        listener?.browserActionRequested(action, selection)
-                    }, addonCategoryRequested = {
-                        listener?.browserAddonCategoryRequested(it)
+                    AddonManagerScreen(requestRunScript = { script ->
+                        listener?.webRequestRunScript(script)
+                    }, requestShareAddon = { name, id ->
+                        listener?.webRequestShareAddon(name, id)
+                    }, requestOpenAddonDownload = {
+                        listener?.webRequestOpenAddonDownload()
+                    }, openSubscriptionManagement = {
+                        listener?.webRequestOpenSubscriptionManagement()
                     })
                 }
             }
         }
     }
 
-    companion object {
-        const val ARG_OBJECT = "object"
 
-        @JvmStatic
-        fun newInstance(selection: Selection) =
-            SubsystemBrowserFragment().apply {
-                arguments = Bundle().apply {
-                    this.putParcelable(ARG_OBJECT, selection)
-                }
-            }
+    companion object {
+        fun newInstance() = AddonManagerFragment()
     }
 }
