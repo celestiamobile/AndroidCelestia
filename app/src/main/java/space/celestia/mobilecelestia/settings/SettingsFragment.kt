@@ -45,7 +45,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.purchase.FontSettingsScreen
-import space.celestia.mobilecelestia.purchase.SubscriptionBacking
+import space.celestia.mobilecelestia.purchase.SubscriptionBackingScreen
 import space.celestia.mobilecelestia.purchase.ToolbarSettingsScreen
 import space.celestia.mobilecelestia.settings.viewmodel.Page
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
@@ -189,13 +189,13 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
                     }
                     is Page.Font -> NavEntry(route) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            SubscriptionBacking(paddingValues = paddingValues, openSubscriptionManagement = openSubscriptionManagement) {
+                            SubscriptionBackingScreen(paddingValues = paddingValues, openSubscriptionManagement = openSubscriptionManagement) {
                                 FontSettingsScreen(it)
                             }
                         }
                     }
                     is Page.Toolbar -> NavEntry(route) {
-                        SubscriptionBacking(paddingValues = paddingValues, openSubscriptionManagement = openSubscriptionManagement) {
+                        SubscriptionBackingScreen(paddingValues = paddingValues, openSubscriptionManagement = openSubscriptionManagement) {
                             ToolbarSettingsScreen(it)
                         }
                     }

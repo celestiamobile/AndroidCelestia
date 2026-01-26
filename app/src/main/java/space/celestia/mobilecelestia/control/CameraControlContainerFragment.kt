@@ -107,7 +107,7 @@ private fun CameraControlContainer(observerModeLearnMoreClicked: (String, Boolea
                     }
                     is Page.ObserverMode -> {
                         NavEntry(route) {
-                            ObserverMode(paddingValues) { link, localizable ->
+                            ObserverModeScreen(paddingValues) { link, localizable ->
                                 observerModeLearnMoreClicked(link, localizable)
                             }
                         }

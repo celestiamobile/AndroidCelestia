@@ -10,16 +10,6 @@
 package space.celestia.mobilecelestia.common
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-
-fun Fragment.push(fragment: Fragment, containerID: Int): Int? {
-    if (!isAdded) return null
-    return childFragmentManager.beginTransaction()
-        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-        .addToBackStack(childFragmentManager.backStackEntryCount.toString())
-        .replace(containerID, fragment)
-        .commitAllowingStateLoss()
-}
 
 fun Fragment.replace(fragment: Fragment, containerID: Int, useAsPrimaryNavigation: Boolean): Int? {
     if (!isAdded) return null

@@ -33,6 +33,7 @@ sentry-android = "8.31.0"
 target_sdk = "36"
 webkit = "1.15.0"
 navigation3 = "1.0.0"
+fragment-compose = "1.8.9"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
@@ -71,6 +72,7 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentry-android" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
+androidx-fragment-compose = { group = "androidx.fragment", name = "fragment-compose", version.ref = "fragment-compose" }
 
 [plugins]
 android-application = { id = "com.android.application" }

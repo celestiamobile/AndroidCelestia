@@ -45,7 +45,7 @@ fun RenderInfoScreen(paddingValues: PaddingValues) {
     var renderInfo: String? by remember {
         mutableStateOf(null)
     }
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
         renderInfo = withContext(viewModel.executor.asCoroutineDispatcher()) {
             viewModel.appCore.renderInfo
         }

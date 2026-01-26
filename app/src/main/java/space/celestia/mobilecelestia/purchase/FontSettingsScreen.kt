@@ -120,7 +120,7 @@ fun FontSettingsScreen(paddingValues: PaddingValues) {
             }
         }
     } else {
-        LaunchedEffect(true) {
+        LaunchedEffect(Unit) {
             val fonts = withContext(Dispatchers.IO) {
                 val availableFonts = SystemFonts.getAvailableFonts()
                 val fontPaths = mutableSetOf<String>()
