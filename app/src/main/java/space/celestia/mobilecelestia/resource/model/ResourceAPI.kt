@@ -9,6 +9,7 @@
 
 package space.celestia.mobilecelestia.resource.model
 
+import androidx.annotation.Keep
 import com.google.gson.*
 import com.google.gson.annotations.SerializedName
 import retrofit2.http.Body
@@ -40,6 +41,7 @@ object ResourceAPI {
     val gson: Gson by lazy { GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create() }
 }
 
+@Keep
 data class UpdateRequest(
     val lang: String,
     val items: List<String>,

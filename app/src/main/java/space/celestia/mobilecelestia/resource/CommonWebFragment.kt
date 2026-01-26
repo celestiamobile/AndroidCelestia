@@ -220,7 +220,8 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 error: WebResourceError?
             ) {
                 super.onReceivedError(view, request, error)
-                onError(webView)
+                if (request != null && request.isForMainFrame)
+                    onError(webView)
             }
 
             override fun onReceivedHttpError(
@@ -229,7 +230,8 @@ open class CommonWebFragment: NavigationFragment.SubFragment(), CelestiaJavascri
                 errorResponse: WebResourceResponse?
             ) {
                 super.onReceivedHttpError(view, request, errorResponse)
-                onError(webView)
+                if (request != null && request.isForMainFrame)
+                    onError(webView)
             }
 
             override fun onReceivedSslError(
