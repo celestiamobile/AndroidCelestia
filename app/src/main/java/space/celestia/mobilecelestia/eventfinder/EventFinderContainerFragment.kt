@@ -13,29 +13,35 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavEntry
@@ -52,18 +58,21 @@ import space.celestia.mobilecelestia.eventfinder.viewmodel.EventFinderViewModel
 import space.celestia.mobilecelestia.eventfinder.viewmodel.Page
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.julianDay
-import space.celestia.mobilecelestia.utils.showAlert
-import space.celestia.mobilecelestia.utils.showLoading
+
+private sealed class EventFinderAlert {
+    data object ObjectNotFound : EventFinderAlert()
+    data class Calculating(val finder: EclipseFinder): EventFinderAlert()
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EventFinder() {
     val scope = rememberCoroutineScope()
     val viewModel: EventFinderViewModel = hiltViewModel()
-    val activity = LocalActivity.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     val backStack = viewModel.backStack
+    var alert by remember { mutableStateOf<EventFinderAlert?>(null) }
 
     Scaffold(
         topBar = {
@@ -109,13 +118,11 @@ private fun EventFinder() {
                                     viewModel.appCore.simulation.findObject(objectName).`object` as? Body
                                 }
                                 if (body == null) {
-                                    activity?.showAlert(CelestiaString("Object not found", ""))
+                                    alert = EventFinderAlert.ObjectNotFound
                                     return@launch
                                 }
                                 val finder = EclipseFinder(body)
-                                val alert = activity?.showLoading(CelestiaString("Calculating…", "Calculating for eclipses")) {
-                                    finder.abort()
-                                } ?: return@launch
+                                alert = EventFinderAlert.Calculating(finder)
                                 val results = withContext(Dispatchers.IO) {
                                     finder.search(
                                         startDate.julianDay,
@@ -124,8 +131,12 @@ private fun EventFinder() {
                                     )
                                 }
                                 finder.close()
-                                if (alert.isShowing) alert.dismiss()
-                                backStack.add(Page.Results(results))
+                                alert?.let { content ->
+                                    if (content is EventFinderAlert.Calculating && content.finder == finder) {
+                                        alert = null
+                                        backStack.add(Page.Results(results))
+                                    }
+                                }
                             }
                         }
                     }
@@ -139,6 +150,38 @@ private fun EventFinder() {
                 }
             }
         )
+    }
+
+    alert?.let { content ->
+        when (content) {
+            is EventFinderAlert.ObjectNotFound -> {
+                AlertDialog(onDismissRequest = {
+                    alert = null
+                }, confirmButton = {
+                    TextButton(onClick = {
+                        alert = null
+                    }) {
+                        Text(text = CelestiaString("OK", ""))
+                    }
+                }, title = {
+                    Text(text = CelestiaString("Object not found", ""))
+                })
+            }
+            is EventFinderAlert.Calculating -> {
+                AlertDialog(onDismissRequest = {
+                    alert = null
+                }, confirmButton = {
+                    TextButton(onClick = {
+                        alert = null
+                        content.finder.abort()
+                    }) {
+                        Text(text = CelestiaString("Cancel", ""))
+                    }
+                }, title = {
+                    Text(text = CelestiaString("Calculating…", "Calculating for eclipses"))
+                }, properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false))
+            }
+        }
     }
 }
 

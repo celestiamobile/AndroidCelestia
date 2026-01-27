@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,9 +59,13 @@ import space.celestia.mobilecelestia.search.viewmodel.SearchViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.net.URL
 
+sealed class SearchAlert {
+    data object ObjectNotFound: SearchAlert()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit) {
+fun SearchScreen(linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit) {
     val viewModel: SearchViewModel = hiltViewModel()
     var searchKey by rememberSaveable {
         mutableStateOf("")
@@ -79,6 +85,7 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
     var isLoadingPage by remember {
         mutableStateOf(false)
     }
+    var alert by remember { mutableStateOf<SearchAlert?>(null) }
     val scope = rememberCoroutineScope()
     Scaffold(topBar = {
         SearchBar(
@@ -104,7 +111,7 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
                                 val selection = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.findObject(searchKey) }
                                 isLoadingPage = false
                                 if (selection.isEmpty)
-                                    objectNotFoundHandler()
+                                    alert = SearchAlert.ObjectNotFound
                                 else
                                     currentSelection = selection
                             }
@@ -148,7 +155,7 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
                     scope.launch {
                         isLoadingPage = false
                         if (it.isEmpty)
-                            objectNotFoundHandler()
+                            alert = SearchAlert.ObjectNotFound
                         else
                             currentSelection = it
                     }
@@ -157,6 +164,24 @@ fun SearchScreen(objectNotFoundHandler: () -> Unit, linkHandler: (URL) -> Unit, 
         )
     }) { paddingValues ->
         SearchContent(selection = currentSelection, isLoadingPage = isLoadingPage, linkHandler = linkHandler, actionHandler = actionHandler, paddingValues = paddingValues)
+    }
+
+    alert?.let { content ->
+        when (content) {
+            is SearchAlert.ObjectNotFound -> {
+                AlertDialog(onDismissRequest = {
+                    alert = null
+                }, confirmButton = {
+                    TextButton(onClick = {
+                        alert = null
+                    }) {
+                        Text(text = CelestiaString("OK", ""))
+                    }
+                }, title = {
+                    Text(text = CelestiaString("Object not found", ""))
+                })
+            }
+        }
     }
 }
 
