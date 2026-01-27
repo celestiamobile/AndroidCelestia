@@ -42,6 +42,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.URLHelper
+import space.celestia.mobilecelestia.BuildConfig
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.resource.viewmodel.AddonViewModel
@@ -159,7 +160,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
             LinearProgressIndicator(progress = { animatedProgress }, modifier = Modifier.fillMaxWidth())
         }
         WebPage(
-            uri = URLHelper.buildInAppAddonURI(info.id, AppCore.getLanguage()),
+            uri = URLHelper.buildInAppAddonURI(info.id, AppCore.getLanguage(), flavor = BuildConfig.FLAVOR),
             contextDirectory = viewModel.resourceManager.contextDirectory(info),
             filterURL = true,
             matchingQueryKeys = listOf("item"),
