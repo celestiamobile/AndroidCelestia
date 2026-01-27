@@ -20,7 +20,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,11 +46,16 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.purchase.SubscriptionBackingScreen
 import space.celestia.mobilecelestia.resource.viewmodel.AddonManagerPage
 import space.celestia.mobilecelestia.resource.viewmodel.AddonManagerViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.File
+
+sealed class AddonManagerAlert {
+    data object AddonUpdatesHelp: AddonManagerAlert()
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +66,7 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
 
     if (backStack.isEmpty()) return
 
-    var showAddonUpdatesHelp by remember { mutableStateOf(false) }
+    var alert by remember { mutableStateOf<AddonManagerAlert?>(null) }
 
     Scaffold(
         topBar = {
@@ -105,7 +109,7 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
                     is AddonManagerPage.Updates -> {
                         if (viewModel.purchaseManager.canUseInAppPurchase() && viewModel.purchaseManager.purchaseToken() != null) {
                             IconButton({
-                                showAddonUpdatesHelp = true
+                                alert = AddonManagerAlert.AddonUpdatesHelp
                             }) {
                                 Icon(
                                     painter = painterResource(R.drawable.help_24px),
@@ -169,20 +173,20 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
         )
     }
 
-    if (showAddonUpdatesHelp) {
-        AlertDialog(onDismissRequest = {
-            showAddonUpdatesHelp = false
-        }, confirmButton = {
-            TextButton(onClick = {
-                showAddonUpdatesHelp = false
-            }) {
-                Text(text = CelestiaString("OK", ""))
+    alert?.let { content ->
+        when (content) {
+            is AddonManagerAlert.AddonUpdatesHelp -> {
+                SimpleAlertDialog(
+                    onDismissRequest = {
+                        alert = null
+                    }, onConfirm = {
+                        alert = null
+                    },
+                    title = CelestiaString("Add-on Updates", ""),
+                    text = CelestiaString("Add-on updates are only supported for add-ons installed on version 1.9.3 or above.", "Hint for requirement for updating add-ons.")
+                )
             }
-        }, title = {
-            Text(text = CelestiaString("Add-on Updates", ""))
-        }, text = {
-            Text(CelestiaString("Add-on updates are only supported for add-ons installed on version 1.9.3 or above.", "Hint for requirement for updating add-ons."))
-        })
+        }
     }
 }
 

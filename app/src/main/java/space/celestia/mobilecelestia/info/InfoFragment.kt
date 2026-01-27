@@ -24,8 +24,6 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.compose.Mdc3Theme
-import space.celestia.mobilecelestia.info.model.InfoActionItem
-import java.net.URL
 
 @AndroidEntryPoint
 class InfoFragment : Fragment() {
@@ -50,10 +48,10 @@ class InfoFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    InfoScreen(selection = selection, showTitle = true, linkHandler = {
-                        listener?.onInfoLinkMetaDataClicked(it)
-                    }, actionHandler = { action ->
-                        listener?.onInfoActionSelected(action, selection)
+                    InfoScreen(selection = selection, showTitle = true, linkClicked = {
+                        listener?.infoLinkClicked(it)
+                    }, openSubsystem = {
+                        listener?.infoRequestOpenSubsystem(selection)
                     }, paddingValues = WindowInsets.systemBars.asPaddingValues())
                 }
             }
@@ -75,8 +73,8 @@ class InfoFragment : Fragment() {
     }
 
     interface Listener {
-        fun onInfoActionSelected(action: InfoActionItem, item: Selection)
-        fun onInfoLinkMetaDataClicked(url: URL)
+        fun infoRequestOpenSubsystem(selection: Selection)
+        fun infoLinkClicked(link: String)
     }
 
     companion object {

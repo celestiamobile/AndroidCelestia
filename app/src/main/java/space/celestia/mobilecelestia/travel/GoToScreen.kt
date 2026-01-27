@@ -17,11 +17,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,10 +39,15 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Header
 import space.celestia.mobilecelestia.compose.ObjectNameAutoComplete
 import space.celestia.mobilecelestia.compose.OptionSelect
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.travel.viewmodel.GoToViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.text.NumberFormat
+
+sealed class GoToAlert {
+    data object ObjectNotFound: GoToAlert()
+}
 
 @Composable
 fun GoToScreen(paddingValues: PaddingValues) {
@@ -82,7 +85,7 @@ fun GoToScreen(paddingValues: PaddingValues) {
     val isLongitudeValid = currentLongitudeValue != null && currentLongitudeValue >= -180.0 && currentLongitudeValue <= 180.0
     val isLatitudeValid = currentLatitudeValue != null && currentLatitudeValue >= -90.0 && currentLatitudeValue <= 90.0
     val isDistanceValid = currentDistanceValue != null && currentDistanceValue >= 0.0
-    var showObjectNotFoundDialog by remember { mutableStateOf(false)  }
+    var alert by remember { mutableStateOf<GoToAlert?>(null)  }
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
     Column(modifier = Modifier
         .nestedScroll(nestedScrollInterop)
@@ -139,7 +142,7 @@ fun GoToScreen(paddingValues: PaddingValues) {
                 val latitude = currentLatitudeValue ?: return@FilledTonalButton
                 val distance = currentDistanceValue ?: return@FilledTonalButton
                 if (viewModel.selection.value.isEmpty) {
-                    showObjectNotFoundDialog = true
+                    alert = GoToAlert.ObjectNotFound
                     return@FilledTonalButton
                 }
 
@@ -159,17 +162,15 @@ fun GoToScreen(paddingValues: PaddingValues) {
         }
     }
 
-    if (showObjectNotFoundDialog) {
-        AlertDialog(onDismissRequest = {
-            showObjectNotFoundDialog = false
-        }, confirmButton = {
-            TextButton(onClick = {
-                showObjectNotFoundDialog = false
-            }) {
-                Text(text = CelestiaString("OK", ""))
+    alert?.let { content ->
+        when (content) {
+            is GoToAlert.ObjectNotFound -> {
+                SimpleAlertDialog(onDismissRequest = {
+                    alert = null
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Object not found", ""))
             }
-        }, title = {
-            Text(text = CelestiaString("Object not found", ""))
-        })
+        }
     }
 }

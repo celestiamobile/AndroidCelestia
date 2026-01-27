@@ -19,14 +19,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -41,7 +39,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavEntry
@@ -54,6 +51,7 @@ import space.celestia.celestia.Body
 import space.celestia.celestia.EclipseFinder
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.eventfinder.viewmodel.EventFinderViewModel
 import space.celestia.mobilecelestia.eventfinder.viewmodel.Page
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -155,31 +153,19 @@ private fun EventFinder() {
     alert?.let { content ->
         when (content) {
             is EventFinderAlert.ObjectNotFound -> {
-                AlertDialog(onDismissRequest = {
+                SimpleAlertDialog(onDismissRequest = {
                     alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
-                        alert = null
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, title = {
-                    Text(text = CelestiaString("Object not found", ""))
-                })
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Object not found", ""))
             }
             is EventFinderAlert.Calculating -> {
-                AlertDialog(onDismissRequest = {
+                SimpleAlertDialog(onDismissRequest = {
                     alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
-                        alert = null
-                        content.finder.abort()
-                    }) {
-                        Text(text = CelestiaString("Cancel", ""))
-                    }
-                }, title = {
-                    Text(text = CelestiaString("Calculating…", "Calculating for eclipses"))
-                }, properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false))
+                }, onConfirm = {
+                    alert = null
+                    content.finder.abort()
+                }, title = CelestiaString("Calculating…", "Calculating for eclipses"), dismissOnBackPressOrClickOutside = false)
             }
         }
     }

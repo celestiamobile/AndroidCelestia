@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,12 +50,11 @@ import space.celestia.celestia.Completion
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.EmptyHint
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.info.InfoScreen
-import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.search.viewmodel.SearchViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
-import java.net.URL
 
 sealed class SearchAlert {
     data object ObjectNotFound: SearchAlert()
@@ -65,7 +62,7 @@ sealed class SearchAlert {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit) {
+fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit) {
     val viewModel: SearchViewModel = hiltViewModel()
     var searchKey by rememberSaveable {
         mutableStateOf("")
@@ -163,30 +160,24 @@ fun SearchScreen(linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Sel
             },
         )
     }) { paddingValues ->
-        SearchContent(selection = currentSelection, isLoadingPage = isLoadingPage, linkHandler = linkHandler, actionHandler = actionHandler, paddingValues = paddingValues)
+        SearchContent(selection = currentSelection, isLoadingPage = isLoadingPage, linkClicked = linkClicked, openSubsystem = openSubsystem, paddingValues = paddingValues)
     }
 
     alert?.let { content ->
         when (content) {
             is SearchAlert.ObjectNotFound -> {
-                AlertDialog(onDismissRequest = {
+                SimpleAlertDialog(onDismissRequest = {
                     alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
-                        alert = null
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, title = {
-                    Text(text = CelestiaString("Object not found", ""))
-                })
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Object not found", ""))
             }
         }
     }
 }
 
 @Composable
-private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem, Selection) -> Unit, paddingValues: PaddingValues) {
+private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, paddingValues: PaddingValues) {
     if (isLoadingPage) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -195,7 +186,7 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkHan
             CircularProgressIndicator()
         }
     } else if (selection != null) {
-        InfoScreen(selection = selection, showTitle = true, linkHandler = linkHandler, actionHandler = { actionHandler(it, selection) }, paddingValues = paddingValues)
+        InfoScreen(selection = selection, showTitle = true, linkClicked = linkClicked, openSubsystem = { openSubsystem(selection) }, paddingValues = paddingValues)
     }
 }
 

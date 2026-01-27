@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,7 +33,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -55,24 +53,28 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
-import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.mobilecelestia.browser.viewmodel.BrowserViewModel
 import space.celestia.mobilecelestia.browser.viewmodel.Page
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.info.InfoScreen
 import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.net.URL
 
+sealed class BrowserAlert {
+    data object ObjectNotFound: BrowserAlert()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Browser(linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit) {
+fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit) {
     val viewModel: BrowserViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    var showObjectNotFoundDialog by remember { mutableStateOf(false)  }
+    var alert by remember { mutableStateOf<BrowserAlert?>(null)  }
     LaunchedEffect(Unit) {
         if (viewModel.tabs.isEmpty()) {
             viewModel.loadRootBrowserItems()
@@ -163,7 +165,7 @@ fun Browser(linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Select
                                         if (obj != null) {
                                             backStack.add(Page.Info(Selection(obj)))
                                         } else {
-                                            showObjectNotFoundDialog = true
+                                            alert = BrowserAlert.ObjectNotFound
                                         }
                                     } else {
                                         backStack.add(Page.Item(item))
@@ -174,10 +176,10 @@ fun Browser(linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Select
                             }
                         }
                         is Page.Info -> NavEntry(route) {
-                            InfoScreen(selection = route.info, showTitle = false, linkHandler = {
+                            InfoScreen(selection = route.info, showTitle = false, linkClicked = {
                                 linkClicked(it)
-                            }, actionHandler = { action ->
-                                actionRequested(action, route.info)
+                            }, openSubsystem = {
+                                openSubsystem(route.info)
                             }, paddingValues = paddingValues)
                         }
                     }
@@ -186,18 +188,16 @@ fun Browser(linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Select
         }
     }
 
-    if (showObjectNotFoundDialog) {
-        AlertDialog(onDismissRequest = {
-            showObjectNotFoundDialog = false
-        }, confirmButton = {
-            TextButton(onClick = {
-                showObjectNotFoundDialog = false
-            }) {
-                Text(text = CelestiaString("OK", ""))
+    alert?.let { content ->
+        when (content) {
+            is BrowserAlert.ObjectNotFound -> {
+                SimpleAlertDialog(onDismissRequest = {
+                    alert = null
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Object not found", ""))
             }
-        }, title = {
-            Text(text = CelestiaString("Object not found", ""))
-        })
+        }
     }
 }
 
@@ -205,8 +205,8 @@ fun Browser(linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Select
 class BrowserFragment : Fragment() {
     interface Listener {
         fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo)
-        fun browserLinkClicked(url: URL)
-        fun browserActionRequested(action: InfoActionItem, selection: Selection)
+        fun browserLinkClicked(link: String)
+        fun browserRequestSubsystem(selection: Selection)
     }
 
     private var listener: Listener? = null
@@ -238,8 +238,8 @@ class BrowserFragment : Fragment() {
                 Mdc3Theme {
                     Browser(linkClicked = {
                         listener?.browserLinkClicked(it)
-                    }, actionRequested = { action, selection ->
-                        listener?.browserActionRequested(action, selection)
+                    }, openSubsystem = { selection ->
+                        listener?.browserRequestSubsystem(selection)
                     }, addonCategoryRequested = {
                         listener?.browserAddonCategoryRequested(it)
                     })

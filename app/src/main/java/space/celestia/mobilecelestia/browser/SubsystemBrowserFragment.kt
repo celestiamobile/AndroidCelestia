@@ -20,14 +20,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -54,17 +52,19 @@ import space.celestia.mobilecelestia.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.mobilecelestia.browser.viewmodel.SubsystemPage
 import space.celestia.mobilecelestia.browser.viewmodel.SubsystemViewModel
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.info.InfoScreen
-import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
-import java.net.URL
 
+sealed class SubsystemBrowserAlert {
+    data object ObjectNotFound: SubsystemBrowserAlert()
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubsystemBrowser(selection: Selection, linkClicked: (URL) -> Unit, actionRequested: (InfoActionItem, Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit) {
+fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit) {
     val viewModel: SubsystemViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    var showObjectNotFoundDialog by remember { mutableStateOf(false)  }
+    var alert by remember { mutableStateOf<SubsystemBrowserAlert?>(null)  }
     val backStack = viewModel.backStack
     LaunchedEffect(Unit) {
         if (backStack.isEmpty())
@@ -126,7 +126,7 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (URL) -> Unit, actionReq
                                     if (obj != null) {
                                         backStack.add(SubsystemPage.Info(Selection(obj)))
                                     } else {
-                                        showObjectNotFoundDialog = true
+                                        alert = SubsystemBrowserAlert.ObjectNotFound
                                     }
                                 } else {
                                     backStack.add(SubsystemPage.Item(item))
@@ -137,10 +137,10 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (URL) -> Unit, actionReq
                         }
                     }
                     is SubsystemPage.Info -> NavEntry(route) {
-                        InfoScreen(selection = route.info, showTitle = false, linkHandler = {
+                        InfoScreen(selection = route.info, showTitle = false, linkClicked = {
                             linkClicked(it)
-                        }, actionHandler = { action ->
-                            actionRequested(action, route.info)
+                        }, openSubsystem = {
+                            openSubsystem(route.info)
                         }, paddingValues = paddingValues)
                     }
                 }
@@ -148,26 +148,24 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (URL) -> Unit, actionReq
         )
     }
 
-    if (showObjectNotFoundDialog) {
-        AlertDialog(onDismissRequest = {
-            showObjectNotFoundDialog = false
-        }, confirmButton = {
-            TextButton(onClick = {
-                showObjectNotFoundDialog = false
-            }) {
-                Text(text = CelestiaString("OK", ""))
+    alert?.let { content ->
+        when (content) {
+            is SubsystemBrowserAlert.ObjectNotFound -> {
+                SimpleAlertDialog(onDismissRequest = {
+                    alert = null
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Object not found", ""))
             }
-        }, title = {
-            Text(text = CelestiaString("Object not found", ""))
-        })
+        }
     }
 }
 
 class SubsystemBrowserFragment : Fragment() {
     interface Listener {
         fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo)
-        fun browserLinkClicked(url: URL)
-        fun browserActionRequested(action: InfoActionItem, selection: Selection)
+        fun browserLinkClicked(link: String)
+        fun browserRequestSubsystem(selection: Selection)
     }
     private lateinit var selection: Selection
     private var listener: Listener? = null
@@ -207,8 +205,8 @@ class SubsystemBrowserFragment : Fragment() {
                 Mdc3Theme {
                     SubsystemBrowser(selection = selection, linkClicked = {
                         listener?.browserLinkClicked(it)
-                    }, actionRequested = { action, selection ->
-                        listener?.browserActionRequested(action, selection)
+                    }, openSubsystem = { selection ->
+                        listener?.browserRequestSubsystem(selection)
                     }, addonCategoryRequested = {
                         listener?.browserAddonCategoryRequested(it)
                     })

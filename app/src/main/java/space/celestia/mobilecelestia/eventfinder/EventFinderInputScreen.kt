@@ -18,10 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +36,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.DateInputDialog
 import space.celestia.mobilecelestia.compose.OptionInputDialog
 import space.celestia.mobilecelestia.compose.Separator
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.compose.TextInputDialog
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -117,17 +116,11 @@ fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: S
     alert?.let { content ->
         when (content) {
             is EventFinderInputAlert.BadTimeString -> {
-                AlertDialog(onDismissRequest = {
+                SimpleAlertDialog(onDismissRequest = {
                     alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
-                        alert = null
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, title = {
-                    Text(CelestiaString("Unrecognized time string.", "String not in correct format"))
-                })
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Unrecognized time string.", "String not in correct format"))
             }
             is EventFinderInputAlert.ObjectSelection -> {
                 OptionInputDialog(
@@ -153,6 +146,7 @@ fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: S
                 }, errorHandler = {
                     alert = EventFinderInputAlert.BadTimeString
                 }) {
+                    alert = null
                     if (content.start) {
                         startTime = it
                     } else {

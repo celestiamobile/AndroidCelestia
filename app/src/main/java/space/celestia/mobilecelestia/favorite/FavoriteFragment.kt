@@ -20,14 +20,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -51,6 +49,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.favorite.viewmodel.FavoriteViewModel
 import space.celestia.mobilecelestia.favorite.viewmodel.Page
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -155,17 +154,11 @@ private fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit,
     alert?.let { content ->
         when (content) {
             is FavoriteAlert.UnableToAdd -> {
-                AlertDialog(onDismissRequest = {
+                SimpleAlertDialog(onDismissRequest = {
                     alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
-                        alert = null
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, title = {
-                    Text(text = CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
-                })
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
             }
         }
     }

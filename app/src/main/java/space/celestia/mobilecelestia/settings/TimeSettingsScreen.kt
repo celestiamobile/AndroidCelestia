@@ -17,9 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -38,6 +35,7 @@ import kotlinx.coroutines.withContext
 import space.celestia.celestia.Utils
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.DateInputDialog
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.compose.TextInputDialog
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.info.model.CelestiaAction
@@ -103,30 +101,18 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
     alert?.let { content ->
         when (content) {
             is TimeSettingsAlert.BadTimeString -> {
-                AlertDialog(onDismissRequest = {
+                SimpleAlertDialog(onDismissRequest = {
                     alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
-                        alert = null
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, title = {
-                    Text(CelestiaString("Unrecognized time string.", "String not in correct format"))
-                })
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Unrecognized time string.", "String not in correct format"))
             }
             is TimeSettingsAlert.BadJulianDay -> {
-                AlertDialog(onDismissRequest = {
+                SimpleAlertDialog(onDismissRequest = {
                     alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
-                        alert = null
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, title = {
-                    Text(CelestiaString("Invalid Julian day string.", "The input of julian day is not valid"))
-                })
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Invalid Julian day string.", "The input of julian day is not valid"))
             }
             is TimeSettingsAlert.TimeInput -> {
                 DateInputDialog(onDismissRequest = {
@@ -134,6 +120,7 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
                 }, errorHandler = {
                     alert = TimeSettingsAlert.BadTimeString
                 }) {
+                    alert = null
                     currentTime = it
                     currentJulianDay = it.julianDay
                 }
