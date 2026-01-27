@@ -9,7 +9,6 @@
 
 package space.celestia.mobilecelestia.eventfinder
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -36,12 +35,12 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.DateInputDialog
 import space.celestia.mobilecelestia.compose.OptionInputDialog
 import space.celestia.mobilecelestia.compose.Separator
+import space.celestia.mobilecelestia.compose.TextInputDialog
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.showDateInput
-import space.celestia.mobilecelestia.utils.showTextInput
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -49,6 +48,8 @@ import java.util.Locale
 private sealed class EventFinderInputAlert {
     data object BadTimeString: EventFinderInputAlert()
     data object ObjectSelection: EventFinderInputAlert()
+    data class TimeInput(val start: Boolean): EventFinderInputAlert()
+    data class ObjectInput(val placeholder: String): EventFinderInputAlert()
 }
 
 @Composable
@@ -75,37 +76,16 @@ fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: S
         end = paddingValues.calculateEndPadding(direction),
         bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding(),
     )
-    val activity = LocalActivity.current
     LazyColumn(
         contentPadding = contentPadding,
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         item {
             TextRow(primaryText = CelestiaString("Start Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(startTime), modifier = Modifier.clickable {
-                val ac = activity ?: return@clickable
-                val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss")
-                ac.showDateInput(
-                    CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format
-                ) { date ->
-                    if (date == null) {
-                        alert = EventFinderInputAlert.BadTimeString
-                        return@showDateInput
-                    }
-                    startTime = date
-                }
+                alert = EventFinderInputAlert.TimeInput(true)
             })
             TextRow(primaryText = CelestiaString("End Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(endTime), modifier = Modifier.clickable {
-                val ac = activity ?: return@clickable
-                val format = android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMddHHmmss")
-                ac.showDateInput(
-                    CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format
-                ) { date ->
-                    if (date == null) {
-                        alert = EventFinderInputAlert.BadTimeString
-                        return@showDateInput
-                    }
-                    endTime = date
-                }
+                alert = EventFinderInputAlert.TimeInput(false)
             })
         }
 
@@ -164,12 +144,32 @@ fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: S
                         return@OptionInputDialog
                     }
 
-                    val ac = activity ?: return@OptionInputDialog
-                    // User choose other, show text input for the object name
-                    ac.showTextInput(
-                        CelestiaString("Please enter an object name.", "In Go to; Android/iOS, Enter the name of an object in Eclipse Finder"),
-                        objectName
-                    ) { name ->
+                    alert = EventFinderInputAlert.ObjectInput(objectName)
+                }
+            }
+            is EventFinderInputAlert.TimeInput -> {
+                DateInputDialog(onDismissRequest = {
+                    alert = null
+                }, errorHandler = {
+                    alert = EventFinderInputAlert.BadTimeString
+                }) {
+                    if (content.start) {
+                        startTime = it
+                    } else {
+                        endTime = it
+                    }
+                }
+            }
+            is EventFinderInputAlert.ObjectInput -> {
+                TextInputDialog(
+                    onDismissRequest = {
+                        alert = null
+                    },
+                    title = CelestiaString("Please enter an object name.", "In Go to; Android/iOS, Enter the name of an object in Eclipse Finder"),
+                    placeholder = content.placeholder
+                ) { name ->
+                    alert = null
+                    if (name != null) {
                         objectName = name
                         objectPath = name
                     }

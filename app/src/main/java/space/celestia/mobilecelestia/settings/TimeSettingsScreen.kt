@@ -9,7 +9,6 @@
 
 package space.celestia.mobilecelestia.settings
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,13 +37,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.Utils
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.DateInputDialog
+import space.celestia.mobilecelestia.compose.TextInputDialog
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.julianDay
-import space.celestia.mobilecelestia.utils.showDateInput
-import space.celestia.mobilecelestia.utils.showTextInput
 import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.text.DateFormat
 import java.text.NumberFormat
@@ -54,6 +53,8 @@ import java.util.Locale
 private sealed class TimeSettingsAlert {
     data object BadTimeString: TimeSettingsAlert()
     data object BadJulianDay: TimeSettingsAlert()
+    data object TimeInput: TimeSettingsAlert()
+    data object JulianDayInput: TimeSettingsAlert()
 }
 
 @Composable
@@ -74,7 +75,6 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
     var currentTime by remember { mutableStateOf(Utils.createDateFromJulianDay(currentJulianDay)) }
     var alert by remember { mutableStateOf<TimeSettingsAlert?>(null) }
 
-    val localActivity = LocalActivity.current
     val scope = rememberCoroutineScope()
     Column(modifier = Modifier
         .nestedScroll(nestedScrollInterop)
@@ -82,45 +82,10 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
         .padding(paddingValues)) {
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
         TextRow(primaryText = CelestiaString("Select Time", "Select simulation time"), secondaryText = dateTimeDisplayFormatter.format(currentTime), modifier = Modifier.clickable(onClick = {
-            val activity = localActivity ?: return@clickable
-            val format = android.text.format.DateFormat.getBestDateTimePattern(
-                Locale.getDefault(),
-                "yyyyMMddHHmmss"
-            )
-            activity.showDateInput(
-                CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format
-            ) { date ->
-                if (date == null) {
-                    alert = TimeSettingsAlert.BadTimeString
-                    return@showDateInput
-                }
-                scope.launch {
-                    withContext(viewModel.executor.asCoroutineDispatcher()) {
-                        viewModel.appCore.simulation.time = date.julianDay
-                    }
-                    currentTime = date
-                    currentJulianDay = date.julianDay
-                }
-            }
+            alert = TimeSettingsAlert.TimeInput
         }))
         TextRow(primaryText = CelestiaString("Julian Day", "Select time via entering Julian day"), secondaryText = displayNumberFormat.format(currentJulianDay), modifier = Modifier.clickable {
-            val activity = localActivity ?: return@clickable
-            val numberFormat = NumberFormat.getNumberInstance()
-            numberFormat.isGroupingUsed = false
-            activity.showTextInput(title = CelestiaString("Please enter Julian day.", "In time settings, enter Julian day for the simulation")) { julianDayString ->
-                val value = julianDayString.toDoubleOrNull(numberFormat)
-                if (value == null) {
-                    alert = TimeSettingsAlert.BadJulianDay
-                    return@showTextInput
-                }
-                scope.launch {
-                    withContext(viewModel.executor.asCoroutineDispatcher()) {
-                        viewModel.appCore.simulation.time = value
-                    }
-                    currentTime = Utils.createDateFromJulianDay(value)
-                    currentJulianDay = value
-                }
-            }
+            alert = TimeSettingsAlert.JulianDayInput
         })
         TextRow(primaryText = CelestiaString("Set to Current Time", "Set simulation time to device"), modifier = Modifier.clickable(onClick = {
             scope.launch {
@@ -162,6 +127,40 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
                 }, title = {
                     Text(CelestiaString("Invalid Julian day string.", "The input of julian day is not valid"))
                 })
+            }
+            is TimeSettingsAlert.TimeInput -> {
+                DateInputDialog(onDismissRequest = {
+                    alert = null
+                }, errorHandler = {
+                    alert = TimeSettingsAlert.BadTimeString
+                }) {
+                    currentTime = it
+                    currentJulianDay = it.julianDay
+                }
+            }
+            is TimeSettingsAlert.JulianDayInput -> {
+                TextInputDialog(
+                    onDismissRequest = {
+                        alert = null
+                    },
+                    title = CelestiaString("Please enter Julian day.", "In time settings, enter Julian day for the simulation")
+                ) {
+                    alert = null
+                    val numberFormat = NumberFormat.getNumberInstance()
+                    numberFormat.isGroupingUsed = false
+                    val value = it?.toDoubleOrNull(numberFormat)
+                    if (value != null) {
+                        scope.launch {
+                            withContext(viewModel.executor.asCoroutineDispatcher()) {
+                                viewModel.appCore.simulation.time = value
+                            }
+                            currentTime = Utils.createDateFromJulianDay(value)
+                            currentJulianDay = value
+                        }
+                    } else {
+                       alert = TimeSettingsAlert.BadJulianDay
+                    }
+                }
             }
         }
     }
