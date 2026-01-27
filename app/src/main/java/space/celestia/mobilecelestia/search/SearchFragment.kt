@@ -20,8 +20,6 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.Selection
 import space.celestia.mobilecelestia.compose.Mdc3Theme
-import space.celestia.mobilecelestia.info.model.InfoActionItem
-import java.net.URL
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
@@ -37,10 +35,10 @@ class SearchFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    SearchScreen(actionHandler = { action, selection ->
-                        listener?.onInfoActionSelected(action, selection)
-                    }, linkHandler = {
-                        listener?.onInfoLinkMetaDataClicked(it)
+                    SearchScreen(openSubsystem = { selection ->
+                        listener?.searchRequestOpenSubsystem(selection)
+                    }, linkClicked = {
+                        listener?.searchLinkClicked(it)
                     })
                 }
             }
@@ -62,8 +60,8 @@ class SearchFragment : Fragment() {
     }
 
     interface Listener {
-        fun onInfoActionSelected(action: InfoActionItem, item: Selection)
-        fun onInfoLinkMetaDataClicked(url: URL)
+        fun searchRequestOpenSubsystem(selection: Selection)
+        fun searchLinkClicked(link: String)
     }
 
     companion object {

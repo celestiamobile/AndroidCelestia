@@ -21,10 +21,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +37,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.OptionInputDialog
 import space.celestia.mobilecelestia.compose.Separator
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -151,32 +150,24 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
     alert?.let { content ->
         when (content) {
             is AlertContent.WrongPathProvided -> {
-                AlertDialog(onDismissRequest = {
-                    alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
+                SimpleAlertDialog(
+                    onDismissRequest = {
                         alert = null
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, title = {
-                    Text(CelestiaString("Unable to resolve path", "Custom config/data directory path have to be under a specific path"))
-                }, text = {
-                    Text(CelestiaString("Please ensure that you have selected a path under %s.", "Custom config/data directory path have to be under a specific path").format(localActivity?.externalMediaDirs?.firstOrNull() ?: localActivity?.getExternalFilesDir(null)?.absolutePath ?: ""))
-                })
+                    },
+                    onConfirm = {
+                        alert = null
+                    },
+                    title = CelestiaString("Unable to resolve path", "Custom config/data directory path have to be under a specific path"),
+                    text = CelestiaString("Please ensure that you have selected a path under %s.", "Custom config/data directory path have to be under a specific path").format(content.expectedParent)
+                )
             }
             is AlertContent.UnsupportedAction -> {
-                AlertDialog(onDismissRequest = {
+                SimpleAlertDialog(onDismissRequest = {
                     alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
-                        alert = null
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, title = {
-                    Text(CelestiaString("Unsupported action.", ""))
-                })
+                }, onConfirm = {
+                    alert = null
+
+                }, title = CelestiaString("Unsupported action.", ""))
             }
             is AlertContent.MigrateSelection -> {
                 OptionInputDialog(
@@ -193,10 +184,10 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
                 }
             }
             is AlertContent.MigrateConfirmation -> {
-                AlertDialog(onDismissRequest = {
-                    alert = null
-                }, confirmButton = {
-                    TextButton(onClick = {
+                SimpleAlertDialog(
+                    onDismissRequest = {
+                        alert = null
+                    }, onConfirm = {
                         alert = null
                         viewModel.appSettings.startEditing()
                         if (!content.useMediaDirForAddons) {
@@ -211,20 +202,11 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
                         viewModel.appSettings.stopEditing(writeImmediatelly = true)
                         localActivity?.finishAndRemoveTask()
                         exitProcess(0)
-                    }) {
-                        Text(text = CelestiaString("OK", ""))
-                    }
-                }, dismissButton = {
-                    TextButton(onClick = {
-                        alert = null
-                    }) {
-                        Text(text = CelestiaString("Cancel", ""))
-                    }
-                }, title = {
-                    Text(CelestiaString("Migrate Add-on Data", "Action to migrate data where the add-on is downloaded"))
-                }, text = {
-                    Text(CelestiaString("Celestia will exit and perform migration the next time it is opened. Target directory will be replaced with content in the current directory. The current directory will be cleared after the content is copied. Future add-ons will be downloaded to the target directory. This operation cannot be undone, so please ensure you make a backup before you proceed.", ""))
-                })
+                    },
+                    title = CelestiaString("Migrate Add-on Data", "Action to migrate data where the add-on is downloaded"),
+                    text = CelestiaString("Celestia will exit and perform migration the next time it is opened. Target directory will be replaced with content in the current directory. The current directory will be cleared after the content is copied. Future add-ons will be downloaded to the target directory. This operation cannot be undone, so please ensure you make a backup before you proceed.", ""),
+                    showCancel = true
+                )
             }
         }
     }

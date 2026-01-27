@@ -39,11 +39,16 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestia.Selection
+import space.celestia.celestia.Universe
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.compose.LinkPreview
+import space.celestia.mobilecelestia.compose.OptionInputDialog
 import space.celestia.mobilecelestia.compose.SwitchRow
 import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
 import space.celestia.mobilecelestia.info.model.InfoActionItem
+import space.celestia.mobilecelestia.info.model.InfoNormalActionItem
+import space.celestia.mobilecelestia.info.model.InfoSelectActionItem
 import space.celestia.mobilecelestia.info.model.InfoWebActionItem
 import space.celestia.mobilecelestia.info.model.MarkItem
 import space.celestia.mobilecelestia.info.model.SubsystemActionItem
@@ -53,12 +58,19 @@ import space.celestia.mobilecelestia.utils.getOverviewForSelection
 import java.net.MalformedURLException
 import java.net.URL
 
+
+sealed class InfoAlert {
+    data class AlternativeSurfaceSelection(val surfaces: List<String>): InfoAlert()
+    data object MarkerSelection: InfoAlert()
+}
+
 @Composable
-fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> Unit, actionHandler: (InfoActionItem) -> Unit,  paddingValues: PaddingValues, modifier: Modifier = Modifier) {
+fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -> Unit, openSubsystem: () -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
     val viewModel: InfoViewModel = hiltViewModel()
     var objectName by remember { mutableStateOf("") }
     var overview by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    var alert by remember { mutableStateOf<InfoAlert?>(null) }
 
     LaunchedEffect(selection) {
         objectName = if (showTitle) viewModel.appCore.simulation.universe.getNameForSelection(selection) else ""
@@ -109,7 +121,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> U
                 }
                 if (hasWebInfo && url != null) {
                     LinkPreview(url = url, modifier = rowModifier.padding(bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), onClick = { finalURL ->
-                        linkHandler(finalURL)
+                        linkClicked(finalURL.toString())
                     })
                 }
             }
@@ -135,10 +147,74 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkHandler: (URL) -> U
                     end =  if (index % 2 == 1) 0.dp else dimensionResource(horizontalButtonSpacing) / 2,
                     bottom = if (index / 2 == (count - 1) / 2) 0.dp else dimensionResource(verticalButtonSpacing) / 2,
                 ), onClick = {
-                    actionHandler(item.second)
+                    when (val action = item.second) {
+                        is AlternateSurfacesItem -> {
+                            val alternateSurfaces = selection.body?.alternateSurfaceNames ?: return@FilledTonalButton
+                            val surfaces = ArrayList<String>()
+                            surfaces.add(CelestiaString("Default", ""))
+                            surfaces.addAll(alternateSurfaces)
+                            alert = InfoAlert.AlternativeSurfaceSelection(surfaces)
+                        }
+                        is InfoNormalActionItem -> {
+                            scope.launch(viewModel.executor.asCoroutineDispatcher()) {
+                                viewModel.appCore.simulation.selection = selection
+                                viewModel.appCore.charEnter(action.item.value)
+                            }
+                        }
+                        is InfoSelectActionItem -> {
+                            scope.launch(viewModel.executor.asCoroutineDispatcher()) {
+                                viewModel.appCore.simulation.selection = selection
+                            }
+                        }
+                        is InfoWebActionItem -> {
+                            selection.webInfoURL?.let {
+                                linkClicked(it)
+                            }
+                        }
+                        is MarkItem -> {
+                            alert = InfoAlert.MarkerSelection
+                        }
+                        is SubsystemActionItem -> {
+                            openSubsystem()
+                        }
+                    }
                 }) {
                 Text(text = item.second.title)
             }
         }
     })
+
+    alert?.let { content ->
+        when (content) {
+            is InfoAlert.AlternativeSurfaceSelection -> {
+                OptionInputDialog(onDismissRequest = {
+                    alert = null
+                }, title = CelestiaString("Alternate Surfaces", "Alternative textures to display"), items = content.surfaces) { index ->
+                    alert = null
+                    scope.launch(viewModel.executor.asCoroutineDispatcher()) {
+                        if (index == 0)
+                            viewModel.appCore.simulation.activeObserver.displayedSurface = ""
+                        else
+                            viewModel.appCore.simulation.activeObserver.displayedSurface = content.surfaces[index - 1]
+                    }
+                }
+            }
+            is InfoAlert.MarkerSelection -> {
+                val markers = CelestiaFragment.getAvailableMarkers()
+                OptionInputDialog(onDismissRequest = {
+                    alert = null
+                }, title = CelestiaString("Mark", "Mark an object"), items = markers) { index ->
+                    alert = null
+                    scope.launch(viewModel.executor.asCoroutineDispatcher()) {
+                        if (index >= Universe.MARKER_COUNT) {
+                            viewModel.appCore.simulation.universe.unmark(selection)
+                        } else {
+                            viewModel.appCore.simulation.universe.mark(selection, index)
+                            viewModel.appCore.showMarkers = true
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

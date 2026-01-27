@@ -78,7 +78,7 @@ enum class CelestiaContinuosAction(val value: Int) {
 
 interface InfoItem
 
-interface InfoActionItem : InfoItem {
+sealed interface InfoActionItem : InfoItem {
     val title: String
 
     companion object {

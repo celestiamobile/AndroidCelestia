@@ -15,12 +15,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +42,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.URLHelper
 import space.celestia.mobilecelestia.BuildConfig
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.resource.viewmodel.AddonViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -63,12 +62,12 @@ sealed class AddonState: Serializable {
     }
 }
 
-sealed class AlertContent {
-    data object Cancel: AlertContent()
-    data object Uninstall: AlertContent()
-    data object UninstallFailed: AlertContent()
-    data object ObjectNotFound: AlertContent()
-    data class DownloadFailed(val errorContext: ResourceManager.ErrorContext): AlertContent()
+sealed class AddonAlert {
+    data object Cancel: AddonAlert()
+    data object Uninstall: AddonAlert()
+    data object UninstallFailed: AddonAlert()
+    data object ObjectNotFound: AddonAlert()
+    data class DownloadFailed(val message: String): AddonAlert()
 }
 
 @Composable
@@ -77,7 +76,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
     var info by rememberSaveable { mutableStateOf(item) }
     var installedAddonChecksum by rememberSaveable { mutableStateOf<String?>(null) }
     val context = LocalContext.current
-    var alert by remember { mutableStateOf<AlertContent?>( null) }
+    var alert by remember { mutableStateOf<AddonAlert?>(null) }
 
     fun getAddonState(): AddonState {
         if (viewModel.resourceManager.isInstalled(info))
@@ -92,7 +91,8 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
             val item = viewModel.resourceAPI.item(AppCore.getLanguage(), info.id)
             info = item
             addonInfoUpdated(item)
-        } catch (ignored: Throwable) {}
+        } catch (ignored: Throwable) {
+        }
         val installedItem = viewModel.resourceManager.installedResourceAsync(info)
         installedAddonChecksum = installedItem?.checksum
     }
@@ -117,7 +117,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
 
     val lifeCycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifeCycleOwner) {
-        val observer = object: ResourceManager.Listener {
+        val observer = object : ResourceManager.Listener {
             override fun onProgressUpdate(identifier: String, progress: Float) {
                 if (identifier == info.id) {
                     downloadProgress = progress
@@ -135,9 +135,40 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                     updateAddonState()
             }
 
-            override fun onResourceFetchError(identifier: String, errorContext: ResourceManager.ErrorContext) {
+            override fun onResourceFetchError(
+                identifier: String,
+                errorContext: ResourceManager.ErrorContext
+            ) {
                 if (identifier == info.id) {
-                    alert = AlertContent.DownloadFailed(errorContext)
+                    val message = when (errorContext) {
+                        ResourceManager.ErrorContext.ZipError -> CelestiaString(
+                            "Error unzipping add-on",
+                            ""
+                        )
+
+                        ResourceManager.ErrorContext.Download -> CelestiaString(
+                            "Error downloading add-on",
+                            ""
+                        )
+
+                        is ResourceManager.ErrorContext.CreateDirectory -> CelestiaString(
+                            "Error creating directory for add-on",
+                            ""
+                        )
+
+                        is ResourceManager.ErrorContext.OpenFile -> CelestiaString(
+                            "Error opening file for saving add-on",
+                            ""
+                        )
+
+                        is ResourceManager.ErrorContext.WriteFile -> CelestiaString(
+                            "Error writing data file for add-on",
+                            ""
+                        )
+
+                        else -> null
+                    } ?: return
+                    alert = AddonAlert.DownloadFailed(message)
                     updateAddonState()
                 }
             }
@@ -157,10 +188,17 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
         modifier = Modifier.padding(paddingValues)
     ) {
         if (state is AddonState.Downloading) {
-            LinearProgressIndicator(progress = { animatedProgress }, modifier = Modifier.fillMaxWidth())
+            LinearProgressIndicator(
+                progress = { animatedProgress },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
         WebPage(
-            uri = URLHelper.buildInAppAddonURI(info.id, AppCore.getLanguage(), flavor = BuildConfig.FLAVOR),
+            uri = URLHelper.buildInAppAddonURI(
+                info.id,
+                AppCore.getLanguage(),
+                flavor = BuildConfig.FLAVOR
+            ),
             contextDirectory = viewModel.resourceManager.contextDirectory(info),
             filterURL = true,
             matchingQueryKeys = listOf("item"),
@@ -189,13 +227,14 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                                 viewModel.appCore.charEnter(CelestiaAction.GoTo.value)
                             }
                         }) {
-                            Text( CelestiaString("Go", "Go to an object"))
+                            Text(CelestiaString("Go", "Go to an object"))
                         }
                     }
                 }
 
                 if (scriptName != null && info.type == "script") {
-                    val scriptFile = File(viewModel.resourceManager.contextDirectory(info), scriptName)
+                    val scriptFile =
+                        File(viewModel.resourceManager.contextDirectory(info), scriptName)
                     if (scriptFile.exists()) {
                         FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = {
                             requestRunScript(scriptFile)
@@ -220,11 +259,13 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                         viewModel.resourceManager.download(info, File(context.cacheDir, info.id))
                         updateAddonState()
                     }
+
                     is AddonState.Downloading -> {
-                        alert = AlertContent.Cancel
+                        alert = AddonAlert.Cancel
                     }
+
                     is AddonState.Installed -> {
-                        alert = AlertContent.Uninstall
+                        alert = AddonAlert.Uninstall
                     }
                 }
             }) {
@@ -232,9 +273,11 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                     is AddonState.None -> {
                         Text(CelestiaString("Install", "Install an add-on"))
                     }
+
                     is AddonState.Downloading -> {
                         Text(CelestiaString("Cancel", ""))
                     }
+
                     is AddonState.Installed -> {
                         Text(CelestiaString("Uninstall", "Uninstall an add-on"))
                     }
@@ -243,65 +286,70 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
         }
     }
 
-    val currentAlert = alert ?: return
-    AlertDialog(onDismissRequest = {
-        alert = null
-    }, confirmButton = {
-        TextButton(onClick = {
-            alert = null
-            when (currentAlert) {
-                AlertContent.Uninstall -> {
-                    var success = false
-                    try {
-                        success = viewModel.resourceManager.uninstall(item)
-                    } catch (_: Exception) {}
-                    if (success) {
+    alert?.let { content ->
+        when (content) {
+            is AddonAlert.DownloadFailed -> {
+                SimpleAlertDialog(
+                    onDismissRequest = { alert = null },
+                    onConfirm = { alert = null },
+                    title = CelestiaString("Failed to download or install this add-on.", ""),
+                    text = content.message
+                )
+            }
+
+            is AddonAlert.ObjectNotFound -> {
+                SimpleAlertDialog(onDismissRequest = {
+                    alert = null
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Object not found", ""))
+            }
+
+            is AddonAlert.Cancel -> {
+                SimpleAlertDialog(
+                    onDismissRequest = {
+                        alert = null
+                    },
+                    onConfirm = {
+                        alert = null
+                        viewModel.resourceManager.cancel(info.id)
                         updateAddonState()
-                    } else {
-                        alert = AlertContent.UninstallFailed
-                    }
-                }
-                AlertContent.Cancel -> {
-                    viewModel.resourceManager.cancel(info.id)
-                    updateAddonState()
-                }
-                else -> {}
+                    },
+                    title = CelestiaString("Do you want to cancel this task?",  "Prompt to ask to cancel downloading an add-on"),
+                    showCancel = true
+                )
             }
-        }) {
-            Text(text = CelestiaString("OK", ""))
+
+            is AddonAlert.Uninstall -> {
+                SimpleAlertDialog(
+                    onDismissRequest = {
+                        alert = null
+                    },
+                    onConfirm = {
+                        alert = null
+                        var success = false
+                        try {
+                            success = viewModel.resourceManager.uninstall(item)
+                        } catch (_: Exception) {
+                        }
+                        if (success) {
+                            updateAddonState()
+                        } else {
+                            alert = AddonAlert.UninstallFailed
+                        }
+                    },
+                    title = CelestiaString("Do you want to uninstall this add-on?", ""),
+                    showCancel = true
+                )
+            }
+
+            is AddonAlert.UninstallFailed -> {
+                SimpleAlertDialog(onDismissRequest = {
+                    alert = null
+                }, onConfirm = {
+                    alert = null
+                }, title = CelestiaString("Object not found", ""))
+            }
         }
-    }, dismissButton = if (currentAlert is AlertContent.UninstallFailed || currentAlert is AlertContent.DownloadFailed || currentAlert is AlertContent.ObjectNotFound) null else {{
-        TextButton(onClick = {
-            alert = null
-        }) {
-            Text(text = CelestiaString("Cancel", ""))
-        }
-    }}, title = {
-        when (currentAlert) {
-            AlertContent.Uninstall -> {
-                Text(text = CelestiaString("Do you want to uninstall this add-on?", ""))
-            }
-            AlertContent.Cancel -> {
-                Text(text = CelestiaString("Do you want to cancel this task?", "Prompt to ask to cancel downloading an add-on"))
-            }
-            AlertContent.UninstallFailed -> {
-                Text(text = CelestiaString("Unable to uninstall add-on.", ""))
-            }
-            is AlertContent.DownloadFailed -> {
-                Text(CelestiaString("Failed to download or install this add-on.", ""))
-            }
-            is AlertContent.ObjectNotFound -> {
-                Text(CelestiaString("Object not found", ""))
-            }
-        }
-    }, text = if (currentAlert is AlertContent.DownloadFailed && currentAlert.errorContext !is ResourceManager.ErrorContext.Cancelled) {{
-        val message = when (currentAlert.errorContext) {
-            ResourceManager.ErrorContext.ZipError -> CelestiaString("Error unzipping add-on", "")
-            ResourceManager.ErrorContext.Download -> CelestiaString("Error downloading add-on", "")
-            is ResourceManager.ErrorContext.CreateDirectory -> CelestiaString("Error creating directory for add-on", "")
-            is ResourceManager.ErrorContext.OpenFile -> CelestiaString("Error opening file for saving add-on", "")
-            is ResourceManager.ErrorContext.WriteFile -> CelestiaString("Error writing data file for add-on", "")
-        }
-        Text(message)
-    }} else null)
+    }
 }

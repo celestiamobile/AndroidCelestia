@@ -70,7 +70,6 @@ import org.json.JSONObject
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
-import space.celestia.celestia.Universe
 import space.celestia.celestiafoundation.favorite.BookmarkNode
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
@@ -110,28 +109,21 @@ import space.celestia.mobilecelestia.favorite.updateCurrentScripts
 import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.NewHelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
-import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
 import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
-import space.celestia.mobilecelestia.info.model.InfoActionItem
-import space.celestia.mobilecelestia.info.model.InfoNormalActionItem
-import space.celestia.mobilecelestia.info.model.InfoSelectActionItem
-import space.celestia.mobilecelestia.info.model.InfoWebActionItem
-import space.celestia.mobilecelestia.info.model.MarkItem
-import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.resource.CommonWebFragment
-import space.celestia.mobilecelestia.resource.WebBrowserFragment
-import space.celestia.mobilecelestia.resource.AddonManagerFragment
 import space.celestia.mobilecelestia.resource.AddonFragment
+import space.celestia.mobilecelestia.resource.AddonManagerFragment
+import space.celestia.mobilecelestia.resource.CommonWebFragment
 import space.celestia.mobilecelestia.resource.SimpleWebFragment
+import space.celestia.mobilecelestia.resource.WebBrowserFragment
 import space.celestia.mobilecelestia.resource.model.ResourceAPIService
 import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.mobilecelestia.settings.CustomFont
-import space.celestia.mobilecelestia.settings.TimeSettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsFragment
 import space.celestia.mobilecelestia.settings.SettingsKey
+import space.celestia.mobilecelestia.settings.TimeSettingsFragment
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
@@ -144,7 +136,6 @@ import space.celestia.mobilecelestia.utils.showOptions
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.net.URL
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -1124,65 +1115,27 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(fragment)
     }
 
-    // Listeners...
-    override fun onInfoActionSelected(action: InfoActionItem, item: Selection) {
-        when (action) {
-            is InfoNormalActionItem -> {
-                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                    appCore.simulation.selection = item
-                    appCore.charEnter(action.item.value)
-                }
-            }
-            is InfoSelectActionItem -> {
-                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                    appCore.simulation.selection = item
-                }
-            }
-            is InfoWebActionItem -> {
-                val url = item.webInfoURL
-                if (url != null)
-                    openURL(url)
-            }
-            is SubsystemActionItem -> {
-                if (item.`object` == null) return
-                lifecycleScope.launch {
-                    showBottomSheetFragment(SubsystemBrowserFragment.newInstance(item))
-                }
-            }
-            is AlternateSurfacesItem -> {
-                val alternateSurfaces = item.body?.alternateSurfaceNames ?: return
-                val surfaces = ArrayList<String>()
-                surfaces.add(CelestiaString("Default", ""))
-                surfaces.addAll(alternateSurfaces)
-                showOptions(CelestiaString("Alternate Surfaces", "Alternative textures to display"), surfaces.toTypedArray()) { index ->
-                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                        if (index == 0)
-                            appCore.simulation.activeObserver.displayedSurface = ""
-                        else
-                            appCore.simulation.activeObserver.displayedSurface = alternateSurfaces[index - 1]
-                    }
-                }
-            }
-            is MarkItem -> {
-                val markers = CelestiaFragment.getAvailableMarkers()
-                showOptions(CelestiaString("Mark", "Mark an object"), markers.toTypedArray()) { newIndex ->
-                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                        if (newIndex >= Universe.MARKER_COUNT) {
-                            appCore.simulation.universe.unmark(item)
-                        } else {
-                            appCore.simulation.universe.mark(item, newIndex)
-                            appCore.showMarkers = true
-                        }
-                    }
-                }
-            }
-            else -> {
-            }
+    override fun infoRequestOpenSubsystem(selection: Selection) {
+        if (selection.`object` == null) return
+        lifecycleScope.launch {
+            showBottomSheetFragment(SubsystemBrowserFragment.newInstance(selection))
         }
     }
 
-    override fun onInfoLinkMetaDataClicked(url: URL) {
-        openURL(url.toString())
+    override fun infoLinkClicked(link: String) {
+        openURL(link)
+    }
+
+    override fun searchLinkClicked(link: String) {
+        openURL(link)
+    }
+
+    override fun searchRequestOpenSubsystem(selection: Selection) {
+        infoRequestOpenSubsystem(selection)
+    }
+
+    override fun browserRequestSubsystem(selection: Selection) {
+        infoRequestOpenSubsystem(selection)
     }
 
     override fun webRequestRunScript(script: File) {
@@ -1297,12 +1250,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openAddonCategory(addonCategory)
     }
 
-    override fun browserLinkClicked(url: URL) {
-        onInfoLinkMetaDataClicked(url)
-    }
-
-    override fun browserActionRequested(action: InfoActionItem, selection: Selection) {
-        onInfoActionSelected(action, selection)
+    override fun browserLinkClicked(link: String) {
+        openURL(link)
     }
 
     override fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean) {

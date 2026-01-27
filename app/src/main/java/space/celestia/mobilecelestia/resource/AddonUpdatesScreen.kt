@@ -12,10 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -41,6 +38,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.EmptyHint
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.resource.model.AddonUpdateManager
 import space.celestia.mobilecelestia.resource.viewmodel.AddonManagerViewModel
@@ -48,6 +46,9 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 import java.text.DateFormat
 import java.util.Locale
 
+sealed class AddonUpdatesAlert {
+    data object ErrorCheckingUpdate: AddonUpdatesAlert()
+}
 @Composable
 fun AddonUpdatesScreen(paddingValues: PaddingValues, requestOpenAddon: (ResourceItem) -> Unit) {
     val viewModel: AddonManagerViewModel = hiltViewModel()
@@ -55,7 +56,7 @@ fun AddonUpdatesScreen(paddingValues: PaddingValues, requestOpenAddon: (Resource
     val scope = rememberCoroutineScope()
 
     val formatter by remember { mutableStateOf(DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())) }
-    var showCheckUpdatesError by remember { mutableStateOf(false) }
+    var alert by remember { mutableStateOf<AddonUpdatesAlert?>(null) }
 
     suspend fun refreshAddonList(checkReason: AddonUpdateManager.CheckReason) {
         val purchaseToken = viewModel.purchaseManager.purchaseToken() ?: return
@@ -65,7 +66,7 @@ fun AddonUpdatesScreen(paddingValues: PaddingValues, requestOpenAddon: (Resource
             language = AppCore.getLanguage()
         )
         if (!success) {
-            showCheckUpdatesError = true
+            alert = AddonUpdatesAlert.ErrorCheckingUpdate
         }
     }
 
@@ -152,19 +153,19 @@ fun AddonUpdatesScreen(paddingValues: PaddingValues, requestOpenAddon: (Resource
         }
     }
 
-    if (showCheckUpdatesError) {
-        AlertDialog(onDismissRequest = {
-            showCheckUpdatesError = false
-        }, confirmButton = {
-            TextButton(onClick = {
-                showCheckUpdatesError = false
-            }) {
-                Text(text = CelestiaString("OK", ""))
+    alert?.let { content ->
+        when (content) {
+            is AddonUpdatesAlert.ErrorCheckingUpdate -> {
+                SimpleAlertDialog(
+                    onDismissRequest = {
+                        alert = null
+                    }, onConfirm = {
+                        alert = null
+                    },
+                    title = CelestiaString("Error checking updates", "Encountered error while checking updates."),
+                    text = CelestiaString("Please ensure you have a valid Celestia PLUS subscription or check again later.", "Encountered error while checking updates, possible recovery instruction.")
+                )
             }
-        }, title = {
-            Text(text = CelestiaString("Error checking updates", "Encountered error while checking updates."))
-        }, text = {
-            Text(CelestiaString("Please ensure you have a valid Celestia PLUS subscription or check again later.", "Encountered error while checking updates, possible recovery instruction."))
-        })
+        }
     }
 }
