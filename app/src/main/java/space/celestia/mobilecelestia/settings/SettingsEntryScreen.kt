@@ -9,7 +9,6 @@
 
 package space.celestia.mobilecelestia.settings
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +35,7 @@ import space.celestia.mobilecelestia.compose.CheckboxRow
 import space.celestia.mobilecelestia.compose.Footer
 import space.celestia.mobilecelestia.compose.FooterLink
 import space.celestia.mobilecelestia.compose.Header
+import space.celestia.mobilecelestia.compose.OptionInputDialog
 import space.celestia.mobilecelestia.compose.RadioButtonRow
 import space.celestia.mobilecelestia.compose.Separator
 import space.celestia.mobilecelestia.compose.SliderRow
@@ -43,7 +43,6 @@ import space.celestia.mobilecelestia.compose.SwitchRow
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.mobilecelestia.utils.showOptions
 
 @Composable
 fun SettingsEntryScreen(item: SettingsCommonItem, paddingValues: PaddingValues, linkClicked: (String, Boolean) -> Unit) {
@@ -95,7 +94,6 @@ fun SettingsEntryScreen(item: SettingsCommonItem, paddingValues: PaddingValues, 
 private fun SettingEntry(item: SettingsItem) {
     val viewModel: SettingsViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
-    val localActivity = LocalActivity.current
     when (item) {
         is SettingsSwitchItem -> {
             var on by remember {
@@ -164,18 +162,25 @@ private fun SettingEntry(item: SettingsItem) {
             var selected by remember {
                 mutableIntStateOf(viewModel.appSettings[item.key]?.toIntOrNull() ?: item.defaultSelection)
             }
+            var showOptions by remember {  mutableStateOf(false) }
             TextRow(
                 primaryText = item.name,
                 secondaryText = item.options.firstOrNull { it.first == selected }?.second,
                 modifier = Modifier.clickable {
-                    val activity = localActivity ?: return@clickable
-                    activity.showOptions("", options = item.options.map { it.second }.toTypedArray()) { index ->
-                        val value = item.options[index].first
-                        selected = value
-                        viewModel.appSettings[item.key] = value.toString()
-                    }
+                    showOptions = true
                 }
             )
+
+            if (showOptions) {
+                OptionInputDialog(onDismissRequest = {
+                    showOptions = false
+                }, title = null, items = item.options.map { it.second }) { index ->
+                    showOptions = false
+                    val value = item.options[index].first
+                    selected = value
+                    viewModel.appSettings[item.key] = value.toString()
+                }
+            }
         }
 
         is SettingsActionItem -> {

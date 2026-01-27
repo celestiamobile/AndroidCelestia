@@ -72,7 +72,6 @@ import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
 import space.celestia.celestiafoundation.favorite.BookmarkNode
-import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
@@ -1245,10 +1244,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onOpenSubscriptionPage(preferredPlayOfferId: String?) {
         showInAppPurchase(preferredPlayOfferId)
-    }
-
-    override fun onObjectNotFound() {
-        showAlert(CelestiaString("Object not found", ""))
     }
 
     private fun onInstantActionSelected(item: CelestiaAction) {

@@ -18,6 +18,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -40,13 +43,18 @@ import space.celestia.mobilecelestia.info.model.CelestiaAction
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.julianDay
-import space.celestia.mobilecelestia.utils.showAlert
 import space.celestia.mobilecelestia.utils.showDateInput
 import space.celestia.mobilecelestia.utils.showTextInput
 import space.celestia.mobilecelestia.utils.toDoubleOrNull
 import java.text.DateFormat
 import java.text.NumberFormat
 import java.util.Locale
+
+
+private sealed class TimeSettingsAlert {
+    data object BadTimeString: TimeSettingsAlert()
+    data object BadJulianDay: TimeSettingsAlert()
+}
 
 @Composable
 fun TimeSettingsScreen(paddingValues: PaddingValues) {
@@ -64,6 +72,7 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
     val viewModel: SettingsViewModel = hiltViewModel()
     var currentJulianDay by remember { mutableDoubleStateOf(viewModel.appCore.simulation.time) }
     var currentTime by remember { mutableStateOf(Utils.createDateFromJulianDay(currentJulianDay)) }
+    var alert by remember { mutableStateOf<TimeSettingsAlert?>(null) }
 
     val localActivity = LocalActivity.current
     val scope = rememberCoroutineScope()
@@ -82,7 +91,7 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
                 CelestiaString("Please enter the time in \"%s\" format.", "").format(format), format
             ) { date ->
                 if (date == null) {
-                    activity.showAlert(CelestiaString("Unrecognized time string.", "String not in correct format"))
+                    alert = TimeSettingsAlert.BadTimeString
                     return@showDateInput
                 }
                 scope.launch {
@@ -101,7 +110,7 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
             activity.showTextInput(title = CelestiaString("Please enter Julian day.", "In time settings, enter Julian day for the simulation")) { julianDayString ->
                 val value = julianDayString.toDoubleOrNull(numberFormat)
                 if (value == null) {
-                    activity.showAlert(CelestiaString("Invalid Julian day string.", "The input of julian day is not valid"))
+                    alert = TimeSettingsAlert.BadJulianDay
                     return@showTextInput
                 }
                 scope.launch {
@@ -124,5 +133,36 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
             }
         }))
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
+    }
+
+    alert?.let { content ->
+        when (content) {
+            is TimeSettingsAlert.BadTimeString -> {
+                AlertDialog(onDismissRequest = {
+                    alert = null
+                }, confirmButton = {
+                    TextButton(onClick = {
+                        alert = null
+                    }) {
+                        Text(text = CelestiaString("OK", ""))
+                    }
+                }, title = {
+                    Text(CelestiaString("Unrecognized time string.", "String not in correct format"))
+                })
+            }
+            is TimeSettingsAlert.BadJulianDay -> {
+                AlertDialog(onDismissRequest = {
+                    alert = null
+                }, confirmButton = {
+                    TextButton(onClick = {
+                        alert = null
+                    }) {
+                        Text(text = CelestiaString("OK", ""))
+                    }
+                }, title = {
+                    Text(CelestiaString("Invalid Julian day string.", "The input of julian day is not valid"))
+                })
+            }
+        }
     }
 }
