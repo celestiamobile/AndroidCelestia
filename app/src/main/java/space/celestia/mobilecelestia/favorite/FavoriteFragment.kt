@@ -56,15 +56,18 @@ import space.celestia.mobilecelestia.favorite.viewmodel.Page
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.currentBookmark
 
+sealed class FavoriteAlert {
+    data object UnableToAdd: FavoriteAlert()
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FavoriteContainer(renameRequested: (MutableFavoriteBaseItem, (String) -> Unit) -> Unit, shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
+private fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
     val viewModel: FavoriteViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val backStack = viewModel.backStack
     val scope = rememberCoroutineScope()
-    var showCannotAddObjectDialog by remember { mutableStateOf(false)  }
+    var alert by remember { mutableStateOf<FavoriteAlert?>(null)  }
 
     Scaffold(
         topBar = {
@@ -99,7 +102,7 @@ private fun FavoriteContainer(renameRequested: (MutableFavoriteBaseItem, (String
                             scope.launch {
                                 val bookmark = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.currentBookmark }
                                 if (bookmark == null) {
-                                    showCannotAddObjectDialog = true
+                                    alert = FavoriteAlert.UnableToAdd
                                     return@launch
                                 }
                                 current.item.append(FavoriteBookmarkItem(bookmark))
@@ -136,7 +139,7 @@ private fun FavoriteContainer(renameRequested: (MutableFavoriteBaseItem, (String
                 when (route) {
                     is Page.Item -> {
                         NavEntry(route) {
-                            FavoriteItemScreen(route.item, paddingValues, renameRequested = renameRequested, shareRequested = shareRequested, openBookmarkRequested = openBookmarkRequested, openScriptRequested = openScriptRequested)
+                            FavoriteItemScreen(route.item, paddingValues, shareRequested = shareRequested, openBookmarkRequested = openBookmarkRequested, openScriptRequested = openScriptRequested)
                         }
                     }
                     is Page.Destination -> {
@@ -149,25 +152,28 @@ private fun FavoriteContainer(renameRequested: (MutableFavoriteBaseItem, (String
         )
     }
 
-    if (showCannotAddObjectDialog) {
-        AlertDialog(onDismissRequest = {
-            showCannotAddObjectDialog = false
-        }, confirmButton = {
-            TextButton(onClick = {
-                showCannotAddObjectDialog = false
-            }) {
-                Text(text = CelestiaString("OK", ""))
+    alert?.let { content ->
+        when (content) {
+            is FavoriteAlert.UnableToAdd -> {
+                AlertDialog(onDismissRequest = {
+                    alert = null
+                }, confirmButton = {
+                    TextButton(onClick = {
+                        alert = null
+                    }) {
+                        Text(text = CelestiaString("OK", ""))
+                    }
+                }, title = {
+                    Text(text = CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
+                })
             }
-        }, title = {
-            Text(text = CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
-        })
+        }
     }
 }
 
 class FavoriteFragment : Fragment() {
     interface Listener {
         fun saveFavorites()
-        fun renameFavorite(item: MutableFavoriteBaseItem, completion: (String) -> Unit)
         fun shareFavoriteItem(item: MutableFavoriteBaseItem)
         fun openFavoriteBookmark(item: FavoriteBookmarkItem)
         fun openFavoriteScript(item: FavoriteScriptItem)
@@ -186,9 +192,7 @@ class FavoriteFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    FavoriteContainer(renameRequested = { item, completion ->
-                        listener?.renameFavorite(item, completion)
-                    }, shareRequested = { item ->
+                    FavoriteContainer(shareRequested = { item ->
                         listener?.shareFavoriteItem(item)
                     }, openBookmarkRequested = { item ->
                         listener?.openFavoriteBookmark(item)

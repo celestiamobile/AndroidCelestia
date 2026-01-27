@@ -141,7 +141,6 @@ import space.celestia.mobilecelestia.utils.PreferenceManager
 import space.celestia.mobilecelestia.utils.showAlert
 import space.celestia.mobilecelestia.utils.showError
 import space.celestia.mobilecelestia.utils.showOptions
-import space.celestia.mobilecelestia.utils.showTextInput
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -1362,13 +1361,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun openFavoriteScript(item: FavoriteScriptItem) {
         openCelestiaURL(item.script.filename)
-    }
-
-    override fun renameFavorite(item: MutableFavoriteBaseItem, completion: (String) -> Unit) {
-        showTextInput(CelestiaString("Rename", "Rename a favorite item (currently bookmark)"), item.title) { text ->
-            item.rename(text)
-            completion(text)
-        }
     }
 
     override fun settingsLinkClicked(link: String, localizable: Boolean) {

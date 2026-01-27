@@ -61,16 +61,22 @@ import space.celestia.mobilecelestia.compose.ContextMenuContainer
 import space.celestia.mobilecelestia.compose.DragDropState
 import space.celestia.mobilecelestia.compose.DraggableItem
 import space.celestia.mobilecelestia.compose.EmptyHint
+import space.celestia.mobilecelestia.compose.TextInputDialog
 import space.celestia.mobilecelestia.compose.dragContainerForDragHandle
 import space.celestia.mobilecelestia.compose.rememberDragDropState
 import space.celestia.mobilecelestia.favorite.viewmodel.FavoriteViewModel
 import space.celestia.mobilecelestia.favorite.viewmodel.Page
 import space.celestia.mobilecelestia.utils.CelestiaString
 
+sealed class FavoriteItemAlert {
+    data class Rename(val item: MutableFavoriteBaseItem): FavoriteItemAlert()
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, renameRequested: (MutableFavoriteBaseItem, (String) -> Unit) -> Unit, shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
+fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
     val viewModel: FavoriteViewModel = hiltViewModel()
+    var alert by remember { mutableStateOf<FavoriteItemAlert?>(null)  }
     if (parent.children.isEmpty()) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -128,9 +134,7 @@ fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, r
                     }
 
                     val renameHandler: () -> Unit = if (item is MutableFavoriteBaseItem) {{
-                        renameRequested(item) { newName ->
-                            item.rename(newName)
-                        }
+                        alert = FavoriteItemAlert.Rename(item)
                     }} else {{}}
                     DraggableItem(dragDropState = dragDropState, index = index, modifier = Modifier.animateItem()) {
                         Item(item = item, index = index, dragDropState = dragDropState, isDraggable = true, selected = selectionHandler, deleteRequested = deleteHandler, renameRequested = renameHandler, shareRequested = shareHandler)
@@ -141,8 +145,22 @@ fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, r
             }
         }
     }
-}
 
+    alert?.let { content ->
+        when (content) {
+            is FavoriteItemAlert.Rename -> {
+                TextInputDialog(onDismissRequest = {
+                    alert = null
+                }, title = CelestiaString("Rename", "Rename a favorite item (currently bookmark)"), placeholder = content.item.title) {
+                    alert = null
+                    if (it != null) {
+                        content.item.rename(it)
+                    }
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
