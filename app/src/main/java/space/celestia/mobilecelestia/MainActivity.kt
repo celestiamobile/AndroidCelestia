@@ -778,7 +778,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (guide != null) {
             lifecycleScope.launch {
                 val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
-                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = guide, language = lang, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
+                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = guide, language = lang, flavor = BuildConfig.FLAVOR, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
             }
             cleanup()
             return
@@ -802,7 +802,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
                 val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
-                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
+                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, flavor = BuildConfig.FLAVOR, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
             } catch (ignored: Throwable) {}
         }
     }
@@ -1863,6 +1863,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .buildUpon()
             .appendQueryParameter("lang", AppCore.getLanguage())
             .appendQueryParameter("platform", "android")
+            .appendQueryParameter("distribution", BuildConfig.FLAVOR)
             .appendQueryParameter("theme", "dark")
             .appendQueryParameter("transparentBackground", "true")
             .appendQueryParameter("api", "2")
@@ -1879,6 +1880,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .buildUpon()
             .appendQueryParameter("lang", language)
             .appendQueryParameter("platform", "android")
+            .appendQueryParameter("distribution", BuildConfig.FLAVOR)
             .appendQueryParameter("theme", "dark")
             .appendQueryParameter("transparentBackground", "true")
         builder = if (info.isLeaf)

@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.utils.URLHelper
+import space.celestia.mobilecelestia.BuildConfig
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.resource.WebPage
 
@@ -52,7 +53,7 @@ class NewHelpFragment: Fragment() {
             setContent {
                 Mdc3Theme {
                     WebPage(
-                        uri = URLHelper.buildInAppGuideShortURI("/help/welcome", AppCore.getLanguage(), false),
+                        uri = URLHelper.buildInAppGuideShortURI("/help/welcome", AppCore.getLanguage(), flavor = BuildConfig.FLAVOR, shareable = false),
                         filterURL = true,
                         matchingQueryKeys = listOf("guide"),
                         paddingValues = WindowInsets.systemBars.asPaddingValues(),
