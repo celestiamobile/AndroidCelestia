@@ -165,7 +165,7 @@ private fun EventFinder() {
                 }, onConfirm = {
                     alert = null
                     content.finder.abort()
-                }, title = CelestiaString("Calculating…", "Calculating for eclipses"), dismissOnBackPressOrClickOutside = false)
+                }, title = CelestiaString("Calculating…", "Calculating for eclipses"), confirmButtonText = CelestiaString("Cancel", ""), dismissOnBackPressOrClickOutside = false)
             }
         }
     }

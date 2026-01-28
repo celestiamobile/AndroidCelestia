@@ -14,13 +14,14 @@ fun SimpleAlertDialog(
     title: String,
     text: String? = null,
     showCancel: Boolean = false,
-    dismissOnBackPressOrClickOutside: Boolean = true
+    dismissOnBackPressOrClickOutside: Boolean = true,
+    confirmButtonText: String? = null
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(text = CelestiaString("OK", ""))
+                Text(text = confirmButtonText ?: CelestiaString("OK", ""))
             }
         },
         dismissButton = if (showCancel) {{

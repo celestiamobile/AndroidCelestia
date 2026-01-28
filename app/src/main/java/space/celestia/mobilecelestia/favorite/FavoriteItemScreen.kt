@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -80,7 +79,7 @@ fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, s
     if (parent.children.isEmpty()) {
         Box(modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding(), contentAlignment = Alignment.Center) {
+            .padding(paddingValues), contentAlignment = Alignment.Center) {
             EmptyHint(text = parent.emptyHint ?: "")
         }
     } else {
