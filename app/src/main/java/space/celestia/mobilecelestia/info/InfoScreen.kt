@@ -195,7 +195,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
                         if (index == 0)
                             viewModel.appCore.simulation.activeObserver.displayedSurface = ""
                         else
-                            viewModel.appCore.simulation.activeObserver.displayedSurface = content.surfaces[index - 1]
+                            viewModel.appCore.simulation.activeObserver.displayedSurface = content.surfaces[index]
                     }
                 }
             }
