@@ -348,7 +348,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                     alert = null
                 }, onConfirm = {
                     alert = null
-                }, title = CelestiaString("Object not found", ""))
+                }, title = CelestiaString("Unable to uninstall add-on.", ""))
             }
         }
     }
