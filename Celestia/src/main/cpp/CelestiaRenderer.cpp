@@ -82,6 +82,7 @@ public:
     enum RenderThreadMessage msg = MSG_NONE;
 
     bool enableMultisample = false;
+    bool hasOpenGLES3 = false;
     bool engineStartedCalled = false;
 
     EGLDisplay display = EGL_NO_DISPLAY;
@@ -112,6 +113,11 @@ private:
     unsigned int offscreenDepthRb{ 0 };
     int offscreenWidth{ 0 };
     int offscreenHeight{ 0 };
+
+    // MSAA offscreen buffers (ES 3.0+)
+    unsigned int msaaFbo{ 0 };
+    unsigned int msaaColorRb{ 0 };
+    unsigned int msaaDepthRb{ 0 };
 
     // Quad shader members
     unsigned int quadProgram{ 0 };
@@ -163,11 +169,14 @@ bool CelestiaRenderer::initialize()
             return false;
         }
 
+        // Try to get EGLConfig with MSAA for single-surface rendering
+        // (Dual-surface rendering will use offscreen MSAA instead)
         const EGLint configCount = 64;
         EGLConfig configs[configCount];
         EGLint numConfigs;
+
         if (enableMultisample) {
-            // Try to enable multisample but fallback if not available
+            // Try MSAA config first
             if (eglChooseConfig(display, multisampleAttribs, configs, configCount, &numConfigs)) {
                 for (EGLint i = 0; i < numConfigs; ++i) {
                     if (eglGetConfigAttrib(display, configs[i], EGL_NATIVE_VISUAL_ID, &format)) {
@@ -185,6 +194,7 @@ bool CelestiaRenderer::initialize()
             }
         }
 
+        // Fallback to non-MSAA config if MSAA not requested or unavailable
         if (config == nullptr) {
             if (!eglChooseConfig(display, attribs, configs, configCount, &numConfigs)) {
                 LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
@@ -208,6 +218,7 @@ bool CelestiaRenderer::initialize()
             return false;
         }
 
+        // Request ES 2.0 context - EGL will upgrade to ES 3.0 if available
         const EGLint contextAttributes[] = {
                 EGL_CONTEXT_CLIENT_VERSION, 2,
                 EGL_NONE
@@ -244,6 +255,19 @@ bool CelestiaRenderer::initialize()
             LOG_ERROR("eglMakeCurrent() returned error %d", eglGetError());
             destroy();
             return false;
+        }
+
+        // Detect actual OpenGL ES version
+        const char* versionStr = (const char*)glGetString(GL_VERSION);
+        if (versionStr) {
+            LOG_INFO("OpenGL Version: %s", versionStr);
+            // Check if version string contains "OpenGL ES 3" or higher
+            hasOpenGLES3 = (strstr(versionStr, "OpenGL ES 3.") != nullptr);
+            if (hasOpenGLES3) {
+                LOG_INFO("OpenGL ES 3.0+ detected, MSAA will be available");
+            } else {
+                LOG_INFO("OpenGL ES 2.0 detected, MSAA will be disabled");
+            }
         }
     } else {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -502,10 +526,7 @@ void CelestiaRenderer::setupOffscreenBuffers() {
         offscreenWidth = width;
         offscreenHeight = height;
 
-        // Note: MSAA is disabled for offscreen rendering to maintain GLES2 compatibility.
-        // MSAA is still used for direct window surface rendering (configured via EGLConfig).
-        
-        // Create regular FBO with texture and depth buffer
+        // Create regular FBO with texture and depth buffer (for resolve or non-MSAA rendering)
         glGenFramebuffers(1, &offscreenFbo);
         glGenTextures(1, &offscreenTexture);
         glGenRenderbuffers(1, &offscreenDepthRb);
@@ -525,7 +546,33 @@ void CelestiaRenderer::setupOffscreenBuffers() {
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, offscreenDepthRb);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG_ERROR("Framebuffer incomplete");
+            LOG_ERROR("Resolve framebuffer incomplete");
+        }
+
+        // Create MSAA framebuffer if ES 3.0+ and multisample enabled
+        if (hasOpenGLES3 && enableMultisample) {
+            glGenFramebuffers(1, &msaaFbo);
+            glGenRenderbuffers(1, &msaaColorRb);
+            glGenRenderbuffers(1, &msaaDepthRb);
+
+            // Create multisample color renderbuffer
+            glBindRenderbuffer(GL_RENDERBUFFER, msaaColorRb);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA8, width, height);
+
+            // Create multisample depth renderbuffer
+            glBindRenderbuffer(GL_RENDERBUFFER, msaaDepthRb);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT16, width, height);
+
+            // Attach to MSAA framebuffer
+            glBindFramebuffer(GL_FRAMEBUFFER, msaaFbo);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaaColorRb);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, msaaDepthRb);
+
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+                LOG_ERROR("MSAA framebuffer incomplete");
+            } else {
+                LOG_INFO("MSAA framebuffer created successfully with 4x samples");
+            }
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -533,6 +580,18 @@ void CelestiaRenderer::setupOffscreenBuffers() {
 }
 
 void CelestiaRenderer::cleanupOffscreenBuffers() {
+    if (msaaFbo != 0) {
+        glDeleteFramebuffers(1, &msaaFbo);
+        msaaFbo = 0;
+    }
+    if (msaaColorRb != 0) {
+        glDeleteRenderbuffers(1, &msaaColorRb);
+        msaaColorRb = 0;
+    }
+    if (msaaDepthRb != 0) {
+        glDeleteRenderbuffers(1, &msaaDepthRb);
+        msaaDepthRb = 0;
+    }
     if (offscreenFbo != 0) {
         glDeleteFramebuffers(1, &offscreenFbo);
         offscreenFbo = 0;
@@ -651,12 +710,30 @@ void *CelestiaRenderer::threadCallback(void *self)
                 // Both surfaces active: render to offscreen texture, then blit to both
                 renderer->setupOffscreenBuffers();
                 
-                // Render to offscreen buffer
-                glBindFramebuffer(GL_FRAMEBUFFER, renderer->offscreenFbo);
+                // Determine which FBO to render to
+                unsigned int renderFbo = renderer->offscreenFbo;
+                if (renderer->hasOpenGLES3 && renderer->enableMultisample && renderer->msaaFbo != 0) {
+                    renderFbo = renderer->msaaFbo;
+                }
+
+                // Render to MSAA buffer (if available) or directly to texture
+                glBindFramebuffer(GL_FRAMEBUFFER, renderFbo);
                 glViewport(0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight);
                 renderer->resizeIfNeeded(renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight);
                 renderer->tickAndDraw();
                 
+                // Resolve MSAA to texture if using MSAA
+                if (renderer->hasOpenGLES3 && renderer->enableMultisample && renderer->msaaFbo != 0) {
+                    glBindFramebuffer(GL_READ_FRAMEBUFFER, renderer->msaaFbo);
+                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderer->offscreenFbo);
+                    glBlitFramebuffer(
+                        0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight,
+                        0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight,
+                        GL_COLOR_BUFFER_BIT,
+                        GL_LINEAR
+                    );
+                }
+
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 
                 // Blit to main surface
@@ -681,7 +758,8 @@ void *CelestiaRenderer::threadCallback(void *self)
                         LOG_ERROR("SwappyGL_swap() for presentationSurface returned error %d", eglGetError());
                 }
             } else {
-                // Single surface: render directly
+                // Single surface: render directly to window surface
+                // MSAA comes from EGLConfig if enabled
                 renderer->resizeIfNeeded(newWindowWidth, newWindowHeight);
                 renderer->tickAndDraw();
                 if (!SwappyGL_swap(renderer->display, s.surface))
