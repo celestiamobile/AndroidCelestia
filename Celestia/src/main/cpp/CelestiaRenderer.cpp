@@ -31,6 +31,14 @@
 
 pthread_key_t javaEnvKey;
 
+struct CelestiaSurface
+{
+    ANativeWindow *window{ nullptr };
+    EGLSurface surface{ EGL_NO_SURFACE };
+    int windowWidth{ 0 };
+    int windowHeight{ 0 };
+};
+
 class CelestiaRenderer
 {
 public:
@@ -48,12 +56,18 @@ public:
     void pause();
     void resume();
     inline void wait();
-    void setSurface(JNIEnv *env, jobject surface);
-    void setSize(int width, int height);
+    void setSurface(JNIEnv *env, jobject surface, bool presentation);
+    void setSize(int width, int height, bool presentation);
     void setCorePointer(CelestiaCore *core);
     void makeContextCurrent();
     void setFrameRateOption(int frameRateOption);
     inline void setHasPendingTasks(bool h);
+
+    // Offscreen rendering helpers
+    void setupOffscreenBuffers();
+    void cleanupOffscreenBuffers();
+    void initQuadShader();
+    void drawTextureToScreen(unsigned int texture);
 
     jobject javaObject = nullptr;
 
@@ -68,10 +82,12 @@ public:
     enum RenderThreadMessage msg = MSG_NONE;
 
     bool enableMultisample = false;
+    bool hasOpenGLES3 = false;
     bool engineStartedCalled = false;
 
     EGLDisplay display = EGL_NO_DISPLAY;
-    EGLSurface surface = EGL_NO_SURFACE;
+    CelestiaSurface surface;
+    CelestiaSurface presentationSurface;
     EGLContext context = EGL_NO_CONTEXT;
     EGLConfig config { nullptr };
     EGLint format {};
@@ -87,13 +103,28 @@ private:
     pthread_mutex_t msgMutex {};
     pthread_cond_t resumeCond {};
 
-    int windowWidth{ 0 };
-    int windowHeight{ 0 };
     int currentWindowWidth{ 0 };
     int currentWindowHeight{ 0 };
     bool hasPendingTasks{ false };
 
-    ANativeWindow *window = nullptr;
+    // Offscreen rendering members
+    unsigned int offscreenFbo{ 0 };
+    unsigned int offscreenTexture{ 0 };
+    unsigned int offscreenDepthRb{ 0 };
+    int offscreenWidth{ 0 };
+    int offscreenHeight{ 0 };
+
+    // MSAA offscreen buffers (ES 3.0+)
+    unsigned int msaaFbo{ 0 };
+    unsigned int msaaColorRb{ 0 };
+    unsigned int msaaDepthRb{ 0 };
+
+    // Quad shader members
+    unsigned int quadProgram{ 0 };
+    int avPosition{ -1 };
+    int avTexCoord{ -1 };
+    int usTexture{ -1 };
+    unsigned int quadVbo{ 0 };
 
     static void *threadCallback(void *self);
 };
@@ -138,11 +169,14 @@ bool CelestiaRenderer::initialize()
             return false;
         }
 
+        // Try to get EGLConfig with MSAA for single-surface rendering
+        // (Dual-surface rendering will use offscreen MSAA instead)
         const EGLint configCount = 64;
         EGLConfig configs[configCount];
         EGLint numConfigs;
+
         if (enableMultisample) {
-            // Try to enable multisample but fallback if not available
+            // Try MSAA config first
             if (eglChooseConfig(display, multisampleAttribs, configs, configCount, &numConfigs)) {
                 for (EGLint i = 0; i < numConfigs; ++i) {
                     if (eglGetConfigAttrib(display, configs[i], EGL_NATIVE_VISUAL_ID, &format)) {
@@ -160,6 +194,7 @@ bool CelestiaRenderer::initialize()
             }
         }
 
+        // Fallback to non-MSAA config if MSAA not requested or unavailable
         if (config == nullptr) {
             if (!eglChooseConfig(display, attribs, configs, configCount, &numConfigs)) {
                 LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
@@ -183,6 +218,7 @@ bool CelestiaRenderer::initialize()
             return false;
         }
 
+        // Request ES 2.0 context - EGL will upgrade to ES 3.0 if available
         const EGLint contextAttributes[] = {
                 EGL_CONTEXT_CLIENT_VERSION, 2,
                 EGL_NONE
@@ -195,27 +231,63 @@ bool CelestiaRenderer::initialize()
         }
     }
 
-    if (surface != EGL_NO_SURFACE) {
+    if (surface.surface != EGL_NO_SURFACE) {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        eglDestroySurface(display, surface);
-        surface = EGL_NO_SURFACE;
+        eglDestroySurface(display, surface.surface);
+        surface.surface = EGL_NO_SURFACE;
     }
 
-    if (window) {
-        ANativeWindow_setBuffersGeometry(window, 0, 0, format);
-        if (!(surface = eglCreateWindowSurface(display, config, window, nullptr))) {
+    if (presentationSurface.surface != EGL_NO_SURFACE) {
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglDestroySurface(display, presentationSurface.surface);
+        presentationSurface.surface = EGL_NO_SURFACE;
+    }
+
+    if (surface.window != nullptr) {
+        ANativeWindow_setBuffersGeometry(surface.window, 0, 0, format);
+        if (!(surface.surface = eglCreateWindowSurface(display, config, surface.window, nullptr))) {
             LOG_ERROR("eglCreateWindowSurface() returned error %d", eglGetError());
             destroy();
             return false;
         }
 
-        if (!eglMakeCurrent(display, surface, surface, context)) {
+        if (!eglMakeCurrent(display, surface.surface, surface.surface, context)) {
             LOG_ERROR("eglMakeCurrent() returned error %d", eglGetError());
             destroy();
             return false;
         }
+
+        // Detect actual OpenGL ES version
+        const char* versionStr = (const char*)glGetString(GL_VERSION);
+        if (versionStr) {
+            LOG_INFO("OpenGL Version: %s", versionStr);
+            // Check if version string contains "OpenGL ES 3" or higher
+            hasOpenGLES3 = (strstr(versionStr, "OpenGL ES 3.") != nullptr);
+            if (hasOpenGLES3) {
+                LOG_INFO("OpenGL ES 3.0+ detected, MSAA will be available");
+            } else {
+                LOG_INFO("OpenGL ES 2.0 detected, MSAA will be disabled");
+            }
+        }
     } else {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    }
+
+    if (presentationSurface.window != nullptr) {
+        ANativeWindow_setBuffersGeometry(presentationSurface.window, 0, 0, format);
+        if (!(presentationSurface.surface = eglCreateWindowSurface(display, config, presentationSurface.window, nullptr))) {
+            LOG_ERROR("eglCreateWindowSurface() returned error %d", eglGetError());
+            destroy();
+            return false;
+        }
+
+        if (!eglMakeCurrent(display, presentationSurface.surface, presentationSurface.surface, context)) {
+            LOG_ERROR("eglMakeCurrent() returned error %d", eglGetError());
+            destroy();
+            return false;
+        }
+
+        
     }
     return true;
 }
@@ -224,16 +296,21 @@ void CelestiaRenderer::destroy()
 {
     LOG_INFO("Destroying context");
 
+    cleanupOffscreenBuffers();
+
     if (context != EGL_NO_CONTEXT)
     {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglDestroyContext(display, context);
-        if (surface != EGL_NO_SURFACE)
-            eglDestroySurface(display, surface);
+        if (surface.surface != EGL_NO_SURFACE)
+            eglDestroySurface(display, surface.surface);
+        if (presentationSurface.surface != EGL_NO_SURFACE)
+            eglDestroySurface(display, presentationSurface.surface);
         eglTerminate(display);
     }
     display = EGL_NO_DISPLAY;
-    surface = EGL_NO_SURFACE;
+    surface.surface = EGL_NO_SURFACE;
+    presentationSurface.surface = EGL_NO_SURFACE;
     context = EGL_NO_CONTEXT;
     currentWindowWidth = 0;
     currentWindowHeight = 0;
@@ -305,37 +382,39 @@ void CelestiaRenderer::wait()
         pthread_cond_wait(&resumeCond, &msgMutex);
 }
 
-void CelestiaRenderer::setSurface(JNIEnv *env, jobject m_surface)
+void CelestiaRenderer::setSurface(JNIEnv *env, jobject m_surface, bool presentation)
 {
     lock();
+    CelestiaSurface &s = presentation ? presentationSurface : surface;
     msg = CelestiaRenderer::MSG_WINDOW_SET;
 
-    if (surface != EGL_NO_SURFACE)
+    if (s.surface != EGL_NO_SURFACE)
     {
-        if (!eglDestroySurface(display, surface))
+        if (!eglDestroySurface(display, s.surface))
             LOG_ERROR("eglDestroySurface() returned error %d", eglGetError());
         else
-            surface = EGL_NO_SURFACE;
+            s.surface = EGL_NO_SURFACE;
     }
 
     // Release current window
-    if (window)
-        ANativeWindow_release(window);
+    if (s.window)
+        ANativeWindow_release(s.window);
 
     if (m_surface)
-        window = ANativeWindow_fromSurface(env, m_surface);
+        s.window = ANativeWindow_fromSurface(env, m_surface);
     else
-        window = nullptr;
-    if (window)
-        SwappyGL_setWindow(window);
+        s.window = nullptr;
+    if (s.window)
+        SwappyGL_setWindow(s.window);
     unlock();
 }
 
-void CelestiaRenderer::setSize(int width, int height)
+void CelestiaRenderer::setSize(int width, int height, bool presentation)
 {
     lock();
-    windowWidth = width;
-    windowHeight = height;
+    CelestiaSurface &s = presentation ? presentationSurface : surface;
+    s.windowWidth = width;
+    s.windowHeight = height;
     unlock();
 }
 
@@ -348,7 +427,8 @@ void CelestiaRenderer::setCorePointer(CelestiaCore *m_core)
 
 void CelestiaRenderer::makeContextCurrent()
 {
-    eglMakeCurrent(display, surface, surface, context);
+    EGLSurface s = presentationSurface.surface != EGL_NO_SURFACE ? presentationSurface.surface : surface.surface;
+    eglMakeCurrent(display, s, s, context);
 }
 
 void CelestiaRenderer::setHasPendingTasks(bool h)
@@ -378,6 +458,189 @@ void CelestiaRenderer::setFrameRateOption(int frameRateOption)
     }
 }
 
+static const char* QUAD_VS =
+    "attribute vec2 a_Position;\n"
+    "attribute vec2 a_TexCoord;\n"
+    "varying vec2 v_TexCoord;\n"
+    "void main() {\n"
+    "    gl_Position = vec4(a_Position, 0.0, 1.0);\n"
+    "    v_TexCoord = a_TexCoord;\n"
+    "}\n";
+
+static const char* QUAD_FS =
+    "precision mediump float;\n"
+    "varying vec2 v_TexCoord;\n"
+    "uniform sampler2D u_Texture;\n"
+    "void main() {\n"
+    "    gl_FragColor = texture2D(u_Texture, v_TexCoord);\n"
+    "}\n";
+
+void CelestiaRenderer::initQuadShader() {
+    if (quadProgram != 0) return;
+
+    unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs, 1, &QUAD_VS, nullptr);
+    glCompileShader(vs);
+
+    unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs, 1, &QUAD_FS, nullptr);
+    glCompileShader(fs);
+
+    quadProgram = glCreateProgram();
+    glAttachShader(quadProgram, vs);
+    glAttachShader(quadProgram, fs);
+    glLinkProgram(quadProgram);
+
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    avPosition = glGetAttribLocation(quadProgram, "a_Position");
+    avTexCoord = glGetAttribLocation(quadProgram, "a_TexCoord");
+    usTexture = glGetUniformLocation(quadProgram, "u_Texture");
+
+    // Quad covering full screen
+    float vertices[] = {
+        -1.0f, -1.0f, 0.0f, 0.0f,
+         1.0f, -1.0f, 1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f, 1.0f,
+         1.0f,  1.0f, 1.0f, 1.0f,
+    };
+    glGenBuffers(1, &quadVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void CelestiaRenderer::setupOffscreenBuffers() {
+    int width = presentationSurface.windowWidth;
+    int height = presentationSurface.windowHeight;
+
+    if (width == 0 || height == 0) return;
+
+    // Recreate buffers if size changed
+    if (offscreenFbo != 0 && (offscreenWidth != width || offscreenHeight != height)) {
+        cleanupOffscreenBuffers();
+    }
+
+    if (offscreenFbo == 0) {
+        offscreenWidth = width;
+        offscreenHeight = height;
+
+        // Create regular FBO with texture and depth buffer (for resolve or non-MSAA rendering)
+        glGenFramebuffers(1, &offscreenFbo);
+        glGenTextures(1, &offscreenTexture);
+        glGenRenderbuffers(1, &offscreenDepthRb);
+
+        glBindTexture(GL_TEXTURE_2D, offscreenTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glBindRenderbuffer(GL_RENDERBUFFER, offscreenDepthRb);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, offscreenFbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, offscreenTexture, 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, offscreenDepthRb);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            LOG_ERROR("Resolve framebuffer incomplete");
+        }
+
+        // Create MSAA framebuffer if ES 3.0+ and multisample enabled
+        if (hasOpenGLES3 && enableMultisample) {
+            glGenFramebuffers(1, &msaaFbo);
+            glGenRenderbuffers(1, &msaaColorRb);
+            glGenRenderbuffers(1, &msaaDepthRb);
+
+            // Create multisample color renderbuffer
+            glBindRenderbuffer(GL_RENDERBUFFER, msaaColorRb);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA8, width, height);
+
+            // Create multisample depth renderbuffer
+            glBindRenderbuffer(GL_RENDERBUFFER, msaaDepthRb);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT16, width, height);
+
+            // Attach to MSAA framebuffer
+            glBindFramebuffer(GL_FRAMEBUFFER, msaaFbo);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaaColorRb);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, msaaDepthRb);
+
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+                LOG_ERROR("MSAA framebuffer incomplete");
+            } else {
+                LOG_INFO("MSAA framebuffer created successfully with 4x samples");
+            }
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+}
+
+void CelestiaRenderer::cleanupOffscreenBuffers() {
+    if (msaaFbo != 0) {
+        glDeleteFramebuffers(1, &msaaFbo);
+        msaaFbo = 0;
+    }
+    if (msaaColorRb != 0) {
+        glDeleteRenderbuffers(1, &msaaColorRb);
+        msaaColorRb = 0;
+    }
+    if (msaaDepthRb != 0) {
+        glDeleteRenderbuffers(1, &msaaDepthRb);
+        msaaDepthRb = 0;
+    }
+    if (offscreenFbo != 0) {
+        glDeleteFramebuffers(1, &offscreenFbo);
+        offscreenFbo = 0;
+    }
+    if (offscreenTexture != 0) {
+        glDeleteTextures(1, &offscreenTexture);
+        offscreenTexture = 0;
+    }
+    if (offscreenDepthRb != 0) {
+        glDeleteRenderbuffers(1, &offscreenDepthRb);
+        offscreenDepthRb = 0;
+    }
+    if (quadProgram != 0) {
+        glDeleteProgram(quadProgram);
+        quadProgram = 0;
+    }
+    if (quadVbo != 0) {
+        glDeleteBuffers(1, &quadVbo);
+        quadVbo = 0;
+    }
+    offscreenWidth = 0;
+    offscreenHeight = 0;
+}
+
+void CelestiaRenderer::drawTextureToScreen(unsigned int texture) {
+    if (quadProgram == 0) initQuadShader();
+
+    glDisable(GL_DEPTH_TEST);
+    glUseProgram(quadProgram);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
+
+    glEnableVertexAttribArray(avPosition);
+    glVertexAttribPointer(avPosition, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(avTexCoord);
+    glVertexAttribPointer(avTexCoord, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(usTexture, 0);
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glDisableVertexAttribArray(avPosition);
+    glDisableVertexAttribArray(avTexCoord);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glUseProgram(0);
+    glEnable(GL_DEPTH_TEST);
+}
+
 void *CelestiaRenderer::threadCallback(void *self)
 {
     auto renderer = (CelestiaRenderer *)self;
@@ -397,7 +660,7 @@ void *CelestiaRenderer::threadCallback(void *self)
 
     while (renderingEnabled)
     {
-        if (renderer->surface != EGL_NO_SURFACE && !renderer->engineStartedCalled)
+        if (renderer->surface.surface != EGL_NO_SURFACE && !renderer->engineStartedCalled)
         {
             bool started = static_cast<bool>(newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::engineStartedMethod, static_cast<jint>(renderer->sampleCount)));
             if (!started)
@@ -423,9 +686,10 @@ void *CelestiaRenderer::threadCallback(void *self)
 
         bool needsDrawn = false;
         bool hasPendingTasks = renderer->hasPendingTasks;
-        int newWindowWidth = renderer->windowWidth;
-        int newWindowHeight = renderer->windowHeight;
-        if (renderer->engineStartedCalled && renderer->surface != EGL_NO_SURFACE && renderer->core)
+        CelestiaSurface &s = renderer->presentationSurface.surface != EGL_NO_SURFACE ? renderer->presentationSurface : renderer->surface;
+        int newWindowWidth  = s.windowWidth;
+        int newWindowHeight = s.windowHeight;
+        if (renderer->engineStartedCalled && s.surface != EGL_NO_SURFACE && renderer->core)
             needsDrawn = true;
         renderer->unlock();
 
@@ -434,10 +698,73 @@ void *CelestiaRenderer::threadCallback(void *self)
 
         if (needsDrawn)
         {
-            renderer->resizeIfNeeded(newWindowWidth, newWindowHeight);
-            renderer->tickAndDraw();
-            if (!SwappyGL_swap(renderer->display, renderer->surface))
-                LOG_ERROR("SwappyGL_swap() returned error %d", eglGetError());
+            bool hasBothSurfaces = (renderer->surface.surface != EGL_NO_SURFACE && 
+                                   renderer->presentationSurface.surface != EGL_NO_SURFACE);
+
+            // Cleanup offscreen resources if we transition from dual-surface to single-surface
+            if (!hasBothSurfaces && renderer->offscreenFbo != 0) {
+                renderer->cleanupOffscreenBuffers();
+            }
+
+            if (hasBothSurfaces) {
+                // Both surfaces active: render to offscreen texture, then blit to both
+                renderer->setupOffscreenBuffers();
+                
+                // Determine which FBO to render to
+                unsigned int renderFbo = renderer->offscreenFbo;
+                if (renderer->hasOpenGLES3 && renderer->enableMultisample && renderer->msaaFbo != 0) {
+                    renderFbo = renderer->msaaFbo;
+                }
+
+                // Render to MSAA buffer (if available) or directly to texture
+                glBindFramebuffer(GL_FRAMEBUFFER, renderFbo);
+                glViewport(0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight);
+                renderer->resizeIfNeeded(renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight);
+                renderer->tickAndDraw();
+                
+                // Resolve MSAA to texture if using MSAA
+                if (renderer->hasOpenGLES3 && renderer->enableMultisample && renderer->msaaFbo != 0) {
+                    glBindFramebuffer(GL_READ_FRAMEBUFFER, renderer->msaaFbo);
+                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderer->offscreenFbo);
+                    glBlitFramebuffer(
+                        0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight,
+                        0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight,
+                        GL_COLOR_BUFFER_BIT,
+                        GL_LINEAR
+                    );
+                }
+
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                
+                // Blit to main surface
+                if (!eglMakeCurrent(renderer->display, renderer->surface.surface, renderer->surface.surface, renderer->context)) {
+                    LOG_ERROR("eglMakeCurrent() for surface failed: %d", eglGetError());
+                } else {
+                    glViewport(0, 0, renderer->surface.windowWidth, renderer->surface.windowHeight);
+                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                    renderer->drawTextureToScreen(renderer->offscreenTexture);
+                    if (!SwappyGL_swap(renderer->display, renderer->surface.surface))
+                        LOG_ERROR("SwappyGL_swap() for surface returned error %d", eglGetError());
+                }
+                
+                // Blit to presentation surface
+                if (!eglMakeCurrent(renderer->display, renderer->presentationSurface.surface, renderer->presentationSurface.surface, renderer->context)) {
+                    LOG_ERROR("eglMakeCurrent() for presentationSurface failed: %d", eglGetError());
+                } else {
+                    glViewport(0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight);
+                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                    renderer->drawTextureToScreen(renderer->offscreenTexture);
+                    if (!SwappyGL_swap(renderer->display, renderer->presentationSurface.surface))
+                        LOG_ERROR("SwappyGL_swap() for presentationSurface returned error %d", eglGetError());
+                }
+            } else {
+                // Single surface: render directly to window surface
+                // MSAA comes from EGLConfig if enabled
+                renderer->resizeIfNeeded(newWindowWidth, newWindowHeight);
+                renderer->tickAndDraw();
+                if (!SwappyGL_swap(renderer->display, s.surface))
+                    LOG_ERROR("SwappyGL_swap() returned error %d", eglGetError());
+            }
         }
     }
     renderer->destroy();
@@ -521,7 +848,17 @@ Java_space_celestia_celestia_Renderer_c_1setSurface(JNIEnv *env, jobject thiz,
                                                     jobject surface) {
     auto renderer = (CelestiaRenderer *)ptr;
 
-    renderer->setSurface(env, surface);
+    renderer->setSurface(env, surface, false);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_Renderer_c_1setPresentationSurface(JNIEnv *env, jobject thiz,
+                                                                jlong ptr,
+                                                                jobject surface) {
+    auto renderer = (CelestiaRenderer *)ptr;
+
+    renderer->setSurface(env, surface, true);
 }
 
 extern "C"
@@ -544,7 +881,19 @@ Java_space_celestia_celestia_Renderer_c_1setSurfaceSize(JNIEnv *env,
                                                         jint height) {
     auto renderer = (CelestiaRenderer *)ptr;
 
-    renderer->setSize(width, height);
+    renderer->setSize(width, height, false);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_Renderer_c_1setPresentationSurfaceSize(JNIEnv *env,
+                                                                    jobject thiz,
+                                                                    jlong ptr,
+                                                                    jint width,
+                                                                    jint height) {
+    auto renderer = (CelestiaRenderer *)ptr;
+
+    renderer->setSize(width, height, true);
 }
 
 extern "C"
@@ -581,4 +930,42 @@ Java_space_celestia_celestia_Renderer_c_1setHasPendingTasks(JNIEnv *env, jobject
                                                             jboolean has_pending_tasks) {
     auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
     renderer->setHasPendingTasks(static_cast<bool>(has_pending_tasks));
+}
+
+extern "C"
+JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_Renderer_c_1getRenderingScaleX(JNIEnv *env, jobject thiz,
+                                                             jlong pointer) {
+    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    // Return width ratio (presentationSurface / surface) if both surfaces exist, otherwise 1.0
+    if (renderer->presentationSurface.surface != EGL_NO_SURFACE && 
+        renderer->surface.surface != EGL_NO_SURFACE &&
+        renderer->surface.windowWidth > 0) {
+        return static_cast<jfloat>(renderer->presentationSurface.windowWidth) / 
+               static_cast<jfloat>(renderer->surface.windowWidth);
+    }
+    return 1.0f;
+}
+
+extern "C"
+JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_Renderer_c_1getRenderingScaleY(JNIEnv *env, jobject thiz,
+                                                             jlong pointer) {
+    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    // Return height ratio (presentationSurface / surface) if both surfaces exist, otherwise 1.0
+    if (renderer->presentationSurface.surface != EGL_NO_SURFACE && 
+        renderer->surface.surface != EGL_NO_SURFACE &&
+        renderer->surface.windowHeight > 0) {
+        return static_cast<jfloat>(renderer->presentationSurface.windowHeight) / 
+               static_cast<jfloat>(renderer->surface.windowHeight);
+    }
+    return 1.0f;
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_Renderer_c_1hasPresentationSurface(JNIEnv *env, jobject thiz,
+                                                                 jlong pointer) {
+    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    return renderer->presentationSurface.surface != EGL_NO_SURFACE;
 }

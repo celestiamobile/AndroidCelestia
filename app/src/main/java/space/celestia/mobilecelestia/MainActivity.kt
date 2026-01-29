@@ -14,6 +14,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.media.MediaRouter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -68,6 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Renderer
 import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
 import space.celestia.celestiafoundation.favorite.BookmarkNode
@@ -84,6 +86,8 @@ import space.celestia.mobilecelestia.browser.BrowserFragment
 import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
 import space.celestia.mobilecelestia.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
+import space.celestia.mobilecelestia.celestia.CelestiaPresentation
+import space.celestia.mobilecelestia.celestia.RendererSettings
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
@@ -136,6 +140,7 @@ import space.celestia.mobilecelestia.utils.showOptions
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
+import java.lang.reflect.Method
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -175,6 +180,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     @Inject
     lateinit var appCore: AppCore
+    @Inject
+    lateinit var renderer: Renderer
+    @Inject
+    lateinit var rendererSettings: RendererSettings
     @Inject
     lateinit var resourceAPI: ResourceAPIService
     @Inject
@@ -224,6 +233,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var currentToolbarActions: List<BottomControlAction> = listOf()
     private var currentToolbarOverflowActions: List<OverflowItem> = listOf()
 
+    private lateinit var mediaRouter: MediaRouter
+    private var activePresentation: CelestiaPresentation? = null
+    private var pendingDisplay: Display? = null
+
+    private var mediaRouterCallback: MediaRouter.SimpleCallback? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
 
@@ -235,6 +250,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         super.onCreate(savedState)
 
+        mediaRouter = getSystemService(MEDIA_ROUTER_SERVICE) as MediaRouter
         drawerLayout = findViewById(R.id.drawer_container)
 
         Log.d(TAG, "Creating MainActivity")
@@ -362,6 +378,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onSaveInstanceState(outState)
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        setUpDisplayListenerIfNeeded()
+    }
+
+    override fun onPause() {
+        mediaRouterCallback?.let {
+            mediaRouter.removeCallback(it)
+        }
+        mediaRouterCallback = null
+
+        super.onPause()
+    }
+
     override fun onDestroy() {
         appStatusReporter.unregister(this)
         onBackPressedCallback?.remove()
@@ -382,6 +413,110 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
+    }
+
+    private fun setUpDisplayListenerIfNeeded() {
+        if (!readyForInteraction) return
+
+        if (mediaRouterCallback == null) {
+            val callback = object: MediaRouter.SimpleCallback() {
+                override fun onRouteSelected(router: MediaRouter, type: Int, info: MediaRouter.RouteInfo) {
+                    Log.d(TAG, "onRouteSelected: type=$type, info=$info")
+                    updatePresentation()
+                }
+
+                override fun onRouteUnselected(router: MediaRouter, type: Int, info: MediaRouter.RouteInfo) {
+                    Log.d(TAG, "onRouteUnselected: type=$type, info=$info")
+                    updatePresentation()
+                }
+
+                override fun onRoutePresentationDisplayChanged(
+                    router: MediaRouter?,
+                    info: MediaRouter.RouteInfo?
+                ) {
+                    Log.d(TAG, "onRoutePresentationDisplayChanged: info=$info")
+                    updatePresentation()
+                }
+            }
+            mediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, callback)
+            this.mediaRouterCallback = callback
+        }
+
+        updatePresentation()
+    }
+
+    @SuppressLint("DiscouragedPrivateApi")
+    private fun updatePresentation() {
+        // Get the current route and its presentation display.
+        val route: MediaRouter.RouteInfo? = mediaRouter.getSelectedRoute(
+            MediaRouter.ROUTE_TYPE_LIVE_VIDEO
+        )
+
+        val presentationDisplay = route?.presentationDisplay
+        if (presentationDisplay != null && ignoredDisplayIds.contains(presentationDisplay.displayId)) {
+            return
+        }
+
+        if (presentationDisplay != null && appSettings[PreferenceManager.PredefinedKey.DetectVirtualDisplay] != "true") {
+            try {
+                var method = getDisplayTypeMethod
+                if (method == null) {
+                    val newMethod = Display::class.java.getDeclaredMethod("getType")
+                    getDisplayTypeMethod = newMethod
+                    method = newMethod
+                }
+                val displayType = method.invoke(presentationDisplay) as Int
+                if (displayType == 5) return
+            } catch (ignored: Throwable) {}
+        }
+
+        if (activePresentation?.display != presentationDisplay) {
+            Log.i(TAG, "Dismissing presentation because the current route no longer has a presentation display.");
+            activePresentation?.dismiss()
+            activePresentation = null
+        }
+
+        if (presentationDisplay == null || presentationDisplay == pendingDisplay) return
+
+        pendingDisplay = presentationDisplay
+
+        activePresentation?.dismiss()
+        activePresentation = null
+
+        showAlert(
+            CelestiaString("External screen connected", ""),
+            message = CelestiaString("An external screen is connected, do you want to display Celestia on the external screen?", ""),
+            handler = {
+                if (pendingDisplay != presentationDisplay) return@showAlert
+                activePresentation = CelestiaPresentation(
+                    this,
+                    presentationDisplay,
+                    rendererSettings,
+                    appCore,
+                    renderer,
+                    executor,
+                    purchaseManager,
+                    appSettings
+                )
+                activePresentation?.setOnDismissListener {
+                    // Reapply content scale to main surface when presentation is dismissed
+                    Log.i(TAG, "Presentation was dismissed.")
+                    activePresentation = null
+                    val celestiaFragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
+                    celestiaFragment?.reapplyContentScale()
+                }
+                pendingDisplay = null
+                try {
+                    activePresentation?.show()
+                } catch (ignored: Throwable) {
+                    activePresentation = null
+                }
+            },
+            cancelHandler = {
+                ignoredDisplayIds.add(presentationDisplay.displayId)
+                pendingDisplay = null
+            }
+        )
     }
 
     private fun showPrivacyAlertIfNeeded() {
@@ -558,6 +693,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             initialURLCheckPerformed = true
             initialSetUpComplete()
             openURLOrScriptOrGreeting()
+            setUpDisplayListenerIfNeeded()
         }
     }
 
@@ -1317,6 +1453,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun settingsProvidePreferredDisplay(): Display? {
+        val presentation = activePresentation
+        if (presentation != null)
+            return presentation.display
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return display
         } else {
@@ -2020,6 +2159,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var language: String = "en"
         private var addonPaths: List<String> = listOf()
         private var extraScriptPaths: List<String> = listOf()
+
+        private var ignoredDisplayIds = hashSetOf<Int>()
+        private var getDisplayTypeMethod: Method? = null
 
         var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
         var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null

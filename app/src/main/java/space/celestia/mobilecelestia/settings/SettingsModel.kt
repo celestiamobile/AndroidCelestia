@@ -641,7 +641,12 @@ private val staticRendererItems: List<SettingsItem> = listOf(
         SettingsCommonItem.Section(listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, CelestiaString("HiDPI", "HiDPI support in display"), true),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", ""))
-        ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart")))
+        ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
+        SettingsCommonItem.Section(
+            header = CelestiaString("External Display", "Section header text for settings"),
+            rows = listOf(SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.DetectVirtualDisplay, CelestiaString("Detect Virtual Display (Casting)", "Settings to support virtual display in external display"), false)),
+            footer = Footer.TextWithLink(text = CelestiaString("Wireless displays can sometimes stay 'active' after disconnecting. If casting fails, please check the FAQ.", "Warning text for using virtual display in Celestia"), linkText = CelestiaString("FAQ", "The text FAQ found in other text where FAQ indicates the link"), link = "https://celestia.mobi/help/faq", localizable = true)
+        ),
     )),
     SettingsRenderInfoItem()
 )
