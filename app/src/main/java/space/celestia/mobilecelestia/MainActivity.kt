@@ -595,6 +595,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (!initialURLCheckPerformed) {
             initialURLCheckPerformed = true
+            initialSetUpComplete()
             openURLOrScriptOrGreeting()
         }
     }
@@ -1808,7 +1809,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openURL(FEEDBACK_GITHUB_LINK)
     }
 
-    private fun writeTextToFileWithName(text: String, directory: File, fileName: String): File? {
+    fun writeTextToFileWithName(text: String, directory: File, fileName: String): File? {
         val proposedFile = File(directory, fileName)
         return try {
             FileUtils.writeTextToFile(text, proposedFile)
