@@ -118,6 +118,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     private var loadSuccess = false
     private var interactionMode = CelestiaInteraction.InteractionMode.Object
     private lateinit var controlView: CelestiaControlView
+    private lateinit var controlViewContainer: FrameLayout
 
     private var isContextMenuEnabled = true
 
@@ -165,9 +166,9 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     ): View? {
         val view = inflater.inflate(R.layout.fragment_celestia, container, false)
         controlView = view.findViewById(R.id.control_view)
+        controlViewContainer = view.findViewById(R.id.active_control_view_container)
         controlView.listener = this
 
-        val controlViewContainer = view.findViewById<FrameLayout>(R.id.active_control_view_container)
         controlViewContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
         // Create and add the renderer fragment
@@ -278,6 +279,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
 
     private fun setUpInteractions() {
         val container = rendererContainer ?: return
+        controlViewContainer.isVisible = true
 
         // Set up control buttons
         val buttonMap = hashMapOf(
@@ -515,7 +517,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     }
 
     private fun hideControlView() {
-        val controlView = view?.findViewById<FrameLayout>(R.id.active_control_view_container) ?: return
+        val controlView = controlViewContainer
         if (hideAnimator != null) return
         showAnimator?.let {
             it.cancel()
@@ -534,7 +536,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     }
 
     private fun showControlView() {
-        val controlView = view?.findViewById<FrameLayout>(R.id.active_control_view_container) ?: return
+        val controlView = controlViewContainer
         if (showAnimator != null) return
         hideAnimator?.let {
             it.cancel()

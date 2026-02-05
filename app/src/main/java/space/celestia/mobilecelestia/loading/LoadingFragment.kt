@@ -10,62 +10,95 @@
 package space.celestia.mobilecelestia.loading
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.mobilecelestia.loading.viewmodel.LoadingViewModel
 import space.celestia.mobilecelestia.utils.AppStatusReporter
-import javax.inject.Inject
 
-@AndroidEntryPoint
-class LoadingFragment : Fragment(), AppStatusReporter.Listener {
 
-    @Inject
-    lateinit var appStatusReporter: AppStatusReporter
+@Composable
+private fun LoadingScreen() {
+    val viewModel: LoadingViewModel = hiltViewModel()
+    val lifeCycleOwner = LocalLifecycleOwner.current
 
-    private var loadingLabel: TextView? = null
+    var statusText by rememberSaveable { mutableStateOf(viewModel.appStatusReporter.status) }
+    val scope = rememberCoroutineScope()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    DisposableEffect(lifeCycleOwner) {
+        val observer = object: AppStatusReporter.Listener {
+            override fun celestiaLoadingProgress(status: String) {
+                scope.launch {
+                    statusText = status
+                }
+            }
 
-        appStatusReporter.register(this)
-    }
-
-    override fun onDestroy() {
-        appStatusReporter.unregister(this)
-
-        super.onDestroy()
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_loading, container, false)
-        loadingLabel = view.findViewById(R.id.loading_label)
-        loadingLabel?.text = appStatusReporter.status
-        return view
-    }
-
-    override fun celestiaLoadingProgress(status: String) {
-        lifecycleScope.launch {
-            Log.d(TAG, status)
-            loadingLabel?.text = status
+            override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {}
+        }
+        viewModel.appStatusReporter.register(observer)
+        onDispose {
+            viewModel.appStatusReporter.unregister(observer)
         }
     }
 
-    override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {}
+    Box(modifier = Modifier.fillMaxSize().padding(horizontal = dimensionResource(R.dimen.common_page_medium_margin_horizontal)).background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.loading_gap_vertical))) {
+            Image(painter = painterResource(R.drawable.loading_icon), contentDescription = null, modifier = Modifier.size(dimensionResource(R.dimen.app_icon_dimension)))
+            Text(text = statusText, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+}
+
+@AndroidEntryPoint
+class LoadingFragment : Fragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    LoadingScreen()
+                }
+            }
+        }
+    }
 
     companion object {
-        private const val TAG = "LoadingFragment"
-
         fun newInstance() = LoadingFragment()
     }
 }
