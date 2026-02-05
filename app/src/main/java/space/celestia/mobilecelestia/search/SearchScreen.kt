@@ -187,6 +187,13 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkCli
         }
     } else if (selection != null) {
         InfoScreen(selection = selection, showTitle = true, linkClicked = linkClicked, openSubsystem = { openSubsystem(selection) }, paddingValues = paddingValues)
+    } else {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+            EmptyHint(text = CelestiaString("Find stars, DSOs, and nearby objects", ""))
+        }
     }
 }
 
