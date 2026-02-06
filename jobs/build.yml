@@ -226,7 +226,7 @@ jobs:
       sentry-cli debug-files bundle-jvm --output bundle --debug-id $(LinkPreviewBundleUuid) LinkPreview/src/main/java
       sentry-cli debug-files bundle-jvm --output bundle --debug-id $(ZipUtilsBundleUuid) ZipUtils/src/main/java
       sentry-cli debug-files upload --type jvm bundle
-      sentry-cli upload-proguard --uuid $(ProguardUuid) app/build/outputs/mapping/$(FlavorTask)/mapping.txt --app-id space.celestia.mobilecelestia --version $VERSION_NAME --version-code $VERSION_CODE
+      sentry-cli upload-proguard --uuid $(ProguardUuid) app/build/outputs/mapping/$(FlavorTask)/mapping.txt
       sentry-cli debug-files upload --include-sources Celestia/build/intermediates/cxx/RelWithDebInfo/
       sentry-cli debug-files upload --include-sources ZipUtils/build/intermediates/cxx/RelWithDebInfo/
 

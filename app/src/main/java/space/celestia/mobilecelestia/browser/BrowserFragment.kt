@@ -81,12 +81,13 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
         }
     }
 
-    if (viewModel.tabs.isEmpty()) {
+    if (viewModel.tabs.isEmpty() || viewModel.selectedTabIndex.intValue >= viewModel.tabs.size || viewModel.selectedTabIndex.intValue >= viewModel.backStacks.size) {
         Box(modifier = Modifier.fillMaxSize().systemBarsPadding(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
     } else {
         val backStack = viewModel.backStacks[viewModel.selectedTabIndex.intValue]
+        if (backStack.isEmpty()) return
         Scaffold(
             topBar = {
                 TopAppBar(title = {
@@ -142,7 +143,6 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
         ) { paddingValues ->
             NavDisplay(
                 backStack = backStack,
-                onBack = { backStack.removeLastOrNull() },
                 transitionSpec = {
                     slideInHorizontally(initialOffsetX = { it }) togetherWith
                             slideOutHorizontally(targetOffsetX = { -it })

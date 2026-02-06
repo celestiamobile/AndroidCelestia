@@ -64,9 +64,10 @@ sealed class FavoriteAlert {
 private fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
     val viewModel: FavoriteViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    val backStack = viewModel.backStack
     val scope = rememberCoroutineScope()
     var alert by remember { mutableStateOf<FavoriteAlert?>(null)  }
+    val backStack = viewModel.backStack
+    if (backStack.isEmpty()) return
 
     Scaffold(
         topBar = {
@@ -121,7 +122,6 @@ private fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit,
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 slideInHorizontally(initialOffsetX = { it }) togetherWith
                         slideOutHorizontally(targetOffsetX = { -it })

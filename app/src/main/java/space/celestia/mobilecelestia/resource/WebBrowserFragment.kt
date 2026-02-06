@@ -61,6 +61,7 @@ fun WebScreen(uri: Uri, requestRunScript: (File) -> Unit, requestShareAddon: (St
     val viewModel: WebViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val backStack = viewModel.backStack
+    if (backStack.isEmpty()) return
 
     Scaffold(
         topBar = {
@@ -116,7 +117,6 @@ fun WebScreen(uri: Uri, requestRunScript: (File) -> Unit, requestShareAddon: (St
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 slideInHorizontally(initialOffsetX = { it }) togetherWith
                         slideOutHorizontally(targetOffsetX = { -it })

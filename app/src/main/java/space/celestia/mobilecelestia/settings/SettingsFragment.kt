@@ -59,6 +59,7 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     val backStack = viewModel.backStack
+    if (backStack.isEmpty()) return
 
     Scaffold(
         topBar = {
@@ -114,7 +115,6 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 slideInHorizontally(initialOffsetX = { it }) togetherWith
                         slideOutHorizontally(targetOffsetX = { -it })

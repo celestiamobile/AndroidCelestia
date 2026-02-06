@@ -50,6 +50,7 @@ private fun GoToContainer() {
     val viewModel: GoToViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val backStack = viewModel.backStack
+    if (backStack.isEmpty()) return
 
     Scaffold(
         topBar = {
@@ -73,7 +74,6 @@ private fun GoToContainer() {
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 slideInHorizontally(initialOffsetX = { it }) togetherWith
                         slideOutHorizontally(targetOffsetX = { -it })

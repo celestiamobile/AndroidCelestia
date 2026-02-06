@@ -104,7 +104,6 @@ fun SingleAddonScreen(item: ResourceItem, requestRunScript: (File) -> Unit, requ
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 slideInHorizontally(initialOffsetX = { it }) togetherWith
                         slideOutHorizontally(targetOffsetX = { -it })

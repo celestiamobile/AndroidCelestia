@@ -71,6 +71,7 @@ private fun EventFinder() {
 
     val backStack = viewModel.backStack
     var alert by remember { mutableStateOf<EventFinderAlert?>(null) }
+    if (backStack.isEmpty()) return
 
     Scaffold(
         topBar = {
@@ -94,7 +95,6 @@ private fun EventFinder() {
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 slideInHorizontally(initialOffsetX = { it }) togetherWith
                         slideOutHorizontally(targetOffsetX = { -it })

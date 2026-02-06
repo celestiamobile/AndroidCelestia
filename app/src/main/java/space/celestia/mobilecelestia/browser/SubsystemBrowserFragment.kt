@@ -103,7 +103,6 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSu
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 slideInHorizontally(initialOffsetX = { it }) togetherWith
                         slideOutHorizontally(targetOffsetX = { -it })
