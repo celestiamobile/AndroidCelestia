@@ -33,6 +33,7 @@ import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,7 +77,7 @@ fun SingleAddonScreen(item: ResourceItem, requestRunScript: (File) -> Unit, requ
                 }
             }, navigationIcon = {
                 if (backStack.count() > 1) {
-                    IconButton(onClick = {
+                    IconButton(onClick = dropUnlessResumed {
                         backStack.removeLastOrNull()
                     }) {
                         Icon(

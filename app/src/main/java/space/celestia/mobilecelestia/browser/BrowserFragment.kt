@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
@@ -102,7 +103,7 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
                     }
                 }, navigationIcon = {
                     if (backStack.count() > 1) {
-                        IconButton(onClick = {
+                        IconButton(onClick = dropUnlessResumed {
                             backStack.removeLastOrNull()
                         }) {
                             Icon(

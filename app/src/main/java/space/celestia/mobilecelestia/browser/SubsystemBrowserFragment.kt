@@ -43,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestia.BrowserItem
@@ -87,7 +88,7 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSu
                 }
             }, navigationIcon = {
                 if (backStack.count() > 1) {
-                    IconButton(onClick = {
+                    IconButton(onClick = dropUnlessResumed {
                         backStack.removeLastOrNull()
                     }) {
                         Icon(
