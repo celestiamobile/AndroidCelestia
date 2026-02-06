@@ -60,7 +60,9 @@ private fun GoToContainer() {
             }, navigationIcon = {
                 if (backStack.count() > 1) {
                     IconButton(onClick = dropUnlessResumed {
-                        backStack.removeLastOrNull()
+                        if (backStack.count() > 1) {
+                            backStack.removeLastOrNull()
+                        }
                     }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_action_arrow_back),

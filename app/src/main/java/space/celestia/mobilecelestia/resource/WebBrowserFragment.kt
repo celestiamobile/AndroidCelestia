@@ -79,7 +79,9 @@ fun WebScreen(uri: Uri, requestRunScript: (File) -> Unit, requestShareAddon: (St
             }, navigationIcon = {
                 if (backStack.count() > 1) {
                     IconButton(onClick = dropUnlessResumed {
-                        backStack.removeLastOrNull()
+                        if (backStack.count() > 1) {
+                            backStack.removeLastOrNull()
+                        }
                     }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_action_arrow_back),
