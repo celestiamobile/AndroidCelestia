@@ -50,6 +50,11 @@ jobs:
     displayName: 'Checkout Content'
 
   - script: |
+      cd CelestiaLocalization
+      git apply ../AndroidCelestia/huawei.patch --ignore-whitespace --whitespace=nowarn
+    displayName: 'Apply Localization Patch'
+
+  - script: |
       sh $(System.DefaultWorkingDirectory)/AndroidCelestia/app/downsize_textures.sh
     displayName: 'Running imagemagick'
 
