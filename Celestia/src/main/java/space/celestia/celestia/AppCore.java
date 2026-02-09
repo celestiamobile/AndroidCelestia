@@ -158,8 +158,18 @@ public class AppCore {
         c_setSafeAreaInsets(pointer, left, top, right, bottom);
     }
 
-    public void setDPI(int dpi) {
-        c_setDPI(pointer, dpi);
+    public void setScreenDPI(int dpi) {
+        c_setScreenDPI(pointer, dpi);
+    }
+    public int getScreenDPI() {
+        return c_getScreenDPI(pointer);
+    }
+
+    public void setTextScaleFactor(float textScaleFactor) {
+        c_setTextScaleFactor(pointer, textScaleFactor);
+    }
+    public float getTextScaleFactor() {
+        return c_getTextScaleFactor(pointer);
     }
 
     // Control
@@ -286,7 +296,10 @@ public class AppCore {
     private static native int c_getWidth(long ptr);
     private static native int c_getHeight(long ptr);
     private static native void c_setSafeAreaInsets(long ptr, int left, int top, int right, int bottom);
-    private static native void c_setDPI(long ptr, int dpi);
+    private static native void c_setScreenDPI(long ptr, int dpi);
+    private static native int c_getScreenDPI(long ptr);
+    private static native void c_setTextScaleFactor(long ptr, float textScaleFactor);
+    private static native float c_getTextScaleFactor(long ptr);
     private static native long c_getSimulation(long ptr);
 
     // Control

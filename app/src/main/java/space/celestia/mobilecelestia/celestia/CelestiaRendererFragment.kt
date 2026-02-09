@@ -254,6 +254,42 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
             return false
         }
 
+
+        // Use installed font
+        val locale = AppCore.getLanguage()
+        val hasCelestiaPlus =
+            purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
+        var normalFont = if (hasCelestiaPlus) appSettings.normalFont else null
+        var boldFont = if (hasCelestiaPlus) appSettings.boldFont else null
+        val preferredInstalledFont =
+            MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
+        if (preferredInstalledFont != null) {
+            normalFont = normalFont ?: preferredInstalledFont.first
+            boldFont = boldFont ?: preferredInstalledFont.second
+        }
+        if (normalFont != null) {
+            appCore.setFont(normalFont.path, normalFont.ttcIndex, 9)
+            appCore.setRendererFont(
+                normalFont.path,
+                normalFont.ttcIndex,
+                9,
+                AppCore.RENDER_FONT_STYLE_NORMAL
+            )
+        }
+        if (boldFont != null) {
+            appCore.setTitleFont(
+                boldFont.path,
+                boldFont.ttcIndex,
+                15
+            )
+            appCore.setRendererFont(
+                boldFont.path,
+                boldFont.ttcIndex,
+                15,
+                AppCore.RENDER_FONT_STYLE_LARGE
+            )
+        }
+
         updateContentScale(changes = applyRenderChanges(renderChanges))
 
         // Display
@@ -343,43 +379,9 @@ data class RenderChanges(val scaling: Boolean = false, val safeArea: Boolean = f
 
 fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges, purchaseManager: PurchaseManager, appSettings: PreferenceManager) {
     if (changes.scaling) {
-        setDPI((96 * rendererSettings.density * rendererSettings.scaleFactor).toInt())
+        screenDPI = (96 * rendererSettings.density * rendererSettings.scaleFactor).toInt()
         setPickTolerance(rendererSettings.pickSensitivity * rendererSettings.density * rendererSettings.scaleFactor)
-
-        // Use installed font
-        val locale = AppCore.getLanguage()
-        val hasCelestiaPlus =
-            purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
-        var normalFont = if (hasCelestiaPlus) appSettings.normalFont else null
-        var boldFont = if (hasCelestiaPlus) appSettings.boldFont else null
-        val preferredInstalledFont =
-            MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
-        if (preferredInstalledFont != null) {
-            normalFont = normalFont ?: preferredInstalledFont.first
-            boldFont = boldFont ?: preferredInstalledFont.second
-        }
-        if (normalFont != null) {
-            setFont(normalFont.path, normalFont.ttcIndex, (9 * rendererSettings.fontScale).toInt())
-            setRendererFont(
-                normalFont.path,
-                normalFont.ttcIndex,
-                (9 * rendererSettings.fontScale).toInt(),
-                AppCore.RENDER_FONT_STYLE_NORMAL
-            )
-        }
-        if (boldFont != null) {
-            setTitleFont(
-                boldFont.path,
-                boldFont.ttcIndex,
-                (15 * rendererSettings.fontScale).toInt()
-            )
-            setRendererFont(
-                boldFont.path,
-                boldFont.ttcIndex,
-                (15 * rendererSettings.fontScale).toInt(),
-                AppCore.RENDER_FONT_STYLE_LARGE
-            )
-        }
+        textScaleFactor = rendererSettings.fontScale
     }
 
     if (changes.scaling || changes.safeArea) {

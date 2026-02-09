@@ -400,12 +400,37 @@ Java_space_celestia_celestia_AppCore_c_1setSafeAreaInsets(JNIEnv *env, jclass cl
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_AppCore_c_1setDPI(JNIEnv *env, jclass clazz,
-                                                          jlong ptr,
-                                                          jint dpi) {
-    auto core = (CelestiaCore *)ptr;
+Java_space_celestia_celestia_AppCore_c_1setScreenDPI(JNIEnv *env, jclass clazz,
+                                                     jlong ptr,
+                                                     jint dpi) {
+    auto *core = reinterpret_cast<CelestiaCore *>(ptr);
+    core->setScreenDpi(static_cast<int>(dpi));
+}
 
-    core->setScreenDpi(dpi);
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_AppCore_c_1getScreenDPI(JNIEnv *env, jclass clazz,
+                                                     jlong ptr) {
+    auto *core = reinterpret_cast<CelestiaCore *>(ptr);
+    return static_cast<jint>(core->getScreenDpi());
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setTextScaleFactor(JNIEnv *env, jclass clazz,
+                                                           jlong ptr,
+                                                           jfloat textScaleFactor) {
+    auto *core = reinterpret_cast<CelestiaCore *>(ptr);
+    core->setTextScaleFactor(static_cast<float>(textScaleFactor));
+}
+
+extern "C"
+JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_AppCore_c_1getTextScaleFactor(JNIEnv *env, jclass clazz,
+                                                           jlong ptr) {
+    auto *core = reinterpret_cast<CelestiaCore *>(ptr);
+    return static_cast<jfloat>(core->getTextScaleFactor());
 }
 
 extern "C"
@@ -1292,8 +1317,8 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setPickTolerance(JNIEnv *env,
                                                                     jclass clazz, jlong ptr,
                                                                     jfloat pick_tolerance) {
-    auto core = (CelestiaCore *)ptr;
-    core->setPickTolerance((float)pick_tolerance);
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    core->setPickTolerance(static_cast<float>(pick_tolerance));
 }
 
 extern "C"
