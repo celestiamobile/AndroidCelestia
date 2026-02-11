@@ -124,9 +124,11 @@ class SubscriptionManagerFragment: Fragment() {
 
     @Composable
     private fun Content(modifier: Modifier = Modifier) {
+        data class RefreshState(val needsRefreshPlans: Boolean, val needsRefreshSubscription: Boolean)
+
         val viewModel: SubscriptionManagerViewModel = hiltViewModel()
-        var needsRefreshing by remember {
-            mutableStateOf(true)
+        var refreshState by remember {
+            mutableStateOf(RefreshState(needsRefreshPlans = true, needsRefreshSubscription = true))
         }
         var subscription by remember {
             mutableStateOf<PurchaseManager.Subscription?>(null)
@@ -142,6 +144,10 @@ class SubscriptionManagerFragment: Fragment() {
             mutableStateOf(object: PurchaseManager.Listener {
                 override fun subscriptionStatusChanged(oldStatus: PurchaseManager.SubscriptionStatus, newStatus: PurchaseManager.SubscriptionStatus) {
                     subscriptionStatus = newStatus
+                }
+
+                override fun needsToFetchSubscriptionPlans() {
+                    refreshState = RefreshState(needsRefreshPlans = true, needsRefreshSubscription = false)
                 }
             })
         }
@@ -162,6 +168,28 @@ class SubscriptionManagerFragment: Fragment() {
 
         val resources = LocalResources.current
         val scroll = rememberScrollState(0)
+
+        LaunchedEffect(refreshState) {
+            if (!refreshState.needsRefreshSubscription && !refreshState.needsRefreshPlans)
+                return@LaunchedEffect
+
+            if (refreshState.needsRefreshPlans) {
+                val subscriptionResult = viewModel.purchaseManager.getSubscriptionDetails(preferredPlayOfferId, resources)
+                val subscriptionValue = subscriptionResult?.subscription
+                if (subscriptionResult == null || subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscriptionValue == null || viewModel.purchaseManager.subscriptionStatus is PurchaseManager.SubscriptionStatus.Error) {
+                    errorText = CelestiaString("We encountered an error.", "Error loading the subscription page")
+                    subscription = null
+                } else {
+                    errorText = null
+                    subscription = subscriptionValue
+                }
+            }
+            if (refreshState.needsRefreshSubscription) {
+                viewModel.purchaseManager.getValidSubscription()
+            }
+            refreshState = RefreshState(needsRefreshSubscription = false, needsRefreshPlans = false)
+        }
+
         Column(modifier = modifier
             .fillMaxWidth()
             .verticalScroll(scroll)
@@ -170,20 +198,7 @@ class SubscriptionManagerFragment: Fragment() {
                 horizontal = dimensionResource(id = R.dimen.common_page_small_margin_horizontal),
                 vertical = dimensionResource(id = R.dimen.common_page_small_margin_vertical)
             )) {
-            if (needsRefreshing) {
-                LaunchedEffect(Unit) {
-                    val subscriptionResult = viewModel.purchaseManager.getSubscriptionDetails(preferredPlayOfferId, resources)
-                    viewModel.purchaseManager.getValidSubscription()
-                    val subscriptionValue = subscriptionResult?.subscription
-                    needsRefreshing = false
-                    if (subscriptionResult == null || subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscriptionValue == null || viewModel.purchaseManager.subscriptionStatus is PurchaseManager.SubscriptionStatus.Error) {
-                        errorText = CelestiaString("We encountered an error.", "Error loading the subscription page")
-                        subscription = null
-                    } else {
-                        errorText = null
-                        subscription = subscriptionValue
-                    }
-                }
+            if (refreshState.needsRefreshSubscription || refreshState.needsRefreshPlans) {
                 Box(modifier = Modifier
                     .fillMaxWidth()
                     .weight(1.0f), contentAlignment = Alignment.Center) {
@@ -194,7 +209,7 @@ class SubscriptionManagerFragment: Fragment() {
                     .fillMaxWidth()
                     .weight(1.0f), contentAlignment = Alignment.Center) {
                     ErrorText(text = errorText) {
-                        needsRefreshing = true
+                        refreshState = RefreshState(needsRefreshPlans = true, needsRefreshSubscription = true)
                     }
                 }
             } else {

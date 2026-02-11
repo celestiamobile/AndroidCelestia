@@ -34,7 +34,7 @@ fun CelestiaApplication.setUpFlavor() {
         options.addBundleId("LINK_PREVIEW_BUNDLE_UUID")
         options.addBundleId("ZIP_UTILS_BUNDLE_UUID")
         options.proguardUuid = "PROGUARD_UUID"
-        options.maxAttachmentSize = 5 * 1024 * 1024; // 5 MiB
+        options.maxAttachmentSize = 5 * 1024 * 1024 // 5 MiB
 
         var reportFolder: File?
         try {

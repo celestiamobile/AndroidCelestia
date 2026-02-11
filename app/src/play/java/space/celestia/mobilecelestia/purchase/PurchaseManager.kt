@@ -80,6 +80,7 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     }
 
     interface Listener {
+        fun needsToFetchSubscriptionPlans()
         fun subscriptionStatusChanged(oldStatus: SubscriptionStatus, newStatus: SubscriptionStatus)
     }
 
@@ -211,6 +212,9 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
                         else -> null
                     }
                     changeSubscriptionStatus(SubscriptionStatus.Good.Verified(purchaseToken, plan))
+                    for (listener in listeners) {
+                        listener.needsToFetchSubscriptionPlans()
+                    }
                 } else {
                     changeSubscriptionStatus(SubscriptionStatus.Good.None)
                 }
