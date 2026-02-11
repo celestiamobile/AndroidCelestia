@@ -79,7 +79,7 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     }
 
     interface Listener {
-        fun subscriptionStatusChanged(newStatus: SubscriptionStatus)
+        fun subscriptionStatusChanged(oldStatus: SubscriptionStatus, newStatus: SubscriptionStatus)
     }
 
     private val listeners: MutableSet<Listener> = mutableSetOf()
@@ -93,11 +93,12 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     }
 
     enum class PlanType(val level: Int) {
-        Yearly(1),
-        Monthly(0)
+        Yearly(2),
+        Monthly(1),
+        Weekly(level = 0),
     }
 
-    class Plan(val type: PlanType, val offerToken: String, val formattedPriceLine1: String, val formattedPriceLine2: String?, val productId: String)
+    class Plan(val type: PlanType, val offerToken: String, val formattedPriceLine1: String, val formattedPriceLine2: String?, val productId: String, val offersFreeTrial: Boolean)
     class Subscription(val productDetails: ProductDetails, val plans: List<Plan>)
     class PlanResult(val billingResult: BillingResult, val subscription: Subscription?)
 
@@ -205,6 +206,7 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
                     val plan = when (status.planId) {
                         yearlyPlanId -> PlanType.Yearly
                         monthlyPlanId -> PlanType.Monthly
+                        weeklyPlanId -> PlanType.Weekly
                         else -> null
                     }
                     changeSubscriptionStatus(SubscriptionStatus.Good.Verified(purchaseToken, plan))
@@ -247,12 +249,17 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         val preferredYearlyPlan = if (preferredPlayOfferId != null) product.subscriptionOfferDetails?.firstOrNull { it.offerId == preferredPlayOfferId && it.basePlanId == yearlyPlanId } else null
         val yearlyPlan = preferredYearlyPlan ?: product.subscriptionOfferDetails?.firstOrNull { it.basePlanId == yearlyPlanId }
         if (yearlyPlan != null) {
-            plans.add(Plan(PlanType.Yearly, yearlyPlan.offerToken, yearlyPlan.formattedPriceLine1(resources), yearlyPlan.formattedPriceLine2(resources), product.productId))
+            plans.add(Plan(PlanType.Yearly, yearlyPlan.offerToken, yearlyPlan.formattedPriceLine1(resources), yearlyPlan.formattedPriceLine2(resources), product.productId, yearlyPlan.offersFreeTrial()))
         }
         val preferredMonthlyPlan = if (preferredPlayOfferId != null) product.subscriptionOfferDetails?.firstOrNull { it.offerId == preferredPlayOfferId && it.basePlanId == monthlyPlanId } else null
         val monthlyPlan = preferredMonthlyPlan ?: product.subscriptionOfferDetails?.firstOrNull { it.basePlanId == monthlyPlanId }
         if (monthlyPlan != null) {
-            plans.add(Plan(PlanType.Monthly, monthlyPlan.offerToken, monthlyPlan.formattedPriceLine1(resources), monthlyPlan.formattedPriceLine2(resources), product.productId))
+            plans.add(Plan(PlanType.Monthly, monthlyPlan.offerToken, monthlyPlan.formattedPriceLine1(resources), monthlyPlan.formattedPriceLine2(resources), product.productId, monthlyPlan.offersFreeTrial()))
+        }
+        val preferredWeeklyPlan = if (preferredPlayOfferId != null) product.subscriptionOfferDetails?.firstOrNull { it.offerId == preferredPlayOfferId && it.basePlanId == weeklyPlanId } else null
+        val weeklyPlan = preferredWeeklyPlan ?: product.subscriptionOfferDetails?.firstOrNull { it.basePlanId == weeklyPlanId }
+        if (weeklyPlan != null) {
+            plans.add(Plan(PlanType.Weekly, weeklyPlan.offerToken, weeklyPlan.formattedPriceLine1(resources), weeklyPlan.formattedPriceLine2(resources), product.productId, weeklyPlan.offersFreeTrial()))
         }
         if (plans.isEmpty()) {
             return PlanResult(result.billingResult, null)
@@ -266,6 +273,7 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     }
 
     private fun changeSubscriptionStatus(newStatus: SubscriptionStatus) {
+        val oldStatus = subscriptionStatus
         val isDifferent = subscriptionStatus != newStatus
         subscriptionStatus = newStatus
         if (isDifferent) {
@@ -292,13 +300,14 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
             }
 
             for (listener in listeners) {
-                listener.subscriptionStatusChanged(newStatus)
+                listener.subscriptionStatusChanged(oldStatus = oldStatus, newStatus = newStatus)
             }
         }
     }
 
     private companion object {
         const val subscriptionId = "space.celestia.mobilecelestia.plus"
+        const val weeklyPlanId = "celestia-plus-weekly"
         const val monthlyPlanId = "celestia-plus-monthly"
         const val yearlyPlanId = "celestia-plus-yearly"
         val purchaseTokenCacheKey = PreferenceManager.CustomKey("purchase_token_cache")
@@ -310,11 +319,10 @@ private fun ProductDetails.SubscriptionOfferDetails.formattedPriceLine1(resource
     if (phases.isEmpty()) return resources.getString(R.string.subscription_offer_price_unavailable)
     val phase = phases[0]
     if (phases.size < 2) return phase.formattedPrice
-    val isBillingCycleYear = phase.billingPeriod.contains("Y")
     return resources.getQuantityString(
         phase.cyclePriceTemplateWithPhase,
         phase.billingCycleCount,
-        resources.getString(phase.cyclePriceTemplate, phase.formattedPrice),
+        if (phase.priceAmountMicros == 0L) phase.formattedPrice else resources.getString(phase.cyclePriceTemplate, phase.formattedPrice),
         phase.billingCycleCount
     )
 }
@@ -323,7 +331,14 @@ private fun ProductDetails.SubscriptionOfferDetails.formattedPriceLine2(resource
     val phases = this.pricingPhases.pricingPhaseList
     if (phases.size < 2) return null
     val phase = phases[1]
-    return resources.getString(R.string.subscription_offer_price_template_thereafter, resources.getString(phase.cyclePriceTemplate, phase.formattedPrice))
+    return resources.getString(R.string.subscription_offer_price_template_thereafter, if (phase.priceAmountMicros == 0L) phase.formattedPrice else resources.getString(phase.cyclePriceTemplate, phase.formattedPrice))
+}
+
+private fun ProductDetails.SubscriptionOfferDetails.offersFreeTrial(): Boolean {
+    val phases = this.pricingPhases.pricingPhaseList
+    if (phases.size < 2) return false
+    val phase = phases[0]
+    return phase.priceAmountMicros == 0L
 }
 
 private val ProductDetails.PricingPhase.cyclePriceTemplate: Int
