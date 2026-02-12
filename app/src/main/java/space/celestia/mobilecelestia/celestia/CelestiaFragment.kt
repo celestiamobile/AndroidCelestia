@@ -181,7 +181,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
                 )
                 childFragmentManager.beginTransaction()
                     .replace(R.id.celestia_renderer_container, rendererFragment, TAG_RENDERER_FRAGMENT)
-                    .commit()
+                    .commitAllowingStateLoss()
             }
         }
 
