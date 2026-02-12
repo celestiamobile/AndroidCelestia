@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -383,7 +384,7 @@ class SubscriptionManagerFragment: Fragment() {
                     }
                 }
             }
-            PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction, actionButtonHidden = actionButtonHidden, showPrices = currentPlan != plan.type) {
+            PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction, actionButtonHidden = actionButtonHidden, isCurrent = currentPlan == plan.type) {
                 activity?.let {
                     viewModel.purchaseManager.createSubscription(plan, productDetails, token, it)
                 }
@@ -414,8 +415,9 @@ class SubscriptionManagerFragment: Fragment() {
     }
 
     @Composable
-    private fun PlanCard(plan: PurchaseManager.Plan, actionButtonText: String, actionButtonEnabled: Boolean, actionButtonHidden: Boolean, showPrices: Boolean, modifier: Modifier = Modifier, action: () -> Unit) {
+    private fun PlanCard(plan: PurchaseManager.Plan, actionButtonText: String, actionButtonEnabled: Boolean, actionButtonHidden: Boolean, isCurrent: Boolean, modifier: Modifier = Modifier, action: () -> Unit) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = modifier
+            .defaultMinSize(minHeight = dimensionResource(R.dimen.list_item_one_line_min_height))
             .fillMaxWidth()
             .clip(RoundedCornerShape(dimensionResource(id = R.dimen.purchase_box_corner_radius)))
             .background(MaterialTheme.colorScheme.primaryContainer)
@@ -424,17 +426,13 @@ class SubscriptionManagerFragment: Fragment() {
                     id = R.dimen.common_page_small_margin_horizontal
                 ),
                 vertical = dimensionResource(
-                    id = R.dimen.common_page_small_margin_vertical
+                    id = if (isCurrent) R.dimen.common_page_medium_margin_vertical else R.dimen.common_page_small_margin_vertical
                 ),
             )) {
             Column {
-                Text(text = when (plan.type) {
-                    PurchaseManager.PlanType.Yearly -> CelestiaString("Yearly", "Yearly subscription")
-                    PurchaseManager.PlanType.Monthly -> CelestiaString("Monthly", "Monthly subscription")
-                    PurchaseManager.PlanType.Weekly -> CelestiaString("Weekly", "Weekly subscription")
-                }, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
+                Text(text = if (isCurrent) CelestiaString("%s (Current)", "Subscription plan name when the plan is the current plan user owns").format(plan.type.displayName) else plan.type.displayName, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
 
-                if (showPrices) {
+                if (!isCurrent) {
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
                     Text(
                         text = plan.formattedPriceLine1,

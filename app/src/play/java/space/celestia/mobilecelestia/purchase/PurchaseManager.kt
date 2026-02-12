@@ -95,9 +95,16 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
     }
 
     enum class PlanType(val level: Int) {
-        Yearly(2),
-        Monthly(1),
-        Weekly(level = 0),
+        Yearly(level = 2),
+        Monthly(level = 1),
+        Weekly(level = 0);
+
+        val displayName: String
+            get() = when(this) {
+                Yearly -> CelestiaString("Yearly", "Yearly subscription")
+                Monthly -> CelestiaString("Monthly", "Monthly subscription")
+                Weekly -> CelestiaString("Weekly", "Weekly subscription")
+            }
     }
 
     class Plan(val type: PlanType, val offerToken: String, val formattedPriceLine1: String, val formattedPriceLine2: String?, val productId: String, val offersFreeTrial: Boolean)
