@@ -335,6 +335,7 @@ class SubscriptionManagerFragment: Fragment() {
             val canAction: Boolean
             val actionTitle: String
             val actionButtonHidden: Boolean
+            var currentPlan: PurchaseManager.PlanType? = null
             when (status) {
                 is PurchaseManager.SubscriptionStatus.Good.None -> {
                     token = null
@@ -368,7 +369,7 @@ class SubscriptionManagerFragment: Fragment() {
                 }
                 is PurchaseManager.SubscriptionStatus.Good.Verified -> {
                     token = status.purchaseToken
-                    val currentPlan = status.plan
+                    currentPlan = status.plan
                     canAction = currentPlan != plan.type
                     actionButtonHidden = !canAction
                     actionTitle = if (currentPlan == null) {
@@ -382,7 +383,7 @@ class SubscriptionManagerFragment: Fragment() {
                     }
                 }
             }
-            PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction, actionButtonHidden = actionButtonHidden) {
+            PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction, actionButtonHidden = actionButtonHidden, showPrices = currentPlan != plan.type) {
                 activity?.let {
                     viewModel.purchaseManager.createSubscription(plan, productDetails, token, it)
                 }
@@ -413,7 +414,7 @@ class SubscriptionManagerFragment: Fragment() {
     }
 
     @Composable
-    private fun PlanCard(plan: PurchaseManager.Plan, actionButtonText: String, actionButtonEnabled: Boolean, actionButtonHidden: Boolean, modifier: Modifier = Modifier, action: () -> Unit) {
+    private fun PlanCard(plan: PurchaseManager.Plan, actionButtonText: String, actionButtonEnabled: Boolean, actionButtonHidden: Boolean, showPrices: Boolean, modifier: Modifier = Modifier, action: () -> Unit) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(dimensionResource(id = R.dimen.purchase_box_corner_radius)))
@@ -432,11 +433,22 @@ class SubscriptionManagerFragment: Fragment() {
                     PurchaseManager.PlanType.Monthly -> CelestiaString("Monthly", "Monthly subscription")
                     PurchaseManager.PlanType.Weekly -> CelestiaString("Weekly", "Weekly subscription")
                 }, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
-                Text(text = plan.formattedPriceLine1, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodyMedium)
-                if (plan.formattedPriceLine2 != null) {
+
+                if (showPrices) {
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
-                    Text(text = plan.formattedPriceLine2, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        text = plan.formattedPriceLine1,
+                        color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (plan.formattedPriceLine2 != null) {
+                        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_small_gap_vertical)))
+                        Text(
+                            text = plan.formattedPriceLine2,
+                            color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
             if (!actionButtonHidden) {
