@@ -26,12 +26,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
@@ -66,6 +69,8 @@ sealed class WebError: Serializable {
     }
 }
 
+data class SafeAreaPaddings(val left: Float, val top: Float, val right: Float, val bottom: Float): Serializable
+
 @Composable
 fun WebPage(uri: Uri, modifier: Modifier = Modifier, matchingQueryKeys: List<String> = listOf(), contextDirectory: File? = null, filterURL: Boolean = false, fallbackContent: (@Composable (Modifier, PaddingValues) -> Unit)? = null, paddingValues: PaddingValues, titleChanged: ((String) -> Unit)? = null, canGoBackChanged: ((Boolean) -> Unit)? = null, goBackRequest: ((() -> Unit) -> Unit)? = null, openAddon: ((ResourceItem) -> Unit)? = null) {
     var error by rememberSaveable { mutableStateOf<WebError?>(null) }
@@ -86,9 +91,10 @@ fun WebPage(uri: Uri, modifier: Modifier = Modifier, matchingQueryKeys: List<Str
             }
         }
         else -> {
+            var updatePaddings by remember { mutableStateOf<((SafeAreaPaddings) -> Unit)?>(null) }
             Box(modifier = modifier.fillMaxSize()) {
                 AndroidFragment<CommonWebFragment>(
-                    modifier = modifier.fillMaxSize().padding(paddingValues),
+                    modifier = modifier.fillMaxSize(),
                     arguments = Bundle().apply {
                         putParcelable(ARG_URI, uri)
                         putSerializable(ARG_CONTEXT_DIRECTORY, contextDirectory)
@@ -114,12 +120,26 @@ fun WebPage(uri: Uri, modifier: Modifier = Modifier, matchingQueryKeys: List<Str
                     goBackRequest?.invoke {
                         fragment.goBack()
                     }
+                    updatePaddings = {
+                        fragment.applySafeAreaInsetsToWebView(it)
+                    }
                 }
                 if (!initialLoadingFinished) {
                     Box(modifier = modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
+            }
+
+            val direction = LocalLayoutDirection.current
+            LaunchedEffect(paddingValues, direction) {
+                val safeAreaPaddings = SafeAreaPaddings(
+                    left = paddingValues.calculateLeftPadding(direction).value,
+                    top = paddingValues.calculateTopPadding().value,
+                    right = paddingValues.calculateRightPadding(direction).value,
+                    bottom = paddingValues.calculateBottomPadding().value
+                )
+                updatePaddings?.invoke(safeAreaPaddings)
             }
         }
     }
@@ -148,6 +168,8 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
     var loadingFailed: ((WebError) -> Unit)? = null
     var openAddon: ((ResourceItem) -> Unit)? = null
 
+    private var safeAreaPaddings: SafeAreaPaddings = SafeAreaPaddings(0f, 0f, 0f, 0f)
+
     interface Listener {
         fun onExternalWebLinkClicked(url: String)
         fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?)
@@ -166,6 +188,7 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
         filterURL = requireArguments().getBoolean(ARG_FILTER_URL, true)
         if (savedInstanceState != null) {
             initialLoadFinished = savedInstanceState.getBoolean(ARG_INITIAL_LOAD_FINISHED, false)
+            safeAreaPaddings = BundleCompat.getSerializable(savedInstanceState, ARG_SAFE_AREA_PADDING, SafeAreaPaddings::class.java) ?: SafeAreaPaddings(0f, 0f, 0f, 0f)
         }
     }
 
@@ -260,6 +283,7 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
             override fun onPageFinished(view: WebView?, url: String?) {
                 val self = weakSelf.get() ?: return
                 self.titleChanged?.invoke(view?.title ?: "")
+                self.applySafeAreaInsetsToWebView(self.safeAreaPaddings)
             }
 
             @Deprecated("Deprecated in Java")
@@ -388,6 +412,7 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
     override fun onSaveInstanceState(outState: Bundle) {
         webView?.saveState(outState)
         outState.putBoolean(ARG_INITIAL_LOAD_FINISHED, initialLoadFinished)
+        outState.putSerializable(ARG_SAFE_AREA_PADDING, safeAreaPaddings)
         super.onSaveInstanceState(outState)
     }
 
@@ -434,11 +459,28 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
         webView?.goBack()
     }
 
+    fun applySafeAreaInsetsToWebView(paddings: SafeAreaPaddings) {
+        try {
+            val safeAreaJs = """
+            document.documentElement.style.setProperty('--safe-area-inset-top', '${paddings.top}px');
+            document.documentElement.style.setProperty('--safe-area-inset-right', '${paddings.right}px');
+            document.documentElement.style.setProperty('--safe-area-inset-bottom', '${paddings.bottom}px');
+            document.documentElement.style.setProperty('--safe-area-inset-left', '${paddings.left}px');
+            """
+
+            // Inject the density independent pixels into the CSS variables as CSS pixels
+            webView?.evaluateJavascript(safeAreaJs, null)
+        } catch (ignored: Throwable) {}
+        safeAreaPaddings = paddings
+    }
+
+
     companion object {
         const val ARG_URI = "uri"
         const val ARG_MATCHING_QUERY_KEYS = "query_keys"
         const val ARG_CONTEXT_DIRECTORY = "context_directory"
         const val ARG_FILTER_URL = "filter_url"
         private const val ARG_INITIAL_LOAD_FINISHED = "initial_load_finished"
+        private const val ARG_SAFE_AREA_PADDING = "safe_area_padding"
     }
 }
