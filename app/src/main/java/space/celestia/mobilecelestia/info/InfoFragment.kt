@@ -15,8 +15,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.os.BundleCompat
@@ -48,11 +52,13 @@ class InfoFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    InfoScreen(selection = selection, showTitle = true, linkClicked = {
-                        listener?.infoLinkClicked(it)
-                    }, openSubsystem = {
-                        listener?.infoRequestOpenSubsystem(selection)
-                    }, paddingValues = WindowInsets.systemBars.asPaddingValues())
+                    Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+                        InfoScreen(selection = selection, showTitle = true, linkClicked = {
+                            listener?.infoLinkClicked(it)
+                        }, openSubsystem = {
+                            listener?.infoRequestOpenSubsystem(selection)
+                        }, paddingValues = paddingValues)
+                    }
                 }
             }
         }

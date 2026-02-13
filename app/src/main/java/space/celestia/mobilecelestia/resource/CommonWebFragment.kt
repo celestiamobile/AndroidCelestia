@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.lifecycleScope
@@ -197,6 +198,11 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
             if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
                 WebSettingsCompat.setAlgorithmicDarkeningAllowed(webSettings, false)
             }
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(webView) { _, insets ->
+            // Zero out the insets https://developer.android.com/develop/ui/views/layout/webapps/understand-window-insets#bounds-overlap
+            return@setOnApplyWindowInsetsListener insets
         }
 
         val weakSelf = WeakReference(this)

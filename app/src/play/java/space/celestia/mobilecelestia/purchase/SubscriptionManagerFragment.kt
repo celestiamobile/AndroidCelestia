@@ -14,14 +14,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +35,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -44,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
@@ -191,54 +199,80 @@ class SubscriptionManagerFragment: Fragment() {
             refreshState = RefreshState(needsRefreshSubscription = false, needsRefreshPlans = false)
         }
 
-        Column(modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .systemBarsPadding()
-            .padding(
-                horizontal = dimensionResource(id = R.dimen.common_page_small_margin_horizontal),
-                vertical = dimensionResource(id = R.dimen.common_page_small_margin_vertical)
-            )) {
+        Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
             if (refreshState.needsRefreshSubscription || refreshState.needsRefreshPlans) {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.0f), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             } else if (errorText != null || subscriptionStatus !is PurchaseManager.SubscriptionStatus.Good) {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.0f), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center
+                ) {
                     ErrorText(text = errorText) {
-                        refreshState = RefreshState(needsRefreshPlans = true, needsRefreshSubscription = true)
+                        refreshState = RefreshState(
+                            needsRefreshPlans = true,
+                            needsRefreshSubscription = true
+                        )
                     }
                 }
             } else {
-                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                    AppIcon()
-                }
 
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
-
-                Text(
-                    text = CelestiaString("Celestia PLUS", "Name for the subscription service"),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                val direction = LocalLayoutDirection.current
+                val contentPadding = PaddingValues(
+                    start = dimensionResource(id = R.dimen.common_page_small_margin_horizontal) + paddingValues.calculateStartPadding(
+                        direction
+                    ),
+                    top = dimensionResource(id = R.dimen.common_page_small_margin_vertical) + paddingValues.calculateTopPadding(),
+                    end = dimensionResource(id = R.dimen.common_page_small_margin_horizontal) + paddingValues.calculateEndPadding(
+                        direction
+                    ),
+                    bottom = dimensionResource(id = R.dimen.common_page_small_margin_vertical) + paddingValues.calculateBottomPadding(),
                 )
+                Column(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scroll)
+                        .padding(contentPadding)
+                ) {
 
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        AppIcon()
+                    }
 
-                FeatureList()
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
 
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
+                    Text(
+                        text = CelestiaString(
+                            "Celestia PLUS",
+                            "Name for the subscription service"
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
 
-                val status = subscriptionStatus as? PurchaseManager.SubscriptionStatus.Good
-                val plans = subscription?.plans
-                val productDetails = subscription?.productDetails
-                if (status != null && plans != null && productDetails != null) {
-                    PlanList(productDetails = productDetails, plans = plans, status = status)
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_large_gap_vertical)))
+
+                    FeatureList()
+
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)))
+
+                    val status = subscriptionStatus as? PurchaseManager.SubscriptionStatus.Good
+                    val plans = subscription?.plans
+                    val productDetails = subscription?.productDetails
+                    if (status != null && plans != null && productDetails != null) {
+                        PlanList(
+                            productDetails = productDetails,
+                            plans = plans,
+                            status = status
+                        )
+                    }
                 }
             }
         }

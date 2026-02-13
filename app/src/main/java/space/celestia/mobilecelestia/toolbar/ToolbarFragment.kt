@@ -14,17 +14,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -162,46 +163,48 @@ class ToolbarFragment: Fragment() {
         val allSections = ArrayList(existingActions)
         allSections.addAll(ToolbarAction.persistentAction)
 
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ) {
-            LazyColumn(
-                contentPadding = WindowInsets.systemBars.asPaddingValues(),
-                modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
+        Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.End)) { paddingValues ->
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ) {
-                for (sectionIndex in allSections.indices) {
-                    val section = allSections[sectionIndex]
-                    items(section) {
-                        NavigationDrawerItem(
-                            label = {
-                                Text(
-                                    text = it.title,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))
-                                )
-                            },
-                            selected = false,
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = it.imageResource),
-                                    contentDescription = "",
-                                    modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension))
-                                )
-                            },
-                            onClick = {
-                                listener?.onToolbarActionSelected(it)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(horizontal = dimensionResource(id = R.dimen.list_item_small_margin_horizontal))
-                        )
-                    }
-                    if (sectionIndex != allSections.size - 1) {
-                        item {
-                            Separator(
-                                modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.toolbar_separator_padding_vertical)),
-                                separatorStart = dimensionResource(id = R.dimen.toolbar_separator_inset_start)
+                LazyColumn(
+                    contentPadding = paddingValues,
+                    modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
+                ) {
+                    for (sectionIndex in allSections.indices) {
+                        val section = allSections[sectionIndex]
+                        items(section) {
+                            NavigationDrawerItem(
+                                label = {
+                                    Text(
+                                        text = it.title,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))
+                                    )
+                                },
+                                selected = false,
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(id = it.imageResource),
+                                        contentDescription = "",
+                                        modifier = Modifier.size(dimensionResource(id = R.dimen.toolbar_list_icon_dimension))
+                                    )
+                                },
+                                onClick = {
+                                    listener?.onToolbarActionSelected(it)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(horizontal = dimensionResource(id = R.dimen.list_item_small_margin_horizontal))
                             )
+                        }
+                        if (sectionIndex != allSections.size - 1) {
+                            item {
+                                Separator(
+                                    modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.toolbar_separator_padding_vertical)),
+                                    separatorStart = dimensionResource(id = R.dimen.toolbar_separator_inset_start)
+                                )
+                            }
                         }
                     }
                 }

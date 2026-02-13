@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -62,9 +62,7 @@ import space.celestia.mobilecelestia.browser.viewmodel.Page
 import space.celestia.mobilecelestia.compose.Mdc3Theme
 import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.info.InfoScreen
-import space.celestia.mobilecelestia.info.model.InfoActionItem
 import space.celestia.mobilecelestia.utils.CelestiaString
-import java.net.URL
 
 sealed class BrowserAlert {
     data object ObjectNotFound: BrowserAlert()
@@ -83,8 +81,13 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
     }
 
     if (viewModel.tabs.isEmpty() || viewModel.selectedTabIndex.intValue >= viewModel.tabs.size || viewModel.selectedTabIndex.intValue >= viewModel.backStacks.size) {
-        Box(modifier = Modifier.fillMaxSize().systemBarsPadding(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+        Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+            Box(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
     } else {
         val backStack = viewModel.backStacks[viewModel.selectedTabIndex.intValue]

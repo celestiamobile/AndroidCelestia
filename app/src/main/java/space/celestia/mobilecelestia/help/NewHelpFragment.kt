@@ -5,9 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
@@ -52,19 +53,21 @@ class NewHelpFragment: Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    WebPage(
-                        uri = URLHelper.buildInAppGuideShortURI("/help/welcome", AppCore.getLanguage(), flavor = BuildConfig.FLAVOR, shareable = false),
-                        filterURL = true,
-                        matchingQueryKeys = listOf("guide"),
-                        paddingValues = WindowInsets.systemBars.asPaddingValues(),
-                        fallbackContent = { modifier, paddingValues ->
-                            HelpScreen(modifier = modifier, paddingValues = paddingValues, linkClicked = { link ->
-                                listener?.helpLinkClicked(link)
-                            }, actionSelected = { action ->
-                                listener?.helpActionSelected(action)
-                            })
-                        }
-                    )
+                    Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+                        WebPage(
+                            uri = URLHelper.buildInAppGuideShortURI("/help/welcome", AppCore.getLanguage(), flavor = BuildConfig.FLAVOR, shareable = false),
+                            filterURL = true,
+                            matchingQueryKeys = listOf("guide"),
+                            paddingValues = paddingValues,
+                            fallbackContent = { modifier, paddingValues ->
+                                HelpScreen(modifier = modifier, paddingValues = paddingValues, linkClicked = { link ->
+                                    listener?.helpLinkClicked(link)
+                                }, actionSelected = { action ->
+                                    listener?.helpActionSelected(action)
+                                })
+                            }
+                        )
+                    }
                 }
             }
         }

@@ -27,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -159,7 +160,7 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
                 }
             },
         )
-    }) { paddingValues ->
+    }, contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
         SearchContent(selection = currentSelection, isLoadingPage = isLoadingPage, linkClicked = linkClicked, openSubsystem = openSubsystem, paddingValues = paddingValues)
     }
 

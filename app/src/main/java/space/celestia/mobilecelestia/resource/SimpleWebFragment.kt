@@ -5,9 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.os.BundleCompat
@@ -37,7 +38,14 @@ class SimpleWebFragment: Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    WebPage(uri = uri, filterURL = filterURL, matchingQueryKeys = matchingQueryKeys, paddingValues = WindowInsets.systemBars.asPaddingValues())
+                    Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+                        WebPage(
+                            uri = uri,
+                            filterURL = filterURL,
+                            matchingQueryKeys = matchingQueryKeys,
+                            paddingValues = paddingValues
+                        )
+                    }
                 }
             }
         }
