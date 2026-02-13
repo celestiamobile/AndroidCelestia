@@ -35,9 +35,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.core.graphics.Insets
 import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.lifecycleScope
@@ -189,6 +191,9 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
         if (savedInstanceState != null) {
             initialLoadFinished = savedInstanceState.getBoolean(ARG_INITIAL_LOAD_FINISHED, false)
             safeAreaPaddings = BundleCompat.getSerializable(savedInstanceState, ARG_SAFE_AREA_PADDING, SafeAreaPaddings::class.java) ?: SafeAreaPaddings(0f, 0f, 0f, 0f)
+            view?.let {
+                ViewCompat.requestApplyInsets(it)
+            }
         }
     }
 
@@ -223,9 +228,17 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
             }
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(webView) { _, insets ->
-            // Zero out the insets https://developer.android.com/develop/ui/views/layout/webapps/understand-window-insets#bounds-overlap
-            return@setOnApplyWindowInsetsListener insets
+        ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
+            val density = resources.displayMetrics.density
+            return@setOnApplyWindowInsetsListener WindowInsetsCompat.Builder().setInsets(
+                WindowInsetsCompat.Type.systemBars(),
+                Insets.of(
+                    (safeAreaPaddings.left * density).toInt(),
+                    (safeAreaPaddings.top * density).toInt(),
+                    (safeAreaPaddings.right * density).toInt(),
+                    (safeAreaPaddings.bottom * density).toInt()
+                )
+            ).build()
         }
 
         val weakSelf = WeakReference(this)
@@ -283,7 +296,7 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
             override fun onPageFinished(view: WebView?, url: String?) {
                 val self = weakSelf.get() ?: return
                 self.titleChanged?.invoke(view?.title ?: "")
-                self.applySafeAreaInsetsToWebView(self.safeAreaPaddings)
+                // self.applySafeAreaInsetsToWebView(self.safeAreaPaddings)
             }
 
             @Deprecated("Deprecated in Java")
@@ -460,18 +473,21 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
     }
 
     fun applySafeAreaInsetsToWebView(paddings: SafeAreaPaddings) {
-        try {
-            val safeAreaJs = """
-            document.documentElement.style.setProperty('--safe-area-inset-top', '${paddings.top}px');
-            document.documentElement.style.setProperty('--safe-area-inset-right', '${paddings.right}px');
-            document.documentElement.style.setProperty('--safe-area-inset-bottom', '${paddings.bottom}px');
-            document.documentElement.style.setProperty('--safe-area-inset-left', '${paddings.left}px');
-            """
-
-            // Inject the density independent pixels into the CSS variables as CSS pixels
-            webView?.evaluateJavascript(safeAreaJs, null)
-        } catch (ignored: Throwable) {}
+//        try {
+//            val safeAreaJs = """
+//            document.documentElement.style.setProperty('--safe-area-inset-top', '${paddings.top}px');
+//            document.documentElement.style.setProperty('--safe-area-inset-right', '${paddings.right}px');
+//            document.documentElement.style.setProperty('--safe-area-inset-bottom', '${paddings.bottom}px');
+//            document.documentElement.style.setProperty('--safe-area-inset-left', '${paddings.left}px');
+//            """
+//
+//            // Inject the density independent pixels into the CSS variables as CSS pixels
+//            webView?.evaluateJavascript(safeAreaJs, null)
+//        } catch (ignored: Throwable) {}
         safeAreaPaddings = paddings
+        view?.let {
+            ViewCompat.requestApplyInsets(it)
+        }
     }
 
 
