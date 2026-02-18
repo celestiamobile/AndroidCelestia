@@ -104,7 +104,12 @@ fun ObserverModeScreen(paddingValues: PaddingValues, observerModeLearnMoreClicke
         val infoLinkText = CelestiaString("Learn more…", "Text for the link in Flight mode decides how you move around in Celestia. Learn more…")
         FooterLink(text = infoText, linkText = infoLinkText, link = "https://celestia.mobi/help/flight-mode", action = { link ->
             observerModeLearnMoreClicked(link, true)
-        })
+        }, modifier = Modifier.fillMaxWidth().padding(
+            start = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
+            top = dimensionResource(id = R.dimen.section_footer_margin_top),
+            end = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
+            bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
+        ))
 
         FilledTonalButton(modifier = internalViewModifier, onClick = {
             scope.launch(viewModel.executor.asCoroutineDispatcher()) {
