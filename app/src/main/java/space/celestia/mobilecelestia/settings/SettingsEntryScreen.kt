@@ -12,7 +12,9 @@ package space.celestia.mobilecelestia.settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -70,7 +72,12 @@ fun SettingsEntryScreen(item: SettingsCommonItem, paddingValues: PaddingValues, 
                     is Footer.TextWithLink -> {
                         FooterLink(text = footer.text, link = footer.link, linkText = footer.linkText, action = {
                             linkClicked(it, footer.localizable)
-                        })
+                        }, modifier = Modifier.fillMaxWidth().padding(
+                            start = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
+                            top = dimensionResource(id = R.dimen.section_footer_margin_top),
+                            end = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
+                            bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
+                        ))
                     }
                     else -> {}
                 }
