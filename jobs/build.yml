@@ -126,6 +126,11 @@ jobs:
     workingDirectory: '$(System.DefaultWorkingDirectory)/AndroidCelestia'
     displayName: 'Replace Sentry Placeholders'
 
+  - script: |
+      sed -ie "s/android:versionCode=\"[0-9]*\"/android:versionCode=\"$(Build.BuildId)\"/" app/src/main/AndroidManifest.xml
+    workingDirectory: '$(System.DefaultWorkingDirectory)/AndroidCelestia'
+    displayName: 'Set Build Number to Azure Build ID'
+
   - task: JavaToolInstaller@0
     inputs:
       versionSpec: '21'
