@@ -72,7 +72,7 @@ private fun LoadingScreen() {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().padding(horizontal = dimensionResource(R.dimen.common_page_medium_margin_horizontal)).background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).padding(horizontal = dimensionResource(R.dimen.common_page_medium_margin_horizontal)), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.loading_gap_vertical))) {
             Image(painter = painterResource(R.drawable.loading_icon), contentDescription = null, modifier = Modifier.size(dimensionResource(R.dimen.app_icon_dimension)))
             Text(text = statusText, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)

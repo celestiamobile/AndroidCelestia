@@ -86,6 +86,11 @@ public class Body extends AstroObject {
         return new Timeline(c_getTimeline(pointer));
     }
 
+    public @NonNull
+    String getPath(@NonNull StarCatalog starCatalog) {
+        return c_getPath(pointer, starCatalog.pointer);
+    }
+
     public boolean canBeUsedAsCockpit() {
         return c_canBeUsedAsCockpit(pointer);
     }
@@ -106,6 +111,7 @@ public class Body extends AstroObject {
     private static native List<String> c_getAlternateSurfaceNames(long pointer);
 
     private static native long c_getTimeline(long pointer);
+    private static native String c_getPath(long pointer, long starCatalogPointer);
 
     private static native boolean c_canBeUsedAsCockpit(long pointer);
 }

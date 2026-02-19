@@ -9,6 +9,7 @@
 
 #include "CelestiaJNI.h"
 #include <celengine/body.h>
+#include <celengine/stardb.h>
 #include <celengine/timeline.h>
 #include <celengine/timelinephase.h>
 
@@ -133,4 +134,13 @@ JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_Body_c_1canBeUsedAsCockpit(JNIEnv *env, jclass clazz, jlong pointer) {
     auto body = reinterpret_cast<Body *>(pointer);
     return GetBodyFeaturesManager()->canBeUsedAsCockpit(body) ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_celestia_Body_c_1getPath(JNIEnv *env, jclass clazz, jlong pointer,
+                                             jlong star_catalog_pointer) {
+    auto body = reinterpret_cast<Body *>(pointer);
+    auto starCatalog = reinterpret_cast<StarDatabase *>(star_catalog_pointer);
+    return env->NewStringUTF(body->getPath(starCatalog).c_str());
 }

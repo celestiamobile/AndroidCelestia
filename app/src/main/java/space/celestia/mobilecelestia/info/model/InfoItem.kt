@@ -95,7 +95,7 @@ class InfoSelectActionItem : InfoActionItem {
     override val title: String
         get() = CelestiaString("Select", "Select an object")
 }
-class InfoWebActionItem : InfoActionItem {
+class InfoWebActionItem(val url: String) : InfoActionItem {
     override val title: String
         get() = CelestiaString("Web Info", "Web info for an object")
 }
@@ -103,7 +103,7 @@ class SubsystemActionItem : InfoActionItem {
     override val title: String
         get() = CelestiaString("Subsystem", "Subsystem of an object (e.g. planetarium system)")
 }
-class AlternateSurfacesItem : InfoActionItem {
+class AlternateSurfacesItem(val names: List<String>) : InfoActionItem {
     override val title: String
         get() = CelestiaString("Alternate Surfaces", "Alternative textures to display")
 }
