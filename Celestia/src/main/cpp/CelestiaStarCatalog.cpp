@@ -12,9 +12,10 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_celestia_StarCatalog_c_1getStarName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
+Java_space_celestia_celestia_StarCatalog_c_1getStarName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer,
+                                                        jboolean localized) {
     auto d = reinterpret_cast<StarDatabase *>(ptr);
-    return env->NewStringUTF(d->getStarName(*reinterpret_cast<Star *>(pointer), true).c_str());
+    return env->NewStringUTF(d->getStarName(*reinterpret_cast<Star *>(pointer),localized == JNI_TRUE).c_str());
 }
 
 extern "C"

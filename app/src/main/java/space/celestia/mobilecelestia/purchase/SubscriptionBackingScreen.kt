@@ -30,7 +30,7 @@ fun SubscriptionBackingScreen(paddingValues: PaddingValues, openSubscriptionMana
         }
     } else if (viewModel.purchaseManager.purchaseToken() == null) {
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            EmptyHint(text = CelestiaString("This feature is only available to Celestia PLUS users.", ""), actionText = CelestiaString("Get Celestia PLUS", "")) {
+            EmptyHint(text = CelestiaString("This feature is only available to Celestia PLUS users.", ""), actionText = CelestiaString("Get Celestia PLUS", "Action button to get Celestia PLUS")) {
                 openSubscriptionManagement()
             }
         }

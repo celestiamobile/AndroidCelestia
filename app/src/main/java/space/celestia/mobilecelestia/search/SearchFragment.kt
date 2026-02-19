@@ -39,6 +39,10 @@ class SearchFragment : Fragment() {
                         listener?.searchRequestOpenSubsystem(selection)
                     }, linkClicked = {
                         listener?.searchLinkClicked(it)
+                    }, openSubscriptionManagement = {
+                        listener?.searchRequestOpenSubscriptionManagement()
+                    }, openRelatedAddons = {
+                        listener?.searchRequestOpenRelatedAddons(it)
                     })
                 }
             }
@@ -62,6 +66,8 @@ class SearchFragment : Fragment() {
     interface Listener {
         fun searchRequestOpenSubsystem(selection: Selection)
         fun searchLinkClicked(link: String)
+        fun searchRequestOpenSubscriptionManagement()
+        fun searchRequestOpenRelatedAddons(objectPath: String)
     }
 
     companion object {

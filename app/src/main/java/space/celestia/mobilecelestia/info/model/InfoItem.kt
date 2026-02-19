@@ -111,3 +111,8 @@ class MarkItem : InfoActionItem {
     override val title: String
         get() = CelestiaString("Mark", "Mark an object")
 }
+
+class RelatedAddonItem(val objectPath: String) : InfoActionItem {
+    override val title: String
+        get() = CelestiaString("Add-ons", "Add-ons for Celestia app")
+}

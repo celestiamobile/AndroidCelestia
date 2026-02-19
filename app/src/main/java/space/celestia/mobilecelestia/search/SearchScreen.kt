@@ -63,7 +63,7 @@ sealed class SearchAlert {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit) {
+fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, openRelatedAddons: (String) -> Unit, openSubscriptionManagement: () -> Unit) {
     val viewModel: SearchViewModel = hiltViewModel()
     var searchKey by rememberSaveable {
         mutableStateOf("")
@@ -161,7 +161,7 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
             },
         )
     }, contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
-        SearchContent(selection = currentSelection, isLoadingPage = isLoadingPage, linkClicked = linkClicked, openSubsystem = openSubsystem, paddingValues = paddingValues)
+        SearchContent(selection = currentSelection, isLoadingPage = isLoadingPage, linkClicked = linkClicked, openSubsystem = openSubsystem, openRelatedAddons = openRelatedAddons, openSubscriptionManagement = openSubscriptionManagement, paddingValues = paddingValues)
     }
 
     alert?.let { content ->
@@ -178,7 +178,7 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
 }
 
 @Composable
-private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, paddingValues: PaddingValues) {
+private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, openRelatedAddons: (String) -> Unit, openSubscriptionManagement: () -> Unit, paddingValues: PaddingValues) {
     if (isLoadingPage) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -187,7 +187,7 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkCli
             CircularProgressIndicator()
         }
     } else if (selection != null) {
-        InfoScreen(selection = selection, showTitle = true, linkClicked = linkClicked, openSubsystem = { openSubsystem(selection) }, paddingValues = paddingValues)
+        InfoScreen(selection = selection, showTitle = true, linkClicked = linkClicked, openSubsystem = { openSubsystem(selection) }, openRelatedAddons = openRelatedAddons, openSubscriptionManagement = openSubscriptionManagement, paddingValues = paddingValues)
     } else {
         Box(modifier = Modifier
             .fillMaxSize()

@@ -19,8 +19,8 @@ public class StarCatalog {
     }
 
     @NonNull
-    public String getStarName(Star star) {
-        return c_getStarName(pointer, star.pointer);
+    public String getStarName(Star star, boolean localized) {
+        return c_getStarName(pointer, star.pointer, localized);
     }
 
     public int getCount() {
@@ -32,7 +32,7 @@ public class StarCatalog {
     }
 
     // C functions
-    private static native String c_getStarName(long ptr, long pointer);
+    private static native String c_getStarName(long ptr, long pointer, boolean localized);
     private static native int c_getCount(long ptr);
     private static native long c_getStar(long ptr, int index);
 }

@@ -19,8 +19,8 @@ public class DSOCatalog {
     }
 
     @NonNull
-    public String getDSOName(DSO dso) {
-        return c_getDSOName(pointer, dso.pointer);
+    public String getDSOName(DSO dso, boolean localized) {
+        return c_getDSOName(pointer, dso.pointer, localized);
     }
 
     public int getCount() {
@@ -36,7 +36,7 @@ public class DSOCatalog {
     }
 
     // C functions
-    private static native String c_getDSOName(long ptr, long pointer);
+    private static native String c_getDSOName(long ptr, long pointer, boolean localized);
     private static native int c_getCount(long ptr);
     private static native long c_getDSO(long ptr, int index);
     static native boolean c_isDSOGalaxy(long ptr);

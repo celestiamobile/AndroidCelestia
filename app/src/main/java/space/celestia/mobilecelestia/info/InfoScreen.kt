@@ -43,12 +43,16 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.celestia.celestia.Body
+import space.celestia.celestia.DSO
 import space.celestia.celestia.Selection
+import space.celestia.celestia.Star
 import space.celestia.celestia.Universe
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.compose.LinkPreview
 import space.celestia.mobilecelestia.compose.OptionInputDialog
+import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.compose.SwitchRow
 import space.celestia.mobilecelestia.info.model.AlternateSurfacesItem
 import space.celestia.mobilecelestia.info.model.InfoActionItem
@@ -56,6 +60,7 @@ import space.celestia.mobilecelestia.info.model.InfoNormalActionItem
 import space.celestia.mobilecelestia.info.model.InfoSelectActionItem
 import space.celestia.mobilecelestia.info.model.InfoWebActionItem
 import space.celestia.mobilecelestia.info.model.MarkItem
+import space.celestia.mobilecelestia.info.model.RelatedAddonItem
 import space.celestia.mobilecelestia.info.model.SubsystemActionItem
 import space.celestia.mobilecelestia.info.viewmodel.InfoViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
@@ -66,11 +71,12 @@ import java.net.URL
 private sealed class InfoAlert {
     data class AlternativeSurfaceSelection(val surfaces: List<String>): InfoAlert()
     data object MarkerSelection: InfoAlert()
+    data object RequireCelestiaPlus: InfoAlert()
 }
 
 private data class InfoContextObject(val actions: List<InfoActionItem>, val name: String, val overview: String, val webInfoURL: URL?)
 @Composable
-fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -> Unit, openSubsystem: () -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
+fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -> Unit, openSubsystem: () -> Unit, openRelatedAddons: (String) -> Unit, openSubscriptionManagement: () -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
     val viewModel: InfoViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
     var alert by remember { mutableStateOf<InfoAlert?>(null) }
@@ -81,6 +87,27 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
         val results = withContext(viewModel.executor.asCoroutineDispatcher()) {
             val actions = arrayListOf<InfoActionItem>()
             actions.addAll(InfoActionItem.infoActions)
+
+            if (viewModel.purchaseManager.canUseInAppPurchase()) {
+                val objectPath = when (val item = selection.`object`) {
+                    is Body -> {
+                        item.getPath(viewModel.appCore.simulation.universe.starCatalog)
+                    }
+                    is Star -> {
+                        viewModel.appCore.simulation.universe.starCatalog.getStarName(item, false)
+                    }
+                    is DSO -> {
+                        viewModel.appCore.simulation.universe.dsoCatalog.getDSOName(item, false)
+                    }
+                    else -> {
+                        null
+                    }
+                }
+                if (!objectPath.isNullOrEmpty() && !objectPath.startsWith(" ")) {
+                    actions.add(RelatedAddonItem(objectPath))
+                }
+            }
+
             val alternativeSurfaceNames = selection.body?.alternateSurfaceNames
             val url = selection.webInfoURL
             var connectionURL: URL? = null
@@ -199,6 +226,13 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
                         is SubsystemActionItem -> {
                             openSubsystem()
                         }
+                        is RelatedAddonItem -> {
+                            if (viewModel.purchaseManager.purchaseToken() == null) {
+                                alert = InfoAlert.RequireCelestiaPlus
+                            } else {
+                                openRelatedAddons(action.objectPath)
+                            }
+                        }
                     }
                 }) {
                 Text(text = item.second.title)
@@ -236,6 +270,14 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
                         }
                     }
                 }
+            }
+            is InfoAlert.RequireCelestiaPlus -> {
+                SimpleAlertDialog(onDismissRequest = {
+                    alert = null
+                }, onConfirm = {
+                    alert = null
+                    openSubscriptionManagement()
+                }, confirmButtonText = CelestiaString("Get Celestia PLUS", "Action button to get Celestia PLUS"), title = CelestiaString("Related Add-ons", "Alert title for add-ons that are related to an object"), text = CelestiaString("To access related add-ons, you need to have an active Celestia PLUS subscription.", "Alert message for requiring Celestia PLUS to access add-ons that are related to an object"))
             }
         }
     }

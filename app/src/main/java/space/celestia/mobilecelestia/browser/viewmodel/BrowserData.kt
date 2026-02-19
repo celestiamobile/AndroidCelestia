@@ -35,9 +35,7 @@ private fun Simulation.createSolBrowserRoot(): BrowserItem? {
     val universe = this.universe
     val catalog = universe.starCatalog
     return BrowserPredefinedItem(
-        catalog.getStarName(
-            sol
-        ),
+        catalog.getStarName(sol, true),
         CelestiaString("Solar System", "Tab for solar system in Star Browser"), sol, universe, BrowserPredefinedItem.CategoryInfo("B2E44BE0-9DF7-FAB9-92D4-F8D323D31250", false)
     )
 }
@@ -52,7 +50,7 @@ private fun Universe.createStarBrowserRootItem(kind: Int, observer: Observer, ti
     fun List<Star>.createBrowserMap(): Map<String, BrowserItem> {
         val map = HashMap<String, BrowserItem>()
         for (item in this) {
-            val name = starCatalog.getStarName(item)
+            val name = starCatalog.getStarName(item, true)
             map[name] = BrowserItem(
                 name,
                 null,
@@ -65,7 +63,7 @@ private fun Universe.createStarBrowserRootItem(kind: Int, observer: Observer, ti
     fun List<Star>.createOrderedBrowserMap(): List<BrowserItem.KeyValuePair> {
         val list = arrayListOf<BrowserItem.KeyValuePair>()
         for (item in this) {
-            val name = starCatalog.getStarName(item)
+            val name = starCatalog.getStarName(item, true)
             list.add(
                 BrowserItem.KeyValuePair(name,
                     BrowserItem(name, null, item, this@createStarBrowserRootItem)
@@ -204,7 +202,7 @@ private fun Universe.createDSOBrowserRoot(): BrowserItem {
             else -> null
         }
 
-        val name = dsoCatalog.getDSOName(dso)
+        val name = dsoCatalog.getDSOName(dso, true)
         arrayListToAdd?.put(name, BrowserItem(name, null, dso, this))
     }
 

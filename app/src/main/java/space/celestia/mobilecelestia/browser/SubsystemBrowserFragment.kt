@@ -62,7 +62,7 @@ sealed class SubsystemBrowserAlert {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit) {
+fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit, openRelatedAddons: (String) -> Unit, openSubscriptionManagement: () -> Unit) {
     val viewModel: SubsystemViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     var alert by remember { mutableStateOf<SubsystemBrowserAlert?>(null)  }
@@ -143,7 +143,7 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSu
                             linkClicked(it)
                         }, openSubsystem = {
                             openSubsystem(route.info)
-                        }, paddingValues = paddingValues)
+                        }, openRelatedAddons = openRelatedAddons, openSubscriptionManagement = openSubscriptionManagement, paddingValues = paddingValues)
                     }
                 }
             }
@@ -168,6 +168,8 @@ class SubsystemBrowserFragment : Fragment() {
         fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo)
         fun browserLinkClicked(link: String)
         fun browserRequestSubsystem(selection: Selection)
+        fun browserRequestOpenSubscriptionManagement()
+        fun browserRequestOpenRelatedAddons(objectPath: String)
     }
     private lateinit var selection: Selection
     private var listener: Listener? = null
@@ -211,6 +213,10 @@ class SubsystemBrowserFragment : Fragment() {
                         listener?.browserRequestSubsystem(selection)
                     }, addonCategoryRequested = {
                         listener?.browserAddonCategoryRequested(it)
+                    }, openRelatedAddons = {
+                        listener?.browserRequestOpenRelatedAddons(it)
+                    }, openSubscriptionManagement = {
+                        listener?.browserRequestOpenSubscriptionManagement()
                     })
                 }
             }

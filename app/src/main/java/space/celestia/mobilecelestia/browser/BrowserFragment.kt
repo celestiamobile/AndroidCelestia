@@ -70,7 +70,7 @@ sealed class BrowserAlert {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit) {
+fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit, openRelatedAddons: (String) -> Unit, openSubscriptionManagement: () -> Unit) {
     val viewModel: BrowserViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     var alert by remember { mutableStateOf<BrowserAlert?>(null)  }
@@ -186,7 +186,7 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
                                 linkClicked(it)
                             }, openSubsystem = {
                                 openSubsystem(route.info)
-                            }, paddingValues = paddingValues)
+                            }, openSubscriptionManagement = openSubscriptionManagement, openRelatedAddons = openRelatedAddons, paddingValues = paddingValues)
                         }
                     }
                 }
@@ -213,6 +213,8 @@ class BrowserFragment : Fragment() {
         fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo)
         fun browserLinkClicked(link: String)
         fun browserRequestSubsystem(selection: Selection)
+        fun browserRequestOpenSubscriptionManagement()
+        fun browserRequestOpenRelatedAddons(objectPath: String)
     }
 
     private var listener: Listener? = null
@@ -248,6 +250,10 @@ class BrowserFragment : Fragment() {
                         listener?.browserRequestSubsystem(selection)
                     }, addonCategoryRequested = {
                         listener?.browserAddonCategoryRequested(it)
+                    }, openRelatedAddons = {
+                        listener?.browserRequestOpenRelatedAddons(it)
+                    }, openSubscriptionManagement = {
+                        listener?.browserRequestOpenSubscriptionManagement()
                     })
                 }
             }

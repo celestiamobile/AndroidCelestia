@@ -66,6 +66,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
@@ -1259,6 +1260,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun infoRequestOpenSubscriptionManagement() {
+        showInAppPurchase(null)
+    }
+
+    override fun infoRequestOpenRelatedAddons(objectPath: String) {
+        showRelatedAddons(objectPath)
+    }
+
     override fun infoLinkClicked(link: String) {
         openURL(link)
     }
@@ -1271,8 +1280,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         infoRequestOpenSubsystem(selection)
     }
 
+    override fun searchRequestOpenRelatedAddons(objectPath: String) {
+        showRelatedAddons(objectPath)
+    }
+
+    override fun searchRequestOpenSubscriptionManagement() {
+        showInAppPurchase(null)
+    }
+
     override fun browserRequestSubsystem(selection: Selection) {
         infoRequestOpenSubsystem(selection)
+    }
+
+    override fun browserRequestOpenSubscriptionManagement() {
+        showInAppPurchase(null)
+    }
+
+    override fun browserRequestOpenRelatedAddons(objectPath: String) {
+        showRelatedAddons(objectPath)
     }
 
     override fun webRequestRunScript(script: File) {
@@ -1333,6 +1358,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onOpenSubscriptionPage(preferredPlayOfferId: String?) {
         showInAppPurchase(preferredPlayOfferId)
+    }
+
+    private fun showRelatedAddons(objectPath: String) {
+        val baseURL = "https://celestia.mobi/resources/itemsByObjectPath"
+        var builder = baseURL.toUri()
+            .buildUpon()
+            .appendQueryParameter("objectPath", objectPath)
+            .appendQueryParameter("lang", AppCore.getLanguage())
+            .appendQueryParameter("platform", "android")
+            .appendQueryParameter("distribution", BuildConfig.FLAVOR)
+            .appendQueryParameter("theme", "dark")
+            .appendQueryParameter("transparentBackground", "true")
+        if (purchaseManager.canUseInAppPurchase())
+            builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
+        lifecycleScope.launch {
+            showBottomSheetFragment(WebBrowserFragment.newInstance(builder.build()))
+        }
     }
 
     private fun onInstantActionSelected(item: CelestiaAction) {
@@ -1536,10 +1578,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         hideBottomSheet(animated)
     }
 
-    private suspend fun hideMenu(animated: Boolean): Unit = suspendCoroutine { cont ->
+    private suspend fun hideMenu(animated: Boolean): Unit = suspendCancellableCoroutine { cont ->
         if (!drawerLayout.isDrawerOpen(GravityCompat.END)) {
             cont.resume(Unit)
-            return@suspendCoroutine
+            return@suspendCancellableCoroutine
         }
 
         val weakSelf = WeakReference(this)
@@ -1598,7 +1640,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showView(animated, ObjectAnimator.ofFloat(view, "alpha", 1.0f))
     }
 
-    private suspend fun showView(animated: Boolean, showAnimator: ObjectAnimator): Unit = suspendCoroutine { cont ->
+    private suspend fun showView(animated: Boolean, showAnimator: ObjectAnimator): Unit = suspendCancellableCoroutine { cont ->
         val executionBlock = {
             cont.resume(Unit)
         }
@@ -1637,7 +1679,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         hideView(animated, view, ObjectAnimator.ofFloat(view, "alpha", 0.0f))
     }
 
-    private suspend fun hideView(animated: Boolean, view: View, hideAnimator: ObjectAnimator): Unit = suspendCoroutine { cont ->
+    private suspend fun hideView(animated: Boolean, view: View, hideAnimator: ObjectAnimator): Unit = suspendCancellableCoroutine { cont ->
         val executionBlock = {
             view.visibility = View.INVISIBLE
             cont.resume(Unit)
@@ -2078,8 +2120,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "131"
-        // 131: 1.9.10, Data update (a052c5fcdbaedf077234117505e79680a28f2fbd)
+        private const val CURRENT_DATA_VERSION = "132"
+        // 132: 1.9.10, Localization update data update (a052c5fcdbaedf077234117505e79680a28f2fbd)
         // 130: 1.9.9, Localization update data update (cefcbe9824b90aded2fa292c64439b4b4bdd5d39)
         // 128: 1.9.8, Localization update data update (commit a2a023835438bd4d41ad02cba4b376eb9bdafdcd)
         // 126: 1.9.7, Data update (commit 9cdd5d71ae696fa9803f33e512e918bd9799e49c)

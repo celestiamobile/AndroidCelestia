@@ -14,11 +14,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.ui.platform.ComposeView
@@ -57,6 +54,10 @@ class InfoFragment : Fragment() {
                             listener?.infoLinkClicked(it)
                         }, openSubsystem = {
                             listener?.infoRequestOpenSubsystem(selection)
+                        }, openRelatedAddons = {
+                            listener?.infoRequestOpenRelatedAddons(it)
+                        }, openSubscriptionManagement = {
+                            listener?.infoRequestOpenSubscriptionManagement()
                         }, paddingValues = paddingValues)
                     }
                 }
@@ -79,7 +80,9 @@ class InfoFragment : Fragment() {
     }
 
     interface Listener {
+        fun infoRequestOpenSubscriptionManagement()
         fun infoRequestOpenSubsystem(selection: Selection)
+        fun infoRequestOpenRelatedAddons(objectPath: String)
         fun infoLinkClicked(link: String)
     }
 

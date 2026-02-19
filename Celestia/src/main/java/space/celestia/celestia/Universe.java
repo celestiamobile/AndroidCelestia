@@ -61,10 +61,10 @@ public class Universe implements BrowserItem.ChildrenProvider {
     public String getNameForSelection(Selection selection) {
         Star star = selection.getStar();
         if (star != null)
-            return getStarCatalog().getStarName(star);
+            return getStarCatalog().getStarName(star, true);
         DSO dso = selection.getDSO();
         if (dso != null)
-            return getDSOCatalog().getDSOName(dso);
+            return getDSOCatalog().getDSOName(dso, true);
         Body body = selection.getBody();
         if (body != null)
             return body.getName();
