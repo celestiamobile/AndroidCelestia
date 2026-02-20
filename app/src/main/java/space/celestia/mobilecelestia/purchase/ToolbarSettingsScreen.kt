@@ -183,7 +183,7 @@ fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
                 ), modifier = Modifier.size(dimensionResource(id = R.dimen.list_item_icon_size)).scale(0.8f))
                 Text(item.title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1.0f).padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)))
                 if (isDraggable) {
-                    Icon(painter = painterResource(id = R.drawable.reorder_24px), contentDescription = CelestiaString("Drag Handle", "Accessibility description for the drag handle for reorder"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
+                    Icon(painter = painterResource(id = R.drawable.reorder_24px), contentDescription = CelestiaString("Drag Handle", "Accessibility description for the drag handle for reorder"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item.id).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
                 } else {
                     Icon(painter = painterResource(id = R.drawable.add_24px), contentDescription = CelestiaString("Add Button", "Accessibility description for an add button"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.clip(CircleShape).clickable {
                         if (!list.contains(item)) {
@@ -211,13 +211,13 @@ fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
         contentPadding = contentPadding
     ) {
-        itemsIndexed(list, key = { _, item -> item }) { index, item ->
-            DraggableItem(dragDropState, index) { _ ->
+        itemsIndexed(list, key = { _, item -> item.id }) { index, item ->
+            DraggableItem(dragDropState, index, modifier = Modifier.animateItem()) { _ ->
                 Item(item = item, isDraggable = true)
             }
         }
 
-        itemsIndexed(otherItems, key = { _, item -> item }) { _, item ->
+        itemsIndexed(otherItems, key = { _, item -> item.id }) { _, item ->
             Item(item = item, isDraggable = false)
         }
 

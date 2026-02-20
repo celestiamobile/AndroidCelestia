@@ -103,7 +103,7 @@ fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, s
             modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
             contentPadding = contentPadding
         ) {
-            itemsIndexed(parent.children, key = { _, item -> item }) { index, item ->
+            itemsIndexed(parent.children, key = { _, item -> item.id }) { index, item ->
                 val selectionHandler: () -> Unit = {
                     if (item.isLeaf) {
                         when (item) {
@@ -214,7 +214,7 @@ private fun Item(item: FavoriteBaseItem, index: Int, dragDropState: DragDropStat
                         modifier = Modifier
                             .dragContainerForDragHandle(
                                 dragDropState = dragDropState,
-                                key = item
+                                key = item.id
                             )
                             .padding(
                                 dimensionResource(id = R.dimen.list_item_action_icon_padding)

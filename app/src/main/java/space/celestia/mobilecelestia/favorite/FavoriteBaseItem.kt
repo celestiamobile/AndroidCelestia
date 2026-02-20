@@ -15,8 +15,7 @@ import space.celestia.celestia.Destination
 import space.celestia.celestia.Script
 import space.celestia.celestiafoundation.favorite.BookmarkNode
 import space.celestia.mobilecelestia.utils.CelestiaString
-import java.io.Serializable
-import java.util.*
+import java.util.UUID
 
 enum class FavoriteItemAction {
     Delete, Rename, Share;
@@ -31,10 +30,11 @@ enum class FavoriteItemAction {
         }
 }
 
-sealed interface FavoriteBaseItem : Serializable {
+sealed interface FavoriteBaseItem {
     val children: List<FavoriteBaseItem>
     val isLeaf: Boolean
     val title: String
+    val id: String
     val emptyHint: String?
         get() = null
 
@@ -74,6 +74,7 @@ class FavoriteRoot : FavoriteBaseItem {
         get() = false
     override val hasFullPageRepresentation: Boolean
         get() = false
+    override val id: String = UUID.randomUUID().toString()
 }
 
 class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
@@ -101,6 +102,8 @@ class FavoriteTypeItem(val type: FavoriteType) : FavoriteBaseItem {
         get() = false
     override val hasFullPageRepresentation: Boolean
         get() = false
+
+    override val id: String = UUID.randomUUID().toString()
 }
 
 class FavoriteScriptItem(val script: Script) : FavoriteBaseItem {
@@ -112,6 +115,7 @@ class FavoriteScriptItem(val script: Script) : FavoriteBaseItem {
         get() = true
     override val hasFullPageRepresentation: Boolean
         get() = false
+    override val id: String = UUID.randomUUID().toString()
 }
 
 class FavoriteDestinationItem(val destination: Destination): FavoriteBaseItem {
@@ -123,6 +127,7 @@ class FavoriteDestinationItem(val destination: Destination): FavoriteBaseItem {
         get() = true
     override val hasFullPageRepresentation: Boolean
         get() = true
+    override val id: String = UUID.randomUUID().toString()
 }
 
 open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBaseItem {
@@ -161,12 +166,16 @@ open class FavoriteBookmarkItem(val bookmark: BookmarkNode) : MutableFavoriteBas
 
     override val emptyHint: String?
         get() = CelestiaString("Create a new bookmark with \"+\" button", "")
+
+    override val id: String = UUID.randomUUID().toString()
 }
 
 class FavoriteBookmarkRootItem(bookmark: BookmarkNode) : FavoriteBookmarkItem(bookmark) {
     // Root item does not support any customization
     override val supportedItemActions: List<FavoriteItemAction>
         get() = listOf()
+
+    override val id: String = UUID.randomUUID().toString()
 }
 
 fun updateCurrentScripts(scripts: List<Script>) {
