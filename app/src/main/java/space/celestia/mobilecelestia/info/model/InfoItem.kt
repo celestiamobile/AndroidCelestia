@@ -10,8 +10,6 @@
 package space.celestia.mobilecelestia.info.model
 
 import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.ui.linkpreview.LPLinkMetadata
-import space.celestia.ui.linkpreview.LPLinkViewData
 import java.io.Serializable
 
 enum class CelestiaAction(val value: Int) : Serializable {

@@ -214,7 +214,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         data class CelURL(val url: String): AppURL()
         data class Addon(val id: String): AppURL()
         data class Article(val id: String): AppURL()
-        data class Object(val path: String): AppURL()
+        data class Object(val path: String, val action: ObjectURLAction?): AppURL()
+    }
+
+    sealed class ObjectURLAction {
+        data object Select: ObjectURLAction()
+        data class SelectAnd(val action: CelestiaAction): ObjectURLAction()
     }
 
     private var urlToOpen: AppURL? = null
@@ -806,7 +811,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 "object" -> {
                     val path = uri.pathSegments.filter({ !it.isEmpty() }).joinToString("/")
                     if (path.isEmpty()) return
-                    requestOpenObject(path)
+                    var action: ObjectURLAction? = null
+                    uri.getQueryParameter("action")?.let { value ->
+                        objectURLActionMap[value]?.let {
+                            action = it
+                        }
+                    }
+                    requestOpenObject(path, action)
                 }
             }
         }
@@ -888,8 +899,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             openURLOrScriptOrGreeting()
     }
 
-    private fun requestOpenObject(objectPath: String) {
-        urlToOpen = AppURL.Object(objectPath)
+    private fun requestOpenObject(objectPath: String, action: ObjectURLAction?) {
+        urlToOpen = AppURL.Object(objectPath, action)
         if (readyForInteraction)
             openURLOrScriptOrGreeting()
     }
@@ -942,7 +953,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     lifecycleScope.launch {
                         val selection = withContext(executor.asCoroutineDispatcher()) { appCore.simulation.findObject(it.path) }
                         if (selection.isEmpty) return@launch
-                        showInfo(selection)
+                        if (it.action != null) {
+                            when (it.action) {
+                                ObjectURLAction.Select -> {
+                                    appCore.simulation.selection = selection
+                                }
+                                is ObjectURLAction.SelectAnd -> {
+                                    appCore.simulation.selection = selection
+                                    appCore.charEnter(it.action.action.value)
+                                }
+                            }
+
+                        } else {
+                            showInfo(selection)
+                        }
                     }
                 }
             }
@@ -2234,6 +2258,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var language: String = "en"
         private var addonPaths: List<String> = listOf()
         private var extraScriptPaths: List<String> = listOf()
+
+        private val objectURLActionMap = hashMapOf<String, ObjectURLAction>(
+            "select" to ObjectURLAction.Select,
+            "go" to ObjectURLAction.SelectAnd(CelestiaAction.GoTo),
+            "center" to ObjectURLAction.SelectAnd(CelestiaAction.Center),
+            "follow" to ObjectURLAction.SelectAnd(CelestiaAction.Follow),
+            "chase" to ObjectURLAction.SelectAnd(CelestiaAction.Chase),
+            "track" to ObjectURLAction.SelectAnd(CelestiaAction.Track),
+            "syncOrbit" to ObjectURLAction.SelectAnd(CelestiaAction.SyncOrbit),
+            "lock" to ObjectURLAction.SelectAnd(CelestiaAction.Lock),
+            "land" to ObjectURLAction.SelectAnd(CelestiaAction.GoToSurface),
+        )
 
         private var ignoredDisplayIds = hashSetOf<Int>()
         private var getDisplayTypeMethod: Method? = null
