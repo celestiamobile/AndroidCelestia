@@ -1422,6 +1422,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .appendQueryParameter("distribution", BuildConfig.FLAVOR)
             .appendQueryParameter("theme", "dark")
             .appendQueryParameter("transparentBackground", "true")
+            .appendQueryParameter("api", "2")
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {
@@ -2055,6 +2056,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .appendQueryParameter("distribution", BuildConfig.FLAVOR)
             .appendQueryParameter("theme", "dark")
             .appendQueryParameter("transparentBackground", "true")
+            .appendQueryParameter("api", "2")
         builder = if (info.isLeaf)
             builder.appendQueryParameter("category", info.id)
         else
