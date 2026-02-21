@@ -211,6 +211,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var scriptOrURLPath: String? = null
     private var addonToOpen: String? = null
     private var guideToOpen: String? = null
+    private var objectPathToOpen: String? = null
 
     @Inject
     lateinit var defaultFilePaths: FilePaths
@@ -787,12 +788,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 requestOpenGuide(id)
             }
         } else if (uri.scheme == "celestia") {
-            if (uri.host == "article") {
-                val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return
-                requestOpenGuide(id)
-            } else if (uri.host == "addon") {
-                val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return
-                requestOpenAddon(id)
+            when (uri.host) {
+                "article" -> {
+                    val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return
+                    requestOpenGuide(id)
+                }
+                "addon" -> {
+                    val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return
+                    requestOpenAddon(id)
+                }
+                "object" -> {
+                    val path = uri.pathSegments.filter({ !it.isEmpty() }).joinToString("/")
+                    if (path.isEmpty()) return
+                    requestOpenObject(path)
+                }
             }
         }
     }
@@ -873,6 +882,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             openURLOrScriptOrGreeting()
     }
 
+    private fun requestOpenObject(objectPath: String) {
+        objectPathToOpen = objectPath
+        if (readyForInteraction)
+            openURLOrScriptOrGreeting()
+    }
+
     private fun openCelestiaURL(uri: String) = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
         val isURL = uri.startsWith("cel://")
         if (isURL) {
@@ -888,6 +903,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             scriptOrURLPath = null
             guideToOpen = null
             addonToOpen = null
+            objectPathToOpen = null
         }
 
         if (appSettings[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
@@ -896,6 +912,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             cleanup()
             return
         }
+
         val scriptOrURL = scriptOrURLPath
         if (scriptOrURL != null) {
             val isURL = scriptOrURL.startsWith("cel://")
@@ -905,6 +922,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             cleanup()
             return
         }
+
         val guide = guideToOpen
         val lang = AppCore.getLanguage()
         if (guide != null) {
@@ -915,6 +933,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             cleanup()
             return
         }
+
         val addon = addonToOpen
         if (addon != null) {
             lifecycleScope.launch {
@@ -923,6 +942,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     showBottomSheetFragment(AddonFragment.newInstance(result))
                 } catch (ignored: Throwable) {}
             }
+            cleanup()
+            return
+        }
+
+        val objectPath = objectPathToOpen
+        if (objectPath != null) {
+            lifecycleScope.launch {
+                val selection = withContext(executor.asCoroutineDispatcher()) { appCore.simulation.findObject(objectPath) }
+                if (selection.isEmpty) return@launch
+                showInfo(selection)
+            }
+
             cleanup()
             return
         }
