@@ -208,10 +208,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var interactionBlocked = false
 
     private var readyForInteraction = false
-    private var scriptOrURLPath: String? = null
-    private var addonToOpen: String? = null
-    private var guideToOpen: String? = null
-    private var objectPathToOpen: String? = null
+
+    sealed class AppURL {
+        data class Script(val path: String): AppURL()
+        data class CelURL(val url: String): AppURL()
+        data class Addon(val id: String): AppURL()
+        data class Article(val id: String): AppURL()
+        data class Object(val path: String): AppURL()
+    }
+
+    private var urlToOpen: AppURL? = null
 
     @Inject
     lateinit var defaultFilePaths: FilePaths
@@ -859,31 +865,31 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun requestRunScript(path: String) {
-        scriptOrURLPath = path
+        urlToOpen = AppURL.Script(path)
         if (readyForInteraction)
             openURLOrScriptOrGreeting()
     }
 
     private fun requestOpenURL(url: String) {
-        scriptOrURLPath = url
+        urlToOpen = AppURL.CelURL(url)
         if (readyForInteraction)
             openURLOrScriptOrGreeting()
     }
 
     private fun requestOpenAddon(addon: String) {
-        addonToOpen = addon
+        urlToOpen = AppURL.Addon(addon)
         if (readyForInteraction)
             openURLOrScriptOrGreeting()
     }
 
     private fun requestOpenGuide(guide: String) {
-        guideToOpen = guide
+        urlToOpen = AppURL.Article(guide)
         if (readyForInteraction)
             openURLOrScriptOrGreeting()
     }
 
     private fun requestOpenObject(objectPath: String) {
-        objectPathToOpen = objectPath
+        urlToOpen = AppURL.Object(objectPath)
         if (readyForInteraction)
             openURLOrScriptOrGreeting()
     }
@@ -898,63 +904,49 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun openURLOrScriptOrGreeting() {
-        fun cleanup() {
-            // Just clean up everything, only the first message gets presented
-            scriptOrURLPath = null
-            guideToOpen = null
-            addonToOpen = null
-            objectPathToOpen = null
-        }
-
         if (appSettings[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
             appSettings[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
             showHelp()
-            cleanup()
+            urlToOpen = null
             return
         }
 
-        val scriptOrURL = scriptOrURLPath
-        if (scriptOrURL != null) {
-            val isURL = scriptOrURL.startsWith("cel://")
-            showAlert(if (isURL) CelestiaString("Open URL?", "Request user consent to open a URL") else CelestiaString("Run script?", "Request user consent to run a script"), handler = {
-                openCelestiaURL(scriptOrURL)
-            })
-            cleanup()
-            return
-        }
-
-        val guide = guideToOpen
         val lang = AppCore.getLanguage()
-        if (guide != null) {
-            lifecycleScope.launch {
-                val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
-                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = guide, language = lang, flavor = BuildConfig.FLAVOR, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
+        urlToOpen?.let {
+            when (it) {
+                is AppURL.Script -> {
+                    showAlert(CelestiaString("Run script?", "Request user consent to run a script"), handler = {
+                        openCelestiaURL(it.path)
+                    })
+                }
+                is AppURL.CelURL -> {
+                    showAlert(CelestiaString("Open URL?", "Request user consent to open a URL"), handler = {
+                        openCelestiaURL(it.url)
+                    })
+                }
+                is AppURL.Addon -> {
+                    lifecycleScope.launch {
+                        try {
+                            val result = resourceAPI.item(lang, it.id)
+                            showBottomSheetFragment(AddonFragment.newInstance(result))
+                        } catch (ignored: Throwable) {}
+                    }
+                }
+                is AppURL.Article -> {
+                    lifecycleScope.launch {
+                        val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
+                        showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = it.id, language = lang, flavor = BuildConfig.FLAVOR, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
+                    }
+                }
+                is AppURL.Object -> {
+                    lifecycleScope.launch {
+                        val selection = withContext(executor.asCoroutineDispatcher()) { appCore.simulation.findObject(it.path) }
+                        if (selection.isEmpty) return@launch
+                        showInfo(selection)
+                    }
+                }
             }
-            cleanup()
-            return
-        }
-
-        val addon = addonToOpen
-        if (addon != null) {
-            lifecycleScope.launch {
-                try {
-                    val result = resourceAPI.item(lang, addon)
-                    showBottomSheetFragment(AddonFragment.newInstance(result))
-                } catch (ignored: Throwable) {}
-            }
-            cleanup()
-            return
-        }
-
-        val objectPath = objectPathToOpen
-        if (objectPath != null) {
-            lifecycleScope.launch {
-                val selection = withContext(executor.asCoroutineDispatcher()) { appCore.simulation.findObject(objectPath) }
-                if (selection.isEmpty) return@launch
-                showInfo(selection)
-            }
-
-            cleanup()
+            urlToOpen = null
             return
         }
 
