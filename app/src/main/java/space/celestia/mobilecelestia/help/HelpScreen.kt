@@ -45,9 +45,9 @@ fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, link
             CelestiaString("In camera mode, drag to move field of view.\n\nPinch to zoom in/out field of view.", ""), R.drawable.tutorial_mode_camera)
     ) }
     val staticHelpURLItems: List<URLItem> by lazy { listOf(
-        URLItem(CelestiaString("Mouse/Keyboard Controls", "Guide to control Celestia with a mouse/keyboard"), "celguide://guide?guide=BE1B5023-46B6-1F10-F15F-3B3F02F30300"),
-        URLItem(CelestiaString("Use Add-ons and Scripts", "URL for Use Add-ons and Scripts wiki"), "celguide://guide?guide=D1A96BFA-00BB-0089-F361-10DD886C8A4F"),
-        URLItem(CelestiaString("Scripts and URLs", "URL for Scripts and URLs wiki"), "celguide://guide?guide=A0AB3F01-E616-3C49-0934-0583D803E9D0")
+        URLItem(CelestiaString("Mouse/Keyboard Controls", "Guide to control Celestia with a mouse/keyboard"), "celestia://article/BE1B5023-46B6-1F10-F15F-3B3F02F30300"),
+        URLItem(CelestiaString("Use Add-ons and Scripts", "URL for Use Add-ons and Scripts wiki"), "celestia://article/D1A96BFA-00BB-0089-F361-10DD886C8A4F"),
+        URLItem(CelestiaString("Scripts and URLs", "URL for Scripts and URLs wiki"), "celestia://article/A0AB3F01-E616-3C49-0934-0583D803E9D0")
     ) }
     val staticHelpActionItems: List<ActionItem> by lazy {
         listOf(

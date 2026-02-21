@@ -786,9 +786,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val id = uri.getQueryParameter("guide") ?: return
                 requestOpenGuide(id)
             }
-        } else {
-            // Cannot handle this URI scheme
-            showAlert("Unknown URI scheme ${uri.scheme}")
+        } else if (uri.scheme == "celestia") {
+            if (uri.host == "article") {
+                val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return
+                requestOpenGuide(id)
+            } else if (uri.host == "addon") {
+                val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return
+                requestOpenAddon(id)
+            }
         }
     }
 
