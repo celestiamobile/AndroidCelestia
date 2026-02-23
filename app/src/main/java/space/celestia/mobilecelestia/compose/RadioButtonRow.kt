@@ -1,5 +1,6 @@
 package space.celestia.mobilecelestia.compose
 
+import android.graphics.Typeface
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,10 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontFamily
 import space.celestia.mobilecelestia.R
 
 @Composable
-fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, selected: Boolean, onClick: (() -> Unit)?) {
+fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondaryText: String? = null, secondaryTextTypeFace: Typeface? = null, selected: Boolean, onClick: (() -> Unit)?) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.toggleable(selected, role = Role.RadioButton, onValueChange = { newValue ->
         if (newValue)
             onClick?.invoke()
@@ -38,7 +40,8 @@ fun RadioButtonRow(primaryText: String, modifier: Modifier = Modifier, secondary
                 Text(
                     text = secondaryText,
                     color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = if (secondaryTextTypeFace != null) FontFamily(secondaryTextTypeFace) else null
                 )
             }
         }

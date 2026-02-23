@@ -1,5 +1,6 @@
 package space.celestia.mobilecelestia.purchase
 
+import android.graphics.Typeface
 import android.graphics.fonts.SystemFonts
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,9 +46,10 @@ import space.celestia.mobilecelestia.utils.CelestiaString
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun FontSettingsScreen(paddingValues: PaddingValues) {
-    class Font(val path: String, val name: String, val ttcIndex: Int)
+    data class Font(val path: String, val name: String, val ttcIndex: Int)
 
     val viewModel: SettingsViewModel = hiltViewModel()
+    val cachedTypefaces = remember { mutableStateMapOf<Font, Typeface>() }
     var systemFonts by remember {
         mutableStateOf(listOf<Font>())
     }
@@ -99,8 +102,19 @@ fun FontSettingsScreen(paddingValues: PaddingValues) {
                     Header(text = CelestiaString("System Fonts", ""))
                 }
                 items(items = systemFonts) {
+                    val typeface = cachedTypefaces[it]
+                    if (typeface == null) {
+                        LaunchedEffect(Unit) {
+                            val font = withContext(Dispatchers.IO) {
+                                Typeface.Builder(it.path).setTtcIndex(it.ttcIndex).build()
+                            }
+                            cachedTypefaces[it] = font
+                        }
+                    }
                     RadioButtonRow(
                         primaryText = it.name,
+                        secondaryText =  if (typeface == null) null else "The quick brown fox jumps over the lazy dog",
+                        secondaryTextTypeFace = typeface,
                         selected = it.path == currentFont?.path && it.ttcIndex == currentFont.ttcIndex,
                         onClick = {
                             val font = CustomFont(it.path, it.ttcIndex)
