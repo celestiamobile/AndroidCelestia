@@ -62,6 +62,7 @@ import space.celestia.mobilecelestia.info.model.InfoWebActionItem
 import space.celestia.mobilecelestia.info.model.MarkItem
 import space.celestia.mobilecelestia.info.model.RelatedAddonItem
 import space.celestia.mobilecelestia.info.model.SubsystemActionItem
+import space.celestia.mobilecelestia.info.model.perform
 import space.celestia.mobilecelestia.info.viewmodel.InfoViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.getOverviewForSelection
@@ -209,7 +210,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
                         is InfoNormalActionItem -> {
                             scope.launch(viewModel.executor.asCoroutineDispatcher()) {
                                 viewModel.appCore.simulation.selection = selection
-                                viewModel.appCore.charEnter(action.item.value)
+                                viewModel.appCore.perform(action.item)
                             }
                         }
                         is InfoSelectActionItem -> {

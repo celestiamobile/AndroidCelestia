@@ -29,6 +29,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.info.model.CelestiaAction
+import space.celestia.mobilecelestia.info.model.perform
 import space.celestia.mobilecelestia.utils.PreferenceManager
 import java.lang.ref.WeakReference
 import kotlin.math.abs
@@ -590,12 +591,12 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             }
             GAME_CONTROLLER_BUTTON_ACTION_STOP_SPEED -> {
                 if (up) {
-                    executor.execute { appCore.charEnter(CelestiaAction.Stop.value) }
+                    executor.execute { appCore.perform(CelestiaAction.Stop) }
                 }
             }
             GAME_CONTROLLER_BUTTON_ACTION_REVERSE_SPEED -> {
                 if (up) {
-                    executor.execute { appCore.charEnter(CelestiaAction.ReverseSpeed.value) }
+                    executor.execute { appCore.perform(CelestiaAction.ReverseSpeed) }
                 }
             }
             GAME_CONTROLLER_BUTTON_ACTION_REVERSE_ORIENTATION -> {
@@ -631,12 +632,12 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             }
             GAME_CONTROLLER_BUTTON_ACTION_GO_TO -> {
                 if (up) {
-                    executor.execute { appCore.charEnter(CelestiaAction.GoTo.value) }
+                    executor.execute { appCore.perform(CelestiaAction.GoTo) }
                 }
             }
             GAME_CONTROLLER_BUTTON_ACTION_ESC -> {
                 if (up) {
-                    executor.execute { appCore.charEnter(CelestiaAction.CancelScript.value) }
+                    executor.execute { appCore.perform(CelestiaAction.CancelScript) }
                 }
             }
             GAME_CONTROLLER_BUTTON_ACTION_SHOW_MENU -> { showMenu() }

@@ -57,6 +57,7 @@ import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.di.AppSettings
 import space.celestia.mobilecelestia.info.model.CelestiaAction
+import space.celestia.mobilecelestia.info.model.perform
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.purchase.ToolbarAction
 import space.celestia.mobilecelestia.purchase.toolbarItems
@@ -448,7 +449,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             if (item.itemId >= 0 && item.itemId < actions.size) {
                 lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                     appCore.simulation.selection = selection
-                    appCore.charEnter(actions[item.itemId].value)
+                    appCore.perform(actions[item.itemId])
                 }
             }
         } else if (item.groupId == GROUP_ALT_SURFACE) {
@@ -479,7 +480,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
                     lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                         val newSelection = Selection(ent)
                         appCore.simulation.selection = newSelection
-                        appCore.charEnter(CelestiaAction.GoTo.value)
+                        appCore.perform(CelestiaAction.GoTo)
                     }
                 }
             }

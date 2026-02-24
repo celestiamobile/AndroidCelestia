@@ -44,6 +44,7 @@ import space.celestia.mobilecelestia.BuildConfig
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.info.model.CelestiaAction
+import space.celestia.mobilecelestia.info.model.perform
 import space.celestia.mobilecelestia.resource.viewmodel.AddonViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.File
@@ -224,7 +225,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                         FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = {
                             scope.launch(viewModel.executor.asCoroutineDispatcher()) {
                                 viewModel.appCore.simulation.selection = selection
-                                viewModel.appCore.charEnter(CelestiaAction.GoTo.value)
+                                viewModel.appCore.perform(CelestiaAction.GoTo)
                             }
                         }) {
                             Text(CelestiaString("Go", "Go to an object"))

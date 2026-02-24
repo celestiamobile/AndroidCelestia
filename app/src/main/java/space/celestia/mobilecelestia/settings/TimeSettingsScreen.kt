@@ -39,6 +39,7 @@ import space.celestia.mobilecelestia.compose.SimpleAlertDialog
 import space.celestia.mobilecelestia.compose.TextInputDialog
 import space.celestia.mobilecelestia.compose.TextRow
 import space.celestia.mobilecelestia.info.model.CelestiaAction
+import space.celestia.mobilecelestia.info.model.perform
 import space.celestia.mobilecelestia.settings.viewmodel.SettingsViewModel
 import space.celestia.mobilecelestia.utils.CelestiaString
 import space.celestia.mobilecelestia.utils.julianDay
@@ -88,7 +89,7 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
         TextRow(primaryText = CelestiaString("Set to Current Time", "Set simulation time to device"), modifier = Modifier.clickable(onClick = {
             scope.launch {
                 val julianDay = withContext(viewModel.executor.asCoroutineDispatcher()) {
-                    viewModel.appCore.charEnter(CelestiaAction.CurrentTime.value)
+                    viewModel.appCore.perform(CelestiaAction.CurrentTime)
                     return@withContext viewModel.appCore.simulation.time
                 }
                 currentTime = Utils.createDateFromJulianDay(julianDay)

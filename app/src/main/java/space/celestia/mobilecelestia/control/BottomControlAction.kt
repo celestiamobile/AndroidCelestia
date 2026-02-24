@@ -11,7 +11,7 @@ package space.celestia.mobilecelestia.control
 
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.info.model.CelestiaAction
-import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
+import space.celestia.mobilecelestia.info.model.CelestiaContinuousAction
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
@@ -78,13 +78,13 @@ data class InstantAction(val action: CelestiaAction): Serializable, BottomContro
         }
 }
 
-data class ContinuousAction(val action: CelestiaContinuosAction): Serializable, BottomControlAction() {
+data class ContinuousAction(val action: CelestiaContinuousAction): Serializable, BottomControlAction() {
     override val imageID: Int?
         get() = when (action) {
-            CelestiaContinuosAction.TravelFaster -> {
+            CelestiaContinuousAction.TravelFaster -> {
                 R.drawable.bottom_toolbar_faster
             }
-            CelestiaContinuosAction.TravelSlower -> {
+            CelestiaContinuousAction.TravelSlower -> {
                 R.drawable.bottom_toolbar_slower
             }
             else -> {
@@ -94,10 +94,10 @@ data class ContinuousAction(val action: CelestiaContinuosAction): Serializable, 
 
     override val contentDescription: String?
         get() = when (action) {
-            CelestiaContinuosAction.TravelFaster -> {
+            CelestiaContinuousAction.TravelFaster -> {
                 CelestiaString("Faster", "Make time go faster")
             }
-            CelestiaContinuosAction.TravelSlower -> {
+            CelestiaContinuousAction.TravelSlower -> {
                 CelestiaString("Slower", "Make time go more slowly")
             }
             else -> {

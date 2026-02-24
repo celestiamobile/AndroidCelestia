@@ -115,7 +115,8 @@ import space.celestia.mobilecelestia.help.HelpAction
 import space.celestia.mobilecelestia.help.NewHelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.info.model.CelestiaAction
-import space.celestia.mobilecelestia.info.model.CelestiaContinuosAction
+import space.celestia.mobilecelestia.info.model.CelestiaContinuousAction
+import space.celestia.mobilecelestia.info.model.perform
 import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.resource.AddonFragment
@@ -960,7 +961,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                                 }
                                 is ObjectURLAction.SelectAnd -> {
                                     appCore.simulation.selection = selection
-                                    appCore.charEnter(it.action.action.value)
+                                    appCore.perform(it.action.action)
                                 }
                             }
 
@@ -1258,7 +1259,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 lifecycleScope.launch {
                     hideOverlay(true)
                     withContext(executor.asCoroutineDispatcher()) {
-                        appCore.charEnter(CelestiaAction.Home.value)
+                        appCore.perform(CelestiaAction.Home)
                     }
                 }
             }
@@ -1431,14 +1432,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun onInstantActionSelected(item: CelestiaAction) {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.charEnter(item.value) }
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.perform(item) }
     }
 
-    private fun onContinuousActionUp(item: CelestiaContinuosAction) {
+    private fun onContinuousActionUp(item: CelestiaContinuousAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyUp(item.value) }
     }
 
-    private fun onContinuousActionDown(item: CelestiaContinuosAction) {
+    private fun onContinuousActionDown(item: CelestiaContinuousAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.keyDown(item.value) }
     }
 
@@ -1595,7 +1596,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun celestiaFragmentDidRequestGoTo() {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.charEnter(CelestiaAction.GoTo.value)
+            appCore.perform(CelestiaAction.GoTo)
         }
     }
 
@@ -1927,21 +1928,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun showSpeedControl() = lifecycleScope.launch {
         val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
         val actions: ArrayList<BottomControlAction> = if (isRTL) arrayListOf(
-            ContinuousAction(CelestiaContinuosAction.TravelFaster),
-            ContinuousAction(CelestiaContinuosAction.TravelSlower),
+            ContinuousAction(CelestiaContinuousAction.TravelFaster),
+            ContinuousAction(CelestiaContinuousAction.TravelSlower),
         ) else arrayListOf(
-            ContinuousAction(CelestiaContinuosAction.TravelSlower),
-            ContinuousAction(CelestiaContinuosAction.TravelFaster),
+            ContinuousAction(CelestiaContinuousAction.TravelSlower),
+            ContinuousAction(CelestiaContinuousAction.TravelFaster),
         )
         actions.add(InstantAction(CelestiaAction.Stop))
         actions.add(InstantAction(CelestiaAction.ReverseSpeed))
         showToolbarActions(actions = actions, overflowItems = listOf(
-            OverflowItem(title = CelestiaString("1 km/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F2)),
-            OverflowItem(title = CelestiaString("1000 km/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F3)),
-            OverflowItem(title = CelestiaString("c (lightspeed)", ""), action = ContinuousAction(CelestiaContinuosAction.F4)),
-            OverflowItem(title = CelestiaString("10c", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F5)),
-            OverflowItem(title = CelestiaString("1 AU/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F6)),
-            OverflowItem(title = CelestiaString("1 ly/s", "Speed unit"), action = ContinuousAction(CelestiaContinuosAction.F7)),
+            OverflowItem(title = CelestiaString("1 km/s", "Speed unit"), action = ContinuousAction(CelestiaContinuousAction.F2)),
+            OverflowItem(title = CelestiaString("1000 km/s", "Speed unit"), action = ContinuousAction(CelestiaContinuousAction.F3)),
+            OverflowItem(title = CelestiaString("c (lightspeed)", ""), action = ContinuousAction(CelestiaContinuousAction.F4)),
+            OverflowItem(title = CelestiaString("10c", "Speed unit"), action = ContinuousAction(CelestiaContinuousAction.F5)),
+            OverflowItem(title = CelestiaString("1 AU/s", "Speed unit"), action = ContinuousAction(CelestiaContinuousAction.F6)),
+            OverflowItem(title = CelestiaString("1 ly/s", "Speed unit"), action = ContinuousAction(CelestiaContinuousAction.F7)),
         ))
     }
 

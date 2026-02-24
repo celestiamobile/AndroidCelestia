@@ -9,6 +9,7 @@
 
 package space.celestia.mobilecelestia.info.model
 
+import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.utils.CelestiaString
 import java.io.Serializable
 
@@ -62,7 +63,14 @@ enum class CelestiaAction(val value: Int) : Serializable {
     }
 }
 
-enum class CelestiaContinuosAction(val value: Int) {
+fun AppCore.perform(action: CelestiaAction) {
+    if (textEnterMode != AppCore.TEXT_ENTER_MODE_NORMAL) {
+        textEnterMode = AppCore.TEXT_ENTER_MODE_NORMAL
+    }
+    charEnter(action.value)
+}
+
+enum class CelestiaContinuousAction(val value: Int) {
     TravelFaster(97),
     TravelSlower(122),
     F1(11), // KeyEvent.KEYCODE_F1

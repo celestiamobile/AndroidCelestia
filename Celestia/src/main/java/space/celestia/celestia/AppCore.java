@@ -52,6 +52,10 @@ public class AppCore {
     public static final int SYSTEM_ACCESS_GRANTED   = 1;
     public static final int SYSTEM_ACCESS_DENIED    = 2;
 
+    public static final int TEXT_ENTER_MODE_NORMAL          = 0x00;
+    public static final int TEXT_ENTER_MODE_AUTO_COMPLETE   = 0x01;
+    public static final int TEXT_ENTER_MODE_PASS_TO_SCRIPT  = 0x02;
+
     public interface ProgressWatcher {
         void onCelestiaProgress(@NonNull String progress);
     }
@@ -173,6 +177,15 @@ public class AppCore {
     }
 
     // Control
+
+    public void setTextEnterMode(int textEnterMode) {
+        c_setTextEnterMode(pointer, textEnterMode);
+    }
+
+    public int getTextEnterMode() {
+        return c_getTextEnterMode(pointer);
+    }
+
     public void mouseButtonUp(int buttons, @NonNull PointF point, int modifiers) {
         c_mouseButtonUp(pointer, buttons, point.x, point.y, modifiers);
     }
@@ -303,6 +316,9 @@ public class AppCore {
     private static native long c_getSimulation(long ptr);
 
     // Control
+    private static native void c_setTextEnterMode(long ptr, int textEnterMode);
+    private static native int c_getTextEnterMode(long ptr);
+
     private static native void c_mouseButtonUp(long ptr, int buttons, float x, float y, int modifiers);
     private static native void c_mouseButtonDown(long ptr, int buttons, float x, float y, int modifiers);
     private static native void c_mouseMove(long ptr, int buttons, float x, float y, int modifiers);

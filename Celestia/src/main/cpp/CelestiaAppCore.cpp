@@ -1378,3 +1378,17 @@ Java_space_celestia_celestia_AppCore_c_1setLayoutDirection(JNIEnv *env, jclass c
     auto core = reinterpret_cast<CelestiaCore *>(ptr);
     core->setLayoutDirection(static_cast<celestia::LayoutDirection>(layout_direction));
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setTextEnterMode(JNIEnv *env, jclass clazz, jlong ptr,
+                                                         jint text_enter_mode) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    core->setTextEnterMode(static_cast<celestia::Hud::TextEnterMode>(text_enter_mode));
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_AppCore_c_1getTextEnterMode(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    return static_cast<jint>(core->getTextEnterMode());
+}
