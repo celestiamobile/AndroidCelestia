@@ -38,6 +38,10 @@ annotation class CoreSettings
 @Retention(AnnotationRetention.BINARY)
 annotation class AppSettings
 
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AppSettingsNoBackup
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
@@ -128,6 +132,13 @@ object AppModule {
     @AppSettings
     fun provideAppSettings(@ApplicationContext context: Context): PreferenceManager {
         return PreferenceManager(context, "celestia")
+    }
+
+    @Singleton
+    @Provides
+    @AppSettingsNoBackup
+    fun provideAppSettingsNoBackup(@ApplicationContext context: Context): PreferenceManager {
+        return PreferenceManager(context, "celestia_no_backup")
     }
 
     @Singleton

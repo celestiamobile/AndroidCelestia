@@ -101,6 +101,7 @@ import space.celestia.mobilecelestia.control.CustomActionType
 import space.celestia.mobilecelestia.control.InstantAction
 import space.celestia.mobilecelestia.control.OverflowItem
 import space.celestia.mobilecelestia.di.AppSettings
+import space.celestia.mobilecelestia.di.AppSettingsNoBackup
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.mobilecelestia.favorite.FavoriteBookmarkItem
@@ -175,6 +176,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @CoreSettings
     @Inject
     lateinit var coreSettings: PreferenceManager
+
+    @AppSettingsNoBackup
+    @Inject
+    lateinit var appSettingsNoBackup: PreferenceManager
 
     private val legacyCelestiaParentPath by lazy { this.filesDir.absolutePath }
 
@@ -733,7 +738,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun copyAssetIfNeeded() {
         appStatusReporter.updateStatus(CelestiaString("Copying data…", "Copying default data from APK"))
-        if (appSettings[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
+        if (appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
             // When version name does not match, copy the asset again
             copyAssetsAndRemoveOldAssets()
         }
@@ -998,7 +1003,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } catch (ignored: Exception) {}
         AssetUtils.copyFileOrDir(this@MainActivity, FilePaths.CELESTIA_DATA_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
         AssetUtils.copyFileOrDir(this@MainActivity, FilePaths.CELESTIA_FONT_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
-        appSettings[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
+        appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
     }
 
     private fun readSettings() {

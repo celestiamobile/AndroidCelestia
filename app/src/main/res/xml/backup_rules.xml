@@ -14,4 +14,5 @@
     <include domain="file" path="favorites.json"/>
     <include domain="external" path="CelestiaResources"/>
     <include domain="sharedpref" path="celestia_setting"/>
+    <include domain="sharedpref" path="celestia"/>
 </full-backup-content>
