@@ -391,7 +391,13 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         fun createSubMenu(menu: Menu, browserItem: BrowserItem) {
             val obj = browserItem.`object`
             if (obj != null) {
-                menu.add(GROUP_BROWSER_ITEM_GO, browserItems.size, Menu.NONE, CelestiaString("Go", "Go to an object"))
+                menu.add(GROUP_BROWSER_ITEM_GET_INFO, browserItems.size, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object"))
+
+                val actionCount = CelestiaAction.allActions.size + 1 // All actions + select
+                menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount, Menu.NONE, CelestiaString("Select", "Select an object"))
+                for (action in CelestiaAction.allActions.withIndex()) {
+                    menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount + action.index + 1, Menu.NONE, action.value.title)
+                }
                 browserItems.add(browserItem)
             }
 
@@ -405,8 +411,9 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         menu.setHeaderTitle(appCore.simulation.universe.getNameForSelection(selection))
         menu.add(GROUP_GET_INFO, 0, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object"))
 
+        menu.add(GROUP_ACTION, 0, Menu.NONE, CelestiaString("Select", "Select an object"))
         CelestiaAction.allActions.withIndex().forEach {
-            menu.add(GROUP_ACTION, it.index, Menu.NONE, it.value.title)
+            menu.add(GROUP_ACTION, it.index + 1, Menu.NONE, it.value.title)
         }
         val obj = selection.`object`
 
@@ -445,11 +452,15 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         val selection = pendingTarget ?: return true
         if (selection.isEmpty) return true
         val actions = CelestiaAction.allActions
+        val actionCount = actions.size + 1
         if (item.groupId == GROUP_ACTION) {
-            if (item.itemId >= 0 && item.itemId < actions.size) {
+            if (item.itemId in 0..<actionCount) {
+                val action: CelestiaAction? = if (item.itemId > 0) actions[item.itemId - 1] else null
                 lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                     appCore.simulation.selection = selection
-                    appCore.perform(actions[item.itemId])
+                    action?.let {
+                        appCore.perform(it)
+                    }
                 }
             }
         } else if (item.groupId == GROUP_ALT_SURFACE) {
@@ -473,19 +484,32 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
                     appCore.showMarkers = true
                 }
             }
-        } else if (item.groupId == GROUP_BROWSER_ITEM_GO) {
-            if (item.itemId >= 0 && item.itemId < browserItems.size) {
-                val ent = browserItems[item.itemId].`object`
+        } else if (item.groupId == GROUP_BROWSER_ITEM_ACTIONS) {
+            val actionIndex = item.itemId % actionCount
+            val objectIndex = item.itemId / actionCount
+            if (objectIndex >= 0 && objectIndex < browserItems.size) {
+                val action: CelestiaAction? = if (actionIndex > 0) actions[actionIndex - 1] else null
+                val ent = browserItems[objectIndex].`object`
                 if (ent != null) {
                     lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                         val newSelection = Selection(ent)
                         appCore.simulation.selection = newSelection
-                        appCore.perform(CelestiaAction.GoTo)
+                        action?.let {
+                            appCore.perform(it)
+                        }
                     }
                 }
             }
         } else if (item.groupId == GROUP_GET_INFO) {
             listener?.celestiaFragmentDidRequestObjectInfo(selection)
+        } else if (item.groupId == GROUP_BROWSER_ITEM_GET_INFO) {
+            val objectIndex = item.itemId
+            if (objectIndex >= 0 && objectIndex < browserItems.size) {
+                val ent = browserItems[objectIndex].`object`
+                if (ent != null) {
+                    listener?.celestiaFragmentDidRequestObjectInfo(Selection(ent))
+                }
+            }
         }
         return true
     }
@@ -714,9 +738,10 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         private const val GROUP_ALT_SURFACE = 2
         private const val GROUP_MARK_TOP = 3
         private const val GROUP_MARK = 4
-        private const val GROUP_BROWSER_ITEM_GO = 6
+        private const val GROUP_BROWSER_ITEM_ACTIONS = 6
         private const val GROUP_BROWSER_ITEM = 7
         private const val GROUP_GET_INFO = 8
+        private const val GROUP_BROWSER_ITEM_GET_INFO = 9
         private const val TAG_RENDERER_FRAGMENT = "renderer_fragment"
 
         fun getAvailableMarkers(): List<String> {
