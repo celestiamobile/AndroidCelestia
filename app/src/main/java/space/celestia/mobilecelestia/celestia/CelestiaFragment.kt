@@ -408,7 +408,8 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             MenuCompat.setGroupDividerEnabled(menu, true)
         }
 
-        menu.setHeaderTitle(appCore.simulation.universe.getNameForSelection(selection))
+        menu.add(GROUP_HEADER, 0, Menu.NONE, appCore.simulation.universe.getNameForSelection(selection)).isEnabled = false
+        // menu.setHeaderTitle(appCore.simulation.universe.getNameForSelection(selection)) // https://issuetracker.google.com/issues/213478160
         menu.add(GROUP_GET_INFO, 0, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object"))
 
         menu.add(GROUP_ACTION, 0, Menu.NONE, CelestiaString("Select", "Select an object"))
@@ -742,6 +743,8 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         private const val GROUP_BROWSER_ITEM = 7
         private const val GROUP_GET_INFO = 8
         private const val GROUP_BROWSER_ITEM_GET_INFO = 9
+
+        private const val GROUP_HEADER = 10
         private const val TAG_RENDERER_FRAGMENT = "renderer_fragment"
 
         fun getAvailableMarkers(): List<String> {
