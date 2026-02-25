@@ -36,7 +36,6 @@ import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
@@ -45,6 +44,7 @@ import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.compose.AndroidFragment
 import space.celestia.mobilecelestia.compose.EmptyHint
 import space.celestia.mobilecelestia.resource.CommonWebFragment.Companion.ARG_CONTEXT_DIRECTORY
 import space.celestia.mobilecelestia.resource.CommonWebFragment.Companion.ARG_FILTER_URL
