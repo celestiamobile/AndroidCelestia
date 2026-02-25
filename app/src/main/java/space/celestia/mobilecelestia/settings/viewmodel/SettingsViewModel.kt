@@ -18,6 +18,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.mobilecelestia.di.AppSettings
+import space.celestia.mobilecelestia.di.AppSettingsNoBackup
 import space.celestia.mobilecelestia.di.CoreSettings
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.settings.SettingsCommonItem
@@ -39,6 +40,6 @@ sealed class Page {
 }
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(val appCore: AppCore, val executor: CelestiaExecutor, @param:AppSettings val appSettings: PreferenceManager, @param:CoreSettings val coreSettings: PreferenceManager, val purchaseManager: PurchaseManager, val defaultFilePaths: FilePaths) : ViewModel() {
+class SettingsViewModel @Inject constructor(val appCore: AppCore, val executor: CelestiaExecutor, @param:AppSettings val appSettings: PreferenceManager, @param:AppSettingsNoBackup val appSettingsNoBackup: PreferenceManager, @param:CoreSettings val coreSettings: PreferenceManager, val purchaseManager: PurchaseManager, val defaultFilePaths: FilePaths) : ViewModel() {
     val backStack = mutableStateListOf<Page>(Page.Home)
 }

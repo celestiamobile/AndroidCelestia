@@ -60,10 +60,10 @@ fun FontSettingsScreen(paddingValues: PaddingValues) {
         mutableIntStateOf(0)
     }
     var normalFont by remember {
-        mutableStateOf(viewModel.appSettings.normalFont)
+        mutableStateOf(viewModel.appSettingsNoBackup.normalFont)
     }
     var boldFont by remember {
-        mutableStateOf(viewModel.appSettings.boldFont)
+        mutableStateOf(viewModel.appSettingsNoBackup.boldFont)
     }
     val currentFont = if (selectedTabIndex == 0) normalFont else boldFont
     if (fontsLoaded) {
@@ -88,10 +88,10 @@ fun FontSettingsScreen(paddingValues: PaddingValues) {
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                 RadioButtonRow(primaryText = CelestiaString("Default", ""), selected = currentFont == null, onClick = {
                     if (selectedTabIndex == 0) {
-                        viewModel.appSettings.normalFont = null
+                        viewModel.appSettingsNoBackup.normalFont = null
                         normalFont = null
                     } else {
-                        viewModel.appSettings.boldFont = null
+                        viewModel.appSettingsNoBackup.boldFont = null
                         boldFont = null
                     }
                 })
@@ -119,10 +119,10 @@ fun FontSettingsScreen(paddingValues: PaddingValues) {
                         onClick = {
                             val font = CustomFont(it.path, it.ttcIndex)
                             if (selectedTabIndex == 0) {
-                                viewModel.appSettings.normalFont = font
+                                viewModel.appSettingsNoBackup.normalFont = font
                                 normalFont = font
                             } else {
-                                viewModel.appSettings.boldFont = font
+                                viewModel.appSettingsNoBackup.boldFont = font
                                 boldFont = font
                             }
                         })

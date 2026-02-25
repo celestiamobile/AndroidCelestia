@@ -234,10 +234,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var defaultFilePaths: FilePaths
 
     private val celestiaConfigFilePath: String
-        get() = appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] ?: defaultFilePaths.configFilePath
+        get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath] ?: defaultFilePaths.configFilePath
 
     private val celestiaDataDirPath: String
-        get() = appSettings[PreferenceManager.PredefinedKey.DataDirPath] ?: defaultFilePaths.dataDirectoryPath
+        get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath] ?: defaultFilePaths.dataDirectoryPath
 
     private val fontDirPath: String
         get() = defaultFilePaths.fontDirectoryPath
@@ -598,8 +598,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 if (!isActive) return@launch
                 val migrationResult = migrateData()
                 if (migrationResult != null) {
-                    appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = null
-                    appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = null
+                    appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = null
+                    appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = null
                 }
                 if (!isActive) return@launch
                 createAddonFolder()
@@ -1121,8 +1121,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun migrateData(): Boolean? {
-        val sourcePath = appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory]
-        val targetPath = appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory]
+        val sourcePath = appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationSourceDirectory]
+        val targetPath = appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationTargetDirectory]
         if (sourcePath == null || targetPath == null)
             return null
 

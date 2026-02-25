@@ -137,8 +137,23 @@ object AppModule {
     @Singleton
     @Provides
     @AppSettingsNoBackup
-    fun provideAppSettingsNoBackup(@ApplicationContext context: Context): PreferenceManager {
-        return PreferenceManager(context, "celestia_no_backup")
+    fun provideAppSettingsNoBackup(@ApplicationContext context: Context, @AppSettings appSettings: PreferenceManager): PreferenceManager {
+        val settings = PreferenceManager(context, "celestia_no_backup")
+        // Migration
+        if (settings[PreferenceManager.PredefinedKey.LocalSettingMigration] != "true") {
+            settings.startEditing()
+            settings[PreferenceManager.PredefinedKey.BoldFontIndex] = appSettings[PreferenceManager.PredefinedKey.BoldFontIndex]
+            settings[PreferenceManager.PredefinedKey.BoldFontPath] = appSettings[PreferenceManager.PredefinedKey.BoldFontPath]
+            settings[PreferenceManager.PredefinedKey.NormalFontIndex] = appSettings[PreferenceManager.PredefinedKey.NormalFontIndex]
+            settings[PreferenceManager.PredefinedKey.NormalFontPath] = appSettings[PreferenceManager.PredefinedKey.NormalFontPath]
+            settings[PreferenceManager.PredefinedKey.ConfigFilePath] = appSettings[PreferenceManager.PredefinedKey.ConfigFilePath]
+            settings[PreferenceManager.PredefinedKey.DataDirPath] = appSettings[PreferenceManager.PredefinedKey.DataDirPath]
+            settings[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory]
+            settings[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory]
+            settings[PreferenceManager.PredefinedKey.LocalSettingMigration] = "true"
+            settings.stopEditing()
+        }
+        return settings
     }
 
     @Singleton

@@ -58,7 +58,8 @@ class PreferenceManager(context: Context, name: String) {
         MigrationSourceDirectory,
         MigrationTargetDirectory,
         UseMediaDirForAddons,
-        DetectVirtualDisplay
+        DetectVirtualDisplay,
+        LocalSettingMigration
         ;
 
         override val valueString: String
@@ -76,14 +77,12 @@ class PreferenceManager(context: Context, name: String) {
 
     @SuppressLint("CommitPrefEdits")
     fun startEditing() {
-        if (et != null)
-            throw RuntimeException("Editing context already exists when calling start.")
         et = sp.edit()
     }
 
-    fun stopEditing(writeImmediatelly: Boolean = false) {
-        val editor = et ?: throw RuntimeException("No current editing context when calling stop.")
-        if (writeImmediatelly) {
+    fun stopEditing(writeImmediately: Boolean = false) {
+        val editor = et ?: return
+        if (writeImmediately) {
             editor.commit()
         } else {
             editor.apply()

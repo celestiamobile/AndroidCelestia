@@ -49,7 +49,7 @@ fun LanguageSettingsScreen(paddingValues: PaddingValues) {
     val viewModel: SettingsViewModel = hiltViewModel()
 
     fun getAvailableLanguageCodes(): List<String> {
-        val dataDirectory = viewModel.appSettings[PreferenceManager.PredefinedKey.DataDirPath] ?: viewModel.defaultFilePaths.dataDirectoryPath
+        val dataDirectory = viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath] ?: viewModel.defaultFilePaths.dataDirectoryPath
         val localeDirectory = File("${dataDirectory}/locale")
         if (localeDirectory.exists()) {
             val languageCodes = ArrayList((localeDirectory.listFiles { file ->

@@ -56,8 +56,8 @@ private sealed class AlertContent {
 @Composable
 fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
     val viewModel: SettingsViewModel = hiltViewModel()
-    var customConfigFilePath by remember { mutableStateOf(viewModel.appSettings[PreferenceManager.PredefinedKey.ConfigFilePath]) }
-    var customDataDirPath by remember { mutableStateOf(viewModel.appSettings[PreferenceManager.PredefinedKey.DataDirPath]) }
+    var customConfigFilePath by remember { mutableStateOf(viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath]) }
+    var customDataDirPath by remember { mutableStateOf(viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath]) }
     val internalViewModifier = Modifier
         .fillMaxWidth()
         .padding(
@@ -73,7 +73,7 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
         if (path == null) {
             alert = AlertContent.WrongPathProvided((activity.externalMediaDirs?.firstOrNull() ?: activity.getExternalFilesDir(null))?.absolutePath ?: "")
         } else {
-            viewModel.appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] = path
+            viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath] = path
             customConfigFilePath = path
         }
     }
@@ -84,7 +84,7 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
         if (path == null) {
             alert = AlertContent.WrongPathProvided((activity.externalMediaDirs?.firstOrNull() ?: activity.getExternalFilesDir(null))?.absolutePath ?: "")
         } else {
-            viewModel.appSettings[PreferenceManager.PredefinedKey.DataDirPath] = path
+            viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath] = path
             customDataDirPath = path
         }
     }
@@ -135,8 +135,8 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
         }
         item {
             FilledTonalButton(modifier = internalViewModifier, onClick = {
-                viewModel.appSettings[PreferenceManager.PredefinedKey.ConfigFilePath] = null
-                viewModel.appSettings[PreferenceManager.PredefinedKey.DataDirPath] = null
+                viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath] = null
+                viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath] = null
                 customConfigFilePath = null
                 customDataDirPath = null
             }) {
@@ -191,15 +191,15 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
                         alert = null
                         viewModel.appSettings.startEditing()
                         if (!content.useMediaDirForAddons) {
-                            viewModel.appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = content.mediaDir.absolutePath
-                            viewModel.appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = content.dataDir.absolutePath
+                            viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = content.mediaDir.absolutePath
+                            viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = content.dataDir.absolutePath
                             viewModel.appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] = "false"
                         } else {
-                            viewModel.appSettings[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = content.dataDir.absolutePath
-                            viewModel.appSettings[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = content.mediaDir.absolutePath
+                            viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = content.dataDir.absolutePath
+                            viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = content.mediaDir.absolutePath
                             viewModel.appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] = "true"
                         }
-                        viewModel.appSettings.stopEditing(writeImmediatelly = true)
+                        viewModel.appSettings.stopEditing(writeImmediately = true)
                         localActivity?.finishAndRemoveTask()
                         exitProcess(0)
                     },

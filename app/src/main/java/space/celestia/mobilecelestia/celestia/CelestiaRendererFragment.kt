@@ -32,6 +32,7 @@ import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.di.AppSettings
+import space.celestia.mobilecelestia.di.AppSettingsNoBackup
 import space.celestia.mobilecelestia.purchase.PurchaseManager
 import space.celestia.mobilecelestia.settings.boldFont
 import space.celestia.mobilecelestia.settings.normalFont
@@ -56,6 +57,9 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     @AppSettings
     @Inject
     lateinit var appSettings: PreferenceManager
+    @AppSettingsNoBackup
+    @Inject
+    lateinit var appSettingsNoBackup: PreferenceManager
     @Inject
     lateinit var purchaseManager: PurchaseManager
     @Inject
@@ -259,8 +263,8 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         val locale = AppCore.getLanguage()
         val hasCelestiaPlus =
             purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
-        var normalFont = if (hasCelestiaPlus) appSettings.normalFont else null
-        var boldFont = if (hasCelestiaPlus) appSettings.boldFont else null
+        var normalFont = if (hasCelestiaPlus) appSettingsNoBackup.normalFont else null
+        var boldFont = if (hasCelestiaPlus) appSettingsNoBackup.boldFont else null
         val preferredInstalledFont =
             MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
         if (preferredInstalledFont != null) {

@@ -6,8 +6,7 @@ class CustomFont(val path: String, val ttcIndex: Int)
 
 var PreferenceManager.normalFont: CustomFont?
     get() {
-        val fontPath = get(PreferenceManager.PredefinedKey.NormalFontPath)
-        if (fontPath == null) return null
+        val fontPath = get(PreferenceManager.PredefinedKey.NormalFontPath) ?: return null
         val ttcIndex = get(PreferenceManager.PredefinedKey.NormalFontIndex)?.toIntOrNull() ?: 0
         return CustomFont(fontPath, ttcIndex)
     }
@@ -23,8 +22,7 @@ var PreferenceManager.normalFont: CustomFont?
 
 var PreferenceManager.boldFont: CustomFont?
     get() {
-        val fontPath = get(PreferenceManager.PredefinedKey.BoldFontPath)
-        if (fontPath == null) return null
+        val fontPath = get(PreferenceManager.PredefinedKey.BoldFontPath) ?: return null
         val ttcIndex = get(PreferenceManager.PredefinedKey.BoldFontIndex)?.toIntOrNull() ?: 0
         return CustomFont(fontPath, ttcIndex)
     }
