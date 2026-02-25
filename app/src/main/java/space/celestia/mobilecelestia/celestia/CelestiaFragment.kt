@@ -391,12 +391,28 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         fun createSubMenu(menu: Menu, browserItem: BrowserItem) {
             val obj = browserItem.`object`
             if (obj != null) {
-                menu.add(GROUP_BROWSER_ITEM_GET_INFO, browserItems.size, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object"))
+                menu.add(GROUP_BROWSER_ITEM_GET_INFO, browserItems.size, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object")).setOnMenuItemClickListener { _ ->
+                    listener?.celestiaFragmentDidRequestObjectInfo(Selection(obj))
+                    return@setOnMenuItemClickListener true
+                }
 
                 val actionCount = CelestiaAction.allActions.size + 1 // All actions + select
-                menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount, Menu.NONE, CelestiaString("Select", "Select an object"))
+                menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount, Menu.NONE, CelestiaString("Select", "Select an object")).setOnMenuItemClickListener { _ ->
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                        val newSelection = Selection(obj)
+                        appCore.simulation.selection = newSelection
+                    }
+                    return@setOnMenuItemClickListener true
+                }
                 for (action in CelestiaAction.allActions.withIndex()) {
-                    menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount + action.index + 1, Menu.NONE, action.value.title)
+                    menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount + action.index + 1, Menu.NONE, action.value.title).setOnMenuItemClickListener { _ ->
+                        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                            val newSelection = Selection(obj)
+                            appCore.simulation.selection = newSelection
+                            appCore.perform(action.value)
+                        }
+                        return@setOnMenuItemClickListener true
+                    }
                 }
                 browserItems.add(browserItem)
             }
@@ -410,14 +426,28 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
 
         menu.add(GROUP_HEADER, 0, Menu.NONE, appCore.simulation.universe.getNameForSelection(selection)).isEnabled = false
         // menu.setHeaderTitle(appCore.simulation.universe.getNameForSelection(selection)) // https://issuetracker.google.com/issues/213478160
-        menu.add(GROUP_GET_INFO, 0, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object"))
-
-        menu.add(GROUP_ACTION, 0, Menu.NONE, CelestiaString("Select", "Select an object"))
-        CelestiaAction.allActions.withIndex().forEach {
-            menu.add(GROUP_ACTION, it.index + 1, Menu.NONE, it.value.title)
+        menu.add(GROUP_GET_INFO, 0, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object")).setOnMenuItemClickListener { _ ->
+            listener?.celestiaFragmentDidRequestObjectInfo(selection)
+            return@setOnMenuItemClickListener true
         }
-        val obj = selection.`object`
 
+        menu.add(GROUP_ACTION, 0, Menu.NONE, CelestiaString("Select", "Select an object")).setOnMenuItemClickListener { _ ->
+            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                appCore.simulation.selection = selection
+            }
+            return@setOnMenuItemClickListener true
+        }
+        for (action in CelestiaAction.allActions.withIndex()) {
+            menu.add(GROUP_ACTION, action.index + 1, Menu.NONE, action.value.title).setOnMenuItemClickListener { _ ->
+                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                    appCore.simulation.selection = selection
+                    appCore.perform(action.value)
+                }
+                return@setOnMenuItemClickListener true
+            }
+        }
+
+        val obj = selection.`object`
         if (obj != null) {
             val browserItem = BrowserItem(
                 appCore.simulation.universe.getNameForSelection(selection),
@@ -435,84 +465,36 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             val alternateSurfaces = obj.alternateSurfaceNames
             if (alternateSurfaces.isNotEmpty()) {
                 val subMenu = menu.addSubMenu(GROUP_ALT_SURFACE_TOP, 0, Menu.NONE, CelestiaString("Alternate Surfaces", "Alternative textures to display"))
-                subMenu.add(GROUP_ALT_SURFACE, 0, Menu.NONE, CelestiaString("Default", ""))
-                alternateSurfaces.withIndex().forEach {
-                    subMenu.add(GROUP_ALT_SURFACE, it.index + 1, Menu.NONE, it.value)
+                subMenu.add(GROUP_ALT_SURFACE, 0, Menu.NONE, CelestiaString("Default", "")).setOnMenuItemClickListener { _ ->
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                        appCore.simulation.activeObserver.displayedSurface = ""
+                    }
+                    return@setOnMenuItemClickListener true
+                }
+                for (alternateSurface in alternateSurfaces.withIndex()) {
+                    subMenu.add(GROUP_ALT_SURFACE, alternateSurface.index + 1, Menu.NONE, alternateSurface.value).setOnMenuItemClickListener { _ ->
+                        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                            appCore.simulation.activeObserver.displayedSurface = alternateSurface.value
+                        }
+                        return@setOnMenuItemClickListener true
+                    }
                 }
             }
         }
         val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", "Mark an object"))
         val availableMarkers = getAvailableMarkers()
-        availableMarkers.withIndex().forEach {
-            markMenu.add(GROUP_MARK, it.index, Menu.NONE, it.value)
-        }
-        MenuCompat.setGroupDividerEnabled(menu, true)
-    }
-
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        val selection = pendingTarget ?: return true
-        if (selection.isEmpty) return true
-        val actions = CelestiaAction.allActions
-        val actionCount = actions.size + 1
-        if (item.groupId == GROUP_ACTION) {
-            if (item.itemId in 0..<actionCount) {
-                val action: CelestiaAction? = if (item.itemId > 0) actions[item.itemId - 1] else null
-                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                    appCore.simulation.selection = selection
-                    action?.let {
-                        appCore.perform(it)
-                    }
-                }
-            }
-        } else if (item.groupId == GROUP_ALT_SURFACE) {
-            val body = selection.body
-            if (body != null) {
-                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                    val alternateSurfaces = body.alternateSurfaceNames
-                    if (item.itemId == 0) {
-                        appCore.simulation.activeObserver.displayedSurface = ""
-                    } else if (item.itemId >= 0 && item.itemId < alternateSurfaces.size) {
-                        appCore.simulation.activeObserver.displayedSurface = alternateSurfaces[item.itemId - 1]
-                    }
-                }
-            }
-        } else if (item.groupId == GROUP_MARK) {
-            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                if (item.itemId >= Universe.MARKER_COUNT) {
+        for (marker in availableMarkers.withIndex()) {
+            markMenu.add(GROUP_MARK, marker.index, Menu.NONE, marker.value).setOnMenuItemClickListener { _ ->
+                if (marker.index >= Universe.MARKER_COUNT) {
                     appCore.simulation.universe.unmark(selection)
                 } else {
-                    appCore.simulation.universe.mark(selection, item.itemId)
+                    appCore.simulation.universe.mark(selection, marker.index)
                     appCore.showMarkers = true
                 }
-            }
-        } else if (item.groupId == GROUP_BROWSER_ITEM_ACTIONS) {
-            val actionIndex = item.itemId % actionCount
-            val objectIndex = item.itemId / actionCount
-            if (objectIndex >= 0 && objectIndex < browserItems.size) {
-                val action: CelestiaAction? = if (actionIndex > 0) actions[actionIndex - 1] else null
-                val ent = browserItems[objectIndex].`object`
-                if (ent != null) {
-                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                        val newSelection = Selection(ent)
-                        appCore.simulation.selection = newSelection
-                        action?.let {
-                            appCore.perform(it)
-                        }
-                    }
-                }
-            }
-        } else if (item.groupId == GROUP_GET_INFO) {
-            listener?.celestiaFragmentDidRequestObjectInfo(selection)
-        } else if (item.groupId == GROUP_BROWSER_ITEM_GET_INFO) {
-            val objectIndex = item.itemId
-            if (objectIndex >= 0 && objectIndex < browserItems.size) {
-                val ent = browserItems[objectIndex].`object`
-                if (ent != null) {
-                    listener?.celestiaFragmentDidRequestObjectInfo(Selection(ent))
-                }
+                return@setOnMenuItemClickListener true
             }
         }
-        return true
+        MenuCompat.setGroupDividerEnabled(menu, true)
     }
 
     // Actions
