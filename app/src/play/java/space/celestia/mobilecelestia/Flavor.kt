@@ -21,6 +21,8 @@ import java.io.File
 private var reportParentFolder: File? = null
 private const val installedAddonListFileName = "installed-addons.txt"
 
+private fun proguardSeedPROGUARD_METHOD_SEED() { }
+
 fun CelestiaApplication.setUpFlavor() {
     SentryAndroid.init(this) { options ->
         options.dsn = "SENTRY-DSN"

@@ -112,6 +112,10 @@ jobs:
       sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
       sed -ie "s#${TO_REPLACE}#${NEW_STRING}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
 
+      PROGUARD_METHOD_SEED=$(echo $PROGUARD_UUID | tr -d '-')
+      sed -ie "s#PROGUARD_METHOD_SEED#${PROGUARD_METHOD_SEED}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+      sed -ie "s#PROGUARD_METHOD_SEED#${PROGUARD_METHOD_SEED}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+
       echo "##vso[task.setvariable variable=BundleUuid]$BUNDLE_UUID"
       echo "##vso[task.setvariable variable=FlavorBundleUuid]$FLAVOR_BUNDLE_UUID"
       echo "##vso[task.setvariable variable=CelestiaBundleUuid]$CELESTIA_BUNDLE_UUID"
