@@ -169,6 +169,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     playImplementation(libs.billing.ktx)
+    playImplementation(libs.androidx.media3.exoplayer)
+    playImplementation(libs.androidx.media3.ui)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
