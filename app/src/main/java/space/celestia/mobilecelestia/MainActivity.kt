@@ -83,72 +83,71 @@ import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
 import space.celestia.celestiafoundation.utils.versionName
-import space.celestia.mobilecelestia.browser.BrowserFragment
-import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
-import space.celestia.mobilecelestia.browser.viewmodel.BrowserPredefinedItem
+import space.celestia.celestiaui.browser.BrowserFragment
+import space.celestia.celestiaui.browser.SubsystemBrowserFragment
+import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaPresentation
 import space.celestia.mobilecelestia.celestia.RendererSettings
-import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.control.BottomControlAction
-import space.celestia.mobilecelestia.control.CameraControlContainerFragment
+import space.celestia.celestiaui.control.CameraControlContainerFragment
+import space.celestia.celestiaui.di.AppSettings
+import space.celestia.celestiaui.di.AppSettingsNoBackup
+import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.mobilecelestia.control.ContinuousAction
 import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
 import space.celestia.mobilecelestia.control.InstantAction
 import space.celestia.mobilecelestia.control.OverflowItem
-import space.celestia.mobilecelestia.di.AppSettings
-import space.celestia.mobilecelestia.di.AppSettingsNoBackup
-import space.celestia.mobilecelestia.di.CoreSettings
-import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
-import space.celestia.mobilecelestia.favorite.FavoriteBookmarkItem
-import space.celestia.mobilecelestia.favorite.FavoriteFragment
-import space.celestia.mobilecelestia.favorite.FavoriteScriptItem
-import space.celestia.mobilecelestia.favorite.MutableFavoriteBaseItem
-import space.celestia.mobilecelestia.favorite.getCurrentBookmarks
-import space.celestia.mobilecelestia.favorite.updateCurrentBookmarks
-import space.celestia.mobilecelestia.favorite.updateCurrentDestinations
-import space.celestia.mobilecelestia.favorite.updateCurrentScripts
-import space.celestia.mobilecelestia.help.HelpAction
-import space.celestia.mobilecelestia.help.NewHelpFragment
-import space.celestia.mobilecelestia.info.InfoFragment
-import space.celestia.mobilecelestia.info.model.CelestiaAction
-import space.celestia.mobilecelestia.info.model.CelestiaContinuousAction
-import space.celestia.mobilecelestia.info.model.perform
+import space.celestia.celestiaui.eventfinder.EventFinderContainerFragment
+import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
+import space.celestia.celestiaui.favorite.FavoriteFragment
+import space.celestia.celestiaui.favorite.FavoriteScriptItem
+import space.celestia.celestiaui.favorite.MutableFavoriteBaseItem
+import space.celestia.celestiaui.favorite.getCurrentBookmarks
+import space.celestia.celestiaui.favorite.updateCurrentBookmarks
+import space.celestia.celestiaui.favorite.updateCurrentDestinations
+import space.celestia.celestiaui.favorite.updateCurrentScripts
+import space.celestia.celestiaui.help.HelpAction
+import space.celestia.celestiaui.help.NewHelpFragment
+import space.celestia.celestiaui.info.InfoFragment
+import space.celestia.celestiaui.info.model.CelestiaAction
+import space.celestia.celestiaui.info.model.CelestiaContinuousAction
+import space.celestia.celestiaui.info.model.perform
+import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.mobilecelestia.loading.LoadingFragment
-import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.resource.AddonFragment
-import space.celestia.mobilecelestia.resource.AddonManagerFragment
-import space.celestia.mobilecelestia.resource.CommonWebFragment
-import space.celestia.mobilecelestia.resource.SimpleWebFragment
-import space.celestia.mobilecelestia.resource.WebBrowserFragment
-import space.celestia.mobilecelestia.resource.model.ResourceAPIService
-import space.celestia.mobilecelestia.search.SearchFragment
-import space.celestia.mobilecelestia.settings.CustomFont
-import space.celestia.mobilecelestia.settings.SettingsFragment
-import space.celestia.mobilecelestia.settings.SettingsKey
-import space.celestia.mobilecelestia.settings.TimeSettingsFragment
+import space.celestia.celestiaui.resource.AddonFragment
+import space.celestia.celestiaui.resource.AddonManagerFragment
+import space.celestia.celestiaui.resource.CommonWebFragment
+import space.celestia.celestiaui.resource.SimpleWebFragment
+import space.celestia.celestiaui.resource.WebBrowserFragment
+import space.celestia.celestiaui.resource.model.ResourceAPIService
+import space.celestia.celestiaui.search.SearchFragment
+import space.celestia.celestiaui.settings.viewmodel.CustomFont
+import space.celestia.celestiaui.settings.SettingsFragment
+import space.celestia.celestiaui.settings.TimeSettingsFragment
+import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
-import space.celestia.mobilecelestia.travel.GoToContainerFragment
-import space.celestia.mobilecelestia.utils.AppStatusReporter
-import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.mobilecelestia.utils.showAlert
-import space.celestia.mobilecelestia.utils.showError
-import space.celestia.mobilecelestia.utils.showOptions
+import space.celestia.celestiaui.travel.GoToContainerFragment
+import space.celestia.celestiaui.utils.AppStatusReporter
+import space.celestia.celestiaui.utils.CelestiaString
+import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.celestiaui.utils.showAlert
+import space.celestia.celestiaui.utils.showError
+import space.celestia.celestiaui.utils.showOptions
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.lang.reflect.Method
 import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
@@ -196,7 +195,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @Inject
     lateinit var resourceManager: ResourceManager
     @Inject
-    lateinit var executor: CelestiaExecutor
+    lateinit var executor: Executor
 
     @Inject
     lateinit var purchaseManager: PurchaseManager
@@ -514,7 +513,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     appCore,
                     renderer,
                     executor,
-                    purchaseManager,
                     appSettings
                 )
                 activePresentation?.setOnDismissListener {

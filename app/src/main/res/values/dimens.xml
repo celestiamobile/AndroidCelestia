@@ -11,64 +11,10 @@
   -->
 
 <resources>
-    <dimen name="default_separator_height">1px</dimen>
-    <dimen name="partial_separator_inset_start">32dp</dimen>
-    <dimen name="full_separator_inset_start">0dp</dimen>
-
-    <dimen name="list_item_medium_margin_horizontal">16dp</dimen>
-    <dimen name="list_item_medium_margin_vertical">12dp</dimen>
-    <dimen name="list_item_small_margin_horizontal">12dp</dimen>
-    <dimen name="list_item_small_margin_vertical">8dp</dimen>
-    <dimen name="section_header_margin_horizontal">16dp</dimen>
-    <dimen name="section_header_margin_top">16dp</dimen>
-    <dimen name="section_header_margin_bottom">8dp</dimen>
-    <dimen name="section_footer_margin_horizontal">16dp</dimen>
-    <dimen name="section_footer_margin_top">8dp</dimen>
-    <dimen name="section_footer_margin_bottom">12dp</dimen>
-    <dimen name="list_item_gap_horizontal">8dp</dimen>
-    <dimen name="list_item_gap_image_text_horizontal">12dp</dimen>
-    <dimen name="list_item_gap_vertical">8dp</dimen>
-    <dimen name="list_item_one_line_min_height">52dp</dimen>
-    <dimen name="list_item_two_line_min_height">68dp</dimen>
-    <dimen name="list_slider_item_one_line_min_height">80dp</dimen>
-    <dimen name="list_slider_item_two_line_min_height">96dp</dimen>
-
-    <dimen name="tutorial_list_item_gap_horizontal">16dp</dimen>
-    <dimen name="tutorial_list_icon_dimension">44dp</dimen>
-
     <dimen name="toolbar_list_icon_dimension">24dp</dimen>
     <dimen name="toolbar_default_width">250dp</dimen>
     <dimen name="toolbar_separator_inset_start">32dp</dimen>
     <dimen name="toolbar_separator_padding_vertical">6dp</dimen>
-
-    <dimen name="common_page_medium_margin_horizontal">16dp</dimen>
-    <dimen name="common_page_medium_margin_vertical">12dp</dimen>
-    <dimen name="common_page_small_margin_horizontal">12dp</dimen>
-    <dimen name="common_page_small_margin_vertical">8dp</dimen>
-    <dimen name="common_page_large_gap_vertical">12dp</dimen>
-    <dimen name="common_page_large_gap_horizontal">16dp</dimen>
-    <dimen name="common_page_medium_gap_vertical">8dp</dimen>
-    <dimen name="common_page_medium_gap_horizontal">12dp</dimen>
-    <dimen name="common_page_small_gap_vertical">4dp</dimen>
-    <dimen name="common_page_small_gap_horizontal">6dp</dimen>
-
-    <dimen name="common_page_button_gap_vertical">4dp</dimen>
-
-    <dimen name="list_text_gap_vertical">4dp</dimen>
-
-    <dimen name="web_navigation_control_spacing">16dp</dimen>
-
-    <dimen name="list_item_slider_margin_horizontal">4dp</dimen>
-
-    <dimen name="dialog_text_input_view_padding_horizontal">16dp</dimen>
-    <dimen name="dialog_text_input_view_padding_vertical">12dp</dimen>
-    <dimen name="dialog_text_input_text_padding_horizontal">4dp</dimen>
-
-    <dimen name="stepper_width">94dp</dimen>
-    <dimen name="stepper_height">32dp</dimen>
-    <dimen name="stepper_button_padding">5dp</dimen>
-    <dimen name="stepper_separator_top_margin">7dp</dimen>
-    <dimen name="stepper_separator_width">1dp</dimen>
 
     <dimen name="sheet_handle_container_height">30dp</dimen>
     <dimen name="sheet_handle_height">6dp</dimen>
@@ -77,37 +23,7 @@
     <dimen name="sheet_close_button_padding">5dp</dimen>
     <dimen name="sheet_background_corner_radius">6dp</dimen>
 
-    <dimen name="back_button_padding">6dp</dimen>
-
-    <dimen name="link_card_corner_radius">8dp</dimen>
-    <dimen name="link_text_content_vertical_padding">8dp</dimen>
-    <dimen name="link_text_content_horizontal_padding">12dp</dimen>
-    <dimen name="link_text_content_spacing">6dp</dimen>
-    <dimen name="link_fav_icon_padding">8dp</dimen>
-
     <dimen name="loading_gap_vertical">24dp</dimen>
-    <dimen name="app_icon_dimension">128dp</dimen>
-    <dimen name="app_icon_padding">14dp</dimen>
-    <dimen name="app_icon_rounded_corner">30dp</dimen>
-
-    <dimen name="bottom_navigation_view_min_height">64dp</dimen>
-    <dimen name="bottom_navigation_view_item_padding_top">8dp</dimen>
-    <dimen name="bottom_navigation_view_item_padding_bottom">10dp</dimen>
 
     <dimen name="control_view_container_margin_end">8dp</dimen>
-
-    <dimen name="stepper_corner_radius">7dp</dimen>
-
-    <dimen name="list_spacing_short">8dp</dimen>
-    <dimen name="list_spacing_tall">28dp</dimen>
-
-    <dimen name="tab_title_text_padding_vertical">10dp</dimen>
-
-    <dimen name="list_item_icon_size">24dp</dimen>
-    <dimen name="list_item_action_icon_padding">4dp</dimen>
-
-    <dimen name="search_bar_padding_vertical">8dp</dimen>
-    <dimen name="search_bar_padding_horizontal">16dp</dimen>
-
-    <dimen name="card_content_padding">16dp</dimen>
 </resources>

@@ -27,14 +27,14 @@ import android.view.View
 import androidx.annotation.RequiresApi
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
-import space.celestia.mobilecelestia.common.CelestiaExecutor
-import space.celestia.mobilecelestia.info.model.CelestiaAction
-import space.celestia.mobilecelestia.info.model.perform
-import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.celestiaui.info.model.CelestiaAction
+import space.celestia.celestiaui.info.model.perform
+import space.celestia.celestiaui.utils.PreferenceManager
 import java.lang.ref.WeakReference
+import java.util.concurrent.Executor
 import kotlin.math.abs
 
-class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer, private val executor: CelestiaExecutor, interactionMode: InteractionMode, private val appSettings: PreferenceManager, private val rendererSettings: RendererSettings, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnHoverListener {
+class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer, private val executor: Executor, interactionMode: InteractionMode, private val appSettings: PreferenceManager, private val rendererSettings: RendererSettings, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnHoverListener {
     enum class InteractionMode {
         Object, Camera;
 

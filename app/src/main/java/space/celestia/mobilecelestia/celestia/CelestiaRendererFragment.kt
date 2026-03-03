@@ -27,18 +27,18 @@ import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.celestiafoundation.utils.FilePaths
+import space.celestia.celestiaui.di.AppSettings
+import space.celestia.celestiaui.di.AppSettingsNoBackup
+import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.di.AppSettings
-import space.celestia.mobilecelestia.di.AppSettingsNoBackup
-import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.settings.boldFont
-import space.celestia.mobilecelestia.settings.normalFont
-import space.celestia.mobilecelestia.utils.AppStatusReporter
-import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.celestiaui.settings.viewmodel.boldFont
+import space.celestia.celestiaui.settings.viewmodel.normalFont
+import space.celestia.celestiaui.utils.AppStatusReporter
+import space.celestia.celestiaui.utils.PreferenceManager
 import java.util.Locale
+import java.util.concurrent.Executor
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -53,7 +53,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     @Inject
     lateinit var rendererSettings: RendererSettings
     @Inject
-    lateinit var executor: CelestiaExecutor
+    lateinit var executor: Executor
     @AppSettings
     @Inject
     lateinit var appSettings: PreferenceManager
@@ -321,7 +321,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         if (!changes.scaling && !changes.safeArea) return
 
         renderer.makeContextCurrent()
-        appCore.updateContentScale(rendererSettings, changes, purchaseManager, appSettings)
+        appCore.updateContentScale(rendererSettings, changes, appSettings)
     }
 
     private fun loadingFinished() = lifecycleScope.launch {
@@ -381,7 +381,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
 
 data class RenderChanges(val scaling: Boolean = false, val safeArea: Boolean = false)
 
-fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges, purchaseManager: PurchaseManager, appSettings: PreferenceManager) {
+fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges, appSettings: PreferenceManager) {
     if (changes.scaling) {
         screenDPI = (96 * rendererSettings.density * rendererSettings.scaleFactor).toInt()
         setPickTolerance(rendererSettings.pickSensitivity * rendererSettings.density * rendererSettings.scaleFactor)

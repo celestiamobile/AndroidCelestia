@@ -39,9 +39,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.compose.Mdc3Theme
-import space.celestia.mobilecelestia.compose.Separator
-import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.celestiaui.compose.Mdc3Theme
+import space.celestia.celestiaui.compose.Separator
+import space.celestia.celestiaui.utils.CelestiaString
 import java.io.Serializable
 
 enum class ToolbarAction : Serializable {
@@ -180,7 +180,7 @@ class ToolbarFragment: Fragment() {
                                     Text(
                                         text = it.title,
                                         style = MaterialTheme.typography.bodyLarge,
-                                        modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))
+                                        modifier = Modifier.padding(vertical = dimensionResource(id = space.celestia.celestiaui.R.dimen.list_item_medium_margin_vertical))
                                     )
                                 },
                                 selected = false,
@@ -195,7 +195,7 @@ class ToolbarFragment: Fragment() {
                                     listener?.onToolbarActionSelected(it)
                                 },
                                 modifier = Modifier.fillMaxWidth()
-                                    .padding(horizontal = dimensionResource(id = R.dimen.list_item_small_margin_horizontal))
+                                    .padding(horizontal = dimensionResource(id = space.celestia.celestiaui.R.dimen.list_item_small_margin_horizontal))
                             )
                         }
                         if (sectionIndex != allSections.size - 1) {

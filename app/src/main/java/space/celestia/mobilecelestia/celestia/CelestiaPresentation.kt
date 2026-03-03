@@ -15,10 +15,9 @@ import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.celestiaui.utils.PreferenceManager
+import java.util.concurrent.Executor
 
 class CelestiaPresentation(
     context: Context,
@@ -26,8 +25,7 @@ class CelestiaPresentation(
     private val rendererSettings: RendererSettings,
     private val appCore: AppCore,
     private val renderer: Renderer,
-    private val executor: CelestiaExecutor,
-    private val purchaseManager: PurchaseManager,
+    private val executor: Executor,
     private val appSettings: PreferenceManager
 ): Presentation(context, display) {
     private var density: Float = 1f
@@ -65,7 +63,7 @@ class CelestiaPresentation(
         if (!changes.scaling && !changes.safeArea) return
 
         renderer.makeContextCurrent()
-        appCore.updateContentScale(rendererSettings, changes, purchaseManager, appSettings)
+        appCore.updateContentScale(rendererSettings, changes, appSettings)
     }
 
     private fun setUpGLView(container: FrameLayout) {

@@ -16,6 +16,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import space.celestia.celestiaui.purchase.PurchaseManager
 import java.io.Serializable
 import java.lang.ref.WeakReference
 import javax.inject.Singleton
@@ -26,7 +27,7 @@ class PurchaseModule {
     @Singleton
     @Provides
     fun providePurchaseManager(@ApplicationContext context: Context, purchaseAPI: PurchaseAPIService): PurchaseManager {
-        val purchaseManager = PurchaseManager(context, purchaseAPI)
+        val purchaseManager = PurchaseManagerImpl(context, purchaseAPI)
         val weakManager = WeakReference(purchaseManager)
         val billingClient = BillingClient
             .newBuilder(context)

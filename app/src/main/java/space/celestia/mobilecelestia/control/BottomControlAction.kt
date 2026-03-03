@@ -10,9 +10,9 @@
 package space.celestia.mobilecelestia.control
 
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.info.model.CelestiaAction
-import space.celestia.mobilecelestia.info.model.CelestiaContinuousAction
-import space.celestia.mobilecelestia.utils.CelestiaString
+import space.celestia.celestiaui.info.model.CelestiaAction
+import space.celestia.celestiaui.info.model.CelestiaContinuousAction
+import space.celestia.celestiaui.utils.CelestiaString
 import java.io.Serializable
 
 sealed class BottomControlAction: Serializable {

@@ -22,7 +22,6 @@ import android.view.ContextMenu
 import android.view.Display
 import android.view.LayoutInflater
 import android.view.Menu
-import android.view.MenuItem
 import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
@@ -50,24 +49,26 @@ import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
 import space.celestia.celestia.Utils
 import space.celestia.celestiafoundation.utils.showToast
+import space.celestia.celestiaui.control.viewmodel.SessionSettings
+import space.celestia.celestiaui.di.AppSettings
+import space.celestia.celestiaui.info.InfoFragment
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SheetLayout
-import space.celestia.mobilecelestia.di.AppSettings
-import space.celestia.mobilecelestia.info.model.CelestiaAction
-import space.celestia.mobilecelestia.info.model.perform
-import space.celestia.mobilecelestia.purchase.PurchaseManager
-import space.celestia.mobilecelestia.purchase.ToolbarAction
-import space.celestia.mobilecelestia.purchase.toolbarItems
-import space.celestia.mobilecelestia.utils.AlertResult
-import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.PreferenceManager
-import space.celestia.mobilecelestia.utils.showAlert
-import space.celestia.mobilecelestia.utils.showAlertAsync
+import space.celestia.celestiaui.info.model.CelestiaAction
+import space.celestia.celestiaui.info.model.perform
+import space.celestia.celestiaui.purchase.PurchaseManager
+import space.celestia.celestiaui.settings.ToolbarAction
+import space.celestia.celestiaui.settings.toolbarItems
+import space.celestia.celestiaui.utils.AlertResult
+import space.celestia.celestiaui.utils.CelestiaString
+import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.celestiaui.utils.showAlert
+import space.celestia.celestiaui.utils.showAlertAsync
 import java.lang.ref.WeakReference
 import java.util.Timer
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
@@ -79,7 +80,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     @Inject
     lateinit var renderer: Renderer
     @Inject
-    lateinit var executor: CelestiaExecutor
+    lateinit var executor: Executor
     @AppSettings
     @Inject
     lateinit var appSettings: PreferenceManager
@@ -284,14 +285,14 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
 
         // Set up control buttons
         val buttonMap = hashMapOf(
-            ToolbarAction.Mode to CelestiaControlButton.Toggle(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), interactionMode == CelestiaInteraction.InteractionMode.Camera),
-            ToolbarAction.ZoomIn to CelestiaControlButton.Press(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
-            ToolbarAction.ZoomOut to CelestiaControlButton.Press(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
-            ToolbarAction.Info to CelestiaControlButton.Tap(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
-            ToolbarAction.Search to CelestiaControlButton.Tap(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
-            ToolbarAction.Menu to CelestiaControlButton.Tap(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "Menu button")),
-            ToolbarAction.Hide to CelestiaControlButton.Tap(R.drawable.control_close, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
-            ToolbarAction.Go to CelestiaControlButton.Tap(R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", "Go to an object"))
+            ToolbarAction.Mode to CelestiaControlButton.Toggle(space.celestia.celestiaui.R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), interactionMode == CelestiaInteraction.InteractionMode.Camera),
+            ToolbarAction.ZoomIn to CelestiaControlButton.Press(space.celestia.celestiaui.R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
+            ToolbarAction.ZoomOut to CelestiaControlButton.Press(space.celestia.celestiaui.R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
+            ToolbarAction.Info to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
+            ToolbarAction.Search to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
+            ToolbarAction.Menu to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "Menu button")),
+            ToolbarAction.Hide to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_close, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
+            ToolbarAction.Go to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", "Go to an object"))
         )
         val hasCelestiaPlus = purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
         val actions = ArrayList(if (hasCelestiaPlus) appSettings.toolbarItems ?: ToolbarAction.defaultItems else ToolbarAction.defaultItems)
@@ -482,7 +483,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             }
         }
         val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", "Mark an object"))
-        val availableMarkers = getAvailableMarkers()
+        val availableMarkers = InfoFragment.getAvailableMarkers()
         for (marker in availableMarkers.withIndex()) {
             markMenu.add(GROUP_MARK, marker.index, Menu.NONE, marker.value).setOnMenuItemClickListener { _ ->
                 if (marker.index >= Universe.MARKER_COUNT) {
@@ -728,26 +729,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
 
         private const val GROUP_HEADER = 10
         private const val TAG_RENDERER_FRAGMENT = "renderer_fragment"
-
-        fun getAvailableMarkers(): List<String> {
-            return listOf(
-                CelestiaString("Diamond", "Marker"),
-                CelestiaString("Triangle", "Marker"),
-                CelestiaString("Square", "Marker"),
-                CelestiaString("Filled Square", "Marker"),
-                CelestiaString("Plus", "Marker"),
-                CelestiaString("X", "Marker"),
-                CelestiaString("Left Arrow", "Marker"),
-                CelestiaString("Right Arrow", "Marker"),
-                CelestiaString("Up Arrow", "Marker"),
-                CelestiaString("Down Arrow", "Marker"),
-                CelestiaString("Circle", "Marker"),
-                CelestiaString("Disk", "Marker"),
-                CelestiaString("Crosshair", "Marker"),
-                CelestiaString("Unmark", "Unmark an object"),
-            )
-        }
-
         private const val TAG = "CelestiaFragment"
 
         fun newInstance(data: String, cfg: String, addons: List<String>, languageOverride: String) =

@@ -17,30 +17,26 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.FilePaths
+import space.celestia.celestiaui.di.ApplicationId
 import space.celestia.mobilecelestia.celestia.RendererSettings
-import space.celestia.mobilecelestia.celestia.SessionSettings
+import space.celestia.celestiaui.control.viewmodel.SessionSettings
+import space.celestia.celestiaui.di.AppSettings
+import space.celestia.celestiaui.di.AppSettingsNoBackup
+import space.celestia.celestiaui.di.CoreSettings
+import space.celestia.celestiaui.di.Flavor
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.resource.model.AddonUpdateManager
-import space.celestia.mobilecelestia.resource.model.ResourceAPIService
-import space.celestia.mobilecelestia.utils.AppStatusReporter
-import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.celestiaui.resource.model.AddonUpdateManager
+import space.celestia.celestiaui.resource.model.ResourceAPIService
+import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
+import space.celestia.celestiaui.utils.AppStatusReporter
+import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.mobilecelestia.BuildConfig
+import space.celestia.mobilecelestia.settings.SettingsEntryProviderImpl
 import java.lang.reflect.Type
 import java.util.Date
-import javax.inject.Qualifier
+import java.util.concurrent.Executor
 import javax.inject.Singleton
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class CoreSettings
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class AppSettings
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class AppSettingsNoBackup
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -111,7 +107,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideExecutor(renderer: Renderer): CelestiaExecutor {
+    fun provideExecutor(renderer: Renderer): Executor {
         return CelestiaExecutor(renderer)
     }
 
@@ -166,5 +162,25 @@ object AppModule {
     @Provides
     fun provideSessionSettings(): SessionSettings {
         return SessionSettings()
+    }
+
+    @Singleton
+    @Provides
+    @ApplicationId
+    fun provideApplicationId(): String {
+        return BuildConfig.APPLICATION_ID
+    }
+
+    @Singleton
+    @Provides
+    @Flavor
+    fun provideFlavor(): String {
+        return BuildConfig.FLAVOR
+    }
+
+    @Singleton
+    @Provides
+    fun provideSettingsEntryProvider(): SettingsEntryProvider {
+        return SettingsEntryProviderImpl()
     }
 }

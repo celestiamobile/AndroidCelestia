@@ -11,7 +11,7 @@ package space.celestia.mobilecelestia.purchase.viewmodel
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import space.celestia.mobilecelestia.purchase.PurchaseManager
+import space.celestia.celestiaui.purchase.PurchaseManager
 import javax.inject.Inject
 
 @HiltViewModel

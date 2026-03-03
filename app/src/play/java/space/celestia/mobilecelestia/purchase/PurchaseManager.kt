@@ -24,15 +24,16 @@ import com.android.billingclient.api.queryProductDetails
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.mobilecelestia.BuildConfig
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.utils.CelestiaString
-import space.celestia.mobilecelestia.utils.PreferenceManager
+import space.celestia.celestiaui.utils.CelestiaString
+import space.celestia.celestiaui.utils.PreferenceManager
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
+class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService): PurchaseManager {
     internal var billingClient: BillingClient? = null
     private var connected = false
 
@@ -43,15 +44,15 @@ class PurchaseManager(context: Context, val purchaseAPI: PurchaseAPIService) {
         cachedPurchaseToken = dataStore[purchaseTokenCacheKey]
     }
 
-    fun canUseInAppPurchase(): Boolean {
+    override fun canUseInAppPurchase(): Boolean {
         return true
     }
 
-    fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment? {
+    override fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment? {
         return SubscriptionManagerFragment.newInstance(preferredPlayOfferId)
     }
 
-    fun purchaseToken(): String? {
+    override fun purchaseToken(): String? {
         return cachedPurchaseToken
     }
 

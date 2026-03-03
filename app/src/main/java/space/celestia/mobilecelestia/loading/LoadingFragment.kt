@@ -43,9 +43,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.compose.Mdc3Theme
+import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.mobilecelestia.loading.viewmodel.LoadingViewModel
-import space.celestia.mobilecelestia.utils.AppStatusReporter
+import space.celestia.celestiaui.utils.AppStatusReporter
 
 
 @Composable
@@ -72,9 +72,9 @@ private fun LoadingScreen() {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).padding(horizontal = dimensionResource(R.dimen.common_page_medium_margin_horizontal)), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).padding(horizontal = dimensionResource(space.celestia.celestiaui.R.dimen.common_page_medium_margin_horizontal)), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.loading_gap_vertical))) {
-            Image(painter = painterResource(R.drawable.loading_icon), contentDescription = null, modifier = Modifier.size(dimensionResource(R.dimen.app_icon_dimension)))
+            Image(painter = painterResource(space.celestia.celestiaui.R.drawable.loading_icon), contentDescription = null, modifier = Modifier.size(dimensionResource(space.celestia.celestiaui.R.dimen.app_icon_dimension)))
             Text(text = statusText, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
         }
     }

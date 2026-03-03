@@ -5,18 +5,19 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import space.celestia.celestiaui.purchase.PurchaseManager
 import javax.inject.Singleton
 
-class PurchaseManager {
-    fun canUseInAppPurchase(): Boolean {
+class PurchaseManagerImpl: PurchaseManager {
+    override fun canUseInAppPurchase(): Boolean {
         return false
     }
 
-    fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment? {
+    override fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment? {
         return null
     }
 
-    fun purchaseToken(): String? {
+    override fun purchaseToken(): String? {
         return null
     }
 }
@@ -27,6 +28,6 @@ class PurchaseModule {
     @Singleton
     @Provides
     fun providePurchaseManager(): PurchaseManager {
-        return PurchaseManager()
+        return PurchaseManagerImpl()
     }
 }
