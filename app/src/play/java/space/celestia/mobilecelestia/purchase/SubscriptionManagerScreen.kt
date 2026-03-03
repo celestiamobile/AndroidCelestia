@@ -4,27 +4,38 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.LocalActivity
-import androidx.annotation.DrawableRes
+import androidx.annotation.OptIn
+import androidx.annotation.RawRes
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -38,14 +49,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
@@ -53,17 +69,30 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.ProductDetails
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import space.celestia.celestiaui.compose.EmptyHint
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.purchase.viewmodel.SubscriptionManagerViewModel
+import kotlin.math.PI
+import kotlin.math.tan
+import kotlin.random.Random
 
 @Composable
 fun SubscriptionManagerScreen(preferredPlayOfferId: String?) {
@@ -225,7 +254,7 @@ private fun Content(preferredPlayOfferId: String?, modifier: Modifier = Modifier
 
                 Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_large_gap_vertical)))
 
-                FeatureList()
+                VideoCarousel()
 
                 Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
 
@@ -245,52 +274,230 @@ private fun Content(preferredPlayOfferId: String?, modifier: Modifier = Modifier
     }
 }
 
-@Composable
-private fun FeatureList() {
-    val features = arrayListOf(
-        Pair(R.drawable.plus_feature_latest_update, CelestiaString("Get latest add-ons, updates, and trending add-ons.", "Benefits of Celestia PLUS")),
-        Pair(R.drawable.plus_feature_feedback, CelestiaString("Receive timely feedback on feature requests and bug reports.", "Benefits of Celestia PLUS")),
-        Pair(R.drawable.plus_feature_support, CelestiaString("Support the developer community and keep the project going.", "Benefits of Celestia PLUS"))
-    )
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        features.add(0, Pair(R.drawable.plus_feature_customize, CelestiaString("Customize the visual appearance of Celestia.", "Benefits of Celestia PLUS")))
-    }
+private sealed class CarouselItem {
+    abstract val title: String
+    data class Video(@param: RawRes val videoResId: Int, override val title: String) : CarouselItem()
+    data class Support(override val title: String, val message: String) : CarouselItem()
+}
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .clip(RoundedCornerShape(dimensionResource(id = R.dimen.purchase_box_corner_radius)))
-        .background(MaterialTheme.colorScheme.secondaryContainer)
-        .padding(
-            horizontal = dimensionResource(
-                id = space.celestia.celestiaui.R.dimen.common_page_medium_margin_horizontal
-            ),
-            vertical = dimensionResource(
-                id = space.celestia.celestiaui.R.dimen.common_page_medium_margin_vertical
-            ),
-        )) {
-        for (featureIndex in features.indices) {
-            val feature = features[featureIndex]
-            Feature(resource = feature.first, text = feature.second)
-            if (featureIndex != features.size - 1) {
-                Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
+@Composable
+private fun VideoCarousel() {
+    val items = listOf(
+        CarouselItem.Video(R.raw.toolbar_android, CelestiaString("Toolbar Customization", "Description for toolbar customization video")),
+        CarouselItem.Video(R.raw.font, CelestiaString("Custom Fonts", "Description for custom font video")),
+        CarouselItem.Video(R.raw.search, CelestiaString("Search Add-ons", "Description for search add-ons video")),
+        CarouselItem.Video(R.raw.addon_updates, CelestiaString("Add-on Updates", "Description for addon updates video")),
+        CarouselItem.Support(
+            title = CelestiaString("Support the Project", "Description for support project card"),
+            message = CelestiaString("By subscribing to Celestia PLUS, you directly support the developers and keep this project alive. You'll also receive timely feedback on feature requests and bug reports!", "Message on support project card")
+        )
+    )
+
+    val pagerState = rememberPagerState(pageCount = { items.count() })
+    Column(modifier = Modifier.fillMaxWidth()) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            pageSpacing = 16.dp,
+        ) { i ->
+            val item = items[i]
+            Column(modifier = Modifier.fillMaxWidth()) {
+                when (item) {
+                    is CarouselItem.Video -> {
+                        VideoItem(
+                            videoResId = item.videoResId,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(16f / 9f)
+                                .clip(MaterialTheme.shapes.extraLarge)
+                        )
+                    }
+                    is CarouselItem.Support -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(16f / 9f)
+                                .clip(MaterialTheme.shapes.extraLarge)
+                                .background(MaterialTheme.colorScheme.secondaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            FloatingIcons(modifier = Modifier.fillMaxSize())
+                            Text(
+                                text = item.message,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_margin_horizontal))
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_small_gap_vertical)))
+                Text(
+                    text = item.title,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
+        Row(
+            Modifier
+                .wrapContentHeight()
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            repeat(pagerState.pageCount) { iteration ->
+                val color = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                        .size(8.dp)
+                )
             }
         }
     }
 }
 
+private data class FloatingIconData(
+    val id: Long,
+    val size: Float,
+    val startX: Float,
+    val endX: Float,
+    val duration: Int,
+    val isHeart: Boolean,
+    val rotationTarget: Float
+)
+
 @Composable
-private fun Feature(@DrawableRes resource: Int, text: String) {
-    Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
-        Image(painter = painterResource(id = resource), contentDescription = null, colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer), modifier = Modifier
-            .padding(
-                dimensionResource(id = R.dimen.purchase_feature_icon_padding)
-            )
-            .size(
-                dimensionResource(id = R.dimen.purchase_feature_icon_size)
-            ))
-        Spacer(modifier = Modifier.width(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_horizontal)))
-        Text(text, color = MaterialTheme.colorScheme.onSecondaryContainer, style = MaterialTheme.typography.bodyLarge)
+private fun FloatingIcons(modifier: Modifier = Modifier) {
+    val icons = remember { mutableStateListOf<FloatingIconData>() }
+
+    BoxWithConstraints(modifier = modifier.clipToBounds()) {
+        val width = maxWidth.value
+        val height = maxHeight.value
+
+        LaunchedEffect(width, height) {
+            if (width == 0f || height == 0f) return@LaunchedEffect
+            var nextId = 0L
+            while (true) {
+                delay((300..700).random().toLong())
+
+                val size = (24..36).random().toFloat()
+                val startX = Random.nextFloat() * width
+                val angleRad = Random.nextDouble(-30.0, 30.0) * PI / 180.0
+                val endX = startX + ((height + 50f) * tan(angleRad)).toFloat()
+                val duration = (8000..12000).random()
+                val isHeart = Random.nextBoolean()
+                val angularSpeed = Random.nextFloat() * 20f + 20f
+                val rotTarget = angularSpeed * (duration / 1000f) * if (Random.nextBoolean()) 1f else -1f
+
+                icons.add(FloatingIconData(
+                    id = nextId++,
+                    size = size,
+                    startX = startX,
+                    endX = endX,
+                    duration = duration,
+                    isHeart = isHeart,
+                    rotationTarget = rotTarget
+                ))
+            }
+        }
+
+        for (icon in icons) {
+            key(icon.id) {
+                val animY = remember { Animatable(height) }
+                val animX = remember { Animatable(icon.startX) }
+                val animRot = remember { Animatable(0f) }
+
+                LaunchedEffect(icon) {
+                    launch {
+                        animY.animateTo(
+                            targetValue = -50f,
+                            animationSpec = tween(durationMillis = icon.duration, easing = LinearEasing)
+                        )
+                        icons.remove(icon)
+                    }
+                    launch {
+                        animX.animateTo(
+                            targetValue = icon.endX,
+                            animationSpec = tween(durationMillis = icon.duration, easing = LinearEasing)
+                        )
+                    }
+                    launch {
+                        animRot.animateTo(
+                            targetValue = icon.rotationTarget,
+                            animationSpec = tween(durationMillis = icon.duration, easing = LinearEasing)
+                        )
+                    }
+                }
+
+                val alphaProgression = (animY.value / height).coerceIn(0f, 1f)
+                val alpha = 0.1f + alphaProgression * 0.3f
+
+                if (icon.isHeart) {
+                    Text(
+                        text = "❤️",
+                        modifier = Modifier
+                            .offset(x = animX.value.dp, y = animY.value.dp)
+                            .rotate(animRot.value)
+                            .alpha(alpha),
+                        fontSize = icon.size.sp,
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = space.celestia.celestiaui.R.drawable.loading_icon),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .offset(x = animX.value.dp, y = animY.value.dp)
+                            .rotate(animRot.value)
+                            .size(icon.size.dp)
+                            .alpha(alpha)
+                    )
+                }
+            }
+        }
     }
+}
+
+@OptIn(UnstableApi::class)
+@Composable
+private fun VideoItem(@RawRes videoResId: Int, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val exoPlayer = remember(videoResId) {
+        ExoPlayer.Builder(context).build().apply {
+            val rawUri = "android.resource://${context.packageName}/$videoResId"
+            setMediaItem(MediaItem.fromUri(rawUri))
+            repeatMode = Player.REPEAT_MODE_ALL
+            volume = 0f
+            prepare()
+            playWhenReady = true
+        }
+    }
+
+    DisposableEffect(videoResId) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    AndroidView(
+        factory = { ctx ->
+            val view = android.view.LayoutInflater.from(ctx).inflate(R.layout.view_carousel_video, null, false) as PlayerView
+            view.apply {
+                player = exoPlayer
+                useController = false
+                setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
+            }
+        },
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -298,7 +505,7 @@ private fun PlanList(purchaseManager: PurchaseManagerImpl, productDetails: Produ
     val activity = LocalActivity.current
     val text: String = when (status) {
         is PurchaseManagerImpl.SubscriptionStatus.Good.None -> {
-            CelestiaString("Choose one of the plans below to get Celestia PLUS", "")
+            CelestiaString("Choose one of the plans below to get access to all the features.", "")
         }
 
         is PurchaseManagerImpl.SubscriptionStatus.Good.Pending -> {
