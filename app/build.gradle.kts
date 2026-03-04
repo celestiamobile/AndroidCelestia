@@ -92,20 +92,20 @@ val copyLocalizedFiles by tasks.registering(Exec::class) {
     println("Copying localized files")
     workingDir = projectDir
     executable = "/bin/sh"
-    args = listOf("copy_localized_files.sh")
+    args = listOf("copy_localized_files.sh", File(File(File(projectDir, "src"), "main"), "res").absolutePath)
 }
 
 val copyGeneralData by tasks.registering(Exec::class) {
     workingDir = projectDir
     executable = "/bin/sh"
-    args = listOf("copy_general_data.sh")
+    args = listOf("copy_general_data.sh", File(File(File(projectDir, "src"), "sideload"), "assets").absolutePath) // Assets of other flavors are symlink
 }
 
 val convertPO by tasks.registering(Exec::class) {
     println("Converting PO")
     workingDir = projectDir
     executable = "/bin/sh"
-    args = listOf("convert_po.sh")
+    args = listOf("convert_po.sh", File(File(File(projectDir, "src"), "sideload"), "assets").absolutePath)
 }
 
 // Task ordering

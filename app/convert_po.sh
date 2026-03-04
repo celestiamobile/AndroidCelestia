@@ -7,7 +7,7 @@ fi
 
 cd `dirname $0`
 
-CELESTIA_ROOT=`pwd`/src/sideload/assets/CelestiaResources
+CELESTIA_ROOT=$1/CelestiaResources
 CELESTIA_REPO_ROOT=`pwd`/../../Celestia
 CELESTIA_CONTENT_REPO_ROOT=`pwd`/../../CelestiaContent
 CELESTIA_LOCALIZATION_REPO_ROOT=`pwd`/../../CelestiaLocalization
