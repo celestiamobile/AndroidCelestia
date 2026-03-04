@@ -1,0 +1,1 @@
+../app/convert_po.sh

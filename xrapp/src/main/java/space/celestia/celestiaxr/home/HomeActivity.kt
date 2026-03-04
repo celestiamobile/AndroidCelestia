@@ -1,16 +1,17 @@
-package space.celestia.celestiaxr
+package space.celestia.celestiaxr.home
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestiaui.compose.Mdc3Theme
+import space.celestia.celestiaxr.loading.LoadingScreen
 
+@AndroidEntryPoint
 class HomeActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,7 +19,7 @@ class HomeActivity: AppCompatActivity() {
         setContent {
             Mdc3Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Text("Panel", modifier = Modifier.padding(innerPadding))
+                    HomeScreen(innerPadding)
                 }
             }
         }

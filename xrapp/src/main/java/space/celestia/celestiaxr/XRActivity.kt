@@ -3,43 +3,151 @@ package space.celestia.celestiaxr
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Choreographer
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import space.celestia.celestia.AppCore
+import space.celestia.celestiafoundation.utils.AssetUtils
+import space.celestia.celestiafoundation.utils.FilePaths
+import space.celestia.celestiafoundation.utils.deleteRecursively
+import space.celestia.celestiaui.di.AppSettings
+import space.celestia.celestiaui.di.AppSettingsNoBackup
+import space.celestia.celestiaui.settings.viewmodel.CustomFont
+import space.celestia.celestiaui.utils.AppStatusReporter
+import space.celestia.celestiaui.utils.CelestiaString
+import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.celestiaxr.home.HomeActivity
+import java.io.File
+import java.io.IOException
+import java.lang.ref.WeakReference
+import java.util.Locale
+import javax.inject.Inject
 
-/**
- * Hosts the OpenXR session and render loop.
- *
- * The Activity lifecycle maps directly to OpenXR session state transitions:
- *   onCreate  → xrCreateInstance / xrGetSystem
- *   onStart   → xrBeginSession (triggered by READY state)
- *   onStop    → xrEndSession   (triggered by STOPPING state)
- *   onDestroy → xrDestroySession / xrDestroyInstance
- *
- * All heavy OpenXR work happens on the native side via JNI.
- */
-class XRActivity : ComponentActivity(), Choreographer.FrameCallback {
+@AndroidEntryPoint
+class XRActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var appCore: AppCore
+
+    @Inject
+    lateinit var defaultFilePaths: FilePaths
+
+    lateinit var appStatusReporter: AppStatusReporter
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface AppStatusInterface {
+        fun getAppStatusReporter(): AppStatusReporter
+    }
+
+    @AppSettingsNoBackup
+    @Inject
+    lateinit var appSettingsNoBackup: PreferenceManager
+
+    @AppSettings
+    @Inject
+    lateinit var appSettings: PreferenceManager
+
+    private val celestiaConfigFilePath: String
+        get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath] ?: defaultFilePaths.configFilePath
+
+    private val celestiaDataDirPath: String
+        get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath] ?: defaultFilePaths.dataDirectoryPath
+
+    private val fontDirPath: String
+        get() = defaultFilePaths.fontDirectoryPath
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.i(TAG, "XRActivity created – initialising OpenXR")
+        val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
+        appStatusReporter = factory.getAppStatusReporter()
+        val currentState = appStatusReporter.state
+        val savedState = if (currentState == AppStatusReporter.State.NONE) null else savedInstanceState
+
+        super.onCreate(savedState)
+
+        val weakSelf = WeakReference(this)
+        appStatusReporter.register(object: AppStatusReporter.Listener {
+            override fun celestiaLoadingProgress(status: String) {}
+
+            override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
+                val self = weakSelf.get() ?: return
+                when (newState) {
+                    AppStatusReporter.State.FINISHED -> {
+                        self.celestiaLoadingFinishedAsync()
+                    }
+                    AppStatusReporter.State.LOADING_SUCCESS -> {
+                        self.celestiaLoadingSucceeded()
+                    }
+                    AppStatusReporter.State.EXTERNAL_LOADING_FAILURE, AppStatusReporter.State.LOADING_FAILURE -> {
+                        self.celestiaLoadingFailed()
+                    }
+                    else -> {}
+                }
+            }
+
+        })
+
+        if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
+            celestiaLoadingFailed()
+            return
+        }
+
+        when (currentState) {
+            AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
+                loadExternalConfig()
+            }
+            AppStatusReporter.State.LOADING -> {
+                // Do nothing
+            }
+            AppStatusReporter.State.LOADING_SUCCESS -> {
+                celestiaLoadingSucceeded()
+            }
+            AppStatusReporter.State.FINISHED -> {
+                celestiaLoadingFinished()
+            }
+        }
+
         nativeInit()
+
+        // Pass the core pointer so native OpenXR can render Celestia
+        try {
+            // Access private pointer using reflection
+            val field = AppCore::class.java.getDeclaredField("pointer")
+            field.isAccessible = true
+            val corePtr = field.getLong(appCore)
+            nativeSetCorePointer(corePtr)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get core pointer from AppCore", e)
+        }
     }
 
     override fun onStart() {
         super.onStart()
-        nativeStart()
-        Choreographer.getInstance().postFrameCallback(this)
 
-        val panelIntent = Intent(this, HomeActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (!hasOpenedPanel) {
+            lifecycleScope.launch {
+                delay(100)
+                if (isDestroyed || isFinishing) return@launch
+
+                hasOpenedPanel = true
+                val panelIntent = Intent(this@XRActivity, HomeActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(panelIntent)
+            }
         }
-
-        // After this call, the panel activity will be shown in overlay over the immersive activity running in the background.
-        startActivity(panelIntent)
     }
 
     override fun onStop() {
-        Choreographer.getInstance().removeFrameCallback(this)
         nativeStop()
         super.onStop()
     }
@@ -49,23 +157,204 @@ class XRActivity : ComponentActivity(), Choreographer.FrameCallback {
         super.onDestroy()
     }
 
-    override fun doFrame(frameTimeNanos: Long) {
-        nativeRenderFrame()
-        Choreographer.getInstance().postFrameCallback(this)
+    private fun copyAssetIfNeeded() {
+        appStatusReporter.updateStatus(CelestiaString("Copying data…", "Copying default data from APK"))
+        if (appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
+            // When version name does not match, copy the asset again
+            copyAssetsAndRemoveOldAssets()
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun copyAssetsAndRemoveOldAssets() {
+        try {
+            File(defaultFilePaths.dataDirectoryPath).deleteRecursively()
+            File(defaultFilePaths.fontDirectoryPath).deleteRecursively()
+        } catch (ignored: Exception) {}
+        AssetUtils.copyFileOrDir(this@XRActivity, FilePaths.CELESTIA_DATA_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
+        AssetUtils.copyFileOrDir(this@XRActivity, FilePaths.CELESTIA_FONT_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
+        appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
+    }
+
+    private fun loadExternalConfig() {
+        appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                copyAssetIfNeeded()
+                if (!isActive) return@launch
+//                val migrationResult = migrateData()
+//                if (migrationResult != null) {
+//                    appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = null
+//                    appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = null
+//                }
+                if (!isActive) return@launch
+                createAddonFolder()
+                if (!isActive) return@launch
+                loadConfig()
+                if (!isActive) return@launch
+                withContext(Dispatchers.Main) {
+                    loadConfigSuccess()
+                }
+            } catch (error: Throwable) {
+                withContext(Dispatchers.Main) {
+                    appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING_FAILURE)
+                    loadConfigFailed(error)
+                }
+            }
+        }
+    }
+
+    private fun loadConfig() {
+        availableInstalledFonts = mapOf(
+            "ja" to Pair(
+                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
+                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
+            ),
+            "ka" to Pair(
+                CustomFont("$fontDirPath/NotoSansGeorgian-Regular.ttf", 0),
+                CustomFont("$fontDirPath/NotoSansGeorgian-Bold.ttf", 0)
+            ),
+            "ko" to Pair(
+                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
+                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
+            ),
+            "zh_CN" to Pair(
+                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
+                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
+            ),
+            "zh_TW" to Pair(
+                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
+                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
+            ),
+            "ar" to Pair(
+                CustomFont("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
+                CustomFont("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
+            )
+        )
+        defaultInstalledFont = Pair(
+            CustomFont("$fontDirPath/NotoSans-Regular.ttf", 0),
+            CustomFont("$fontDirPath/NotoSans-Bold.ttf", 0)
+        )
+
+        // language = getString(space.celestia.mobilecelestia.R.string.celestia_language)
+    }
+
+    private fun loadConfigSuccess() {
+        nativeStart()
+    }
+
+    private fun loadConfigFailed(error: Throwable) {
+        Log.e(TAG, "Initialization failed, $error")
+        // showError(error)
+    }
+
+    private fun celestiaLoadingFailed() {
+        appStatusReporter.updateStatus(CelestiaString("Loading Celestia failed…", "Celestia loading failed"))
+    }
+
+    private fun celestiaLoadingSucceeded()/* = lifecycleScope.launch(executor.asCoroutineDispatcher())*/ {
+//        readSettings()
+        appStatusReporter.updateState(AppStatusReporter.State.FINISHED)
+    }
+
+    private fun celestiaLoadingFinishedAsync() {
+        lifecycleScope.launch {
+            celestiaLoadingFinished()
+        }
+    }
+
+    private fun celestiaLoadingFinished() {}
+
+    private fun createAddonFolder() {
+        val dataAddonDir = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
+        val dataScriptDir = getExternalFilesDir(CELESTIA_SCRIPT_FOLDER_NAME)
+
+        val mediaAddonDir: File?
+        val mediaScriptDir: File?
+        val mediaDir = externalMediaDirs.firstOrNull()
+        if (mediaDir != null) {
+            mediaAddonDir = File(mediaDir, CELESTIA_EXTRA_FOLDER_NAME)
+            mediaScriptDir = File(mediaDir, CELESTIA_SCRIPT_FOLDER_NAME)
+        } else {
+            mediaAddonDir = null
+            mediaScriptDir = null
+        }
+
+        val addonDirs = if (appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] == "true") listOf(mediaAddonDir, dataAddonDir) else listOf(dataAddonDir, mediaAddonDir)
+        val scriptDirs = if (appSettings[PreferenceManager.PredefinedKey.UseMediaDirForAddons] == "true") listOf(mediaScriptDir, dataScriptDir) else listOf(dataScriptDir, mediaScriptDir)
+        addonPaths = createDirectoriesIfNeeded(addonDirs.mapNotNull { it })
+        extraScriptPaths = createDirectoriesIfNeeded(scriptDirs.mapNotNull { it })
+    }
+
+    private fun createDirectoriesIfNeeded(dirs: List<File>): List<String> {
+        val availablePaths = ArrayList<String>()
+        for (dir in dirs) {
+            try {
+                if (dir.exists() || dir.mkdirs()) {
+                    availablePaths.add(dir.absolutePath)
+                }
+            } catch (_: Throwable) {}
+        }
+        return availablePaths
+    }
+
+    // Called from JNI natively to init Celestia on the background thread
+    fun initCelestia() {
+        appStatusReporter.updateState(AppStatusReporter.State.LOADING)
+
+        val data = defaultFilePaths.dataDirectoryPath
+        val cfg = defaultFilePaths.configFilePath
+
+        AppCore.initGL()
+        AppCore.chdir(data)
+
+        val countryCode = Locale.getDefault().country
+        // Set up locale
+        AppCore.setLocaleDirectoryPath("$data/locale", language, countryCode)
+
+        if (!appCore.startSimulation(cfg, emptyArray(), appStatusReporter)) {
+            appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
+            return
+        }
+
+        if (!appCore.startRenderer()) {
+            appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
+            return
+        }
+
+        appCore.start()
+        appCore.tick()
+
+        appStatusReporter.updateState(AppStatusReporter.State.LOADING_SUCCESS)
     }
 
     // ── JNI interface ────────────────────────────────────────────────────────
     private external fun nativeInit()
     private external fun nativeStart()
-    private external fun nativeRenderFrame()
     private external fun nativeStop()
     private external fun nativeDestroy()
+    private external fun nativeSetCorePointer(corePtr: Long)
 
     companion object {
+        private const val CURRENT_DATA_VERSION = "133"
+        // 133 1.9.10, Localization update data update (ab865c0979679cafdd962d2d726e819acbc26cb0)
+
+        private const val CELESTIA_ROOT_FOLDER_NAME = "CelestiaResources"
+        private const val CELESTIA_EXTRA_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/extras"
+        private const val CELESTIA_SCRIPT_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/scripts"
+
+        private var addonPaths: List<String> = listOf()
+        private var extraScriptPaths: List<String> = listOf()
+        private var language: String = "en"
+
+        var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
+        var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
+
         private const val TAG = "CelestiaXR"
+        private var hasOpenedPanel = false
 
         init {
-            System.loadLibrary("celestia_native")
+            System.loadLibrary("celestiaxr")
         }
     }
 }
