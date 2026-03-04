@@ -30,11 +30,12 @@ ndk = "29.0.14206865"
 okhttp = "5.3.2"
 retrofit = "3.0.0"
 sentry-android = "8.38.0"
-target_sdk = "36"
+target_sdk = "34"
 webkit = "1.16.0"
 navigation3 = "1.1.2"
 firebase-bom = "34.13.0"
 google-services = "4.4.4"
+openxr = "1.1.57"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
@@ -78,6 +79,7 @@ androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigat
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 google-services = { group = "com.google.gms", name = "google-services", version.ref = "google-services" }
+openxr-loader = { group = "org.khronos.openxr", name = "openxr_loader_for_android", version.ref = "openxr" }
 
 [plugins]
 android-application = { id = "com.android.application" }
