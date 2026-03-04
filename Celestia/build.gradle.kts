@@ -33,6 +33,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            ndk {
+                abiFilters += listOf("arm64-v8a")
+            }
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -48,6 +53,13 @@ android {
 
     buildFeatures {
         prefab = true
+        prefabPublishing = true
+    }
+
+    prefab {
+        create("celestia") {
+            headers = "${project.projectDir}/src/main/cpp"
+        }
     }
 
     externalNativeBuild {

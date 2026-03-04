@@ -3,13 +3,14 @@
 #include <jni.h>
 #include <android/log.h>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
 #include <array>
 #include <vector>
-
-// These defines must come before the OpenXR headers
-#define XR_USE_PLATFORM_ANDROID
-#define XR_USE_GRAPHICS_API_OPENGL_ES
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
@@ -35,6 +36,21 @@ struct EyeSwapchain {
     int32_t                                  width     = 0;
     int32_t                                  height    = 0;
     std::vector<XrSwapchainImageOpenGLESKHR> images;
+
+    // Cached GL resources (one depth RB shared, one FBO per swapchain image)
+    GLuint              depthRenderbuffer = 0;
+    std::vector<GLuint> framebuffers;
+
+    void destroyGLResources() {
+        if (!framebuffers.empty()) {
+            glDeleteFramebuffers((GLsizei)framebuffers.size(), framebuffers.data());
+            framebuffers.clear();
+        }
+        if (depthRenderbuffer != 0) {
+            glDeleteRenderbuffers(1, &depthRenderbuffer);
+            depthRenderbuffer = 0;
+        }
+    }
 };
 
 // ── Main OpenXR context ───────────────────────────────────────────────────────
@@ -49,23 +65,29 @@ struct CelestiaOpenXR {
     // Stereo swapchains (index 0 = left, 1 = right)
     std::array<EyeSwapchain, 2> eyeSwapchains;
 
-    // EGL context created by the app before calling createSession()
+    // EGL context
     EGLDisplay eglDisplay = EGL_NO_DISPLAY;
     EGLContext eglContext = EGL_NO_CONTEXT;
     EGLConfig  eglConfig  = nullptr;
+    EGLSurface pbufferSurface = EGL_NO_SURFACE;
 
     bool sessionRunning  = false;
     bool exitRequested   = false;
 
-    // OpenGL basic rendering state
-    GLuint shaderProgram = 0;
-    GLuint vao = 0;
-    GLuint vbo = 0;
-    GLint modelViewProjLoc = -1;
-
     // Pointer to CelestiaCore
-    class CelestiaCore* core = nullptr;
-    void setCorePointer(CelestiaCore* c) { core = c; }
+    void* corePtr = nullptr;
+    void setCorePointer(void* c) { corePtr = c; }
+    
+    // Background Threading
+    std::thread renderThread;
+    std::mutex stateMutex;
+    std::condition_variable stateCv;
+    bool active = false;
+    bool resumed = false;
+    bool celestiaInitialized = false;
+
+    JavaVM* jvm = nullptr;
+    jobject activityGlobal = nullptr;
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
     bool init(JavaVM* vm, jobject activityObject);
@@ -74,18 +96,18 @@ struct CelestiaOpenXR {
     void destroy();
 
     // ── Frame loop ────────────────────────────────────────────────────────────
-    // Returns false when the app should exit.
-    bool pollEvents();
+    void renderLoop();
     void renderFrame();
+    bool pollEvents();
 
 private:
-    bool createInstance(JavaVM* vm, jobject activity);
+    bool createInstance();
     bool acquireSystem();
     bool createEGLContext();
     bool createSession();
     bool createSwapchains();
-    bool initGraphics();
-    void destroyGraphics();
+
+    void initCelestiaIfNeeded(JNIEnv* env);
 
     void handleSessionStateChange(XrSessionState newState);
     void renderEye(int eyeIndex,

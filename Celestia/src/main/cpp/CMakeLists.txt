@@ -478,6 +478,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaDestination.cpp
         ${CELESTIA_JNI_DIR}/CelestiaRenderer.cpp
         ${CELESTIA_JNI_DIR}/CelestiaFont.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaXR.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../../../../dependencies")

@@ -34,15 +34,6 @@ Java_space_celestia_celestiaxr_XRActivity_nativeStart(JNIEnv* /*env*/, jobject /
     if (gXR) gXR->start();
 }
 
-JNIEXPORT void JNICALL
-Java_space_celestia_celestiaxr_XRActivity_nativeRenderFrame(JNIEnv* /*env*/, jobject /*thiz*/) {
-    if (gXR) {
-        if (!gXR->pollEvents()) {
-            return;
-        }
-        gXR->renderFrame();
-    }
-}
 
 JNIEXPORT void JNICALL
 Java_space_celestia_celestiaxr_XRActivity_nativeStop(JNIEnv* /*env*/, jobject /*thiz*/) {
@@ -63,7 +54,7 @@ Java_space_celestia_celestiaxr_XRActivity_nativeDestroy(JNIEnv* /*env*/, jobject
 JNIEXPORT void JNICALL
 Java_space_celestia_celestiaxr_XRActivity_nativeSetCorePointer(JNIEnv* env, jobject thiz, jlong corePtr) {
     if (gXR) {
-        gXR->setCorePointer(reinterpret_cast<CelestiaCore*>(corePtr));
+        gXR->setCorePointer(reinterpret_cast<void*>(corePtr));
     }
 }
 

@@ -1,14 +1,20 @@
 #include "celestia_openxr.h"
+#include <cmath>
 
-#include <cstring>
-#include <string>
-#include <vector>
+#include "celestia_xr_api.h"
 
-// ── init ──────────────────────────────────────────────────────────────────────
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
+static void buildViewMatrix(const XrPosef& pose, float* result);
+
 bool CelestiaOpenXR::init(JavaVM* vm, jobject activityObject) {
     LOGI("CelestiaOpenXR::init");
+    this->jvm = vm;
+    this->activityGlobal = activityObject;
 
-    // xrInitializeLoaderKHR must be called before xrCreateInstance on Android.
+    // xrInitializeLoaderKHR MUST be called on the main thread
     PFN_xrInitializeLoaderKHR xrInitializeLoaderKHR = nullptr;
     XrResult r = xrGetInstanceProcAddr(
         XR_NULL_HANDLE,
@@ -17,8 +23,8 @@ bool CelestiaOpenXR::init(JavaVM* vm, jobject activityObject) {
 
     if (XR_SUCCEEDED(r) && xrInitializeLoaderKHR != nullptr) {
         XrLoaderInitInfoAndroidKHR loaderInfo{XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR};
-        loaderInfo.applicationVM      = vm;
-        loaderInfo.applicationContext = activityObject;
+        loaderInfo.applicationVM      = jvm;
+        loaderInfo.applicationContext = activityGlobal;
         XR_CHECK(
             xrInitializeLoaderKHR(reinterpret_cast<XrLoaderInitInfoBaseHeaderKHR*>(&loaderInfo)),
             "xrInitializeLoaderKHR");
@@ -26,19 +32,106 @@ bool CelestiaOpenXR::init(JavaVM* vm, jobject activityObject) {
         LOGW("xrInitializeLoaderKHR not available – loader may not initialise correctly");
     }
 
-    return createInstance(vm, activityObject) && acquireSystem();
+    active = true;
+    resumed = false;
+    celestiaInitialized = false;
+
+    renderThread = std::thread(&CelestiaOpenXR::renderLoop, this);
+    return true;
+}
+
+// ── renderLoop ────────────────────────────────────────────────────────────────
+void CelestiaOpenXR::renderLoop() {
+    LOGI("CelestiaOpenXR::renderLoop thread started");
+    
+    // Attach current thread to JVM
+    LOGI("CelestiaOpenXR::renderLoop - Attaching to JVM...");
+    JNIEnv* env = nullptr;
+    if (jvm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
+        LOGE("Failed to attach render thread to JVM");
+        return;
+    }
+
+    if (!createInstance()) {
+        LOGE("CelestiaOpenXR::renderLoop - createInstance() failed");
+        jvm->DetachCurrentThread();
+        return;
+    }
+
+    if (!acquireSystem()) {
+        LOGE("CelestiaOpenXR::renderLoop - acquireSystem() failed");
+        jvm->DetachCurrentThread();
+        return;
+    }
+
+    if (!createSession()) {
+        LOGE("CelestiaOpenXR::renderLoop - createSession() failed");
+        jvm->DetachCurrentThread();
+        return;
+    }
+
+    // Render loop
+    while (active && !exitRequested) {
+        bool localResumed;
+        {
+            std::unique_lock<std::mutex> lock(stateMutex);
+            localResumed = resumed;
+        }
+
+        if (!localResumed) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            continue;
+        }
+
+        if (!pollEvents()) {
+            LOGI("CelestiaOpenXR::renderLoop - pollEvents returned false, breaking loop");
+            break;
+        }
+        
+        if (sessionRunning) {
+            initCelestiaIfNeeded(env);
+            renderFrame();
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+    }
+
+    destroy();
+
+    // Detach from JVM
+    jvm->DetachCurrentThread();
+}
+
+void CelestiaOpenXR::initCelestiaIfNeeded(JNIEnv* env) {
+    if (celestiaInitialized) return;
+    
+    // Get XRActivity class
+    jclass activityClass = env->GetObjectClass(activityGlobal);
+    if (!activityClass) {
+        LOGE("[initCelestiaIfNeeded] Failed to get XRActivity class");
+        return;
+    }
+    
+    jmethodID initCelestiaId = env->GetMethodID(activityClass, "initCelestia", "()V");
+    if (initCelestiaId) {
+        env->CallVoidMethod(activityGlobal, initCelestiaId);
+    } else {
+        LOGE("[initCelestiaIfNeeded] Failed to find initCelestia method");
+    }
+    
+    celestiaInitialized = true;
 }
 
 // ── createInstance ────────────────────────────────────────────────────────────
-bool CelestiaOpenXR::createInstance(JavaVM* vm, jobject activity) {
+bool CelestiaOpenXR::createInstance() {
     const std::vector<const char*> extensions = {
         XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME,
         XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME,
     };
 
     XrInstanceCreateInfoAndroidKHR androidInfo{XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR};
-    androidInfo.applicationVM       = vm;
-    androidInfo.applicationActivity = activity;
+    androidInfo.applicationVM       = jvm;
+    androidInfo.applicationActivity = activityGlobal;
 
     XrApplicationInfo appInfo{};
     strncpy(appInfo.applicationName, "Celestia",       XR_MAX_APPLICATION_NAME_SIZE - 1);
@@ -82,7 +175,6 @@ bool CelestiaOpenXR::acquireSystem() {
 
     XrSystemProperties props{XR_TYPE_SYSTEM_PROPERTIES};
     xrGetSystemProperties(instance, systemId, &props);
-    LOGI("System: %s", props.systemName);
     return true;
 }
 
@@ -129,17 +221,15 @@ bool CelestiaOpenXR::createEGLContext() {
 
     // Create a 1×1 pbuffer surface so we can make the context current without a window
     const EGLint pbufferAttribs[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
-    EGLSurface pbuffer = eglCreatePbufferSurface(eglDisplay, eglConfig, pbufferAttribs);
-    eglMakeCurrent(eglDisplay, pbuffer, pbuffer, eglContext);
+    pbufferSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, pbufferAttribs);
+    eglMakeCurrent(eglDisplay, pbufferSurface, pbufferSurface, eglContext);
 
-    LOGI("EGL context created (OpenGL ES 3)");
     return true;
 }
 
 // ── createSession ─────────────────────────────────────────────────────────────
 bool CelestiaOpenXR::createSession() {
     if (!createEGLContext()) return false;
-    if (!initGraphics()) return false;
 
     PFN_xrGetOpenGLESGraphicsRequirementsKHR pfnGetOpenGLESGraphicsRequirementsKHR = nullptr;
     XrResult rGetProc = xrGetInstanceProcAddr(
@@ -179,7 +269,6 @@ bool CelestiaOpenXR::createSession() {
     spaceInfo.poseInReferenceSpace     = {{0, 0, 0, 1}, {0, 0, 0}};  // identity
     XR_CHECK(xrCreateReferenceSpace(session, &spaceInfo, &appSpace), "xrCreateReferenceSpace");
 
-    LOGI("XrSession created successfully");
     return createSwapchains();
 }
 
@@ -194,13 +283,12 @@ bool CelestiaOpenXR::createSwapchains() {
     xrEnumerateViewConfigurationViews(instance, systemId,
         XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
         viewCount, &viewCount, viewConfigs.data());
-
     for (uint32_t i = 0; i < 2 && i < viewCount; ++i) {
         const auto& vc = viewConfigs[i];
 
         XrSwapchainCreateInfo sci{XR_TYPE_SWAPCHAIN_CREATE_INFO};
         sci.usageFlags  = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
-        sci.format      = GL_RGBA8;
+        sci.format      = GL_SRGB8_ALPHA8; // Workaround for https://communityforums.atmeta.com/discussions/dev-openxr/srgbrgb-giving-washed-outbright-image/957475
         sci.sampleCount = vc.recommendedSwapchainSampleCount;
         sci.width       = vc.recommendedImageRectWidth;
         sci.height      = vc.recommendedImageRectHeight;
@@ -220,212 +308,104 @@ bool CelestiaOpenXR::createSwapchains() {
         xrEnumerateSwapchainImages(eye.handle, imgCount, &imgCount,
             reinterpret_cast<XrSwapchainImageBaseHeader*>(eye.images.data()));
 
-        LOGI("Swapchain[%u]: %ux%u  %u images", i, sci.width, sci.height, imgCount);
+        // Create a shared depth renderbuffer for this eye
+        glGenRenderbuffers(1, &eye.depthRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, eye.depthRenderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, eye.width, eye.height);
+
+        // Create one FBO per swapchain image, each with color + depth attached
+        eye.framebuffers.resize(imgCount);
+        glGenFramebuffers((GLsizei)imgCount, eye.framebuffers.data());
+        for (uint32_t j = 0; j < imgCount; ++j) {
+            glBindFramebuffer(GL_FRAMEBUFFER, eye.framebuffers[j]);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                                   eye.images[j].image, 0);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                      GL_RENDERBUFFER, eye.depthRenderbuffer);
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     return true;
 }
 
-// ── Math Helpers ──────────────────────────────────────────────────────────────
-static void buildProjectionMatrix(const XrFovf& fov, float nearZ, float farZ, float* result) {
-    const float tanLeft = tanf(fov.angleLeft);
-    const float tanRight = tanf(fov.angleRight);
-    const float tanDown = tanf(fov.angleDown);
-    const float tanUp = tanf(fov.angleUp);
-
-    const float tanAngleWidth = tanRight - tanLeft;
-    const float tanAngleHeight = tanUp - tanDown;
-
-    result[0] = 2.0f / tanAngleWidth;
-    result[4] = 0.0f;
-    result[8] = (tanRight + tanLeft) / tanAngleWidth;
-    result[12] = 0.0f;
-
-    result[1] = 0.0f;
-    result[5] = 2.0f / tanAngleHeight;
-    result[9] = (tanUp + tanDown) / tanAngleHeight;
-    result[13] = 0.0f;
-
-    result[2] = 0.0f;
-    result[6] = 0.0f;
-    result[10] = -(farZ + nearZ) / (farZ - nearZ);
-    result[14] = -(2.0f * farZ * nearZ) / (farZ - nearZ);
-
-    result[3] = 0.0f;
-    result[7] = 0.0f;
-    result[11] = -1.0f;
-    result[15] = 0.0f;
-}
-
 static void buildViewMatrix(const XrPosef& pose, float* result) {
-    // Quaternion to 3x3 rotation
+    // pose is Camera-to-World. We need World-to-Camera (View Matrix) matching visionOS simd_inverse
     const float x = pose.orientation.x;
     const float y = pose.orientation.y;
     const float z = pose.orientation.z;
     const float w = pose.orientation.w;
-    
-    // x, y, z are inverted for view matrix, so we invert translation and transpose rotation
+
     const float x2 = x + x, y2 = y + y, z2 = z + z;
     const float xx = x * x2,  xy = x * y2,  xz = x * z2;
     const float yy = y * y2,  yz = y * z2,  zz = z * z2;
     const float wx = w * x2,  wy = w * y2,  wz = w * z2;
 
-    result[0] = 1.0f - (yy + zz);
-    result[4] = xy - wz;
-    result[8] = xz + wy;
-    result[12] = 0.0f;
+    // Camera-to-World rotation matrix
+    float r00 = 1.0f - (yy + zz);
+    float r01 = xy - wz;
+    float r02 = xz + wy;
 
-    result[1] = xy + wz;
-    result[5] = 1.0f - (xx + zz);
-    result[9] = yz - wx;
-    result[13] = 0.0f;
+    float r10 = xy + wz;
+    float r11 = 1.0f - (xx + zz);
+    float r12 = yz - wx;
 
-    result[2] = xz - wy;
-    result[6] = yz + wx;
-    result[10] = 1.0f - (xx + yy);
-    result[14] = 0.0f;
+    float r20 = xz - wy;
+    float r21 = yz + wx;
+    float r22 = 1.0f - (xx + yy);
 
-    // Translation
-    const float tx = -pose.position.x;
-    const float ty = -pose.position.y;
-    const float tz = -pose.position.z;
-    
-    result[12] = tx * result[0] + ty * result[4] + tz * result[8];
-    result[13] = tx * result[1] + ty * result[5] + tz * result[9];
-    result[14] = tx * result[2] + ty * result[6] + tz * result[10];
-    result[15] = 1.0f;
-    
+    // Camera-to-World translation
+    float tx = pose.position.x;
+    float ty = pose.position.y;
+    float tz = pose.position.z;
+
+    // To get World-to-Camera (inverse of Camera-to-World), we transpose the rotation
+    // and multiply the negatively translated position by the transposed rotation.
+    // Transposed rotation:
+    result[0] = r00;  result[4] = r10;  result[8] = r20;   result[12] = 0.0f;
+    result[1] = r01;  result[5] = r11;  result[9] = r21;   result[13] = 0.0f;
+    result[2] = r02;  result[6] = r12;  result[10] = r22;  result[14] = 0.0f;
+
+    // Inverse translation: -R^T * T
+    result[12] = -(r00 * tx + r10 * ty + r20 * tz);
+    result[13] = -(r01 * tx + r11 * ty + r21 * tz);
+    result[14] = -(r02 * tx + r12 * ty + r22 * tz);
+
     result[3] = 0.0f;
     result[7] = 0.0f;
     result[11] = 0.0f;
+    result[15] = 1.0f;
 }
 
-static void multiplyMatrix(const float* a, const float* b, float* result) {
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            result[i * 4 + j] = a[i * 4 + 0] * b[0 * 4 + j] +
-                                a[i * 4 + 1] * b[1 * 4 + j] +
-                                a[i * 4 + 2] * b[2 * 4 + j] +
-                                a[i * 4 + 3] * b[3 * 4 + j];
-        }
-    }
-}
-
-// ── Graphics Init ─────────────────────────────────────────────────────────────
-bool CelestiaOpenXR::initGraphics() {
-    // Shaders
-    const char* vShaderStr =
-        "#version 300 es\n"
-        "in vec3 VertexPos;\n"
-        "in vec3 VertexColor;\n"
-        "out vec3 Color;\n"
-        "uniform mat4 ModelViewProj;\n"
-        "void main() {\n"
-        "   Color = VertexColor;\n"
-        "   gl_Position = ModelViewProj * vec4(VertexPos, 1.0);\n"
-        "}\n";
-
-    const char* fShaderStr =
-        "#version 300 es\n"
-        "precision mediump float;\n"
-        "in vec3 Color;\n"
-        "out vec4 FragColor;\n"
-        "void main() {\n"
-        "   FragColor = vec4(Color, 1.0);\n"
-        "}\n";
-
-    auto compileShader = [](GLenum type, const char* src) -> GLuint {
-        GLuint shader = glCreateShader(type);
-        glShaderSource(shader, 1, &src, nullptr);
-        glCompileShader(shader);
-        GLint compiled;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-        if (!compiled) {
-            GLint infoLen = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-            if (infoLen > 1) {
-                std::vector<char> infoLog(infoLen);
-                glGetShaderInfoLog(shader, infoLen, nullptr, infoLog.data());
-                LOGE("Error compiling shader:\n%s", infoLog.data());
-            }
-            glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    };
-
-    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vShaderStr);
-    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fShaderStr);
-
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    GLint linked;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linked);
-    if (!linked) {
-        LOGE("Error linking shader program");
-        return false;
-    }
-
-    modelViewProjLoc = glGetUniformLocation(shaderProgram, "ModelViewProj");
-    GLint posAttrib = glGetAttribLocation(shaderProgram, "VertexPos");
-    GLint colAttrib = glGetAttribLocation(shaderProgram, "VertexColor");
-
-    // Geometry: a simple colored triangle directly in front
-    const float vertices[] = {
-        // x, y, z, r, g, b
-         0.0f,  0.5f, -2.0f,  1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -2.0f,  0.0f, 1.0f, 0.0f,
-         0.5f, -0.5f, -2.0f,  0.0f, 0.0f, 1.0f,
-    };
-
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-
-    glEnableVertexAttribArray(colAttrib);
-    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    glBindVertexArray(0);
-
-    LOGI("Graphics initialized (Shaders + VAO)");
-    return true;
-}
-
-void CelestiaOpenXR::destroyGraphics() {
-    if (vao) { glDeleteVertexArrays(1, &vao); vao = 0; }
-    if (vbo) { glDeleteBuffers(1, &vbo); vbo = 0; }
-    if (shaderProgram) { glDeleteProgram(shaderProgram); shaderProgram = 0; }
-}
-
-// ── start / stop ──────────────────────────────────────────────────────────────
+// ── start / stop / destroy ───────────────────────────────────────────────────
 void CelestiaOpenXR::start() {
-    LOGI("CelestiaOpenXR::start");
-    createSession();
+    std::unique_lock<std::mutex> lock(stateMutex);
+    resumed = true;
+    stateCv.notify_all();
 }
 
 void CelestiaOpenXR::stop() {
-    LOGI("CelestiaOpenXR::stop");
-    sessionRunning = false;
+    std::unique_lock<std::mutex> lock(stateMutex);
+    resumed = false;
 }
 
 // ── destroy ───────────────────────────────────────────────────────────────────
 void CelestiaOpenXR::destroy() {
     LOGI("CelestiaOpenXR::destroy");
 
-    destroyGraphics();
+    {
+        std::unique_lock<std::mutex> lock(stateMutex);
+        exitRequested = true;
+        resumed = true; // Wake up thread so it can exit
+        active = false;
+        stateCv.notify_all();
+    }
+
+    if (renderThread.joinable()) {
+        renderThread.join();
+    }
 
     for (auto& eye : eyeSwapchains) {
+        eye.destroyGLResources();
         if (eye.handle != XR_NULL_HANDLE) {
             xrDestroySwapchain(eye.handle);
             eye.handle = XR_NULL_HANDLE;
@@ -437,11 +417,23 @@ void CelestiaOpenXR::destroy() {
 
     if (eglDisplay != EGL_NO_DISPLAY) {
         eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        eglDestroyContext(eglDisplay, eglContext);
+        if (eglContext != EGL_NO_CONTEXT) {
+            eglDestroyContext(eglDisplay, eglContext);
+        }
         eglTerminate(eglDisplay);
         eglDisplay = EGL_NO_DISPLAY;
         eglContext = EGL_NO_CONTEXT;
     }
+
+    if (jvm && activityGlobal) {
+        JNIEnv* env = nullptr;
+        if (jvm->GetEnv((void**)&env, JNI_VERSION_1_6) == JNI_OK) {
+            env->DeleteGlobalRef(activityGlobal);
+        }
+        activityGlobal = nullptr;
+    }
+
+    LOGI("CelestiaOpenXR destroyed");
 }
 
 // ── pollEvents ────────────────────────────────────────────────────────────────
@@ -509,7 +501,7 @@ void CelestiaOpenXR::renderFrame() {
 
     std::vector<XrCompositionLayerBaseHeader*> layers;
     XrCompositionLayerProjection               layerProj{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
-    std::array<XrCompositionLayerProjectionView, 2> projViews;
+    std::array<XrCompositionLayerProjectionView, 2> projViews{};
 
     if (frameState.shouldRender) {
         // Locate eye views
@@ -519,7 +511,7 @@ void CelestiaOpenXR::renderFrame() {
         locateInfo.space                 = appSpace;
 
         XrViewState viewState{XR_TYPE_VIEW_STATE};
-        std::array<XrView, 2> views;
+        std::array<XrView, 2> views{};
         views[0].type = views[1].type = XR_TYPE_VIEW;
 
         uint32_t viewCount = 2;
@@ -562,37 +554,27 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
     waitInfo.timeout = XR_INFINITE_DURATION;
     XR_CHECK(xrWaitSwapchainImage(eye.handle, &waitInfo), "xrWaitSwapchainImage");
 
-    // ── Render deep-space background ─────────────────────────────────────────
-    // Bind the swapchain texture to an FBO and clear to a deep-space colour.
-    GLuint fbo = 0;
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                           eye.images[imageIndex].image, 0);
-    glViewport(0, 0, eye.width, eye.height);
-    glClearColor(0.01f, 0.02f, 0.08f, 1.0f);   // deep-space blue-black
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // ── Render into the cached FBO ────────────────────────────────────────────
+    glBindFramebuffer(GL_FRAMEBUFFER, eye.framebuffers[imageIndex]);
+    glDisable(GL_FRAMEBUFFER_SRGB);
 
-    // Compute MVP matrix for the current eye
-    float proj[16];
-    buildProjectionMatrix(view.fov, 0.05f, 100.0f, proj);
-    
-    float viewMat[16];
-    buildViewMatrix(view.pose, viewMat);
-    
-    float mvp[16];
-    multiplyMatrix(proj, viewMat, mvp);
+    if (corePtr) {
+        float nearZ = 0.05f;
+        float farZ = 10000.0f; // Celestia will adjust this, just a default
 
-    // Draw our triangle
-    glUseProgram(shaderProgram);
-    glUniformMatrix4fv(modelViewProjLoc, 1, GL_FALSE, mvp);
-    
-    glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
+        float left   = nearZ * tanf(view.fov.angleLeft);
+        float right  = nearZ * tanf(view.fov.angleRight);
+        float bottom = nearZ * tanf(view.fov.angleDown);
+        float top    = nearZ * tanf(view.fov.angleUp);
+
+        float viewMat[16];
+        buildViewMatrix(view.pose, viewMat);
+
+        bool doTick = (eyeIndex == 0);
+        CelestiaXR_RenderEye(corePtr, eye.width, eye.height, left, right, bottom, top, nearZ, farZ, viewMat, doTick);
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDeleteFramebuffers(1, &fbo);
 
     // Release swapchain image
     XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};

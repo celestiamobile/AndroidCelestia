@@ -22,6 +22,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        prefab = true
     }
 
     defaultConfig {
@@ -46,7 +47,7 @@ android {
             )
 
             ndk {
-                abiFilters += listOf("arm64-v8a")
+                abiFilters += listOf("arm64-v8a") // Meta Quest is arm64-v8a only
             }
         }
     }
@@ -73,28 +74,27 @@ kotlin {
         jvmTarget = JvmTarget.JVM_21
     }
 }
-//
-//// Custom tasks
+// Custom tasks
 //val copyLocalizedFiles by tasks.registering(Exec::class) {
 //    println("Copying localized files")
 //    workingDir = projectDir
 //    executable = "/bin/sh"
 //    args = listOf("copy_localized_files.sh")
 //}
-//
-//val copyGeneralData by tasks.registering(Exec::class) {
-//    workingDir = projectDir
-//    executable = "/bin/sh"
-//    args = listOf("copy_general_data.sh")
-//}
-//
-//val convertPO by tasks.registering(Exec::class) {
-//    println("Converting PO")
-//    workingDir = projectDir
-//    executable = "/bin/sh"
-//    args = listOf("convert_po.sh")
-//}
-//
+
+val copyGeneralData by tasks.registering(Exec::class) {
+    workingDir = projectDir
+    executable = "/bin/sh"
+    args = listOf("copy_general_data.sh", File(File(File(projectDir, "src"), "main"), "assets").absolutePath)
+}
+
+val convertPO by tasks.registering(Exec::class) {
+    println("Converting PO")
+    workingDir = projectDir
+    executable = "/bin/sh"
+    args = listOf("convert_po.sh", File(File(File(projectDir, "src"), "main"), "assets").absolutePath)
+}
+
 //// Task ordering
 //copyGeneralData {
 //    mustRunAfter(copyLocalizedFiles)

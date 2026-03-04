@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(celestia_native VERSION 1.0.0 LANGUAGES CXX)
+project(celestiaxr VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,26 +29,30 @@ find_library(GLESv3-lib  GLESv3)
 
 # ── Celestia native shared library ────────────────────────────────────────────
 add_library(
-    celestia_native
+    celestiaxr
     SHARED
         celestia_openxr.cpp
         jni_bridge.cpp
 )
 
-target_include_directories(celestia_native PRIVATE
+target_include_directories(celestiaxr PRIVATE
     ${openxr_sdk_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Celestia/src/main/cpp
 )
 
-target_compile_definitions(celestia_native PRIVATE
+target_compile_definitions(celestiaxr PRIVATE
     XR_USE_PLATFORM_ANDROID
     XR_USE_GRAPHICS_API_OPENGL_ES
     ANDROID
 )
 
-target_link_libraries(celestia_native
+find_package(Celestia REQUIRED CONFIG)
+
+target_link_libraries(celestiaxr
     openxr_loader
     ${log-lib}
     ${android-lib}
     ${EGL-lib}
     ${GLESv3-lib}
+    Celestia::celestia
 )
