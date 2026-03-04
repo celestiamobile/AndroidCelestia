@@ -485,22 +485,6 @@ set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../../../../dependencies")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
 set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
 
-# ── OpenXR SDK (headers + loader built from Khronos source) ──────────────────
-include(FetchContent)
-
-set(BUILD_LOADER            ON  CACHE BOOL "" FORCE)
-set(BUILD_API_LAYERS        OFF CACHE BOOL "" FORCE)
-set(BUILD_TESTS             OFF CACHE BOOL "" FORCE)
-set(BUILD_CONFORMANCE_TESTS OFF CACHE BOOL "" FORCE)
-
-FetchContent_Declare(
-    openxr_sdk
-    GIT_REPOSITORY https://github.com/KhronosGroup/OpenXR-SDK.git
-    GIT_TAG        release-1.1.38
-    GIT_SHALLOW    ON
-)
-FetchContent_MakeAvailable(openxr_sdk)
-
 set(CMAKE_CXX_STANDARD 17)
 
 add_definitions(-DENABLE_NLS)
@@ -516,6 +500,9 @@ add_definitions(-DXR_USE_GRAPHICS_API_OPENGL_ES)
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DEIGEN_NO_DEBUG)
 endif()
+
+find_package(games-frame-pacing REQUIRED CONFIG)
+find_package(OpenXR REQUIRED CONFIG)
 
 include_directories(
         ${CMAKE_SOURCE_DIR}
@@ -536,6 +523,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/meshoptimizer
         ${THIRD_PARTY_INCLUDE_DIR}/miniaudio
         ${THIRD_PARTY_INCLUDE_DIR}/icu
+        OpenXR::Headers
 )
 
 add_link_options("LINKER:--build-id=none")
@@ -576,8 +564,6 @@ set_target_properties(icudata PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR
 add_library(icui18n STATIC IMPORTED)
 set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libicui18n.a)
 
-find_package(games-frame-pacing REQUIRED CONFIG)
-
 add_library(
         celestia
         SHARED
@@ -602,7 +588,7 @@ target_link_libraries(
         icuuc
         icudata
         icui18n
-        openxr_loader
+        OpenXR::openxr_loader
         EGL
         android
         games-frame-pacing::swappy_static

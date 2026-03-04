@@ -70,8 +70,10 @@ struct CelestiaOpenXR {
     bool sessionRunning  = false;
     bool exitRequested   = false;
 
-    void* corePtr = nullptr;
-    void setCorePointer(void* c) { corePtr = c; }
+    CelestiaCore* corePtr = nullptr;
+    int32_t lastResizeWidth = 0;
+    int32_t lastResizeHeight = 0;
+    void setCorePointer(CelestiaCore* c) { corePtr = c; }
 
     std::thread renderThread;
     std::mutex stateMutex;
@@ -246,6 +248,9 @@ bool CelestiaOpenXR::init(JNIEnv* env, jobject activityObject) {
     resumed = false;
 
     renderThread = std::thread(&CelestiaOpenXR::renderLoop, this);
+
+    // Now mark as resumed so the render loop can proceed
+    start();
     return true;
 }
 
@@ -761,7 +766,7 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
     glDisable(GL_FRAMEBUFFER_SRGB);
 
     if (corePtr) {
-        auto* core = static_cast<CelestiaCore*>(corePtr);
+        auto* core = corePtr;
 
         float nearZ = 0.05f;
         float farZ = 10000.0f; // Celestia will adjust this, just a default
@@ -781,7 +786,11 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
         Matrix4f viewMatrix = Map<const Matrix4f>(viewMat);
         core->getRenderer()->setCameraTransform(viewMatrix.block<3, 3>(0, 0).cast<double>());
 
-        core->resize(eye.width, eye.height);
+        if (eye.width != lastResizeWidth || eye.height != lastResizeHeight) {
+            core->resize(eye.width, eye.height);
+            lastResizeWidth = eye.width;
+            lastResizeHeight = eye.height;
+        }
 
         if (eyeIndex == 0) {
             core->tick();
@@ -831,39 +840,35 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv* env, jobject /*thiz*/, jlong pointer, jobject activity) {
     LOGI("JNI: start");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
-    if (xr) xr->init(env, activity);
+    xr->init(env, activity);
 }
 
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1resume(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer) {
     LOGI("JNI: resume");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
-    if (xr) xr->resume();
+    xr->resume();
 }
 
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1pause(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer) {
     LOGI("JNI: pause");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
-    if (xr) xr->pause();
+    xr->pause();
 }
 
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1destroy(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer) {
     LOGI("JNI: destroy");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
-    if (xr) {
-        xr->destroy();
-        delete xr;
-    }
+    xr->destroy();
+    delete xr;
 }
 
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1setCorePointer(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer, jlong corePtr) {
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
-    if (xr) {
-        xr->setCorePointer(reinterpret_cast<void*>(corePtr));
-    }
+    xr->setCorePointer(reinterpret_cast<CelestiaCore*>(corePtr));
 }
 
 JNIEXPORT void JNICALL
