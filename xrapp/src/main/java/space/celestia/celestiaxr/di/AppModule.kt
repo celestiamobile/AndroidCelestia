@@ -14,9 +14,10 @@ import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import space.celestia.celestia.AppCore
-import space.celestia.celestia.Renderer
+import space.celestia.celestia.XRRenderer
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.FilePaths
+import space.celestia.celestiaxr.common.CelestiaExecutor
 import space.celestia.celestiaui.common.CommonSectionV2
 import space.celestia.celestiaui.di.ApplicationId
 import space.celestia.celestiaui.control.viewmodel.SessionSettings
@@ -86,14 +87,16 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideRenderer(): Renderer {
-        return Renderer()
+    fun provideXRRenderer(appCore: AppCore): XRRenderer {
+        val renderer = XRRenderer()
+        appCore.setXRRenderer(renderer)
+        return renderer
     }
 
     @Singleton
     @Provides
-    fun provideExecutor(renderer: Renderer): Executor {
-        return Executor { command -> }
+    fun provideExecutor(xrRenderer: XRRenderer): Executor {
+        return CelestiaExecutor(xrRenderer)
     }
 
     @Singleton

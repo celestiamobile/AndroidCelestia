@@ -11,7 +11,6 @@ plugins {
 android {
     compileSdk = libs.versions.compile.sdk.get().toInt()
     buildToolsVersion = libs.versions.build.tools.get()
-    ndkVersion = libs.versions.ndk.get()
 
     packaging {
         jniLibs {
@@ -22,7 +21,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-        prefab = true
     }
 
     defaultConfig {
@@ -30,12 +28,6 @@ android {
         minSdk = libs.versions.min.sdk.get().toInt()
         targetSdk = libs.versions.target.sdk.get().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        externalNativeBuild {
-            cmake {
-                arguments += listOf("-DANDROID_STL=c++_shared")
-            }
-        }
     }
 
     buildTypes {
@@ -49,13 +41,6 @@ android {
             ndk {
                 abiFilters += listOf("arm64-v8a") // Meta Quest is arm64-v8a only
             }
-        }
-    }
-
-    externalNativeBuild {
-        cmake {
-            version = libs.versions.cmake.get()
-            path = file("src/main/cpp/CMakeLists.txt")
         }
     }
 
