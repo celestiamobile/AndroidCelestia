@@ -66,7 +66,6 @@ struct CelestiaOpenXR {
     EGLDisplay eglDisplay = EGL_NO_DISPLAY;
     EGLContext eglContext = EGL_NO_CONTEXT;
     EGLConfig  eglConfig  = nullptr;
-    EGLSurface pbufferSurface = EGL_NO_SURFACE;
 
     bool sessionRunning  = false;
     bool exitRequested   = false;
@@ -413,10 +412,8 @@ bool CelestiaOpenXR::createEGLContext() {
         return false;
     }
 
-    // Create a 1×1 pbuffer surface so we can make the context current without a window
-    const EGLint pbufferAttribs[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
-    pbufferSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, pbufferAttribs);
-    eglMakeCurrent(eglDisplay, pbufferSurface, pbufferSurface, eglContext);
+    // Make context current without a surface (Quest supports surfaceless contexts)
+    eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, eglContext);
 
     return true;
 }
