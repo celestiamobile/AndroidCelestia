@@ -12,6 +12,7 @@
 rootProject.name = "Celestia"
 
 include(":app")
+include(":xrapp")
 include(":LinkPreview")
 include(":Celestia")
 include(":base_assets")

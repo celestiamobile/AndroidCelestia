@@ -68,7 +68,8 @@ class PreferenceManager(context: Context, name: String) {
         PushFeaturedAddon,
         FCMToken,
         SRGBRendering,
-        ShadowMapSize
+        ShadowMapSize,
+        ResolutionMultiplier
         ;
 
         override val valueString: String

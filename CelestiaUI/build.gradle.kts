@@ -54,6 +54,9 @@ android {
         create("mobile") {
             dimension = "renderer"
         }
+        create("xr") {
+            dimension = "renderer"
+        }
     }
 }
 
