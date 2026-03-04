@@ -33,6 +33,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            ndk {
+                abiFilters += listOf("arm64-v8a")
+            }
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -41,7 +46,7 @@ android {
             )
 
             ndk {
-                abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+                abiFilters += listOf("arm64-v8a")
             }
         }
     }
@@ -75,6 +80,15 @@ android {
                 }
             }
         }
+        create("xr") {
+            dimension = "renderer"
+
+            externalNativeBuild {
+                cmake {
+                    arguments += listOf("-DFLAVOR=xr")
+                }
+            }
+        }
     }
 }
 
@@ -85,8 +99,10 @@ kotlin {
 }
 
 val mobileImplementation by configurations
+val xrImplementation by configurations
 
 dependencies {
     implementation(libs.androidx.annotation)
     mobileImplementation(libs.androidx.games.frame.pacing)
+    xrImplementation(libs.openxr.loader)
 }

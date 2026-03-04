@@ -76,6 +76,10 @@ jmethodID timelinePhaseInitMethodID = nullptr;
 
 pthread_key_t javaEnvKey;
 
+// app state
+jclass appStateClz = nullptr;
+jmethodID appStateInitMethodID = nullptr;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -134,6 +138,9 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
     timelinePhaseClz = static_cast<jclass>(env->NewGlobalRef(env->FindClass("space/celestia/celestia/Timeline$Phase")));
     timelinePhaseInitMethodID = env->GetMethodID(timelinePhaseClz, "<init>", "(DD)V");
+
+    appStateClz = static_cast<jclass>(env->NewGlobalRef(env->FindClass("space/celestia/celestia/AppState")));
+    appStateInitMethodID = env->GetMethodID(appStateClz, "<init>", "(FDDZZZZDDILspace/celestia/celestia/Selection;Lspace/celestia/celestia/Selection;Lspace/celestia/celestia/Selection;)V");
 
     return JNI_VERSION_1_6;
 }
@@ -1485,4 +1492,141 @@ JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getTextEnterMode(JNIEnv *env, jclass clazz, jlong ptr) {
     auto core = reinterpret_cast<CelestiaCore *>(ptr);
     return static_cast<jint>(core->getTextEnterMode());
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1enableSelectionPointer(JNIEnv *env, jclass clazz,
+                                                               jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->enableSelectionPointer();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1disableSelectionPointer(JNIEnv *env, jclass clazz,
+                                                                jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->disableSelectionPointer();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setHudMessagesEnabled(JNIEnv *env, jclass clazz,
+                                                              jlong pointer, jboolean value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->enableHudMessages(value == JNI_TRUE);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setHudOverlayImageEnabled(JNIEnv *env, jclass clazz,
+                                                                  jlong pointer, jboolean value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->enableHudOverlayImage(value == JNI_TRUE);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_AppCore_c_1getTimeScale(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getSimulation()->getTimeScale();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setTimeScale(JNIEnv *env, jclass clazz, jlong pointer, jdouble time_scale) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getSimulation()->setTimeScale(time_scale);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_AppCore_c_1isPaused(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getSimulation()->getPauseState() ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_celestia_AppCore_c_1getMessageText(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto messages = core->messageText();
+    return env->NewStringUTF(core->messageText().c_str());
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_AppCore_c_1isLightTravelDelayEnabled(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getLightDelayActive() ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_celestia_AppCore_c_1getState(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto *sim = core->getSimulation();
+    auto frame = sim->getFrame();
+    double time = sim->getTime();
+
+    auto sel = sim->getSelection();
+    jboolean showDistanceToSelection = JNI_FALSE;
+    jboolean showDistanceToSelectionCenter = JNI_FALSE;
+    jdouble distanceToSelectionSurface = 0.0;
+    jdouble distanceToSelectionCenter = 0.0;
+
+    if (!sel.empty()) {
+        double selectionRadius = 0.0;
+        switch (sel.getType()) {
+        case SelectionType::Star:
+            showDistanceToSelection = JNI_TRUE;
+            break;
+        case SelectionType::DeepSky:
+            showDistanceToSelection = JNI_TRUE;
+            showDistanceToSelectionCenter = JNI_TRUE;
+            selectionRadius = celestia::astro::lightYearsToKilometers(static_cast<double>(sel.deepsky()->getRadius()));
+            break;
+        case SelectionType::Body:
+            showDistanceToSelection = JNI_TRUE;
+            selectionRadius = static_cast<double>(sel.body()->getRadius());
+            break;
+        case SelectionType::Location:
+            showDistanceToSelection = JNI_TRUE;
+            break;
+        default:
+            break;
+        }
+
+        if (showDistanceToSelection) {
+            distanceToSelectionCenter = sel.getPosition(time).offsetFromKm(sim->getObserver().getPosition()).norm();
+            distanceToSelectionSurface = distanceToSelectionCenter - selectionRadius;
+        }
+    }
+
+    jint coordinateSystem = static_cast<jint>(frame->getCoordinateSystem());
+    jobject referenceObject = selectionAsJavaSelection(env, frame->getRefObject());
+    jobject targetObject = selectionAsJavaSelection(env, frame->getTargetObject());
+    jobject selectedObject = selectionAsJavaSelection(env, sel);
+
+    jobject result = env->NewObject(appStateClz, appStateInitMethodID,
+        static_cast<jfloat>(sim->getTargetSpeed()),
+        static_cast<jdouble>(sim->getTimeScale()),
+        static_cast<jdouble>(time),
+        sim->getPauseState() ? JNI_TRUE : JNI_FALSE,
+        core->getLightDelayActive() ? JNI_TRUE : JNI_FALSE,
+        showDistanceToSelection,
+        showDistanceToSelectionCenter,
+        distanceToSelectionSurface,
+        distanceToSelectionCenter,
+        coordinateSystem,
+        referenceObject,
+        targetObject,
+        selectedObject);
+
+    env->DeleteLocalRef(referenceObject);
+    env->DeleteLocalRef(targetObject);
+    env->DeleteLocalRef(selectedObject);
+
+    return result;
 }
