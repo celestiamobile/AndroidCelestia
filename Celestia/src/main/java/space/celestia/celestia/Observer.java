@@ -60,4 +60,15 @@ public class Observer {
     private static native void c_applyQuaternion(long ptr, float[] current, float[] previous);
     private static native void c_setCockpit(long ptr, Selection selection);
     private static native Selection c_getCockpit(long ptr);
+
+    // State query methods for XR running view
+    public int getCoordinateSystem() { return c_getCoordinateSystem(pointer); }
+    public @NonNull Selection getReferenceObject() { return c_getReferenceObject(pointer); }
+    public @NonNull Selection getTargetObject() { return c_getTargetObject(pointer); }
+    public double getSpeed() { return c_getSpeed(pointer); }
+
+    private static native int c_getCoordinateSystem(long ptr);
+    private static native Selection c_getReferenceObject(long ptr);
+    private static native Selection c_getTargetObject(long ptr);
+    private static native double c_getSpeed(long ptr);
 }

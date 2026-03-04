@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="DefaultThemeBase" parent="@style/Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
+    <style name="DefaultTheme" parent="DefaultThemeBase"/>
+
+    <style name="AppTheme" parent="DefaultTheme">
+        <item name="android:colorBackground">#1b1b1f</item>
+        <item name="colorOnBackground">#e3e2e6</item>
+        <item name="colorPrimary">#adc7ff</item>
+        <item name="colorOnPrimary">#0f2f60</item>
+        <item name="colorPrimaryContainer">#2a4678</item>
+        <item name="colorOnPrimaryContainer">#d8e2ff</item>
+        <item name="colorSecondary">#bfc6dc</item>
+        <item name="colorOnSecondary">#283041</item>
+        <item name="colorSecondaryContainer">#3f4759</item>
+        <item name="colorOnSecondaryContainer">#dbe2f9</item>
+        <item name="colorOutline">#8e9099</item>
+        <item name="colorSurface">#1b1b1f</item>
+        <item name="colorSurfaceVariant">#44474f</item>
+        <item name="colorOnSurface">#e3e2e6</item>
+        <item name="colorOnSurfaceVariant">#c4c6d0</item>
+    </style>
+</resources>

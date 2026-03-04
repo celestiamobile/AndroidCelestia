@@ -504,6 +504,9 @@ list(APPEND CELESTIA_SOURCES
 if (FLAVOR STREQUAL "mobile")
     list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaRenderer.cpp)
+elseif (FLAVOR STREQUAL "xr")
+    list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_JNI_DIR}/CelestiaXRRenderer.cpp)
 endif()
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../../../../dependencies")
@@ -527,6 +530,10 @@ endif()
 
 if (FLAVOR STREQUAL "mobile")
     find_package(games-frame-pacing REQUIRED CONFIG)
+elseif (FLAVOR STREQUAL "xr")
+    find_package(OpenXR REQUIRED CONFIG)
+    add_definitions(-DXR_USE_PLATFORM_ANDROID)
+    add_definitions(-DXR_USE_GRAPHICS_API_OPENGL_ES)
 endif()
 
 include_directories(
@@ -549,6 +556,12 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/icu
         ${THIRD_PARTY_INCLUDE_DIR}/ffmpeg
 )
+
+if (FLAVOR STREQUAL "xr")
+    include_directories(
+        OpenXR::Headers
+    )
+endif()
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_link_options("LINKER:--build-id=none")
@@ -630,4 +643,8 @@ if (FLAVOR STREQUAL "mobile")
     target_link_libraries(
         celestia
         games-frame-pacing::swappy_static)
+elseif (FLAVOR STREQUAL "xr")
+    target_link_libraries(
+        celestia
+        OpenXR::openxr_loader)
 endif()
