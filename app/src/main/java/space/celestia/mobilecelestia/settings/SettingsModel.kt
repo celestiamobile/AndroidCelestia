@@ -10,7 +10,6 @@
 package space.celestia.mobilecelestia.settings
 
 import android.os.Build
-import androidx.annotation.RequiresApi
 import space.celestia.celestiaui.settings.viewmodel.Footer
 import space.celestia.celestiaui.settings.viewmodel.SettingsAboutItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsActionItem
@@ -30,9 +29,12 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsUnknownTextItem
 import space.celestia.celestiaui.settings.viewmodel.settingUnmarkAllID
 import space.celestia.mobilecelestia.celestia.CelestiaInteraction
 import space.celestia.celestiaui.common.CommonSectionV2
+import space.celestia.celestiaui.settings.viewmodel.SettingsCurrentTimeItem
+import space.celestia.celestiaui.settings.viewmodel.SettingsFontItem
+import space.celestia.celestiaui.settings.viewmodel.SettingsRefreshRateItem
+import space.celestia.celestiaui.settings.viewmodel.SettingsToolbarItem
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
-import java.io.Serializable
 
 private val staticDisplayItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(CelestiaString("Objects", ""), listOf(
@@ -147,11 +149,6 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
     )
 )
 
-class SettingsCurrentTimeItem : SettingsItem {
-    override val name: String
-        get() = CelestiaString("Current Time", "")
-}
-
 private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
         SettingsKey.TimeZone.displayName,
@@ -199,23 +196,6 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     ),
     SettingsLanguageItem(),
 )
-
-@RequiresApi(Build.VERSION_CODES.Q)
-class SettingsFontItem : SettingsItem, Serializable {
-    override val name: String
-        get() = CelestiaString("Font", "")
-}
-
-class SettingsToolbarItem : SettingsItem, Serializable {
-    override val name: String
-        get() = CelestiaString("Toolbar", "Toolbar customization entry in Settings")
-}
-
-
-class SettingsRefreshRateItem : SettingsItem, Serializable {
-    override val name: String
-        get() = CelestiaString("Frame Rate", "Frame rate of simulation")
-}
 
 private val staticRendererItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(
