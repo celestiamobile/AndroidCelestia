@@ -90,8 +90,9 @@ struct CelestiaOpenXR {
     static jmethodID engineStartedMethod;
 
     bool init(JNIEnv* env, jobject activityObject);
+    void resume();
     void start();
-    void stop();
+    void pause();
     void destroy();
 
     void renderLoop();
@@ -218,7 +219,11 @@ private:
 
 bool CelestiaOpenXR::init(JNIEnv* env, jobject activityObject) {
     LOGI("CelestiaOpenXR::init");
+    if (activityGlobal) {
+        env->DeleteGlobalRef(activityGlobal);
+    }
     activityGlobal = env->NewGlobalRef(activityObject);
+    exitRequested = false;
 
     // xrInitializeLoaderKHR MUST be called on the main thread
     PFN_xrInitializeLoaderKHR xrInitializeLoaderKHR = nullptr;
@@ -565,16 +570,21 @@ static void buildViewMatrix(const XrPosef& pose, float* result) {
     result[15] = 1.0f;
 }
 
-// ── start / stop / destroy ───────────────────────────────────────────────────
+// ── start / stop / resume / destroy ──────────────────────────────────────────
 void CelestiaOpenXR::start() {
     std::unique_lock<std::mutex> lock(stateMutex);
     resumed = true;
     stateCv.notify_all();
 }
 
-void CelestiaOpenXR::stop() {
+void CelestiaOpenXR::pause() {
     std::unique_lock<std::mutex> lock(stateMutex);
     resumed = false;
+}
+
+void CelestiaOpenXR::resume() {
+    LOGI("CelestiaOpenXR::resume");
+    start();
 }
 
 // ── destroy ───────────────────────────────────────────────────────────────────
@@ -828,10 +838,17 @@ Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv* env, jobject /*thiz*/, 
 }
 
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_XRRenderer_c_1stop(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer) {
-    LOGI("JNI: stop");
+Java_space_celestia_celestia_XRRenderer_c_1resume(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer) {
+    LOGI("JNI: resume");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
-    if (xr) xr->stop();
+    if (xr) xr->resume();
+}
+
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1pause(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer) {
+    LOGI("JNI: pause");
+    auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    if (xr) xr->pause();
 }
 
 JNIEXPORT void JNICALL

@@ -34,7 +34,10 @@ public class XRRenderer implements AutoCloseable {
     }
 
     public void startConditionally(@NonNull Activity activity) {
-        if (started) return;
+        if (started) {
+            c_resume(pointer);
+            return;
+        }
         start(activity);
     }
 
@@ -43,8 +46,8 @@ public class XRRenderer implements AutoCloseable {
         c_start(pointer, activity);
     }
 
-    public void stop() {
-        c_stop(pointer);
+    public void pause() {
+        c_pause(pointer);
     }
 
     public void enqueueTask(@NonNull Callback task) {
@@ -99,7 +102,8 @@ public class XRRenderer implements AutoCloseable {
     private static native long c_createNativeXRObject();
     private native void c_initialize(long pointer);
     private native void c_start(long pointer, Activity activity);
-    private native void c_stop(long pointer);
+    private native void c_resume(long pointer);
+    private native void c_pause(long pointer);
     private native void c_destroy(long pointer);
     private native void c_setCorePointer(long pointer, long corePtr);
     private native void c_setHasPendingTasks(long pointer, boolean hasPendingTasks);
