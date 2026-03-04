@@ -25,7 +25,7 @@ kotlinx-coroutines-android = "1.10.2"
 ksp = "2.3.5"
 lifecycle-runtime = "2.10.0"
 material = "1.13.0"
-min_sdk = "23"
+min_sdk = "24"
 ndk = "29.0.14206865"
 okhttp = "5.3.2"
 retrofit = "3.0.0"
@@ -33,6 +33,7 @@ sentry-android = "8.33.0"
 target_sdk = "36"
 webkit = "1.15.0"
 navigation3 = "1.0.1"
+openxr = "1.1.57"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
@@ -71,6 +72,7 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentry-android" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
+openxr-loader = { group = "org.khronos.openxr", name = "openxr_loader_for_android", version.ref = "openxr" }
 
 [plugins]
 android-application = { id = "com.android.application" }

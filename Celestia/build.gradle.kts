@@ -86,4 +86,5 @@ kotlin {
 dependencies {
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.games.frame.pacing)
+    implementation(libs.openxr.loader)
 }
