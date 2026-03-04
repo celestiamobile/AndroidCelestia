@@ -1,18 +1,224 @@
-#include "celestia_openxr.h"
+#include <jni.h>
+#include <android/log.h>
+#include <array>
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 #include <cmath>
 
-#include "celestia_xr_api.h"
+#include <celestia/celestiacore.h>
+#include <celengine/perspectiveprojectionmode.h>
+#include <celmath/frustum.h>
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <openxr/openxr.h>
+#include <openxr/openxr_platform.h>
+
+using namespace Eigen;
+
+// ── Logging helpers ───────────────────────────────────────────────────────────
+#define LOG_TAG "CelestiaNative"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  LOG_TAG, __VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN,  LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
+#define XR_CHECK(result, msg)                                              \
+    do {                                                                   \
+        XrResult _r = (result);                                            \
+        if (XR_FAILED(_r)) {                                               \
+            LOGE("OpenXR error in %s: result=%d", (msg), (int)(_r));       \
+        }                                                                  \
+    } while (0)
+
+// ── Per-eye swapchain ─────────────────────────────────────────────────────────
+struct EyeSwapchain {
+    XrSwapchain                              handle    = XR_NULL_HANDLE;
+    int32_t                                  width     = 0;
+    int32_t                                  height    = 0;
+    std::vector<XrSwapchainImageOpenGLESKHR> images;
+
+    GLuint              depthRenderbuffer = 0;
+    std::vector<GLuint> framebuffers;
+
+    void destroyGLResources() {
+        if (!framebuffers.empty()) {
+            glDeleteFramebuffers((GLsizei)framebuffers.size(), framebuffers.data());
+            framebuffers.clear();
+        }
+        if (depthRenderbuffer != 0) {
+            glDeleteRenderbuffers(1, &depthRenderbuffer);
+            depthRenderbuffer = 0;
+        }
+    }
+};
+
+// ── Main OpenXR context ───────────────────────────────────────────────────────
+struct CelestiaOpenXR {
+    XrInstance   instance  = XR_NULL_HANDLE;
+    XrSystemId   systemId  = XR_NULL_SYSTEM_ID;
+    XrSession    session   = XR_NULL_HANDLE;
+    XrSpace      appSpace  = XR_NULL_HANDLE;
+
+    std::array<EyeSwapchain, 2> eyeSwapchains;
+
+    EGLDisplay eglDisplay = EGL_NO_DISPLAY;
+    EGLContext eglContext = EGL_NO_CONTEXT;
+    EGLConfig  eglConfig  = nullptr;
+    EGLSurface pbufferSurface = EGL_NO_SURFACE;
+
+    bool sessionRunning  = false;
+    bool exitRequested   = false;
+
+    void* corePtr = nullptr;
+    void setCorePointer(void* c) { corePtr = c; }
+
+    std::thread renderThread;
+    std::mutex stateMutex;
+    std::condition_variable stateCv;
+    bool active = false;
+    bool resumed = false;
+    bool hasPendingTasks = false;
+    bool engineStartedCalled = false;
+    inline void setHasPendingTasks(bool h) { hasPendingTasks = h; }
+
+    JavaVM* jvm = nullptr;
+    jobject activityGlobal = nullptr;
+    jobject javaObject = nullptr;
+    static jmethodID flushTasksMethod;
+    static jmethodID engineStartedMethod;
+
+    bool init(JNIEnv* env, jobject activityObject);
+    void start();
+    void stop();
+    void destroy();
+
+    void renderLoop();
+    void renderFrame();
+    bool pollEvents();
+
+private:
+    bool createInstance();
+    bool acquireSystem();
+    bool createEGLContext();
+    bool createSession();
+    bool createSwapchains();
+
+    void handleSessionStateChange(XrSessionState newState);
+    void renderEye(int eyeIndex,
+                   const XrSwapchainImageOpenGLESKHR& image,
+                   const XrView& view,
+                   XrCompositionLayerProjectionView& projView);
+};
 
 #ifndef GL_FRAMEBUFFER_SRGB
 #define GL_FRAMEBUFFER_SRGB 0x8DB9
 #endif
 
+jmethodID CelestiaOpenXR::flushTasksMethod = nullptr;
+jmethodID CelestiaOpenXR::engineStartedMethod = nullptr;
+
 static void buildViewMatrix(const XrPosef& pose, float* result);
 
-bool CelestiaOpenXR::init(JavaVM* vm, jobject activityObject) {
+// ── Custom projection mode for asymmetric XR frustums ─────────────────────────
+class CustomPerspectiveProjectionMode : public celestia::engine::PerspectiveProjectionMode
+{
+public:
+    CustomPerspectiveProjectionMode(float left, float right, float top, float bottom, float nearZ, float farZ, float width, float height) :
+        PerspectiveProjectionMode(width, height, 0, 0),
+        left(left), right(right), top(top), bottom(bottom),
+        nearZ(nearZ), farZ(std::isinf(farZ) ? maximumFarZ : std::min(farZ, maximumFarZ))
+    {
+    }
+
+    std::tuple<float, float> getDefaultDepthRange() const override
+    {
+        return std::make_tuple(nearZ, farZ);
+    }
+
+    Matrix4f getProjectionMatrix(float nz, float fz, float) const override
+    {
+        float ratio = nz / nearZ;
+
+        float l = ratio * left;
+        float r = ratio * right;
+        float t = ratio * top;
+        float b = ratio * bottom;
+
+        // https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glFrustum.xml
+        float A = (r + l) / (r - l);
+        float B = (t + b) / (t - b);
+        float C = -(fz + nz) / (fz - nz);
+        float D = -2.0f * fz * nz / (fz - nz);
+
+        Matrix4f m;
+
+        m << 2.0f * nz / (r - l),                0.0f,     A, 0.0f,
+             0.0f,                2.0f * nz / (t - b),     B, 0.0f,
+             0.0f,                               0.0f,     C,    D,
+             0.0f,                               0.0f, -1.0f, 0.0f;
+
+        return m;
+    }
+
+    float getMinimumFOV() const override { return getFOV(1.0f); }
+    float getMaximumFOV() const override { return getFOV(1.0f); }
+    float getFOV(float zoom) const override
+    {
+        float a = top * top + nearZ * nearZ;
+        float b = bottom * bottom + nearZ * nearZ;
+        float c = (top - bottom) * (top - bottom);
+        return std::acos((a + b - c) / (2.0f * std::sqrt(a * b)));
+    }
+    float getZoom(float fov) const override { return 1.0f; }
+    celestia::math::Frustum getFrustum(float _nearZ, float _farZ, float zoom) const override {
+        float ratio = _nearZ / nearZ;
+        return celestia::math::Frustum(left * ratio, right * ratio, top * ratio, bottom * ratio, _nearZ, _farZ);
+    }
+    double getViewConeAngleMax(float zoom) const override
+    {
+        float a = left * left + top * top;
+        float b = right * right + top * top;
+        float c = left * left + bottom * bottom;
+        float d = right * right + bottom * bottom;
+        float maxValue = std::max({a, b, c, d});
+        return static_cast<double>(nearZ) / std::sqrt(static_cast<double>(nearZ * nearZ + maxValue));
+    }
+
+    static constexpr float maximumFarZ = 1.0e9f;
+
+    Vector3f getPickRay(float x, float y, float zoom) const override
+    {
+        auto invProj = getProjectionMatrix(nearZ, maximumFarZ, 1.0f).inverse();
+        float aspectRatio = width / height;
+        Vector4f clip(x / aspectRatio * 2.0f, y * 2.0f, -1.0, 1.0);
+        return (invProj * clip).head<3>().normalized();
+    }
+
+    Vector2f getRayIntersection(Vector3f pickRay, float zoom) const override
+    {
+        auto proj = getProjectionMatrix(nearZ, maximumFarZ, 1.0f);
+        float coeff = -nearZ / pickRay.z();
+        Vector4f point(coeff * pickRay.x(), coeff * pickRay.y(), -nearZ, 1.0f);
+        Vector4f projected = proj * point;
+        projected /= projected.w();
+        float aspectRatio = width / height;
+        return Vector2f(projected.x() * aspectRatio, projected.y());
+    }
+
+private:
+    float left;
+    float right;
+    float bottom;
+    float top;
+    float nearZ;
+    float farZ;
+};
+
+bool CelestiaOpenXR::init(JNIEnv* env, jobject activityObject) {
     LOGI("CelestiaOpenXR::init");
-    this->jvm = vm;
-    this->activityGlobal = activityObject;
+    activityGlobal = env->NewGlobalRef(activityObject);
 
     // xrInitializeLoaderKHR MUST be called on the main thread
     PFN_xrInitializeLoaderKHR xrInitializeLoaderKHR = nullptr;
@@ -34,7 +240,6 @@ bool CelestiaOpenXR::init(JavaVM* vm, jobject activityObject) {
 
     active = true;
     resumed = false;
-    celestiaInitialized = false;
 
     renderThread = std::thread(&CelestiaOpenXR::renderLoop, this);
     return true;
@@ -42,10 +247,7 @@ bool CelestiaOpenXR::init(JavaVM* vm, jobject activityObject) {
 
 // ── renderLoop ────────────────────────────────────────────────────────────────
 void CelestiaOpenXR::renderLoop() {
-    LOGI("CelestiaOpenXR::renderLoop thread started");
-    
     // Attach current thread to JVM
-    LOGI("CelestiaOpenXR::renderLoop - Attaching to JVM...");
     JNIEnv* env = nullptr;
     if (jvm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
         LOGE("Failed to attach render thread to JVM");
@@ -89,7 +291,14 @@ void CelestiaOpenXR::renderLoop() {
         }
         
         if (sessionRunning) {
-            initCelestiaIfNeeded(env);
+            if (!engineStartedCalled) {
+                bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod));
+                if (!started)
+                    break;
+                engineStartedCalled = true;
+            }
+            if (hasPendingTasks)
+                env->CallVoidMethod(javaObject, CelestiaOpenXR::flushTasksMethod);
             renderFrame();
         } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -100,26 +309,6 @@ void CelestiaOpenXR::renderLoop() {
 
     // Detach from JVM
     jvm->DetachCurrentThread();
-}
-
-void CelestiaOpenXR::initCelestiaIfNeeded(JNIEnv* env) {
-    if (celestiaInitialized) return;
-    
-    // Get XRActivity class
-    jclass activityClass = env->GetObjectClass(activityGlobal);
-    if (!activityClass) {
-        LOGE("[initCelestiaIfNeeded] Failed to get XRActivity class");
-        return;
-    }
-    
-    jmethodID initCelestiaId = env->GetMethodID(activityClass, "initCelestia", "()V");
-    if (initCelestiaId) {
-        env->CallVoidMethod(activityGlobal, initCelestiaId);
-    } else {
-        LOGE("[initCelestiaIfNeeded] Failed to find initCelestia method");
-    }
-    
-    celestiaInitialized = true;
 }
 
 // ── createInstance ────────────────────────────────────────────────────────────
@@ -425,12 +614,18 @@ void CelestiaOpenXR::destroy() {
         eglContext = EGL_NO_CONTEXT;
     }
 
-    if (jvm && activityGlobal) {
+    if (jvm) {
         JNIEnv* env = nullptr;
         if (jvm->GetEnv((void**)&env, JNI_VERSION_1_6) == JNI_OK) {
-            env->DeleteGlobalRef(activityGlobal);
+            if (activityGlobal) {
+                env->DeleteGlobalRef(activityGlobal);
+                activityGlobal = nullptr;
+            }
+            if (javaObject) {
+                env->DeleteGlobalRef(javaObject);
+                javaObject = nullptr;
+            }
         }
-        activityGlobal = nullptr;
     }
 
     LOGI("CelestiaOpenXR destroyed");
@@ -559,6 +754,8 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
     glDisable(GL_FRAMEBUFFER_SRGB);
 
     if (corePtr) {
+        auto* core = static_cast<CelestiaCore*>(corePtr);
+
         float nearZ = 0.05f;
         float farZ = 10000.0f; // Celestia will adjust this, just a default
 
@@ -570,8 +767,20 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
         float viewMat[16];
         buildViewMatrix(view.pose, viewMat);
 
-        bool doTick = (eyeIndex == 0);
-        CelestiaXR_RenderEye(corePtr, eye.width, eye.height, left, right, bottom, top, nearZ, farZ, viewMat, doTick);
+        // Set up the asymmetric projection for this eye
+        core->getRenderer()->setProjectionMode(std::make_shared<CustomPerspectiveProjectionMode>(
+            left, right, top, bottom, nearZ, farZ, static_cast<float>(eye.width), static_cast<float>(eye.height)));
+
+        Matrix4f viewMatrix = Map<const Matrix4f>(viewMat);
+        core->getRenderer()->setCameraTransform(viewMatrix.block<3, 3>(0, 0).cast<double>());
+
+        core->resize(eye.width, eye.height);
+
+        if (eyeIndex == 0) {
+            core->tick();
+        }
+
+        core->draw();
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -589,3 +798,66 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
     projView.subImage.imageRect.extent       = {eye.width, eye.height};
     projView.subImage.imageArrayIndex        = 0;
 }
+
+// ── JNI bridge for XRRenderer.java ────────────────────────────────────────────
+extern "C" {
+
+JNIEXPORT jlong JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1createNativeXRObject(JNIEnv* /*env*/, jclass /*clazz*/) {
+    LOGI("JNI: createNativeXRObject");
+    return reinterpret_cast<jlong>(new CelestiaOpenXR());
+}
+
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1initialize(JNIEnv* env, jobject thiz, jlong pointer) {
+    LOGI("JNI: initialize");
+    auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    xr->javaObject = env->NewGlobalRef(thiz);
+    env->GetJavaVM(&xr->jvm);
+
+    jclass clazz = env->GetObjectClass(thiz);
+    CelestiaOpenXR::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
+    CelestiaOpenXR::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "()Z");
+}
+
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv* env, jobject /*thiz*/, jlong pointer, jobject activity) {
+    LOGI("JNI: start");
+    auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    if (xr) xr->init(env, activity);
+}
+
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1stop(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer) {
+    LOGI("JNI: stop");
+    auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    if (xr) xr->stop();
+}
+
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1destroy(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer) {
+    LOGI("JNI: destroy");
+    auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    if (xr) {
+        xr->destroy();
+        delete xr;
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1setCorePointer(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer, jlong corePtr) {
+    auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    if (xr) {
+        xr->setCorePointer(reinterpret_cast<void*>(corePtr));
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1setHasPendingTasks(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer, jboolean hasPendingTasks) {
+    auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    if (xr) {
+        xr->setHasPendingTasks(static_cast<bool>(hasPendingTasks));
+    }
+}
+
+} // extern "C"

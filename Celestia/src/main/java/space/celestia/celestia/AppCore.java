@@ -267,6 +267,9 @@ public class AppCore {
     public void setRenderer(Renderer renderer) {
         renderer.setCorePointer(pointer);
     }
+    public void setXRRenderer(XRRenderer xrRenderer) {
+        xrRenderer.setCorePointer(pointer);
+    }
     public boolean saveScreenshot(@NonNull String filePath, int imageType) {
         return c_saveScreenshot(pointer, filePath, imageType);
     }

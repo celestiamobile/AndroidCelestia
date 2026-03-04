@@ -478,12 +478,28 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaDestination.cpp
         ${CELESTIA_JNI_DIR}/CelestiaRenderer.cpp
         ${CELESTIA_JNI_DIR}/CelestiaFont.cpp
-        ${CELESTIA_JNI_DIR}/CelestiaXR.cpp
+        ${CELESTIA_JNI_DIR}/CelestiaXRRenderer.cpp
         )
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../../../../dependencies")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
 set(THIRD_PARTY_INCLUDE_DIR "${THIRD_PARTY_DIR}/include")
+
+# ── OpenXR SDK (headers + loader built from Khronos source) ──────────────────
+include(FetchContent)
+
+set(BUILD_LOADER            ON  CACHE BOOL "" FORCE)
+set(BUILD_API_LAYERS        OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTS             OFF CACHE BOOL "" FORCE)
+set(BUILD_CONFORMANCE_TESTS OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    openxr_sdk
+    GIT_REPOSITORY https://github.com/KhronosGroup/OpenXR-SDK.git
+    GIT_TAG        release-1.1.38
+    GIT_SHALLOW    ON
+)
+FetchContent_MakeAvailable(openxr_sdk)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -494,6 +510,8 @@ add_definitions(-DUSE_MINIAUDIO)
 add_definitions(-DCELX)
 add_definitions(-DUSE_ICU)
 add_definitions(-DBOOST_NO_EXCEPTIONS)
+add_definitions(-DXR_USE_PLATFORM_ANDROID)
+add_definitions(-DXR_USE_GRAPHICS_API_OPENGL_ES)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DEIGEN_NO_DEBUG)
@@ -502,6 +520,7 @@ endif()
 include_directories(
         ${CMAKE_SOURCE_DIR}
         ${CELESTIA_SRC_DIR}
+        ${openxr_sdk_SOURCE_DIR}/include
         ${THIRD_PARTY_INCLUDE_DIR}/boost
         ${THIRD_PARTY_INCLUDE_DIR}/cspice
         ${THIRD_PARTY_INCLUDE_DIR}/luajit
@@ -583,6 +602,7 @@ target_link_libraries(
         icuuc
         icudata
         icui18n
+        openxr_loader
         EGL
         android
         games-frame-pacing::swappy_static

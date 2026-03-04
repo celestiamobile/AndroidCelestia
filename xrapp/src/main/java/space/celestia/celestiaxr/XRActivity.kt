@@ -16,6 +16,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.XRRenderer
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.deleteRecursively
@@ -37,6 +38,9 @@ class XRActivity : ComponentActivity() {
 
     @Inject
     lateinit var appCore: AppCore
+
+    @Inject
+    lateinit var xrRenderer: XRRenderer
 
     @Inject
     lateinit var defaultFilePaths: FilePaths
@@ -93,7 +97,6 @@ class XRActivity : ComponentActivity() {
                     else -> {}
                 }
             }
-
         })
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
@@ -115,30 +118,16 @@ class XRActivity : ComponentActivity() {
                 celestiaLoadingFinished()
             }
         }
-
-        nativeInit()
-
-        // Pass the core pointer so native OpenXR can render Celestia
-        try {
-            // Access private pointer using reflection
-            val field = AppCore::class.java.getDeclaredField("pointer")
-            field.isAccessible = true
-            val corePtr = field.getLong(appCore)
-            nativeSetCorePointer(corePtr)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to get core pointer from AppCore", e)
-        }
     }
 
     override fun onStart() {
         super.onStart()
 
-        if (!hasOpenedPanel) {
+        if (!HomeActivity.hasOpenedActivity) {
             lifecycleScope.launch {
                 delay(100)
                 if (isDestroyed || isFinishing) return@launch
 
-                hasOpenedPanel = true
                 val panelIntent = Intent(this@XRActivity, HomeActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
@@ -148,12 +137,12 @@ class XRActivity : ComponentActivity() {
     }
 
     override fun onStop() {
-        nativeStop()
+        xrRenderer.stop()
         super.onStop()
     }
 
     override fun onDestroy() {
-        nativeDestroy()
+        xrRenderer.close()
         super.onDestroy()
     }
 
@@ -170,7 +159,7 @@ class XRActivity : ComponentActivity() {
         try {
             File(defaultFilePaths.dataDirectoryPath).deleteRecursively()
             File(defaultFilePaths.fontDirectoryPath).deleteRecursively()
-        } catch (ignored: Exception) {}
+        } catch (_: Exception) {}
         AssetUtils.copyFileOrDir(this@XRActivity, FilePaths.CELESTIA_DATA_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
         AssetUtils.copyFileOrDir(this@XRActivity, FilePaths.CELESTIA_FONT_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
         appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
@@ -240,7 +229,8 @@ class XRActivity : ComponentActivity() {
     }
 
     private fun loadConfigSuccess() {
-        nativeStart()
+        xrRenderer.setEngineStartedListener { initCelestia() }
+        xrRenderer.startConditionally(this)
     }
 
     private fun loadConfigFailed(error: Throwable) {
@@ -298,12 +288,12 @@ class XRActivity : ComponentActivity() {
         return availablePaths
     }
 
-    // Called from JNI natively to init Celestia on the background thread
-    fun initCelestia() {
+    private fun initCelestia(): Boolean {
         appStatusReporter.updateState(AppStatusReporter.State.LOADING)
 
-        val data = defaultFilePaths.dataDirectoryPath
-        val cfg = defaultFilePaths.configFilePath
+        val data = celestiaDataDirPath
+        val cfg = celestiaConfigFilePath
+        val addonDirs = addonPaths.toTypedArray()
 
         AppCore.initGL()
         AppCore.chdir(data)
@@ -312,28 +302,34 @@ class XRActivity : ComponentActivity() {
         // Set up locale
         AppCore.setLocaleDirectoryPath("$data/locale", language, countryCode)
 
-        if (!appCore.startSimulation(cfg, emptyArray(), appStatusReporter)) {
-            appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
-            return
+        if (!appCore.startSimulation(cfg, addonDirs, appStatusReporter)) {
+            val fallbackConfigPath = defaultFilePaths.configFilePath
+            val fallbackDataPath = defaultFilePaths.dataDirectoryPath
+            if (fallbackConfigPath != cfg || fallbackDataPath != data) {
+                // TODO: Loading fallback default directory, show an alert
+                AppCore.chdir(fallbackDataPath)
+                AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", language, countryCode)
+                if (!appCore.startSimulation(fallbackConfigPath, addonDirs, appStatusReporter)) {
+                    appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
+                    return false
+                }
+            } else {
+                appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
+                return false
+            }
         }
 
         if (!appCore.startRenderer()) {
             appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
-            return
+            return false
         }
 
-        appCore.start()
         appCore.tick()
+        appCore.start()
 
         appStatusReporter.updateState(AppStatusReporter.State.LOADING_SUCCESS)
+        return true
     }
-
-    // ── JNI interface ────────────────────────────────────────────────────────
-    private external fun nativeInit()
-    private external fun nativeStart()
-    private external fun nativeStop()
-    private external fun nativeDestroy()
-    private external fun nativeSetCorePointer(corePtr: Long)
 
     companion object {
         private const val CURRENT_DATA_VERSION = "133"
@@ -347,14 +343,13 @@ class XRActivity : ComponentActivity() {
         private var extraScriptPaths: List<String> = listOf()
         private var language: String = "en"
 
-        var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
-        var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
+        private var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
+        private var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
 
         private const val TAG = "CelestiaXR"
-        private var hasOpenedPanel = false
 
         init {
-            System.loadLibrary("celestiaxr")
+            System.loadLibrary("celestia")
         }
     }
 }

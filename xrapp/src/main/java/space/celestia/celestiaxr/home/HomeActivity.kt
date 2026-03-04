@@ -23,5 +23,17 @@ class HomeActivity: AppCompatActivity() {
                 }
             }
         }
+        openedActivityCount += 1
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        openedActivityCount -= 1
+    }
+
+    companion object {
+        private var openedActivityCount = 0
+        val hasOpenedActivity: Boolean
+            get() = openedActivityCount > 0
     }
 }
