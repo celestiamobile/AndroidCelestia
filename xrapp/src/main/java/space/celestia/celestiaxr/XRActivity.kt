@@ -137,13 +137,8 @@ class XRActivity : ComponentActivity() {
     }
 
     override fun onStop() {
-        xrRenderer.stop()
+        xrRenderer.pause()
         super.onStop()
-    }
-
-    override fun onDestroy() {
-        xrRenderer.close()
-        super.onDestroy()
     }
 
     private fun copyAssetIfNeeded() {
