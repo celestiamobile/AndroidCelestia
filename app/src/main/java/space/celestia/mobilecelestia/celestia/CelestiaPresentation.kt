@@ -16,7 +16,6 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.celestiaui.utils.PreferenceManager
 import java.util.concurrent.Executor
 
 class CelestiaPresentation(
@@ -25,8 +24,7 @@ class CelestiaPresentation(
     private val rendererSettings: RendererSettings,
     private val appCore: AppCore,
     private val renderer: Renderer,
-    private val executor: Executor,
-    private val appSettings: PreferenceManager
+    private val executor: Executor
 ): Presentation(context, display) {
     private var density: Float = 1f
     private var fontScale: Float = 1f
@@ -63,7 +61,7 @@ class CelestiaPresentation(
         if (!changes.scaling && !changes.safeArea) return
 
         renderer.makeContextCurrent()
-        appCore.updateContentScale(rendererSettings, changes, appSettings)
+        appCore.updateContentScale(rendererSettings, changes)
     }
 
     private fun setUpGLView(container: FrameLayout) {

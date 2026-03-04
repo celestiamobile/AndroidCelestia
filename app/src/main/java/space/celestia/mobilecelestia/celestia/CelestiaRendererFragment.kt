@@ -77,7 +77,6 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     private var density: Float = 1f
     private var fontScale: Float = 1f
     private var savedInsets = EdgeInsets()
-    private var hasSetRenderer: Boolean = false
     private var loadSuccess = false
     private var haveSurface = false
 
@@ -103,15 +102,6 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
             addonDirsToLoad = it.getStringArrayList(ARG_ADDON_DIR) ?: listOf()
             languageOverride = it.getString(ARG_LANG_OVERRIDE, "en")
         }
-
-        if (savedInstanceState != null) {
-            hasSetRenderer = savedInstanceState.getBoolean(ARG_HAS_SET_RENDERER, false)
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(ARG_HAS_SET_RENDERER, hasSetRenderer)
-        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateView(
@@ -122,12 +112,8 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
 
         val view = inflater.inflate(R.layout.fragment_celestia_renderer, container, false)
 
-        if (!hasSetRenderer) {
-            appCore.setRenderer(renderer)
-            renderer.setEngineStartedListener { samples ->
-                loadCelestia(samples)
-            }
-            hasSetRenderer = true
+        renderer.setEngineStartedListener { samples ->
+            loadCelestia(samples)
         }
 
         setUpGLView(view.findViewById(R.id.celestia_gl_view))
@@ -321,7 +307,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         if (!changes.scaling && !changes.safeArea) return
 
         renderer.makeContextCurrent()
-        appCore.updateContentScale(rendererSettings, changes, appSettings)
+        appCore.updateContentScale(rendererSettings, changes)
     }
 
     private fun loadingFinished() = lifecycleScope.launch {
@@ -362,7 +348,6 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         private const val ARG_DATA_DIR = "data"
         private const val ARG_CFG_FILE = "cfg"
         private const val ARG_ADDON_DIR = "addon"
-        private const val ARG_HAS_SET_RENDERER = "has-set-renderer"
         private const val ARG_LANG_OVERRIDE = "lang"
 
         private const val TAG = "CelestiaRendererFragment"
@@ -381,7 +366,7 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
 
 data class RenderChanges(val scaling: Boolean = false, val safeArea: Boolean = false)
 
-fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges, appSettings: PreferenceManager) {
+fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges) {
     if (changes.scaling) {
         screenDPI = (96 * rendererSettings.density * rendererSettings.scaleFactor).toInt()
         setPickTolerance(rendererSettings.pickSensitivity * rendererSettings.density * rendererSettings.scaleFactor)

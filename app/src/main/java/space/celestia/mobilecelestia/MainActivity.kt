@@ -512,8 +512,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     rendererSettings,
                     appCore,
                     renderer,
-                    executor,
-                    appSettings
+                    executor
                 )
                 activePresentation?.setOnDismissListener {
                     // Reapply content scale to main surface when presentation is dismissed

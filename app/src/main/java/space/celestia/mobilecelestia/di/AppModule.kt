@@ -87,8 +87,10 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideRenderer(): Renderer {
-        return Renderer()
+    fun provideRenderer(appCore: AppCore): Renderer {
+        val renderer = Renderer()
+        appCore.setRenderer(renderer)
+        return renderer
     }
 
     @Singleton
