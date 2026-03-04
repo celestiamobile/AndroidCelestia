@@ -13,8 +13,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="695"
-    android:versionName="1.9.10">
+    android:versionCode="696"
+    android:versionName="1.9.11">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
