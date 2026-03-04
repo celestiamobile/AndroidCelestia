@@ -1,0 +1,1 @@
+../app/copy_general_data.sh
