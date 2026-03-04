@@ -82,3 +82,31 @@ Java_space_celestia_celestia_Observer_c_1getCockpit(JNIEnv *env, jclass clazz, j
     auto observer = reinterpret_cast<Observer *>(ptr);
     return selectionAsJavaSelection(env, observer->getCockpit());
 }
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_space_celestia_celestia_Observer_c_1getCoordinateSystem(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto observer = reinterpret_cast<Observer *>(ptr);
+    return static_cast<jint>(observer->getFrame()->getCoordinateSystem());
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_celestia_Observer_c_1getReferenceObject(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto observer = reinterpret_cast<Observer *>(ptr);
+    return selectionAsJavaSelection(env, observer->getFrame()->getRefObject());
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_space_celestia_celestia_Observer_c_1getTargetObject(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto observer = reinterpret_cast<Observer *>(ptr);
+    return selectionAsJavaSelection(env, observer->getFrame()->getTargetObject());
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Observer_c_1getSpeed(JNIEnv *env, jclass clazz, jlong ptr) {
+    auto observer = reinterpret_cast<Observer *>(ptr);
+    return observer->getVelocity().norm();
+}

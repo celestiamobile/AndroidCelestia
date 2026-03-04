@@ -34,6 +34,7 @@ webkit = "1.17.0"
 navigation3 = "1.1.7"
 firebase-bom = "34.18.0"
 google-services = "4.5.0"
+openxr = "1.1.57"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
@@ -78,6 +79,7 @@ androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigat
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 google-services = { group = "com.google.gms", name = "google-services", version.ref = "google-services" }
+openxr-loader = { group = "org.khronos.openxr", name = "openxr_loader_for_android", version.ref = "openxr" }
 
 [plugins]
 android-application = { id = "com.android.application" }

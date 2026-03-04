@@ -1,0 +1,1 @@
+../app/copy_localized_files.sh

@@ -1,0 +1,1 @@
+../app/downsize_textures.sh

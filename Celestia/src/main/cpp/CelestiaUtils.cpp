@@ -75,6 +75,78 @@ Java_space_celestia_celestia_Utils_getMilliSecondsFromEpochFromJulianDay(JNIEnv 
 
 extern "C"
 JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_lightYearsToParsecs(JNIEnv *env, jclass clazz, jdouble ly) {
+    return celestia::astro::lightYearsToParsecs(ly);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_parsecsToLightYears(JNIEnv *env, jclass clazz, jdouble pc) {
+    return celestia::astro::parsecsToLightYears(pc);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_lightYearsToKilometers(JNIEnv *env, jclass clazz, jdouble ly) {
+    return celestia::astro::lightYearsToKilometers(ly);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_kilometersToLightYears(JNIEnv *env, jclass clazz, jdouble km) {
+    return celestia::astro::kilometersToLightYears(km);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_lightYearsToAU(JNIEnv *env, jclass clazz, jdouble ly) {
+    return celestia::astro::lightYearsToAU(ly);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_AUtoLightYears(JNIEnv *env, jclass clazz, jdouble au) {
+    return celestia::astro::AUtoLightYears(au);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_kilometersToAU(JNIEnv *env, jclass clazz, jdouble km) {
+    return celestia::astro::kilometersToAU(km);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_AUtoKilometers(JNIEnv *env, jclass clazz, jdouble au) {
+    return celestia::astro::AUtoKilometers(au);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_microLightYearsToKilometers(JNIEnv *env, jclass clazz, jdouble mly) {
+    return celestia::astro::microLightYearsToKilometers(mly);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_kilometersToMicroLightYears(JNIEnv *env, jclass clazz, jdouble km) {
+    return celestia::astro::kilometersToMicroLightYears(km);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_microLightYearsToAU(JNIEnv *env, jclass clazz, jdouble mly) {
+    return celestia::astro::microLightYearsToAU(mly);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_Utils_AUtoMicroLightYears(JNIEnv *env, jclass clazz, jdouble au) {
+    return celestia::astro::AUtoMicroLightYears(au);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Utils_degFromRad(JNIEnv *env, jclass clazz, jdouble rad) {
     return static_cast<jdouble>(celestia::math::radToDeg(static_cast<double>(rad)));
 }
