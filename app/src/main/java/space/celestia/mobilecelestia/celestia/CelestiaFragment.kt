@@ -51,7 +51,8 @@ import space.celestia.celestia.Utils
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiaui.control.viewmodel.SessionSettings
 import space.celestia.celestiaui.di.AppSettings
-import space.celestia.celestiaui.info.InfoFragment
+import space.celestia.celestiaui.info.getAvailableMarkers
+import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
@@ -483,7 +484,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             }
         }
         val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", "Mark an object"))
-        val availableMarkers = InfoFragment.getAvailableMarkers()
+        val availableMarkers = getAvailableMarkers()
         for (marker in availableMarkers.withIndex()) {
             markMenu.add(GROUP_MARK, marker.index, Menu.NONE, marker.value).setOnMenuItemClickListener { _ ->
                 if (marker.index >= Universe.MARKER_COUNT) {

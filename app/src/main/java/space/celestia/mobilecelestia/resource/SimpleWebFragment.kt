@@ -1,4 +1,4 @@
-package space.celestia.celestiaui.resource
+package space.celestia.mobilecelestia.resource
 
 import android.net.Uri
 import android.os.Bundle
@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import space.celestia.celestiaui.compose.Mdc3Theme
+import space.celestia.celestiaui.resource.WebPage
 
 class SimpleWebFragment: Fragment() {
     private lateinit var uri: Uri

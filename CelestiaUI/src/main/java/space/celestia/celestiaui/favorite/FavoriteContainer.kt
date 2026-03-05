@@ -1,4 +1,4 @@
-// FavoriteFragment.kt
+// FavoriteContainer.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -9,11 +9,6 @@
 
 package space.celestia.celestiaui.favorite
 
-import android.content.Context
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -37,10 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
@@ -49,7 +41,6 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestiaui.R
-import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.favorite.viewmodel.FavoriteViewModel
 import space.celestia.celestiaui.favorite.viewmodel.Page
@@ -62,7 +53,7 @@ sealed class FavoriteAlert {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
+fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
     val viewModel: FavoriteViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val scope = rememberCoroutineScope()
@@ -164,59 +155,5 @@ private fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit,
                 }, title = CelestiaString("Cannot add object", "Failed to add a favorite item (currently a bookmark)"))
             }
         }
-    }
-}
-
-class FavoriteFragment : Fragment() {
-    interface Listener {
-        fun saveFavorites()
-        fun shareFavoriteItem(item: MutableFavoriteBaseItem)
-        fun openFavoriteBookmark(item: FavoriteBookmarkItem)
-        fun openFavoriteScript(item: FavoriteScriptItem)
-    }
-
-    private var listener: Listener? = null
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    FavoriteContainer(shareRequested = { item ->
-                        listener?.shareFavoriteItem(item)
-                    }, openBookmarkRequested = { item ->
-                        listener?.openFavoriteBookmark(item)
-                    }, openScriptRequested = { item ->
-                        listener?.openFavoriteScript(item)
-                    })
-                }
-            }
-        }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement FavoriteFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener?.saveFavorites()
-        listener = null
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance() = FavoriteFragment()
     }
 }

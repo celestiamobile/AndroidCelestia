@@ -256,7 +256,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
                 }
             }
             is InfoAlert.MarkerSelection -> {
-                val markers = InfoFragment.getAvailableMarkers()
+                val markers = getAvailableMarkers()
                 OptionInputDialog(onDismissRequest = {
                     alert = null
                 }, title = CelestiaString("Mark", "Mark an object"), items = markers) { index ->
@@ -281,4 +281,23 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
             }
         }
     }
+}
+
+fun getAvailableMarkers(): List<String> {
+    return listOf(
+        CelestiaString("Diamond", "Marker"),
+        CelestiaString("Triangle", "Marker"),
+        CelestiaString("Square", "Marker"),
+        CelestiaString("Filled Square", "Marker"),
+        CelestiaString("Plus", "Marker"),
+        CelestiaString("X", "Marker"),
+        CelestiaString("Left Arrow", "Marker"),
+        CelestiaString("Right Arrow", "Marker"),
+        CelestiaString("Up Arrow", "Marker"),
+        CelestiaString("Down Arrow", "Marker"),
+        CelestiaString("Circle", "Marker"),
+        CelestiaString("Disk", "Marker"),
+        CelestiaString("Crosshair", "Marker"),
+        CelestiaString("Unmark", "Unmark an object"),
+    )
 }

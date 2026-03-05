@@ -1,4 +1,4 @@
-// CameraControlContainerFragment.kt
+// CameraControlContainer.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -9,11 +9,6 @@
 
 package space.celestia.celestiaui.control
 
-import android.content.Context
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -32,23 +27,19 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiaui.R
-import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.control.viewmodel.CameraControlViewModel
 import space.celestia.celestiaui.control.viewmodel.Page
 import space.celestia.celestiaui.utils.CelestiaString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CameraControlContainer(observerModeLearnMoreClicked: (String, Boolean) -> Unit) {
+fun CameraControlContainer(observerModeLearnMoreClicked: (String, Boolean) -> Unit) {
     val viewModel: CameraControlViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -118,52 +109,5 @@ private fun CameraControlContainer(observerModeLearnMoreClicked: (String, Boolea
                 }
             }
         )
-    }
-}
-
-class CameraControlContainerFragment : Fragment() {
-    var listener: Listener? = null
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    CameraControlContainer { link, localizable ->
-                        listener?.onObserverModeLearnMoreClicked(link, localizable)
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement CameraControlContainerFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
-    interface Listener {
-        fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean)
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance() =
-            CameraControlContainerFragment()
     }
 }

@@ -1,4 +1,4 @@
-// SearchFragment.kt
+// FavoriteFragment.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -7,7 +7,7 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 
-package space.celestia.celestiaui.search
+package space.celestia.mobilecelestia.favorite
 
 import android.content.Context
 import android.os.Bundle
@@ -17,16 +17,25 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import dagger.hilt.android.AndroidEntryPoint
-import space.celestia.celestia.Selection
 import space.celestia.celestiaui.compose.Mdc3Theme
+import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
+import space.celestia.celestiaui.favorite.FavoriteContainer
+import space.celestia.celestiaui.favorite.FavoriteScriptItem
+import space.celestia.celestiaui.favorite.MutableFavoriteBaseItem
 
-@AndroidEntryPoint
-class SearchFragment : Fragment() {
+class FavoriteFragment : Fragment() {
+    interface Listener {
+        fun saveFavorites()
+        fun shareFavoriteItem(item: MutableFavoriteBaseItem)
+        fun openFavoriteBookmark(item: FavoriteBookmarkItem)
+        fun openFavoriteScript(item: FavoriteScriptItem)
+    }
+
     private var listener: Listener? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         return ComposeView(requireContext()).apply {
@@ -35,14 +44,12 @@ class SearchFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
-                    SearchScreen(openSubsystem = { selection ->
-                        listener?.searchRequestOpenSubsystem(selection)
-                    }, linkClicked = {
-                        listener?.searchLinkClicked(it)
-                    }, openSubscriptionManagement = {
-                        listener?.searchRequestOpenSubscriptionManagement()
-                    }, openRelatedAddons = {
-                        listener?.searchRequestOpenRelatedAddons(it)
+                    FavoriteContainer(shareRequested = { item ->
+                        listener?.shareFavoriteItem(item)
+                    }, openBookmarkRequested = { item ->
+                        listener?.openFavoriteBookmark(item)
+                    }, openScriptRequested = { item ->
+                        listener?.openFavoriteScript(item)
                     })
                 }
             }
@@ -54,24 +61,18 @@ class SearchFragment : Fragment() {
         if (context is Listener) {
             listener = context
         } else {
-            throw RuntimeException("$context must implement SearchFragment.Listener")
+            throw RuntimeException("$context must implement FavoriteFragment.Listener")
         }
     }
 
     override fun onDetach() {
         super.onDetach()
+        listener?.saveFavorites()
         listener = null
-    }
-
-    interface Listener {
-        fun searchRequestOpenSubsystem(selection: Selection)
-        fun searchLinkClicked(link: String)
-        fun searchRequestOpenSubscriptionManagement()
-        fun searchRequestOpenRelatedAddons(objectPath: String)
     }
 
     companion object {
         @JvmStatic
-        fun newInstance() = SearchFragment()
+        fun newInstance() = FavoriteFragment()
     }
 }

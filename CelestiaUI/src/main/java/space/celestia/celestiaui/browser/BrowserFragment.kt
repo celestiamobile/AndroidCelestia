@@ -9,11 +9,6 @@
 
 package space.celestia.celestiaui.browser
 
-import android.content.Context
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -45,21 +40,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
-import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.Selection
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.celestiaui.browser.viewmodel.BrowserViewModel
 import space.celestia.celestiaui.browser.viewmodel.Page
-import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.info.InfoScreen
 import space.celestia.celestiaui.utils.CelestiaString
@@ -207,61 +197,3 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
     }
 }
 
-@AndroidEntryPoint
-class BrowserFragment : Fragment() {
-    interface Listener {
-        fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo)
-        fun browserLinkClicked(link: String)
-        fun browserRequestSubsystem(selection: Selection)
-        fun browserRequestOpenSubscriptionManagement()
-        fun browserRequestOpenRelatedAddons(objectPath: String)
-    }
-
-    private var listener: Listener? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement BrowserFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    Browser(linkClicked = {
-                        listener?.browserLinkClicked(it)
-                    }, openSubsystem = { selection ->
-                        listener?.browserRequestSubsystem(selection)
-                    }, addonCategoryRequested = {
-                        listener?.browserAddonCategoryRequested(it)
-                    }, openRelatedAddons = {
-                        listener?.browserRequestOpenRelatedAddons(it)
-                    }, openSubscriptionManagement = {
-                        listener?.browserRequestOpenSubscriptionManagement()
-                    })
-                }
-            }
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance(): BrowserFragment = BrowserFragment()
-    }
-}

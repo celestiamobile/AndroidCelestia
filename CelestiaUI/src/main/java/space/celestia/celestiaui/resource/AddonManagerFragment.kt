@@ -9,11 +9,6 @@
 
 package space.celestia.celestiaui.resource
 
-import android.content.Context
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -37,16 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiaui.R
-import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.purchase.SubscriptionBackingScreen
 import space.celestia.celestiaui.resource.viewmodel.AddonManagerPage
@@ -193,58 +184,3 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
     }
 }
 
-class AddonManagerFragment : Fragment() {
-    interface Listener {
-        fun webRequestRunScript(script: File)
-        fun webRequestShareAddon(name: String, id: String)
-        fun webRequestOpenSubscriptionManagement()
-        fun webRequestOpenAddonDownload()
-    }
-
-    private var listener: Listener? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement AddonFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    AddonManagerScreen(requestRunScript = { script ->
-                        listener?.webRequestRunScript(script)
-                    }, requestShareAddon = { name, id ->
-                        listener?.webRequestShareAddon(name, id)
-                    }, requestOpenAddonDownload = {
-                        listener?.webRequestOpenAddonDownload()
-                    }, openSubscriptionManagement = {
-                        listener?.webRequestOpenSubscriptionManagement()
-                    })
-                }
-            }
-        }
-    }
-
-
-    companion object {
-        fun newInstance() = AddonManagerFragment()
-    }
-}

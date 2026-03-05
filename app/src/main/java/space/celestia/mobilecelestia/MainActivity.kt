@@ -83,8 +83,8 @@ import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
 import space.celestia.celestiafoundation.utils.versionName
-import space.celestia.celestiaui.browser.BrowserFragment
-import space.celestia.celestiaui.browser.SubsystemBrowserFragment
+import space.celestia.mobilecelestia.browser.BrowserFragment
+import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
 import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaPresentation
@@ -93,7 +93,7 @@ import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.control.BottomControlAction
-import space.celestia.celestiaui.control.CameraControlContainerFragment
+import space.celestia.mobilecelestia.control.CameraControlContainerFragment
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
@@ -102,9 +102,9 @@ import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
 import space.celestia.mobilecelestia.control.InstantAction
 import space.celestia.mobilecelestia.control.OverflowItem
-import space.celestia.celestiaui.eventfinder.EventFinderContainerFragment
+import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
-import space.celestia.celestiaui.favorite.FavoriteFragment
+import space.celestia.mobilecelestia.favorite.FavoriteFragment
 import space.celestia.celestiaui.favorite.FavoriteScriptItem
 import space.celestia.celestiaui.favorite.MutableFavoriteBaseItem
 import space.celestia.celestiaui.favorite.getCurrentBookmarks
@@ -112,27 +112,28 @@ import space.celestia.celestiaui.favorite.updateCurrentBookmarks
 import space.celestia.celestiaui.favorite.updateCurrentDestinations
 import space.celestia.celestiaui.favorite.updateCurrentScripts
 import space.celestia.celestiaui.help.HelpAction
-import space.celestia.celestiaui.help.NewHelpFragment
-import space.celestia.celestiaui.info.InfoFragment
+import space.celestia.mobilecelestia.help.NewHelpFragment
+import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.mobilecelestia.loading.LoadingFragment
-import space.celestia.celestiaui.resource.AddonFragment
-import space.celestia.celestiaui.resource.AddonManagerFragment
+import space.celestia.mobilecelestia.resource.AddonDownloadFragment
+import space.celestia.mobilecelestia.resource.AddonFragment
+import space.celestia.mobilecelestia.resource.AddonManagerFragment
 import space.celestia.celestiaui.resource.CommonWebFragment
-import space.celestia.celestiaui.resource.SimpleWebFragment
-import space.celestia.celestiaui.resource.WebBrowserFragment
+import space.celestia.mobilecelestia.resource.SimpleWebFragment
+import space.celestia.mobilecelestia.resource.WebBrowserFragment
 import space.celestia.celestiaui.resource.model.ResourceAPIService
-import space.celestia.celestiaui.search.SearchFragment
+import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.celestiaui.settings.viewmodel.CustomFont
-import space.celestia.celestiaui.settings.SettingsFragment
-import space.celestia.celestiaui.settings.TimeSettingsFragment
+import space.celestia.mobilecelestia.settings.SettingsFragment
+import space.celestia.mobilecelestia.settings.TimeSettingsFragment
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
-import space.celestia.celestiaui.travel.GoToContainerFragment
+import space.celestia.mobilecelestia.travel.GoToContainerFragment
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
@@ -163,6 +164,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
     AddonFragment.Listener,
+    AddonDownloadFragment.Listener,
     AddonManagerFragment.Listener,
     WebBrowserFragment.Listener,
     CommonWebFragment.Listener,
@@ -2031,44 +2033,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetFragment(AddonManagerFragment.newInstance())
     }
 
-    private fun openAddonDownload() {
-        val baseURL = "https://celestia.mobi/resources/categories"
-        var builder = baseURL.toUri()
-            .buildUpon()
-            .appendQueryParameter("lang", AppCore.getLanguage())
-            .appendQueryParameter("platform", "android")
-            .appendQueryParameter("supportsSafeArea", "true")
-            .appendQueryParameter("distribution", BuildConfig.FLAVOR)
-            .appendQueryParameter("theme", "dark")
-            .appendQueryParameter("transparentBackground", "true")
-            .appendQueryParameter("api", "2")
-        if (purchaseManager.canUseInAppPurchase())
-            builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
-        lifecycleScope.launch {
-            showBottomSheetFragment(WebBrowserFragment.newInstance(builder.build()))
-        }
+    private fun openAddonDownload() = lifecycleScope.launch {
+        showBottomSheetFragment(AddonDownloadFragment.newInstance())
     }
 
-    private fun openAddonCategory(info: BrowserPredefinedItem.CategoryInfo) {
-        val baseURL = if (info.isLeaf) "https://celestia.mobi/resources/category" else "https://celestia.mobi/resources/categories"
-        var builder = baseURL.toUri()
-            .buildUpon()
-            .appendQueryParameter("lang", language)
-            .appendQueryParameter("platform", "android")
-            .appendQueryParameter("supportsSafeArea", "true")
-            .appendQueryParameter("distribution", BuildConfig.FLAVOR)
-            .appendQueryParameter("theme", "dark")
-            .appendQueryParameter("transparentBackground", "true")
-            .appendQueryParameter("api", "2")
-        builder = if (info.isLeaf)
-            builder.appendQueryParameter("category", info.id)
-        else
-            builder.appendQueryParameter("parent", info.id)
-        if (purchaseManager.canUseInAppPurchase())
-            builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
-        lifecycleScope.launch {
-            showBottomSheetFragment(WebBrowserFragment.newInstance(builder.build()))
-        }
+    private fun openAddonCategory(info: BrowserPredefinedItem.CategoryInfo) = lifecycleScope.launch {
+        showBottomSheetFragment(AddonDownloadFragment.newInstance(info.isLeaf, info.id))
     }
 
     private fun showGoTo() = lifecycleScope.launch {

@@ -7,7 +7,7 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 
-package space.celestia.celestiaui.info
+package space.celestia.mobilecelestia.info
 
 import android.content.Context
 import android.os.Bundle
@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestia.Selection
 import space.celestia.celestiaui.compose.Mdc3Theme
+import space.celestia.celestiaui.info.InfoScreen
 import space.celestia.celestiaui.utils.CelestiaString
 
 @AndroidEntryPoint
@@ -89,25 +90,6 @@ class InfoFragment : Fragment() {
 
     companion object {
         const val ARG_OBJECT = "object"
-
-        fun getAvailableMarkers(): List<String> {
-            return listOf(
-                CelestiaString("Diamond", "Marker"),
-                CelestiaString("Triangle", "Marker"),
-                CelestiaString("Square", "Marker"),
-                CelestiaString("Filled Square", "Marker"),
-                CelestiaString("Plus", "Marker"),
-                CelestiaString("X", "Marker"),
-                CelestiaString("Left Arrow", "Marker"),
-                CelestiaString("Right Arrow", "Marker"),
-                CelestiaString("Up Arrow", "Marker"),
-                CelestiaString("Down Arrow", "Marker"),
-                CelestiaString("Circle", "Marker"),
-                CelestiaString("Disk", "Marker"),
-                CelestiaString("Crosshair", "Marker"),
-                CelestiaString("Unmark", "Unmark an object"),
-            )
-        }
 
         @JvmStatic
         fun newInstance(selection: Selection) =

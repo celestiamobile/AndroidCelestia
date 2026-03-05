@@ -9,11 +9,6 @@
 
 package space.celestia.celestiaui.browser
 
-import android.content.Context
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -37,11 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.core.os.BundleCompat
-import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
@@ -52,7 +43,6 @@ import space.celestia.celestiaui.R
 import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.celestiaui.browser.viewmodel.SubsystemPage
 import space.celestia.celestiaui.browser.viewmodel.SubsystemViewModel
-import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.info.InfoScreen
 import space.celestia.celestiaui.utils.CelestiaString
@@ -163,75 +153,3 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSu
     }
 }
 
-class SubsystemBrowserFragment : Fragment() {
-    interface Listener {
-        fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo)
-        fun browserLinkClicked(link: String)
-        fun browserRequestSubsystem(selection: Selection)
-        fun browserRequestOpenSubscriptionManagement()
-        fun browserRequestOpenRelatedAddons(objectPath: String)
-    }
-    private lateinit var selection: Selection
-    private var listener: Listener? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement SubsystemBrowserFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            selection = BundleCompat.getParcelable(it, ARG_OBJECT, Selection::class.java)!!
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    SubsystemBrowser(selection = selection, linkClicked = {
-                        listener?.browserLinkClicked(it)
-                    }, openSubsystem = { selection ->
-                        listener?.browserRequestSubsystem(selection)
-                    }, addonCategoryRequested = {
-                        listener?.browserAddonCategoryRequested(it)
-                    }, openRelatedAddons = {
-                        listener?.browserRequestOpenRelatedAddons(it)
-                    }, openSubscriptionManagement = {
-                        listener?.browserRequestOpenSubscriptionManagement()
-                    })
-                }
-            }
-        }
-    }
-
-    companion object {
-        const val ARG_OBJECT = "object"
-
-        @JvmStatic
-        fun newInstance(selection: Selection) =
-            SubsystemBrowserFragment().apply {
-                arguments = Bundle().apply {
-                    this.putParcelable(ARG_OBJECT, selection)
-                }
-            }
-    }
-}

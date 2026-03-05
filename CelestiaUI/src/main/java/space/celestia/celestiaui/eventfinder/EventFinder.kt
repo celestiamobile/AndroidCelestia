@@ -1,4 +1,4 @@
-// EventFinderContainerFragment.kt
+// EventFinder.kt
 //
 // Copyright (C) 2025, Celestia Development Team
 //
@@ -9,10 +9,6 @@
 
 package space.celestia.celestiaui.eventfinder
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -36,10 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
@@ -51,21 +44,20 @@ import kotlinx.coroutines.withContext
 import space.celestia.celestia.Body
 import space.celestia.celestia.EclipseFinder
 import space.celestia.celestiaui.R
-import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.eventfinder.viewmodel.EventFinderViewModel
 import space.celestia.celestiaui.eventfinder.viewmodel.Page
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.julianDay
 
-private sealed class EventFinderAlert {
+sealed class EventFinderAlert {
     data object ObjectNotFound : EventFinderAlert()
     data class Calculating(val finder: EclipseFinder): EventFinderAlert()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EventFinder() {
+fun EventFinder() {
     val scope = rememberCoroutineScope()
     val viewModel: EventFinderViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
@@ -171,30 +163,5 @@ private fun EventFinder() {
                 }, title = CelestiaString("Calculating…", "Calculating for eclipses"), confirmButtonText = CelestiaString("Cancel", ""), dismissOnBackPressOrClickOutside = false)
             }
         }
-    }
-}
-
-class EventFinderContainerFragment : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    EventFinder()
-                }
-            }
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance() =
-            EventFinderContainerFragment()
     }
 }

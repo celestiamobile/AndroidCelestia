@@ -9,13 +9,8 @@
 
 package space.celestia.celestiaui.settings
 
-import android.content.Context
 import android.os.Build
-import android.os.Bundle
 import android.view.Display
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -34,17 +29,12 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.fragment.app.Fragment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
-import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestiaui.R
-import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.purchase.SubscriptionBackingScreen
 import space.celestia.celestiaui.settings.viewmodel.Page
 import space.celestia.celestiaui.settings.viewmodel.SettingsAboutItem
@@ -232,62 +222,3 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
     }
 }
 
-@AndroidEntryPoint
-class SettingsFragment: Fragment() {
-    interface Listener {
-        fun settingsLinkClicked(link: String, localizable: Boolean)
-        fun settingsProvidePreferredDisplay(): Display?
-        fun settingsRefreshRateChanged(frameRateOption: Int)
-        fun settingsOpenSubscriptionManagement()
-    }
-
-    private var listener: Listener? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is Listener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement BrowserFragment.Listener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                Mdc3Theme {
-                    Settings(
-                        linkClicked = { link, localizable ->
-                            listener?.settingsLinkClicked(link, localizable)
-                        },
-                        providePreferredDisplay = {
-                            listener?.settingsProvidePreferredDisplay()
-                        },
-                        refreshRateChanged = {
-                            listener?.settingsRefreshRateChanged(it)
-                        },
-                        openSubscriptionManagement = {
-                            listener?.settingsOpenSubscriptionManagement()
-                        }
-                    )
-                }
-            }
-        }
-    }
-
-    companion object {
-        fun newInstance() = SettingsFragment()
-    }
-}
