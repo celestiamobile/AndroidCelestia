@@ -892,4 +892,38 @@ public class AppCore {
     private static native void c_setEnableAlignCameraToSurfaceOnLand(long pointer, boolean value);
     private native boolean c_getEnableAlignCameraToSurfaceOnLand(long pointer);
 
+    public void setHudMessagesEnabled(boolean value) {
+        c_setHudMessagesEnabled(pointer, value);
+    }
+
+    public void setHudOverlayImageEnabled(boolean value) {
+        c_setHudOverlayImageEnabled(pointer, value);
+    }
+
+    private static native void c_setHudMessagesEnabled(long pointer, boolean value);
+    private static native void c_setHudOverlayImageEnabled(long pointer, boolean value);
+
+    public void enableSelectionPointer() {
+        c_enableSelectionPointer(pointer);
+    }
+
+    public void disableSelectionPointer() {
+        c_disableSelectionPointer(pointer);
+    }
+
+    private static native void c_enableSelectionPointer(long pointer);
+    private static native void c_disableSelectionPointer(long pointer);
+
+    // State query methods for XR running view
+    public double getTimeScale() { return c_getTimeScale(pointer); }
+    public void setTimeScale(double timeScale) { c_setTimeScale(pointer, timeScale); }
+    public boolean isPaused() { return c_isPaused(pointer); }
+    public @NonNull String getMessageText() { return c_getMessageText(pointer); }
+    public boolean isLightTravelDelayEnabled() { return c_isLightTravelDelayEnabled(pointer); }
+
+    private static native double c_getTimeScale(long pointer);
+    private static native void c_setTimeScale(long pointer, double timeScale);
+    private static native boolean c_isPaused(long pointer);
+    private static native String c_getMessageText(long pointer);
+    private static native boolean c_isLightTravelDelayEnabled(long pointer);
 }

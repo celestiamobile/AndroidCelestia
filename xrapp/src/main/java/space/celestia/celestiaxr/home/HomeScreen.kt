@@ -40,11 +40,8 @@ fun HomeScreen(paddingValues: PaddingValues) {
     }
 
     when (state) {
-        AppStatusReporter.State.LOADING_FAILURE, AppStatusReporter.State.EXTERNAL_LOADING_FAILURE -> {
-            Text("Loading Failure")
-        }
         AppStatusReporter.State.FINISHED -> {
-            Text("Running")
+            RunningScreen(viewModel.appCore, viewModel.xrRenderer)
         }
         else -> {
             LoadingScreen(paddingValues)

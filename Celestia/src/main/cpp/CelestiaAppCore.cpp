@@ -1392,3 +1392,71 @@ Java_space_celestia_celestia_AppCore_c_1getTextEnterMode(JNIEnv *env, jclass cla
     auto core = reinterpret_cast<CelestiaCore *>(ptr);
     return static_cast<jint>(core->getTextEnterMode());
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1enableSelectionPointer(JNIEnv *env, jclass clazz,
+                                                               jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->enableSelectionPointer();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1disableSelectionPointer(JNIEnv *env, jclass clazz,
+                                                                jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->disableSelectionPointer();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setHudMessagesEnabled(JNIEnv *env, jclass clazz,
+                                                              jlong pointer, jboolean value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->enableHudMessages(value == JNI_TRUE);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setHudOverlayImageEnabled(JNIEnv *env, jclass clazz,
+                                                                  jlong pointer, jboolean value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->enableHudOverlayImage(value == JNI_TRUE);
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL
+Java_space_celestia_celestia_AppCore_c_1getTimeScale(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getSimulation()->getTimeScale();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setTimeScale(JNIEnv *env, jclass clazz, jlong pointer, jdouble time_scale) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getSimulation()->setTimeScale(time_scale);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_AppCore_c_1isPaused(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getSimulation()->getPauseState() ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_celestia_AppCore_c_1getMessageText(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto messages = core->messageText();
+    return env->NewStringUTF(core->messageText().c_str());
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_AppCore_c_1isLightTravelDelayEnabled(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getLightDelayActive() ? JNI_TRUE : JNI_FALSE;
+}

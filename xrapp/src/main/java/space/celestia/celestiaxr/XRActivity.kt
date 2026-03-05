@@ -11,10 +11,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.XRRenderer
 import space.celestia.celestiafoundation.utils.AssetUtils
@@ -22,7 +24,9 @@ import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
+import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.celestiaui.settings.viewmodel.CustomFont
+import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
@@ -31,7 +35,9 @@ import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.Locale
+import java.util.concurrent.Executor
 import javax.inject.Inject
+import kotlin.collections.iterator
 
 @AndroidEntryPoint
 class XRActivity : ComponentActivity() {
@@ -41,6 +47,9 @@ class XRActivity : ComponentActivity() {
 
     @Inject
     lateinit var xrRenderer: XRRenderer
+
+    @Inject
+    lateinit var executor: Executor
 
     @Inject
     lateinit var defaultFilePaths: FilePaths
@@ -60,6 +69,10 @@ class XRActivity : ComponentActivity() {
     @AppSettings
     @Inject
     lateinit var appSettings: PreferenceManager
+
+    @CoreSettings
+    @Inject
+    lateinit var coreSettings: PreferenceManager
 
     private val celestiaConfigFilePath: String
         get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath] ?: defaultFilePaths.configFilePath
@@ -126,6 +139,7 @@ class XRActivity : ComponentActivity() {
         if (!HomeActivity.hasOpenedActivity) {
             lifecycleScope.launch {
                 delay(100)
+                // TODO: should also open from OpenXR if this is dismissed
                 if (isDestroyed || isFinishing) return@launch
 
                 val panelIntent = Intent(this@XRActivity, HomeActivity::class.java).apply {
@@ -165,12 +179,6 @@ class XRActivity : ComponentActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 copyAssetIfNeeded()
-                if (!isActive) return@launch
-//                val migrationResult = migrateData()
-//                if (migrationResult != null) {
-//                    appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationSourceDirectory] = null
-//                    appSettingsNoBackup[PreferenceManager.PredefinedKey.MigrationTargetDirectory] = null
-//                }
                 if (!isActive) return@launch
                 createAddonFolder()
                 if (!isActive) return@launch
@@ -237,14 +245,128 @@ class XRActivity : ComponentActivity() {
         appStatusReporter.updateStatus(CelestiaString("Loading Celestia failed…", "Celestia loading failed"))
     }
 
-    private fun celestiaLoadingSucceeded()/* = lifecycleScope.launch(executor.asCoroutineDispatcher())*/ {
-//        readSettings()
+    private fun celestiaLoadingSucceeded() = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+        readSettings()
         appStatusReporter.updateState(AppStatusReporter.State.FINISHED)
     }
 
     private fun celestiaLoadingFinishedAsync() {
         lifecycleScope.launch {
             celestiaLoadingFinished()
+        }
+    }
+
+    private fun readDefaultSetting(): Map<String, Any> {
+        try {
+            val jsonFileContent = AssetUtils.readFileToText(this, "defaults.json")
+            val json = JSONObject(jsonFileContent)
+            val map = HashMap<String, Any>()
+            for (key in json.keys()) {
+                map[key] = json[key]
+            }
+            return map
+        } catch (ignored: Throwable) {}
+        return mapOf()
+    }
+
+    private fun readSettings() {
+        val map = readDefaultSetting()
+        val bools = HashMap<String, Boolean>()
+        val ints = HashMap<String, Int>()
+        val doubles = HashMap<String, Double>()
+
+        fun getDefaultInt(key: String): Int? {
+            val value = map[key]
+            if (value is Int) {
+                return value
+            }
+            return null
+        }
+
+        fun getDefaultDouble(key: String): Double? {
+            val value = map[key]
+            if (value is Double) {
+                return value
+            }
+            return null
+        }
+
+        fun getDefaultBool(key: String): Boolean? {
+            val value = getDefaultInt(key)
+            if (value != null) {
+                if (value == 1) { return true }
+                if (value == 0) { return false }
+            }
+            return null
+        }
+
+        fun getCustomInt(key: String): Int? {
+            val value = coreSettings[PreferenceManager.CustomKey(key)] ?: return null
+            return try {
+                value.toInt()
+            } catch (_: NumberFormatException) {
+                null
+            }
+        }
+
+        fun getCustomBool(key: String): Boolean? {
+            val value = getCustomInt(key)
+            if (value != null) {
+                if (value == 1) { return true }
+                if (value == 0) { return false }
+            }
+            return null
+        }
+
+        fun getCustomDouble(key: String): Double? {
+            val value = coreSettings[PreferenceManager.CustomKey(key)] ?: return null
+            return try {
+                value.toDouble()
+            } catch (_: NumberFormatException) {
+                null
+            }
+        }
+
+        for (key in SettingsKey.allBooleanCases) {
+            val def = getDefaultBool(key.valueString)
+            if (def != null) {
+                bools[key.valueString] = def
+            }
+            val cus = getCustomBool(key.valueString)
+            if (cus != null)
+                bools[key.valueString] = cus
+        }
+
+        for (key in SettingsKey.allIntCases) {
+            val def = getDefaultInt(key.valueString)
+            if (def != null) {
+                ints[key.valueString] = def
+            }
+            val cus = getCustomInt(key.valueString)
+            if (cus != null)
+                ints[key.valueString] = cus
+        }
+
+        for (key in SettingsKey.allDoubleCases) {
+            val def = getDefaultDouble(key.valueString)
+            if (def != null) {
+                doubles[key.valueString] = def
+            }
+            val cus = getCustomDouble(key.valueString)
+            if (cus != null)
+                doubles[key.valueString] = cus
+        }
+
+        for ((key, value) in bools) {
+            appCore.setBooleanValueForField(key, value)
+        }
+
+        for ((key, value) in ints) {
+            appCore.setIntValueForField(key, value)
+        }
+
+        for ((key, value) in doubles) {
+            appCore.setDoubleValueForField(key, value)
         }
     }
 
@@ -319,6 +441,37 @@ class XRActivity : ComponentActivity() {
             return false
         }
 
+        val preferredInstalledFont = availableInstalledFonts[language] ?: defaultInstalledFont
+        val normalFont = preferredInstalledFont?.first
+        val boldFont = preferredInstalledFont?.second
+        if (normalFont != null) {
+            appCore.setFont(normalFont.path, normalFont.ttcIndex, 9)
+            appCore.setRendererFont(
+                normalFont.path,
+                normalFont.ttcIndex,
+                9,
+                AppCore.RENDER_FONT_STYLE_NORMAL
+            )
+        }
+        if (boldFont != null) {
+            appCore.setTitleFont(
+                boldFont.path,
+                boldFont.ttcIndex,
+                15
+            )
+            appCore.setRendererFont(
+                boldFont.path,
+                boldFont.ttcIndex,
+                15,
+                AppCore.RENDER_FONT_STYLE_LARGE
+            )
+        }
+
+        appCore.hudDetail = 0
+        appCore.setHudMessagesEnabled(false)
+        appCore.disableSelectionPointer()
+        appCore.setHudOverlayImageEnabled(false)
+
         appCore.tick()
         appCore.start()
 
@@ -327,7 +480,7 @@ class XRActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "133"
+        private const val CURRENT_DATA_VERSION = "134"
         // 133 1.9.10, Localization update data update (ab865c0979679cafdd962d2d726e819acbc26cb0)
 
         private const val CELESTIA_ROOT_FOLDER_NAME = "CelestiaResources"
