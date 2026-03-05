@@ -10,13 +10,11 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import space.celestia.celestiaui.compose.Mdc3Theme
-import space.celestia.celestiaui.help.HelpAction
 import space.celestia.celestiaui.help.NewHelpScreen
 
 @AndroidEntryPoint
 class NewHelpFragment: Fragment() {
     interface Listener {
-        fun helpActionSelected(action: HelpAction)
         fun helpLinkClicked(link: String)
     }
 
@@ -49,8 +47,6 @@ class NewHelpFragment: Fragment() {
                 Mdc3Theme {
                     NewHelpScreen(linkClicked = {
                         listener?.helpLinkClicked(it)
-                    }, actionSelected = {
-                        listener?.helpActionSelected(it)
                     })
                 }
             }

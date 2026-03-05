@@ -22,12 +22,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.help.viewmodel.HelpViewModel
 import space.celestia.celestiaui.utils.CelestiaString
 
 enum class HelpAction {
@@ -35,7 +40,7 @@ enum class HelpAction {
 }
 
 @Composable
-fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, linkClicked: (String) -> Unit, actionSelected: (HelpAction) -> Unit) {
+fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, linkClicked: (String) -> Unit) {
     val staticHelpDescriptionItems: List<DescriptionItem> by lazy { listOf(
         DescriptionItem(
             CelestiaString("Tap the mode button on the sidebar to switch between object mode and camera mode.", ""), R.drawable.tutorial_switch_mode),
@@ -44,6 +49,8 @@ fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, link
         DescriptionItem(
             CelestiaString("In camera mode, drag to move field of view.\n\nPinch to zoom in/out field of view.", ""), R.drawable.tutorial_mode_camera)
     ) }
+    val viewModel: HelpViewModel = hiltViewModel()
+    val scope = rememberCoroutineScope()
     val staticHelpURLItems: List<URLItem> by lazy { listOf(
         URLItem(CelestiaString("Mouse/Keyboard Controls", "Guide to control Celestia with a mouse/keyboard"), "celestia://article/BE1B5023-46B6-1F10-F15F-3B3F02F30300"),
         URLItem(CelestiaString("Use Add-ons and Scripts", "URL for Use Add-ons and Scripts wiki"), "celestia://article/D1A96BFA-00BB-0089-F361-10DD886C8A4F"),
@@ -88,7 +95,13 @@ fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, link
 
         items(staticHelpActionItems) {
             FilledTonalButton(modifier = buttonModifier, onClick = {
-                actionSelected(it.action)
+                when (it.action) {
+                    HelpAction.RunDemo -> {
+                        scope.launch(viewModel.executor.asCoroutineDispatcher()) {
+                            viewModel.appCore.runDemo()
+                        }
+                    }
+                }
             }) {
                 Text(text = it.title)
             }

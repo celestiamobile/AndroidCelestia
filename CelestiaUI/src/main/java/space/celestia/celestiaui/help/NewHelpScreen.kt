@@ -9,7 +9,7 @@ import space.celestia.celestiaui.help.viewmodel.HelpViewModel
 import space.celestia.celestiaui.resource.WebPage
 
 @Composable
-fun NewHelpScreen(linkClicked: (String) -> Unit, actionSelected: (HelpAction) -> Unit) {
+fun NewHelpScreen(linkClicked: (String) -> Unit) {
     val viewModel: HelpViewModel = hiltViewModel()
     Scaffold { paddingValues ->
         WebPage(
@@ -20,8 +20,6 @@ fun NewHelpScreen(linkClicked: (String) -> Unit, actionSelected: (HelpAction) ->
             fallbackContent = { modifier, paddingValues ->
                 HelpScreen(modifier = modifier, paddingValues = paddingValues, linkClicked = { link ->
                     linkClicked(link)
-                }, actionSelected = { action ->
-                    actionSelected(action)
                 })
             }
         )

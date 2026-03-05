@@ -111,7 +111,6 @@ import space.celestia.celestiaui.favorite.getCurrentBookmarks
 import space.celestia.celestiaui.favorite.updateCurrentBookmarks
 import space.celestia.celestiaui.favorite.updateCurrentDestinations
 import space.celestia.celestiaui.favorite.updateCurrentScripts
-import space.celestia.celestiaui.help.HelpAction
 import space.celestia.mobilecelestia.help.NewHelpFragment
 import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.celestiaui.info.model.CelestiaAction
@@ -1493,14 +1492,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean) {
         openLink(link, localizable)
-    }
-
-    override fun helpActionSelected(action: HelpAction) {
-        when (action) {
-            HelpAction.RunDemo -> {
-                lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.runDemo() }
-            }
-        }
     }
 
     override fun helpLinkClicked(link: String) {
