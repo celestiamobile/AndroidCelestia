@@ -10,29 +10,29 @@
 package space.celestia.mobilecelestia.settings
 
 import android.os.Build
+import space.celestia.celestiaui.common.CommonSectionV2
+import space.celestia.celestiaui.control.viewmodel.JoystickAction
 import space.celestia.celestiaui.settings.viewmodel.Footer
 import space.celestia.celestiaui.settings.viewmodel.SettingsAboutItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsActionItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsCommonItem
+import space.celestia.celestiaui.settings.viewmodel.SettingsCurrentTimeItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsDataLocationItem
+import space.celestia.celestiaui.settings.viewmodel.SettingsFontItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.settings.viewmodel.SettingsLanguageItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsPreferenceSelectionItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsPreferenceSliderItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsPreferenceSwitchItem
+import space.celestia.celestiaui.settings.viewmodel.SettingsRefreshRateItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsRenderInfoItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsSelectionSingleItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsSliderItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsSwitchItem
+import space.celestia.celestiaui.settings.viewmodel.SettingsToolbarItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsUnknownTextItem
 import space.celestia.celestiaui.settings.viewmodel.settingUnmarkAllID
-import space.celestia.mobilecelestia.celestia.CelestiaInteraction
-import space.celestia.celestiaui.common.CommonSectionV2
-import space.celestia.celestiaui.settings.viewmodel.SettingsCurrentTimeItem
-import space.celestia.celestiaui.settings.viewmodel.SettingsFontItem
-import space.celestia.celestiaui.settings.viewmodel.SettingsRefreshRateItem
-import space.celestia.celestiaui.settings.viewmodel.SettingsToolbarItem
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
 
@@ -256,21 +256,21 @@ private val staticRendererItems: List<SettingsItem> = listOf(
 )
 
 val gameControllerRemapOptions = listOf(
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE, CelestiaString("None", "Empty HUD display")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER, CelestiaString("Travel Faster", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER, CelestiaString("Travel Slower", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_STOP_SPEED, CelestiaString("Stop", "Interupt the process of finding eclipse/Set traveling speed to 0")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_REVERSE_SPEED, CelestiaString("Reverse Travel Direction", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_REVERSE_ORIENTATION, CelestiaString("Reverse Observer Orientation", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_TAP_CENTER, CelestiaString("Tap Center", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_GO_TO, CelestiaString("Go to Object", "")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ESC, CelestiaString("Esc", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP, CelestiaString("Pitch Up", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN, CelestiaString("Pitch Down", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_YAW_LEFT, CelestiaString("Yaw Left", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_YAW_RIGHT, CelestiaString("Yaw Right", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT, CelestiaString("Roll Left", "Game controller action")),
-    Pair(CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT, CelestiaString("Roll Right", "Game controller action")),
+    Pair(JoystickAction.Key.None.key, CelestiaString("None", "Empty HUD display")),
+    Pair(JoystickAction.Key.Celestia.MoveFaster.key, CelestiaString("Travel Faster", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.MoveSlower.key, CelestiaString("Travel Slower", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.StopSpeed.key, CelestiaString("Stop", "Interupt the process of finding eclipse/Set traveling speed to 0")),
+    Pair(JoystickAction.Key.Celestia.ReverseSpeed.key, CelestiaString("Reverse Travel Direction", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.ReverseOrientation.key, CelestiaString("Reverse Observer Orientation", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.TapCenter.key, CelestiaString("Tap Center", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.GoTo.key, CelestiaString("Go to Object", "")),
+    Pair(JoystickAction.Key.Celestia.Esc.key, CelestiaString("Esc", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.PitchUp.key, CelestiaString("Pitch Up", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.PitchDown.key, CelestiaString("Pitch Down", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.YawLeft.key, CelestiaString("Yaw Left", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.YawRight.key, CelestiaString("Yaw Right", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.RollLeft.key, CelestiaString("Roll Left", "Game controller action")),
+    Pair(JoystickAction.Key.Celestia.RollRight.key, CelestiaString("Roll Right", "Game controller action")),
 )
 
 private val staticAdvancedItems: List<SettingsItem> = listOf(
@@ -304,18 +304,18 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
         listOf(
             SettingsCommonItem.Section(
                 listOf(
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapA, displayName = CelestiaString("A / X", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapB, displayName = CelestiaString("B / Circle", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapX, displayName = CelestiaString("X / Square", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapY, displayName = CelestiaString("Y / Triangle", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadUp, displayName = CelestiaString("D-pad Up", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadDown, displayName = CelestiaString("D-pad Down", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadLeft, displayName = CelestiaString("D-pad Left", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadRight, displayName = CelestiaString("D-pad Right", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLB, displayName = CelestiaString("LB / L1", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLT, displayName = CelestiaString("LT / L2", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRB, displayName = CelestiaString("RB / R1", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_NONE),
-                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRT, displayName = CelestiaString("RT / R2", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = CelestiaInteraction.GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapA, displayName = CelestiaString("A / X", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.Celestia.MoveSlower.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapB, displayName = CelestiaString("B / Circle", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.None.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapX, displayName = CelestiaString("X / Square", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.Celestia.MoveFaster.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapY, displayName = CelestiaString("Y / Triangle", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.None.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadUp, displayName = CelestiaString("D-pad Up", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.Celestia.PitchUp.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadDown, displayName = CelestiaString("D-pad Down", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.Celestia.PitchDown.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadLeft, displayName = CelestiaString("D-pad Left", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.Celestia.RollLeft.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapDpadRight, displayName = CelestiaString("D-pad Right", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.Celestia.RollRight.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLB, displayName = CelestiaString("LB / L1", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.None.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapLT, displayName = CelestiaString("LT / L2", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.Celestia.RollLeft.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRB, displayName = CelestiaString("RB / R1", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.None.key),
+                    SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ControllerRemapRT, displayName = CelestiaString("RT / R2", "Game controller button"), options = gameControllerRemapOptions, defaultSelection = JoystickAction.Key.Celestia.RollRight.key),
                 ),
                 header = CelestiaString("Buttons", "Settings for game controller buttons"),
             ),

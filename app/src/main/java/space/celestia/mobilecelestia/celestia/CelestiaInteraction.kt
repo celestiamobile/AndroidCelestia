@@ -27,6 +27,7 @@ import android.view.View
 import androidx.annotation.RequiresApi
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
+import space.celestia.celestiaui.control.viewmodel.JoystickAction
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.utils.PreferenceManager
@@ -562,87 +563,34 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         return false
     }
 
-    private fun joystickButtonKeyAction(keyCode: Int): Int {
+    private fun joystickButtonKeyAction(keyCode: Int): JoystickAction {
         return when (keyCode) {
-            KeyEvent.KEYCODE_BUTTON_A -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapA]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER }
-            KeyEvent.KEYCODE_BUTTON_B -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapB]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_NONE }
-            KeyEvent.KEYCODE_BUTTON_X -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapX]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER }
-            KeyEvent.KEYCODE_BUTTON_Y -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapY]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_NONE }
-            KeyEvent.KEYCODE_DPAD_UP -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadUp]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP }
-            KeyEvent.KEYCODE_DPAD_DOWN -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadDown]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN }
-            KeyEvent.KEYCODE_DPAD_LEFT -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadLeft]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_YAW_LEFT }
-            KeyEvent.KEYCODE_DPAD_RIGHT -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadRight]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_YAW_RIGHT }
-            KeyEvent.KEYCODE_BUTTON_L1 -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapLB]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_NONE }
-            KeyEvent.KEYCODE_BUTTON_L2 -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapLT]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT }
-            KeyEvent.KEYCODE_BUTTON_R1 -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapRB]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_NONE }
-            KeyEvent.KEYCODE_BUTTON_R2 -> { appSettings[PreferenceManager.PredefinedKey.ControllerRemapRT]?.toIntOrNull() ?: GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT }
-            KeyEvent.KEYCODE_BUTTON_START -> GAME_CONTROLLER_BUTTON_ACTION_SHOW_MENU
-            else -> GAME_CONTROLLER_BUTTON_ACTION_NONE
+            KeyEvent.KEYCODE_BUTTON_A -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapA]?.toIntOrNull(), JoystickAction.Key.Celestia.MoveSlower) }
+            KeyEvent.KEYCODE_BUTTON_B -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapB]?.toIntOrNull(), JoystickAction.Key.None) }
+            KeyEvent.KEYCODE_BUTTON_X -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapX]?.toIntOrNull(), JoystickAction.Key.Celestia.MoveFaster) }
+            KeyEvent.KEYCODE_BUTTON_Y -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapY]?.toIntOrNull(), JoystickAction.Key.None) }
+            KeyEvent.KEYCODE_DPAD_UP -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadUp]?.toIntOrNull(), JoystickAction.Key.Celestia.PitchUp) }
+            KeyEvent.KEYCODE_DPAD_DOWN -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadDown]?.toIntOrNull(), JoystickAction.Key.Celestia.PitchDown) }
+            KeyEvent.KEYCODE_DPAD_LEFT -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadLeft]?.toIntOrNull(), JoystickAction.Key.Celestia.RollLeft) }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadRight]?.toIntOrNull(), JoystickAction.Key.Celestia.RollRight) }
+            KeyEvent.KEYCODE_BUTTON_L1 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapLB]?.toIntOrNull(), JoystickAction.Key.None) }
+            KeyEvent.KEYCODE_BUTTON_L2 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapLT]?.toIntOrNull(), JoystickAction.Key.Celestia.RollLeft) }
+            KeyEvent.KEYCODE_BUTTON_R1 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapRB]?.toIntOrNull(), JoystickAction.Key.None) }
+            KeyEvent.KEYCODE_BUTTON_R2 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapRT]?.toIntOrNull(), JoystickAction.Key.Celestia.RollRight) }
+            KeyEvent.KEYCODE_BUTTON_START -> JoystickAction.Key.ShowMenu
+            else -> JoystickAction.Key.None
         }
     }
 
     private fun processJoystickButton(keyCode: Int, up: Boolean) {
-        when (joystickButtonKeyAction(keyCode)) {
-            GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER -> {
-                executor.execute { if (up) appCore.joystickButtonUp(KeyEvent.KEYCODE_BUTTON_X) else appCore.joystickButtonDown(KeyEvent.KEYCODE_BUTTON_X)  }
+        when (val action = joystickButtonKeyAction(keyCode)) {
+            is JoystickAction.Key.Celestia -> {
+               action.invoke(appCore, executor, up)
             }
-            GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER -> {
-                executor.execute { if (up) appCore.joystickButtonUp(KeyEvent.KEYCODE_BUTTON_A) else appCore.joystickButtonDown(KeyEvent.KEYCODE_BUTTON_A)  }
+            JoystickAction.Key.None -> {}
+            JoystickAction.Key.ShowMenu -> {
+                showMenu()
             }
-            GAME_CONTROLLER_BUTTON_ACTION_STOP_SPEED -> {
-                if (up) {
-                    executor.execute { appCore.perform(CelestiaAction.Stop) }
-                }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_REVERSE_SPEED -> {
-                if (up) {
-                    executor.execute { appCore.perform(CelestiaAction.ReverseSpeed) }
-                }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_REVERSE_ORIENTATION -> {
-                if (up) {
-                    executor.execute { appCore.simulation.reverseObserverOrientation() }
-                }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP -> {
-                executor.execute { if (up) appCore.keyUp(26) else appCore.keyDown(26)  }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN -> {
-                executor.execute { if (up) appCore.keyUp(32) else appCore.keyDown(32)  }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_YAW_LEFT -> {
-                executor.execute { if (up) appCore.keyUp(28) else appCore.keyDown(28)  }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_YAW_RIGHT -> {
-                executor.execute { if (up) appCore.keyUp(30) else appCore.keyDown(30)  }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT -> {
-                executor.execute { if (up) appCore.keyUp(31) else appCore.keyDown(31)  }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT -> {
-                executor.execute { if (up) appCore.keyUp(33) else appCore.keyDown(33)  }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_TAP_CENTER -> {
-                executor.execute {
-                    val width = appCore.width
-                    val height = appCore.height
-                    val center = PointF(width.toFloat() / 2.0f, height.toFloat() / 2.0f)
-                    if (up) appCore.mouseButtonUp(AppCore.MOUSE_BUTTON_LEFT, center, 0) else appCore.mouseButtonDown(AppCore.MOUSE_BUTTON_LEFT, center, 0)
-                }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_GO_TO -> {
-                if (up) {
-                    executor.execute { appCore.perform(CelestiaAction.GoTo) }
-                }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_ESC -> {
-                if (up) {
-                    executor.execute { appCore.perform(CelestiaAction.CancelScript) }
-                }
-            }
-            GAME_CONTROLLER_BUTTON_ACTION_SHOW_MENU -> { showMenu() }
-            GAME_CONTROLLER_BUTTON_ACTION_NONE -> { }
-            else -> { }
         }
     }
 
@@ -775,24 +723,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     companion object {
-        private const val TAG = "CelestiaView"
-
-        const val GAME_CONTROLLER_BUTTON_ACTION_NONE = 0
-        const val GAME_CONTROLLER_BUTTON_ACTION_MOVE_FASTER = 1
-        const val GAME_CONTROLLER_BUTTON_ACTION_MOVE_SLOWER = 2
-        const val GAME_CONTROLLER_BUTTON_ACTION_STOP_SPEED = 3
-        const val GAME_CONTROLLER_BUTTON_ACTION_REVERSE_SPEED = 4
-        const val GAME_CONTROLLER_BUTTON_ACTION_REVERSE_ORIENTATION = 5
-        const val GAME_CONTROLLER_BUTTON_ACTION_TAP_CENTER = 6
-        const val GAME_CONTROLLER_BUTTON_ACTION_GO_TO = 7
-        const val GAME_CONTROLLER_BUTTON_ACTION_ESC = 8
-        const val GAME_CONTROLLER_BUTTON_ACTION_PITCH_UP = 9
-        const val GAME_CONTROLLER_BUTTON_ACTION_PITCH_DOWN = 10
-        const val GAME_CONTROLLER_BUTTON_ACTION_YAW_LEFT = 11
-        const val GAME_CONTROLLER_BUTTON_ACTION_YAW_RIGHT = 12
-        const val GAME_CONTROLLER_BUTTON_ACTION_ROLL_LEFT = 13
-        const val GAME_CONTROLLER_BUTTON_ACTION_ROLL_RIGHT = 14
-        const val GAME_CONTROLLER_BUTTON_ACTION_SHOW_MENU = 15
+        private const val TAG = "Interaction"
     }
 }
 
