@@ -17,22 +17,20 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.XRRenderer
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.FilePaths
-import space.celestia.celestiaxr.common.CelestiaExecutor
-import space.celestia.celestiaui.common.CommonSectionV2
-import space.celestia.celestiaui.di.ApplicationId
 import space.celestia.celestiaui.control.viewmodel.SessionSettings
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
+import space.celestia.celestiaui.di.ApplicationId
 import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.celestiaui.di.Flavor
-import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
-import space.celestia.celestiaui.settings.viewmodel.SettingsItem
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaxr.BuildConfig
+import space.celestia.celestiaxr.common.CelestiaExecutor
+import space.celestia.celestiaxr.settings.SettingsEntryProviderImpl
 import java.lang.reflect.Type
 import java.util.Date
 import java.util.concurrent.Executor
@@ -163,18 +161,12 @@ object AppModule {
     @Provides
     @Flavor
     fun provideFlavor(): String {
-        return ""
+        return "sideload" // TODO: fix this
     }
 
     @Singleton
     @Provides
     fun provideSettingsEntryProvider(): SettingsEntryProvider {
         return SettingsEntryProviderImpl()
-    }
-}
-
-class SettingsEntryProviderImpl: SettingsEntryProvider {
-    override fun settings(purchaseManager: PurchaseManager): List<CommonSectionV2<SettingsItem>> {
-        return listOf()
     }
 }

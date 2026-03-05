@@ -41,7 +41,7 @@ fun HomeScreen(paddingValues: PaddingValues) {
 
     when (state) {
         AppStatusReporter.State.FINISHED -> {
-            RunningScreen(viewModel.appCore, viewModel.xrRenderer)
+            RunningScreen()
         }
         else -> {
             LoadingScreen(paddingValues)

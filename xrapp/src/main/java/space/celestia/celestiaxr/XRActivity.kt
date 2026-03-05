@@ -19,6 +19,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.XRRenderer
+import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.deleteRecursively
@@ -73,6 +74,9 @@ class XRActivity : ComponentActivity() {
     @CoreSettings
     @Inject
     lateinit var coreSettings: PreferenceManager
+
+    @Inject
+    lateinit var resourceManager: ResourceManager
 
     private val celestiaConfigFilePath: String
         get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath] ?: defaultFilePaths.configFilePath
@@ -265,7 +269,7 @@ class XRActivity : ComponentActivity() {
                 map[key] = json[key]
             }
             return map
-        } catch (ignored: Throwable) {}
+        } catch (_: Throwable) {}
         return mapOf()
     }
 
@@ -370,7 +374,10 @@ class XRActivity : ComponentActivity() {
         }
     }
 
-    private fun celestiaLoadingFinished() {}
+    private fun celestiaLoadingFinished() {
+        resourceManager.addonDirectory = addonPaths.firstOrNull()
+        resourceManager.scriptDirectory = extraScriptPaths.firstOrNull()
+    }
 
     private fun createAddonFolder() {
         val dataAddonDir = getExternalFilesDir(CELESTIA_EXTRA_FOLDER_NAME)
@@ -494,7 +501,7 @@ class XRActivity : ComponentActivity() {
         private var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
         private var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
 
-        private const val TAG = "CelestiaXR"
+        private const val TAG = "XRActivity"
 
         init {
             System.loadLibrary("celestia")
