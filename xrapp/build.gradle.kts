@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.parcelize)
 }
 
 android {
@@ -121,7 +122,6 @@ dependencies {
 
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.fragment.compose)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

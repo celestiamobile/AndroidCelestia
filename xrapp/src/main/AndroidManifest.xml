@@ -18,6 +18,7 @@
     <!-- If building externally with the OpenXR loader AAR, this would be merged in automatically. -->
     <uses-permission android:name="org.khronos.openxr.permission.OPENXR" />
     <uses-permission android:name="org.khronos.openxr.permission.OPENXR_SYSTEM" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <queries>
         <!-- to talk to the broker -->
@@ -45,16 +46,19 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".home.HomeActivity"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTask"
-            android:screenOrientation="landscape"
             android:configChanges="screenSize|screenLayout|orientation|keyboardHidden|keyboard|navigation|uiMode">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.oculus.intent.category.2D" />
                 <category android:name="com.oculus.intent.category.OVERLAY_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".tool.ToolActivity"
+            android:exported="false"
+            android:configChanges="screenSize|screenLayout|orientation|keyboardHidden|keyboard|navigation|uiMode" />
 
         <activity
             android:name=".XRActivity"

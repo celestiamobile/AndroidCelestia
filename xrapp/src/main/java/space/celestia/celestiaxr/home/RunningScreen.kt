@@ -1,9 +1,13 @@
 package space.celestia.celestiaxr.home
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -21,11 +26,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import space.celestia.celestia.AppCore
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import space.celestia.celestia.Utils
-import space.celestia.celestia.XRRenderer
+import space.celestia.celestiaxr.tool.Tool
+import space.celestia.celestiaxr.tool.ToolActivity
+import space.celestia.celestiaxr.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DateFormat
@@ -42,7 +50,8 @@ data class SimulationState(
 )
 
 @Composable
-fun RunningScreen(appCore: AppCore, xrRenderer: XRRenderer) {
+fun RunningScreen() {
+    val viewModel: MainViewModel = hiltViewModel()
     var simulationState by remember { mutableStateOf(SimulationState()) }
     val dateFormatter = remember { DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.getDefault()) }
     val scope = rememberCoroutineScope()
@@ -50,18 +59,18 @@ fun RunningScreen(appCore: AppCore, xrRenderer: XRRenderer) {
     DisposableEffect(Unit) {
         val job = scope.launch {
             while (true) {
-                xrRenderer.enqueueTask {
-                    val time = appCore.simulation.time
-                    val timeScale = appCore.timeScale
-                    val isPaused = appCore.isPaused
-                    val observer = appCore.simulation.activeObserver
+                viewModel.xrRenderer.enqueueTask {
+                    val time = viewModel.appCore.simulation.time
+                    val timeScale = viewModel.appCore.timeScale
+                    val isPaused = viewModel.appCore.isPaused
+                    val observer = viewModel.appCore.simulation.activeObserver
                     val speed = observer.speed
                     val coordinateSystem = observer.coordinateSystem
-                    val selection = appCore.simulation.selection
+                    val selection = viewModel.appCore.simulation.selection
                     val selectedName = if (!selection.isEmpty) {
-                        appCore.simulation.universe.getNameForSelection(selection)
+                        viewModel.appCore.simulation.universe.getNameForSelection(selection)
                     } else ""
-                    val messageText = appCore.messageText
+                    val messageText = viewModel.appCore.messageText
 
                     scope.launch {
                         simulationState = SimulationState(
@@ -95,6 +104,10 @@ fun RunningScreen(appCore: AppCore, xrRenderer: XRRenderer) {
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Tools Section
+            SectionHeader("Tools")
+            ToolsSection()
+
             // Stats Section
             SectionHeader("Stats")
             StatsSection(simulationState, dateFormatter)
@@ -117,6 +130,34 @@ private fun SectionHeader(title: String) {
         color = MaterialTheme.colorScheme.onBackground,
         modifier = Modifier.padding(bottom = 4.dp)
     )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ToolsSection() {
+    val context = LocalContext.current
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Tool.all.forEach { tool ->
+            OutlinedButton(
+                onClick = {
+                    when (tool) {
+                        is Tool.Page -> {
+                            val intent = Intent(context, ToolActivity::class.java)
+                            intent.putExtra(ToolActivity.EXTRA_TOOL, tool)
+                            context.startActivity(intent)
+                        }
+                        is Tool.Pause -> { /* TODO: handle pause action directly */ }
+                    }
+                },
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text(text = tool.title, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
 }
 
 @Composable
