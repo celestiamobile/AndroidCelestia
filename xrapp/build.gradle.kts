@@ -60,14 +60,6 @@ kotlin {
         jvmTarget = JvmTarget.JVM_21
     }
 }
-// Custom tasks
-//val copyLocalizedFiles by tasks.registering(Exec::class) {
-//    println("Copying localized files")
-//    workingDir = projectDir
-//    executable = "/bin/sh"
-//    args = listOf("copy_localized_files.sh")
-//}
-
 val copyGeneralData by tasks.registering(Exec::class) {
     workingDir = projectDir
     executable = "/bin/sh"
@@ -80,18 +72,14 @@ val convertPO by tasks.registering(Exec::class) {
     executable = "/bin/sh"
     args = listOf("convert_po.sh", File(File(File(projectDir, "src"), "main"), "assets").absolutePath)
 }
-
-//// Task ordering
-//copyGeneralData {
-//    mustRunAfter(copyLocalizedFiles)
-//}
 //
+//// Task ordering
 //convertPO {
 //    mustRunAfter(copyGeneralData)
 //}
 //
 //tasks.preBuild {
-//    dependsOn(copyLocalizedFiles, copyGeneralData, convertPO)
+//    dependsOn(copyGeneralData, convertPO)
 //}
 
 dependencies {

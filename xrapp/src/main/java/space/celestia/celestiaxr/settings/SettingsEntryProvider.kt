@@ -226,6 +226,11 @@ private val staticRendererItems: List<SettingsItem> = listOf(
             SettingsSliderItem(SettingsKey.GalaxyBrightness, 0.0, 1.0)
         )),
     )),
+    SettingsCommonItem(CelestiaString("Advanced", "Advanced setting items"), listOf(
+        SettingsCommonItem.Section(listOf(
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", ""))
+        ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
+    )),
     SettingsRenderInfoItem()
 )
 
