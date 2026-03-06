@@ -13,6 +13,7 @@ import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,6 +27,7 @@ import space.celestia.celestiaui.utils.AppURLResult
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.showAlert
 import java.io.File
+import java.util.UUID
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
@@ -97,7 +99,27 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
         location: String?,
         contextDirectory: File?
     ) {
-        // TODO: impl
+        if (!listOf("cel", "celx").contains(type)) return
+        val supportedScriptLocations = listOf("temp", "context")
+        if (location != null && !supportedScriptLocations.contains(location)) return
+        if (location == "context" && contextDirectory == null) return
+
+        val scriptFile: File
+        val scriptFileName = "${name ?: UUID.randomUUID()}.${type}"
+        scriptFile = if (location == "context") {
+            File(contextDirectory, scriptFileName)
+        } else {
+            File(cacheDir, scriptFileName)
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                scriptFile.writeText(content)
+                withContext(Dispatchers.Main) {
+                    openAppURL(AppURL.Script(scriptFile.absolutePath))
+                }
+            } catch (ignored: Throwable) {}
+        }
     }
 
     override fun onShareURL(title: String, url: String) {

@@ -149,7 +149,6 @@ private fun ToolsSection() {
                             intent.putExtra(ToolActivity.EXTRA_TOOL, tool)
                             context.startActivity(intent)
                         }
-                        is Tool.Pause -> { /* TODO: handle pause action directly */ }
                     }
                 },
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
