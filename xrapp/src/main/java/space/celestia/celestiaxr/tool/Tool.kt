@@ -49,13 +49,11 @@ sealed interface Tool {
         data class Article(val id: String) : Page() { @IgnoredOnParcel override val title = "" }
     }
 
-    data object Pause : Tool { override val title = "Pause" }
-
     companion object {
         val all: List<Tool> = listOf(
             Page.Info, Page.StarBrowser, Page.Search, Page.GoTo, Page.EclipseFinder,
             Page.CameraControl, Page.CurrentTime, Page.Favorites, Page.Settings,
-            Page.InstalledAddons, Page.GetAddons, Page.Help, Pause
+            Page.InstalledAddons, Page.GetAddons, Page.Help
         )
     }
 }

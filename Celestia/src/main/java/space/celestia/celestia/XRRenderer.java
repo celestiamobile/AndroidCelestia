@@ -34,16 +34,17 @@ public class XRRenderer implements AutoCloseable {
     }
 
     public void startConditionally(@NonNull Activity activity, boolean enableMultisample) {
-        if (started) {
-            c_resume(pointer);
-            return;
-        }
+        if (started) return;
         start(activity, enableMultisample);
     }
 
     public void start(@NonNull Activity activity, boolean enableMultisample) {
         started = true;
         c_start(pointer, activity, enableMultisample);
+    }
+
+    public void resume() {
+        c_resume(pointer);
     }
 
     public void pause() {
@@ -77,6 +78,36 @@ public class XRRenderer implements AutoCloseable {
             result = engineStartedListener.onEngineStarted(sampleCount);
         engineStartedListener = null;
         return result;
+    }
+
+    public interface ControllerButtonListener {
+        void onControllerButton(int keyCode, boolean isReleased);
+    }
+
+    private ControllerButtonListener controllerButtonListener = null;
+
+    public void setControllerButtonListener(ControllerButtonListener listener) {
+        this.controllerButtonListener = listener;
+    }
+
+    private void controllerButton(int keyCode, boolean isReleased) {
+        if (controllerButtonListener != null)
+            controllerButtonListener.onControllerButton(keyCode, isReleased);
+    }
+
+    public interface JoystickAxisListener {
+        void onJoystickAxis(int axis, float value);
+    }
+
+    private JoystickAxisListener joystickAxisListener = null;
+
+    public void setJoystickAxisListener(JoystickAxisListener listener) {
+        this.joystickAxisListener = listener;
+    }
+
+    private void joystickAxis(int axis, float value) {
+        if (joystickAxisListener != null)
+            joystickAxisListener.onJoystickAxis(axis, value);
     }
 
     @Override

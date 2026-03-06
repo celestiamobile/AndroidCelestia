@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <android/keycodes.h>
 #include <android/log.h>
 #include <array>
 #include <vector>
@@ -55,6 +56,29 @@ struct EyeSwapchain {
     }
 };
 
+// ── Controller button table ───────────────────────────────────────────────────
+struct ButtonDef {
+    const char* actionName;
+    const char* bindingPath;
+    int         androidKeycode;
+    bool        isFloat;   // true → float action thresholded at 0.5
+};
+
+static const ButtonDef kButtonDefs[] = {
+    { "menu",                   "/user/hand/left/input/menu/click",           AKEYCODE_BUTTON_START,  false },
+    { "button_a",               "/user/hand/right/input/a/click",             AKEYCODE_BUTTON_A,      false },
+    { "button_b",               "/user/hand/right/input/b/click",             AKEYCODE_BUTTON_B,      false },
+    { "button_x",               "/user/hand/left/input/x/click",              AKEYCODE_BUTTON_X,      false },
+    { "button_y",               "/user/hand/left/input/y/click",              AKEYCODE_BUTTON_Y,      false },
+    { "thumbstick_left_click",  "/user/hand/left/input/thumbstick/click",     AKEYCODE_BUTTON_THUMBL, false },
+    { "thumbstick_right_click", "/user/hand/right/input/thumbstick/click",    AKEYCODE_BUTTON_THUMBR, false },
+    { "left_trigger",           "/user/hand/left/input/trigger/value",        AKEYCODE_BUTTON_L2,     true  },
+    { "right_trigger",          "/user/hand/right/input/trigger/value",       AKEYCODE_BUTTON_R2,     true  },
+    { "left_grip",              "/user/hand/left/input/squeeze/value",        AKEYCODE_BUTTON_L1,     true  },
+    { "right_grip",             "/user/hand/right/input/squeeze/value",       AKEYCODE_BUTTON_R1,     true  },
+};
+static constexpr int kButtonCount = static_cast<int>(sizeof(kButtonDefs) / sizeof(kButtonDefs[0]));
+
 // ── Main OpenXR context ───────────────────────────────────────────────────────
 struct CelestiaOpenXR {
     XrInstance   instance  = XR_NULL_HANDLE;
@@ -91,6 +115,14 @@ struct CelestiaOpenXR {
     jobject javaObject = nullptr;
     static jmethodID flushTasksMethod;
     static jmethodID engineStartedMethod;
+    static jmethodID controllerButtonMethod;
+    static jmethodID joystickAxisMethod;
+
+    XrActionSet actionSet = XR_NULL_HANDLE;
+    std::array<XrAction, kButtonCount> buttonActions = {};
+    std::array<bool, kButtonCount>     buttonWasPressed = {};
+    XrAction leftThumbstickAction  = XR_NULL_HANDLE;
+    XrAction rightThumbstickAction = XR_NULL_HANDLE;
 
     bool init(JNIEnv* env, jobject activityObject);
     void resume();
@@ -108,6 +140,7 @@ private:
     bool createEGLContext();
     bool createSession();
     bool createSwapchains();
+    void createActions();
 
     void handleSessionStateChange(XrSessionState newState);
     void renderEye(int eyeIndex,
@@ -123,6 +156,8 @@ private:
 
 jmethodID CelestiaOpenXR::flushTasksMethod = nullptr;
 jmethodID CelestiaOpenXR::engineStartedMethod = nullptr;
+jmethodID CelestiaOpenXR::controllerButtonMethod = nullptr;
+jmethodID CelestiaOpenXR::joystickAxisMethod = nullptr;
 
 static void buildViewMatrix(const XrPosef& pose, float* result);
 
@@ -467,7 +502,9 @@ bool CelestiaOpenXR::createSession() {
     spaceInfo.poseInReferenceSpace     = {{0, 0, 0, 1}, {0, 0, 0}};  // identity
     XR_CHECK(xrCreateReferenceSpace(session, &spaceInfo, &appSpace), "xrCreateReferenceSpace");
 
-    return createSwapchains();
+    if (!createSwapchains()) return false;
+    createActions();
+    return true;
 }
 
 // ── createSwapchains ──────────────────────────────────────────────────────────
@@ -525,6 +562,74 @@ bool CelestiaOpenXR::createSwapchains() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     return true;
+}
+
+// ── createActions ─────────────────────────────────────────────────────────────
+void CelestiaOpenXR::createActions() {
+    XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
+    strncpy(actionSetInfo.actionSetName, "celestia", XR_MAX_ACTION_SET_NAME_SIZE - 1);
+    strncpy(actionSetInfo.localizedActionSetName, "Celestia", XR_MAX_LOCALIZED_ACTION_SET_NAME_SIZE - 1);
+    actionSetInfo.priority = 0;
+    if (XR_FAILED(xrCreateActionSet(instance, &actionSetInfo, &actionSet))) {
+        LOGE("xrCreateActionSet failed");
+        return;
+    }
+
+    // Create one action per button entry
+    std::vector<XrActionSuggestedBinding> bindings;
+    bindings.reserve(kButtonCount + 2);
+
+    for (int i = 0; i < kButtonCount; ++i) {
+        const ButtonDef& def = kButtonDefs[i];
+        XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
+        actionInfo.actionType = def.isFloat ? XR_ACTION_TYPE_FLOAT_INPUT : XR_ACTION_TYPE_BOOLEAN_INPUT;
+        strncpy(actionInfo.actionName, def.actionName, XR_MAX_ACTION_NAME_SIZE - 1);
+        strncpy(actionInfo.localizedActionName, def.actionName, XR_MAX_LOCALIZED_ACTION_NAME_SIZE - 1);
+
+        if (XR_FAILED(xrCreateAction(actionSet, &actionInfo, &buttonActions[i]))) {
+            LOGE("xrCreateAction failed for %s", def.actionName);
+            continue;
+        }
+
+        XrPath bindingPath = XR_NULL_PATH;
+        XR_CHECK(xrStringToPath(instance, def.bindingPath, &bindingPath), def.bindingPath);
+        bindings.push_back({buttonActions[i], bindingPath});
+    }
+
+    // Thumbstick vector2f actions
+    struct { const char* name; const char* path; XrAction* action; } thumbsticks[] = {
+        { "left_thumbstick",  "/user/hand/left/input/thumbstick",  &leftThumbstickAction  },
+        { "right_thumbstick", "/user/hand/right/input/thumbstick", &rightThumbstickAction },
+    };
+    for (auto& t : thumbsticks) {
+        XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
+        actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
+        strncpy(actionInfo.actionName, t.name, XR_MAX_ACTION_NAME_SIZE - 1);
+        strncpy(actionInfo.localizedActionName, t.name, XR_MAX_LOCALIZED_ACTION_NAME_SIZE - 1);
+        if (XR_FAILED(xrCreateAction(actionSet, &actionInfo, t.action))) {
+            LOGE("xrCreateAction failed for %s", t.name);
+            continue;
+        }
+        XrPath bindingPath = XR_NULL_PATH;
+        XR_CHECK(xrStringToPath(instance, t.path, &bindingPath), t.path);
+        bindings.push_back({*t.action, bindingPath});
+    }
+
+    XrPath oculusProfile = XR_NULL_PATH;
+    XR_CHECK(xrStringToPath(instance, "/interaction_profiles/oculus/touch_controller", &oculusProfile),
+             "xrStringToPath oculus profile");
+
+    XrInteractionProfileSuggestedBinding suggested{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
+    suggested.interactionProfile     = oculusProfile;
+    suggested.suggestedBindings      = bindings.data();
+    suggested.countSuggestedBindings = static_cast<uint32_t>(bindings.size());
+    XR_CHECK(xrSuggestInteractionProfileBindings(instance, &suggested),
+             "xrSuggestInteractionProfileBindings");
+
+    XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
+    attachInfo.actionSets      = &actionSet;
+    attachInfo.countActionSets = 1;
+    XR_CHECK(xrAttachSessionActionSets(session, &attachInfo), "xrAttachSessionActionSets");
 }
 
 static void buildViewMatrix(const XrPosef& pose, float* result) {
@@ -615,9 +720,18 @@ void CelestiaOpenXR::destroy() {
             eye.handle = XR_NULL_HANDLE;
         }
     }
-    if (appSpace != XR_NULL_HANDLE) { xrDestroySpace(appSpace);     appSpace  = XR_NULL_HANDLE; }
-    if (session  != XR_NULL_HANDLE) { xrDestroySession(session);    session   = XR_NULL_HANDLE; }
-    if (instance != XR_NULL_HANDLE) { xrDestroyInstance(instance);  instance  = XR_NULL_HANDLE; }
+    for (int i = 0; i < kButtonCount; ++i) {
+        if (buttonActions[i] != XR_NULL_HANDLE) {
+            xrDestroyAction(buttonActions[i]);
+            buttonActions[i] = XR_NULL_HANDLE;
+        }
+    }
+    if (leftThumbstickAction  != XR_NULL_HANDLE) { xrDestroyAction(leftThumbstickAction);  leftThumbstickAction  = XR_NULL_HANDLE; }
+    if (rightThumbstickAction != XR_NULL_HANDLE) { xrDestroyAction(rightThumbstickAction); rightThumbstickAction = XR_NULL_HANDLE; }
+    if (actionSet != XR_NULL_HANDLE) { xrDestroyActionSet(actionSet); actionSet = XR_NULL_HANDLE; }
+    if (appSpace   != XR_NULL_HANDLE) { xrDestroySpace(appSpace);          appSpace    = XR_NULL_HANDLE; }
+    if (session    != XR_NULL_HANDLE) { xrDestroySession(session);         session     = XR_NULL_HANDLE; }
+    if (instance   != XR_NULL_HANDLE) { xrDestroyInstance(instance);       instance    = XR_NULL_HANDLE; }
 
     if (eglDisplay != EGL_NO_DISPLAY) {
         eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -708,6 +822,75 @@ void CelestiaOpenXR::renderFrame(JNIEnv* env) {
     // ── Begin ─────────────────────────────────────────────────────────────────
     XrFrameBeginInfo beginInfo{XR_TYPE_FRAME_BEGIN_INFO};
     XR_CHECK(xrBeginFrame(session, &beginInfo), "xrBeginFrame");
+
+    // ── Sync actions and fire button callbacks ────────────────────────────────
+    if (actionSet != XR_NULL_HANDLE) {
+        XrActiveActionSet activeSet{actionSet, XR_NULL_PATH};
+        XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
+        syncInfo.activeActionSets      = &activeSet;
+        syncInfo.countActiveActionSets = 1;
+        XrResult syncResult = xrSyncActions(session, &syncInfo);
+
+        if (syncResult == XR_SESSION_NOT_FOCUSED) {
+            // Session lost focus (e.g. another activity is on top).
+            // Synthesize releases for any buttons still considered held.
+            for (int i = 0; i < kButtonCount; ++i) {
+                if (buttonWasPressed[i]) {
+                    env->CallVoidMethod(javaObject, CelestiaOpenXR::controllerButtonMethod,
+                                        static_cast<jint>(kButtonDefs[i].androidKeycode),
+                                        JNI_TRUE);
+                    buttonWasPressed[i] = false;
+                }
+            }
+            // Zero out thumbstick axes.
+            env->CallVoidMethod(javaObject, CelestiaOpenXR::joystickAxisMethod, (jint)0, (jfloat)0.0f);
+            env->CallVoidMethod(javaObject, CelestiaOpenXR::joystickAxisMethod, (jint)1, (jfloat)0.0f);
+            env->CallVoidMethod(javaObject, CelestiaOpenXR::joystickAxisMethod, (jint)3, (jfloat)0.0f);
+            env->CallVoidMethod(javaObject, CelestiaOpenXR::joystickAxisMethod, (jint)4, (jfloat)0.0f);
+        } else if (!XR_FAILED(syncResult)) {
+            // Session is focused – poll each button normally.
+            XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+            for (int i = 0; i < kButtonCount; ++i) {
+                if (buttonActions[i] == XR_NULL_HANDLE) continue;
+
+                bool currentlyPressed = false;
+                getInfo = {XR_TYPE_ACTION_STATE_GET_INFO};
+                getInfo.action = buttonActions[i];
+
+                if (kButtonDefs[i].isFloat) {
+                    XrActionStateFloat floatState{XR_TYPE_ACTION_STATE_FLOAT};
+                    if (XR_SUCCEEDED(xrGetActionStateFloat(session, &getInfo, &floatState)) && floatState.isActive)
+                        currentlyPressed = floatState.currentState >= 0.5f;
+                } else {
+                    XrActionStateBoolean boolState{XR_TYPE_ACTION_STATE_BOOLEAN};
+                    if (XR_SUCCEEDED(xrGetActionStateBoolean(session, &getInfo, &boolState)) && boolState.isActive)
+                        currentlyPressed = boolState.currentState == XR_TRUE;
+                }
+
+                if (currentlyPressed != buttonWasPressed[i]) {
+                    env->CallVoidMethod(javaObject, CelestiaOpenXR::controllerButtonMethod,
+                                        static_cast<jint>(kButtonDefs[i].androidKeycode),
+                                        static_cast<jboolean>(!currentlyPressed));
+                    buttonWasPressed[i] = currentlyPressed;
+                }
+            }
+
+            // Poll thumbstick axes (sent every frame; dead zone 0.1).
+            auto pollThumbstick = [&](XrAction action, jint axisX, jint axisY) {
+                if (action == XR_NULL_HANDLE) return;
+                XrActionStateGetInfo gi{XR_TYPE_ACTION_STATE_GET_INFO};
+                gi.action = action;
+                XrActionStateVector2f state{XR_TYPE_ACTION_STATE_VECTOR2F};
+                if (XR_FAILED(xrGetActionStateVector2f(session, &gi, &state))) return;
+                float x = (state.isActive && std::abs(state.currentState.x) > 0.1f) ? state.currentState.x : 0.0f;
+                float y = (state.isActive && std::abs(state.currentState.y) > 0.1f) ? state.currentState.y : 0.0f;
+                env->CallVoidMethod(javaObject, CelestiaOpenXR::joystickAxisMethod, axisX, (jfloat)x);
+                env->CallVoidMethod(javaObject, CelestiaOpenXR::joystickAxisMethod, axisY, (jfloat)y);
+            };
+            pollThumbstick(leftThumbstickAction,  0, 1);  // JOYSTICK_AXIS_X,  JOYSTICK_AXIS_Y
+            pollThumbstick(rightThumbstickAction, 3, 4);  // JOYSTICK_AXIS_RX, JOYSTICK_AXIS_RY
+        }
+    }
 
     std::vector<XrCompositionLayerBaseHeader*> layers;
     XrCompositionLayerProjection               layerProj{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
@@ -843,6 +1026,8 @@ Java_space_celestia_celestia_XRRenderer_c_1initialize(JNIEnv* env, jobject thiz,
     jclass clazz = env->GetObjectClass(thiz);
     CelestiaOpenXR::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
     CelestiaOpenXR::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(I)Z");
+    CelestiaOpenXR::controllerButtonMethod = env->GetMethodID(clazz, "controllerButton", "(IZ)V");
+    CelestiaOpenXR::joystickAxisMethod = env->GetMethodID(clazz, "joystickAxis", "(IF)V");
 }
 
 JNIEXPORT void JNICALL

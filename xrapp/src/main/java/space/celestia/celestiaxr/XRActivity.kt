@@ -3,6 +3,7 @@ package space.celestia.celestiaxr
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.EntryPoint
@@ -23,6 +24,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.deleteRecursively
+import space.celestia.celestiaui.control.viewmodel.JoystickAction
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
@@ -140,17 +142,10 @@ class XRActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (!HomeActivity.hasOpenedActivity) {
-            lifecycleScope.launch {
-                delay(100)
-                // TODO: should also open from OpenXR if this is dismissed
-                if (isDestroyed || isFinishing) return@launch
-
-                val panelIntent = Intent(this@XRActivity, HomeActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                startActivity(panelIntent)
-            }
+        xrRenderer.resume()
+        lifecycleScope.launch {
+            delay(100)
+            openHomePanelIfNeeded()
         }
     }
 
@@ -238,14 +233,81 @@ class XRActivity : ComponentActivity() {
             CustomFont("$fontDirPath/NotoSans-Bold.ttf", 0)
         )
 
-        // language = getString(space.celestia.mobilecelestia.R.string.celestia_language)
+         language = getString(R.string.celestia_language)
+    }
+
+    private fun joystickButtonKeyAction(keyCode: Int): JoystickAction {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_BUTTON_A -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapA]?.toIntOrNull(), JoystickAction.Key.Celestia.MoveSlower) }
+            KeyEvent.KEYCODE_BUTTON_B -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapB]?.toIntOrNull(), JoystickAction.Key.None) }
+            KeyEvent.KEYCODE_BUTTON_X -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapX]?.toIntOrNull(), JoystickAction.Key.Celestia.MoveFaster) }
+            KeyEvent.KEYCODE_BUTTON_Y -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapY]?.toIntOrNull(), JoystickAction.Key.None) }
+            KeyEvent.KEYCODE_DPAD_UP -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadUp]?.toIntOrNull(), JoystickAction.Key.Celestia.PitchUp) }
+            KeyEvent.KEYCODE_DPAD_DOWN -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadDown]?.toIntOrNull(), JoystickAction.Key.Celestia.PitchDown) }
+            KeyEvent.KEYCODE_DPAD_LEFT -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadLeft]?.toIntOrNull(), JoystickAction.Key.Celestia.RollLeft) }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadRight]?.toIntOrNull(), JoystickAction.Key.Celestia.RollRight) }
+            KeyEvent.KEYCODE_BUTTON_L1 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapLB]?.toIntOrNull(), JoystickAction.Key.None) }
+            KeyEvent.KEYCODE_BUTTON_L2 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapLT]?.toIntOrNull(), JoystickAction.Key.Celestia.RollLeft) }
+            KeyEvent.KEYCODE_BUTTON_R1 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapRB]?.toIntOrNull(), JoystickAction.Key.None) }
+            KeyEvent.KEYCODE_BUTTON_R2 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapRT]?.toIntOrNull(), JoystickAction.Key.Celestia.RollRight) }
+            KeyEvent.KEYCODE_BUTTON_START -> JoystickAction.Key.ShowMenu
+            else -> JoystickAction.Key.None
+        }
     }
 
     private fun loadConfigSuccess() {
-        xrRenderer.setEngineStartedListener { sample ->
+        xrRenderer.setEngineStartedListener { _ ->
             return@setEngineStartedListener initCelestia()
         }
+        xrRenderer.setControllerButtonListener { button, up ->
+            when (val action = joystickButtonKeyAction(button)) {
+                is JoystickAction.Key.Celestia -> {
+                    action.invoke(appCore, up)
+                }
+                JoystickAction.Key.None -> {}
+                JoystickAction.Key.ShowMenu -> {
+                    if (up) {
+                        lifecycleScope.launch {
+                            openHomePanelIfNeeded()
+                        }
+                    }
+                }
+            }
+        }
+        xrRenderer.setJoystickAxisListener { axis, value ->
+            val shouldInvertX = appSettings[PreferenceManager.PredefinedKey.ControllerInvertX] == "true"
+            val shouldInvertY = appSettings[PreferenceManager.PredefinedKey.ControllerInvertY] == "true"
+            when (axis) {
+                AppCore.JOYSTICK_AXIS_X -> {
+                    if (appSettings[PreferenceManager.PredefinedKey.ControllerEnableLeftThumbstick] != "false")
+                        appCore.joystickAxis(axis, if (shouldInvertX) -value else value)
+                }
+                AppCore.JOYSTICK_AXIS_Y -> {
+                    if (appSettings[PreferenceManager.PredefinedKey.ControllerEnableLeftThumbstick] != "false")
+                        appCore.joystickAxis(axis, if (shouldInvertY) value else -value)
+                }
+                AppCore.JOYSTICK_AXIS_RX -> {
+                    if (appSettings[PreferenceManager.PredefinedKey.ControllerEnableRightThumbstick] != "false")
+                        appCore.joystickAxis(axis, if (shouldInvertX) -value else value)
+                }
+                AppCore.JOYSTICK_AXIS_RY -> {
+                    if (appSettings[PreferenceManager.PredefinedKey.ControllerEnableRightThumbstick] != "false")
+                        appCore.joystickAxis(axis, if (shouldInvertY) value else -value)
+                }
+            }
+        }
         xrRenderer.startConditionally(this, appSettings[PreferenceManager.PredefinedKey.MSAA] == "true")
+    }
+
+    private fun openHomePanelIfNeeded() {
+        if (!HomeActivity.hasOpenedActivity) {
+            if (isDestroyed || isFinishing) return
+
+            val panelIntent = Intent(this@XRActivity, HomeActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(panelIntent)
+        }
     }
 
     private fun loadConfigFailed(error: Throwable) {
