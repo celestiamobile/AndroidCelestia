@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
-import space.celestia.celestiafoundation.utils.URLHelper
+import space.celestia.celestiaui.utils.URLHelper
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.info.model.CelestiaAction

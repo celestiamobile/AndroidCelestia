@@ -78,7 +78,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.FileUtils
-import space.celestia.celestiafoundation.utils.URLHelper
+import space.celestia.celestiaui.utils.URLHelper
 import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
@@ -855,7 +855,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 is AppURL.Article -> {
                     lifecycleScope.launch {
                         val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
-                        showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = it.id, language = lang, flavor = BuildConfig.FLAVOR, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
+                        showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = it.id, language = lang, flavor = BuildConfig.FLAVOR, purchaseManager = purchaseManager), matchingQueryKeys = listOf("guide"), filterURL = true))
                     }
                 }
                 is AppURL.Object -> {
@@ -890,8 +890,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val result = resourceAPI.latest("news", lang)
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
-                val additionalQueryParameters = if (purchaseManager.canUseInAppPurchase()) mapOf("purchaseTokenAndroid" to (purchaseManager.purchaseToken() ?: "")) else null
-                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, flavor = BuildConfig.FLAVOR, additionalQueryParameters = additionalQueryParameters), matchingQueryKeys = listOf("guide"), filterURL = true))
+                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, flavor = BuildConfig.FLAVOR, purchaseManager = purchaseManager), matchingQueryKeys = listOf("guide"), filterURL = true))
             } catch (ignored: Throwable) {}
         }
     }

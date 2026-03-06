@@ -1,11 +1,13 @@
-package space.celestia.celestiafoundation.utils
+package space.celestia.celestiaui.utils
 
 import android.net.Uri
 import androidx.core.net.toUri
+import space.celestia.celestiaui.purchase.PurchaseManager
+import kotlin.collections.iterator
 
 class URLHelper {
     companion object {
-        fun buildInAppGuideURI(id: String, language: String, flavor: String, shareable: Boolean? = null, additionalQueryParameters: Map<String, String>? = null): Uri {
+        fun buildInAppGuideURI(id: String, language: String, flavor: String, shareable: Boolean? = null, purchaseManager: PurchaseManager): Uri {
             val baseURL = "https://celestia.mobi/resources/guide"
             var builder = baseURL.toUri()
                 .buildUpon()
@@ -20,10 +22,8 @@ class URLHelper {
             if (shareable != null) {
                 builder = builder.appendQueryParameter("share", if (shareable) "true" else "false")
             }
-            if (additionalQueryParameters != null) {
-                for ((key, value) in additionalQueryParameters) {
-                    builder = builder.appendQueryParameter(key, value)
-                }
+            if (purchaseManager.canUseInAppPurchase()) {
+                builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
             }
             return builder.build()
         }
