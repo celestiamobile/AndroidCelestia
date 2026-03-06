@@ -33,17 +33,17 @@ public class XRRenderer implements AutoCloseable {
         c_initialize(pointer);
     }
 
-    public void startConditionally(@NonNull Activity activity) {
+    public void startConditionally(@NonNull Activity activity, boolean enableMultisample) {
         if (started) {
             c_resume(pointer);
             return;
         }
-        start(activity);
+        start(activity, enableMultisample);
     }
 
-    public void start(@NonNull Activity activity) {
+    public void start(@NonNull Activity activity, boolean enableMultisample) {
         started = true;
-        c_start(pointer, activity);
+        c_start(pointer, activity, enableMultisample);
     }
 
     public void pause() {
@@ -64,17 +64,17 @@ public class XRRenderer implements AutoCloseable {
     }
 
     public interface EngineStartedListener {
-        boolean onEngineStarted();
+        boolean onEngineStarted(int sampleCount);
     }
 
     public void setEngineStartedListener(EngineStartedListener engineStartedListener) {
         this.engineStartedListener = engineStartedListener;
     }
 
-    private boolean engineStarted() {
+    private boolean engineStarted(int sampleCount) {
         boolean result = false;
         if (engineStartedListener != null)
-            result = engineStartedListener.onEngineStarted();
+            result = engineStartedListener.onEngineStarted(sampleCount);
         engineStartedListener = null;
         return result;
     }
@@ -101,7 +101,7 @@ public class XRRenderer implements AutoCloseable {
 
     private static native long c_createNativeXRObject();
     private native void c_initialize(long pointer);
-    private native void c_start(long pointer, Activity activity);
+    private native void c_start(long pointer, Activity activity, boolean enableMultisample);
     private native void c_resume(long pointer);
     private native void c_pause(long pointer);
     private native void c_destroy(long pointer);

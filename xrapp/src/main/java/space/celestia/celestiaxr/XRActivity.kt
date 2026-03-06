@@ -38,7 +38,7 @@ import java.lang.ref.WeakReference
 import java.util.Locale
 import java.util.concurrent.Executor
 import javax.inject.Inject
-import kotlin.collections.iterator
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class XRActivity : ComponentActivity() {
@@ -159,6 +159,12 @@ class XRActivity : ComponentActivity() {
         super.onStop()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        exitProcess(0)
+    }
+
     private fun copyAssetIfNeeded() {
         appStatusReporter.updateStatus(CelestiaString("Copying data…", "Copying default data from APK"))
         if (appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] != CURRENT_DATA_VERSION) {
@@ -236,8 +242,10 @@ class XRActivity : ComponentActivity() {
     }
 
     private fun loadConfigSuccess() {
-        xrRenderer.setEngineStartedListener { initCelestia() }
-        xrRenderer.startConditionally(this)
+        xrRenderer.setEngineStartedListener { sample ->
+            return@setEngineStartedListener initCelestia()
+        }
+        xrRenderer.startConditionally(this, appSettings[PreferenceManager.PredefinedKey.MSAA] == "true")
     }
 
     private fun loadConfigFailed(error: Throwable) {

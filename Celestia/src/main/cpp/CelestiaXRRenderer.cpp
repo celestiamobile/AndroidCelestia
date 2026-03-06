@@ -34,9 +34,10 @@ using namespace Eigen;
 
 // ── Per-eye swapchain ─────────────────────────────────────────────────────────
 struct EyeSwapchain {
-    XrSwapchain                              handle    = XR_NULL_HANDLE;
-    int32_t                                  width     = 0;
-    int32_t                                  height    = 0;
+    XrSwapchain                              handle      = XR_NULL_HANDLE;
+    int32_t                                  width       = 0;
+    int32_t                                  height      = 0;
+    uint32_t                                 sampleCount = 1;
     std::vector<XrSwapchainImageOpenGLESKHR> images;
 
     GLuint              depthRenderbuffer = 0;
@@ -67,8 +68,9 @@ struct CelestiaOpenXR {
     EGLContext eglContext = EGL_NO_CONTEXT;
     EGLConfig  eglConfig  = nullptr;
 
-    bool sessionRunning  = false;
-    bool exitRequested   = false;
+    bool sessionRunning   = false;
+    bool exitRequested    = false;
+    bool enableMultisample = false;
 
     CelestiaCore* corePtr = nullptr;
     int32_t lastResizeWidth = 0;
@@ -97,7 +99,7 @@ struct CelestiaOpenXR {
     void destroy();
 
     void renderLoop();
-    void renderFrame();
+    void renderFrame(JNIEnv* env);
     bool pollEvents();
 
 private:
@@ -111,7 +113,8 @@ private:
     void renderEye(int eyeIndex,
                    const XrSwapchainImageOpenGLESKHR& image,
                    const XrView& view,
-                   XrCompositionLayerProjectionView& projView);
+                   XrCompositionLayerProjectionView& projView,
+                   JNIEnv* env);
 };
 
 #ifndef GL_FRAMEBUFFER_SRGB
@@ -301,14 +304,13 @@ void CelestiaOpenXR::renderLoop() {
         
         if (sessionRunning) {
             if (!engineStartedCalled) {
-                bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod));
+                jint sampleCount = enableMultisample ? (jint)eyeSwapchains[0].sampleCount : 1;
+                bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod, sampleCount));
                 if (!started)
                     break;
                 engineStartedCalled = true;
             }
-            if (hasPendingTasks)
-                env->CallVoidMethod(javaObject, CelestiaOpenXR::flushTasksMethod);
-            renderFrame();
+            renderFrame(env);
         } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
@@ -485,7 +487,7 @@ bool CelestiaOpenXR::createSwapchains() {
         XrSwapchainCreateInfo sci{XR_TYPE_SWAPCHAIN_CREATE_INFO};
         sci.usageFlags  = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
         sci.format      = GL_SRGB8_ALPHA8; // Workaround for https://communityforums.atmeta.com/discussions/dev-openxr/srgbrgb-giving-washed-outbright-image/957475
-        sci.sampleCount = vc.recommendedSwapchainSampleCount;
+        sci.sampleCount = enableMultisample ? vc.recommendedSwapchainSampleCount : 1;
         sci.width       = vc.recommendedImageRectWidth;
         sci.height      = vc.recommendedImageRectHeight;
         sci.faceCount   = 1;
@@ -493,8 +495,9 @@ bool CelestiaOpenXR::createSwapchains() {
         sci.mipCount    = 1;
 
         EyeSwapchain& eye = eyeSwapchains[i];
-        eye.width  = (int32_t)sci.width;
-        eye.height = (int32_t)sci.height;
+        eye.width       = (int32_t)sci.width;
+        eye.height      = (int32_t)sci.height;
+        eye.sampleCount = sci.sampleCount;
 
         XR_CHECK(xrCreateSwapchain(session, &sci, &eye.handle), "xrCreateSwapchain");
 
@@ -694,7 +697,7 @@ void CelestiaOpenXR::handleSessionStateChange(XrSessionState newState) {
 }
 
 // ── renderFrame ───────────────────────────────────────────────────────────────
-void CelestiaOpenXR::renderFrame() {
+void CelestiaOpenXR::renderFrame(JNIEnv* env) {
     if (!sessionRunning) return;
 
     // ── Wait ─────────────────────────────────────────────────────────────────
@@ -726,7 +729,7 @@ void CelestiaOpenXR::renderFrame() {
                                viewCount, &viewCount, views.data()), "xrLocateViews");
 
         for (int i = 0; i < 2; ++i) {
-            renderEye(i, eyeSwapchains[i].images[0], views[i], projViews[i]);
+            renderEye(i, eyeSwapchains[i].images[0], views[i], projViews[i], env);
         }
 
         layerProj.space     = appSpace;
@@ -746,9 +749,10 @@ void CelestiaOpenXR::renderFrame() {
 
 // ── renderEye ─────────────────────────────────────────────────────────────────
 void CelestiaOpenXR::renderEye(int eyeIndex,
-                                const XrSwapchainImageOpenGLESKHR& image,
-                                const XrView& view,
-                                XrCompositionLayerProjectionView& projView) {
+                               const XrSwapchainImageOpenGLESKHR& image,
+                               const XrView& view,
+                               XrCompositionLayerProjectionView& projView,
+                               JNIEnv* env) {
     const EyeSwapchain& eye = eyeSwapchains[eyeIndex];
 
     // Acquire swapchain image
@@ -778,6 +782,11 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
 
         float viewMat[16];
         buildViewMatrix(view.pose, viewMat);
+
+        if (eyeIndex == 0) {
+            if (hasPendingTasks)
+                env->CallVoidMethod(javaObject, CelestiaOpenXR::flushTasksMethod);
+        }
 
         // Set up the asymmetric projection for this eye
         core->getRenderer()->setProjectionMode(std::make_shared<CustomPerspectiveProjectionMode>(
@@ -833,13 +842,14 @@ Java_space_celestia_celestia_XRRenderer_c_1initialize(JNIEnv* env, jobject thiz,
 
     jclass clazz = env->GetObjectClass(thiz);
     CelestiaOpenXR::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
-    CelestiaOpenXR::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "()Z");
+    CelestiaOpenXR::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(I)Z");
 }
 
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv* env, jobject /*thiz*/, jlong pointer, jobject activity) {
+Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv* env, jobject /*thiz*/, jlong pointer, jobject activity, jboolean enableMultisample) {
     LOGI("JNI: start");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    xr->enableMultisample = static_cast<bool>(enableMultisample);
     xr->init(env, activity);
 }
 
