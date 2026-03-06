@@ -5,7 +5,6 @@ import android.view.KeyEvent
 import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.perform
-import java.util.concurrent.Executor
 
 sealed class JoystickAction {
     sealed class Key(val key: Int): JoystickAction() {
@@ -26,64 +25,58 @@ sealed class JoystickAction {
             data object RollLeft: Celestia(13)
             data object RollRight: Celestia(14)
 
-            fun invoke(appCore: AppCore, executor: Executor, up: Boolean) {
+            fun invoke(appCore: AppCore, up: Boolean) {
                 when (this) {
                     MoveFaster -> {
-                        executor.execute { if (up) appCore.joystickButtonUp(KeyEvent.KEYCODE_BUTTON_X) else appCore.joystickButtonDown(KeyEvent.KEYCODE_BUTTON_X)  }
+                        if (up) appCore.joystickButtonUp(KeyEvent.KEYCODE_BUTTON_X) else appCore.joystickButtonDown(KeyEvent.KEYCODE_BUTTON_X)
                     }
                     MoveSlower -> {
-                        executor.execute { if (up) appCore.joystickButtonUp(KeyEvent.KEYCODE_BUTTON_A) else appCore.joystickButtonDown(KeyEvent.KEYCODE_BUTTON_A)  }
+                        if (up) appCore.joystickButtonUp(KeyEvent.KEYCODE_BUTTON_A) else appCore.joystickButtonDown(KeyEvent.KEYCODE_BUTTON_A)
                     }
                     StopSpeed -> {
                         if (up) {
-                            executor.execute { appCore.perform(CelestiaAction.Stop) }
-                        }
+                            appCore.perform(CelestiaAction.Stop) }
+
                     }
                     ReverseSpeed -> {
                         if (up) {
-                            executor.execute { appCore.perform(CelestiaAction.ReverseSpeed) }
+                            appCore.perform(CelestiaAction.ReverseSpeed)
                         }
                     }
                     ReverseOrientation -> {
                         if (up) {
-                            executor.execute { appCore.simulation.reverseObserverOrientation() }
+                            appCore.simulation.reverseObserverOrientation()
                         }
                     }
                     PitchUp -> {
-                        executor.execute { if (up) appCore.keyUp(26) else appCore.keyDown(26)  }
+                        if (up) appCore.keyUp(26) else appCore.keyDown(26)
                     }
                     PitchDown -> {
-                        executor.execute { if (up) appCore.keyUp(32) else appCore.keyDown(32)  }
+                        if (up) appCore.keyUp(32) else appCore.keyDown(32)
                     }
                     YawLeft -> {
-                        executor.execute { if (up) appCore.keyUp(28) else appCore.keyDown(28)  }
+                        if (up) appCore.keyUp(28) else appCore.keyDown(28)
                     }
                     YawRight -> {
-                        executor.execute { if (up) appCore.keyUp(30) else appCore.keyDown(30)  }
+                        if (up) appCore.keyUp(30) else appCore.keyDown(30)
                     }
                     RollLeft -> {
-                        executor.execute { if (up) appCore.keyUp(31) else appCore.keyDown(31)  }
+                        if (up) appCore.keyUp(31) else appCore.keyDown(31)
                     }
                     RollRight -> {
-                        executor.execute { if (up) appCore.keyUp(33) else appCore.keyDown(33)  }
+                        if (up) appCore.keyUp(33) else appCore.keyDown(33)
                     }
                     TapCenter -> {
-                        executor.execute {
-                            val width = appCore.width
-                            val height = appCore.height
-                            val center = PointF(width.toFloat() / 2.0f, height.toFloat() / 2.0f)
-                            if (up) appCore.mouseButtonUp(AppCore.MOUSE_BUTTON_LEFT, center, 0) else appCore.mouseButtonDown(AppCore.MOUSE_BUTTON_LEFT, center, 0)
-                        }
+                        val width = appCore.width
+                        val height = appCore.height
+                        val center = PointF(width.toFloat() / 2.0f, height.toFloat() / 2.0f)
+                        if (up) appCore.mouseButtonUp(AppCore.MOUSE_BUTTON_LEFT, center, 0) else appCore.mouseButtonDown(AppCore.MOUSE_BUTTON_LEFT, center, 0)
                     }
                     GoTo -> {
-                        if (up) {
-                            executor.execute { appCore.perform(CelestiaAction.GoTo) }
-                        }
+                        appCore.perform(CelestiaAction.GoTo)
                     }
                     Esc -> {
-                        if (up) {
-                            executor.execute { appCore.perform(CelestiaAction.CancelScript) }
-                        }
+                        appCore.perform(CelestiaAction.CancelScript)
                     }
                 }
             }

@@ -585,11 +585,15 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     private fun processJoystickButton(keyCode: Int, up: Boolean) {
         when (val action = joystickButtonKeyAction(keyCode)) {
             is JoystickAction.Key.Celestia -> {
-               action.invoke(appCore, executor, up)
+                executor.execute {
+                    action.invoke(appCore, up)
+                }
             }
             JoystickAction.Key.None -> {}
             JoystickAction.Key.ShowMenu -> {
-                showMenu()
+                if (up) {
+                    showMenu()
+                }
             }
         }
     }
