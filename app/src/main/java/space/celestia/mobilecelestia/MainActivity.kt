@@ -134,6 +134,8 @@ import space.celestia.mobilecelestia.toolbar.ToolbarAction
 import space.celestia.mobilecelestia.toolbar.ToolbarFragment
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
 import space.celestia.celestiaui.utils.AppStatusReporter
+import space.celestia.celestiaui.utils.AppURL
+import space.celestia.celestiaui.utils.AppURLResult
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaui.utils.showAlert
@@ -214,19 +216,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var interactionBlocked = false
 
     private var readyForInteraction = false
-
-    sealed class AppURL {
-        data class Script(val path: String): AppURL()
-        data class CelURL(val url: String): AppURL()
-        data class Addon(val id: String): AppURL()
-        data class Article(val id: String): AppURL()
-        data class Object(val path: String, val action: ObjectURLAction?): AppURL()
-    }
-
-    sealed class ObjectURLAction {
-        data object Select: ObjectURLAction()
-        data class SelectAnd(val action: CelestiaAction): ObjectURLAction()
-    }
 
     private var urlToOpen: AppURL? = null
 
@@ -786,127 +775,43 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val uri = intent.data ?: return
 
         showToast(CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT)
-        if (uri.scheme == "content") {
-            handleContentURI(uri)
-        } else if (uri.scheme == "cel") {
-            requestOpenURL(uri.toString())
-        } else if (uri.scheme == "https") {
-            handleAppLink(uri)
-        } else if (uri.scheme == "celaddon") {
-            if (uri.host == "item") {
-                val id = uri.getQueryParameter("item") ?: return
-                requestOpenAddon(id)
-            }
-        } else if (uri.scheme == "celguide") {
-            if (uri.host == "guide") {
-                val id = uri.getQueryParameter("guide") ?: return
-                requestOpenGuide(id)
-            }
-        } else if (uri.scheme == "celestia") {
-            when (uri.host) {
-                "article" -> {
-                    val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return
-                    requestOpenGuide(id)
+
+        lifecycleScope.launch {
+            when (val urlResult = AppURL.fromUri(uri, this@MainActivity)) {
+                is AppURLResult.Success -> {
+                    urlToOpen = urlResult.url
+                    if (readyForInteraction)
+                        openURLOrScriptOrGreeting()
                 }
-                "addon" -> {
-                    val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return
-                    requestOpenAddon(id)
-                }
-                "object" -> {
-                    val path = uri.pathSegments.filter({ !it.isEmpty() }).joinToString("/")
-                    if (path.isEmpty()) return
-                    var action: ObjectURLAction? = null
-                    uri.getQueryParameter("action")?.let { value ->
-                        objectURLActionMap[value]?.let {
-                            action = it
+                is AppURLResult.Failure -> {
+                    when (urlResult) {
+                        is AppURLResult.Failure.InternalError -> {
+                            showError(urlResult.error)
                         }
+
+                        is AppURLResult.Failure.MissingFileName -> {
+                            showAlert(
+                                String.format(
+                                    CelestiaString("A filename needed to be present for %s", ""),
+                                    uri.path
+                                )
+                            )
+                        }
+
+                        is AppURLResult.Failure.UnsupportedFile -> {
+                            showAlert(
+                                String.format(
+                                    CelestiaString("Celestia does not know how to open %s", ""),
+                                    urlResult.filename
+                                )
+                            )
+                        }
+
+                        else -> {}
                     }
-                    requestOpenObject(path, action)
                 }
             }
         }
-    }
-
-    private fun handleAppLink(uri: Uri) {
-        val path = uri.path ?: return
-        when (path) {
-            "/resources/item" -> {
-                val id = uri.getQueryParameter("item") ?: return
-                requestOpenAddon(id)
-            }
-            "/resources/guide" -> {
-                val guide = uri.getQueryParameter("guide") ?: return
-                requestOpenGuide(guide)
-            }
-        }
-    }
-
-    private fun handleContentURI(uri: Uri) {
-        // Content scheme, copy the resource to a temporary directory
-        var itemName = uri.lastPathSegment
-        // Check file name
-        if (itemName == null) {
-            showAlert(String.format(CelestiaString("A filename needed to be present for %s", ""), uri.path))
-            return
-        }
-        val possibleFilUri = itemName.toUri()
-        if (possibleFilUri.scheme == "file") {
-            val possibleFileName = possibleFilUri.lastPathSegment
-            if (possibleFileName != null) {
-                itemName = possibleFileName
-            }
-        }
-        // Check file type
-        if (!itemName.endsWith(".cel") && !itemName.endsWith(".celx")) {
-            showAlert(String.format(CelestiaString("Celestia does not know how to open %s", ""), itemName))
-            return
-        }
-        itemName = itemName.substringAfter("/")
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val path = "${cacheDir.absolutePath}/$itemName"
-                if (!FileUtils.copyUri(this@MainActivity, uri, path)) {
-                    throw RuntimeException("Failed to open $itemName")
-                }
-                withContext(Dispatchers.Main) {
-                    requestRunScript(path)
-                }
-            } catch (error: Throwable) {
-                withContext(Dispatchers.Main) {
-                    showError(error)
-                }
-            }
-        }
-    }
-
-    private fun requestRunScript(path: String) {
-        urlToOpen = AppURL.Script(path)
-        if (readyForInteraction)
-            openURLOrScriptOrGreeting()
-    }
-
-    private fun requestOpenURL(url: String) {
-        urlToOpen = AppURL.CelURL(url)
-        if (readyForInteraction)
-            openURLOrScriptOrGreeting()
-    }
-
-    private fun requestOpenAddon(addon: String) {
-        urlToOpen = AppURL.Addon(addon)
-        if (readyForInteraction)
-            openURLOrScriptOrGreeting()
-    }
-
-    private fun requestOpenGuide(guide: String) {
-        urlToOpen = AppURL.Article(guide)
-        if (readyForInteraction)
-            openURLOrScriptOrGreeting()
-    }
-
-    private fun requestOpenObject(objectPath: String, action: ObjectURLAction?) {
-        urlToOpen = AppURL.Object(objectPath, action)
-        if (readyForInteraction)
-            openURLOrScriptOrGreeting()
     }
 
     private fun openCelestiaURL(uri: String) = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
@@ -957,14 +862,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     lifecycleScope.launch {
                         val selection = withContext(executor.asCoroutineDispatcher()) { appCore.simulation.findObject(it.path) }
                         if (selection.isEmpty) return@launch
-                        if (it.action != null) {
-                            when (it.action) {
-                                ObjectURLAction.Select -> {
+                        val action = it.action
+                        if (action != null) {
+                            when (action) {
+                                AppURL.Object.Action.Select -> {
                                     appCore.simulation.selection = selection
                                 }
-                                is ObjectURLAction.SelectAnd -> {
+                                is AppURL.Object.Action.SelectAnd -> {
                                     appCore.simulation.selection = selection
-                                    appCore.perform(it.action.action)
+                                    appCore.perform(action.action)
                                 }
                             }
 
@@ -2224,19 +2130,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var language: String = "en"
         private var addonPaths: List<String> = listOf()
         private var extraScriptPaths: List<String> = listOf()
-
-        private val objectURLActionMap = hashMapOf<String, ObjectURLAction>(
-            "select" to ObjectURLAction.Select,
-            "go" to ObjectURLAction.SelectAnd(CelestiaAction.GoTo),
-            "center" to ObjectURLAction.SelectAnd(CelestiaAction.Center),
-            "follow" to ObjectURLAction.SelectAnd(CelestiaAction.Follow),
-            "chase" to ObjectURLAction.SelectAnd(CelestiaAction.Chase),
-            "track" to ObjectURLAction.SelectAnd(CelestiaAction.Track),
-            "syncOrbit" to ObjectURLAction.SelectAnd(CelestiaAction.SyncOrbit),
-            "lock" to ObjectURLAction.SelectAnd(CelestiaAction.Lock),
-            "land" to ObjectURLAction.SelectAnd(CelestiaAction.GoToSurface),
-        )
-
         private var ignoredDisplayIds = hashSetOf<Int>()
         private var getDisplayTypeMethod: Method? = null
 
