@@ -33,14 +33,14 @@ public class XRRenderer implements AutoCloseable {
         c_initialize(pointer);
     }
 
-    public void startConditionally(@NonNull Activity activity, boolean enableMultisample) {
+    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier) {
         if (started) return;
-        start(activity, enableMultisample);
+        start(activity, enableMultisample, resolutionMultiplier);
     }
 
-    public void start(@NonNull Activity activity, boolean enableMultisample) {
+    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier) {
         started = true;
-        c_start(pointer, activity, enableMultisample);
+        c_start(pointer, activity, enableMultisample, resolutionMultiplier);
     }
 
     public void resume() {
@@ -65,17 +65,17 @@ public class XRRenderer implements AutoCloseable {
     }
 
     public interface EngineStartedListener {
-        boolean onEngineStarted(int sampleCount);
+        boolean onEngineStarted(int sampleCount, float resolutionMultiplier);
     }
 
     public void setEngineStartedListener(EngineStartedListener engineStartedListener) {
         this.engineStartedListener = engineStartedListener;
     }
 
-    private boolean engineStarted(int sampleCount) {
+    private boolean engineStarted(int sampleCount, float resolutionMultiplier) {
         boolean result = false;
         if (engineStartedListener != null)
-            result = engineStartedListener.onEngineStarted(sampleCount);
+            result = engineStartedListener.onEngineStarted(sampleCount, resolutionMultiplier);
         engineStartedListener = null;
         return result;
     }
@@ -132,7 +132,7 @@ public class XRRenderer implements AutoCloseable {
 
     private static native long c_createNativeXRObject();
     private native void c_initialize(long pointer);
-    private native void c_start(long pointer, Activity activity, boolean enableMultisample);
+    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier);
     private native void c_resume(long pointer);
     private native void c_pause(long pointer);
     private native void c_destroy(long pointer);

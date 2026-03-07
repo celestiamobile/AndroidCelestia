@@ -31,6 +31,7 @@ import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaxr.BuildConfig
 import space.celestia.celestiaxr.common.CelestiaExecutor
+import space.celestia.celestiaxr.settings.RenderSettings
 import space.celestia.celestiaxr.settings.SettingsEntryProviderImpl
 import java.lang.reflect.Type
 import java.util.Date
@@ -176,5 +177,17 @@ object AppModule {
     @AlertMessages
     fun provideAlertMessages(): MutableSharedFlow<String> {
         return MutableSharedFlow(extraBufferCapacity = 1)
+    }
+
+    @Singleton
+    @Provides
+    fun providerRenderSettings(@AppSettings appSettings: PreferenceManager): RenderSettings {
+        val resolutionMultiplierValue = appSettings[PreferenceManager.PredefinedKey.ResolutionMultiplier]?.toIntOrNull()
+        val resolutionMultiplier = if (resolutionMultiplierValue != null && listOf(1, 2, 4, 8).contains(resolutionMultiplierValue)) {
+            resolutionMultiplierValue
+        } else {
+            1
+        }
+        return RenderSettings(enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true", resolutionMultiplier = resolutionMultiplier)
     }
 }

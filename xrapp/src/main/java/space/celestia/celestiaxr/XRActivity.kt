@@ -36,6 +36,7 @@ import space.celestia.celestiaui.utils.PreferenceManager
 import kotlinx.coroutines.flow.MutableSharedFlow
 import space.celestia.celestiaxr.di.AlertMessages
 import space.celestia.celestiaxr.home.HomeActivity
+import space.celestia.celestiaxr.settings.RenderSettings
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -85,6 +86,9 @@ class XRActivity : ComponentActivity() {
 
     @Inject
     lateinit var resourceManager: ResourceManager
+
+    @Inject
+    lateinit var renderSettings: RenderSettings
 
     private val celestiaConfigFilePath: String
         get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath] ?: defaultFilePaths.configFilePath
@@ -243,8 +247,8 @@ class XRActivity : ComponentActivity() {
     }
 
     private fun loadConfigSuccess() {
-        xrRenderer.setEngineStartedListener { _ ->
-            return@setEngineStartedListener initCelestia()
+        xrRenderer.setEngineStartedListener { _, resolutionMultiplier ->
+            return@setEngineStartedListener initCelestia(resolutionMultiplier)
         }
         xrRenderer.setControllerButtonListener { button, up ->
             when (val action = JoystickHandler.joystickButtonKeyAction(button, appSettings)) {
@@ -283,7 +287,7 @@ class XRActivity : ComponentActivity() {
                 }
             }
         }
-        xrRenderer.startConditionally(this, appSettings[PreferenceManager.PredefinedKey.MSAA] == "true")
+        xrRenderer.startConditionally(this, renderSettings.enableMultisample, renderSettings.resolutionMultiplier)
     }
 
     private fun openHomePanelIfNeeded() {
@@ -469,7 +473,7 @@ class XRActivity : ComponentActivity() {
         return availablePaths
     }
 
-    private fun initCelestia(): Boolean {
+    private fun initCelestia(resolutionMultiplier: Float): Boolean {
         appStatusReporter.updateState(AppStatusReporter.State.LOADING)
 
         val data = celestiaDataDirPath
@@ -506,6 +510,8 @@ class XRActivity : ComponentActivity() {
             appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }
+
+        appCore.screenDPI = (appCore.screenDPI * resolutionMultiplier).toInt()
 
         val preferredInstalledFont = availableInstalledFonts[language] ?: defaultInstalledFont
         val normalFont = preferredInstalledFont?.first
