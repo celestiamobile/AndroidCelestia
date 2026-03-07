@@ -38,10 +38,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
-            ndk {
-                abiFilters += listOf("arm64-v8a") // Meta Quest is arm64-v8a only
-            }
         }
     }
 
@@ -51,8 +47,6 @@ android {
     }
 
     namespace = "space.celestia.celestiaxr"
-
-    flavorDimensions += "distribution"
 }
 
 kotlin {
@@ -72,15 +66,15 @@ val convertPO by tasks.registering(Exec::class) {
     executable = "/bin/sh"
     args = listOf("convert_po.sh", File(File(File(projectDir, "src"), "main"), "assets").absolutePath)
 }
-//
-//// Task ordering
-//convertPO {
-//    mustRunAfter(copyGeneralData)
-//}
-//
-//tasks.preBuild {
-//    dependsOn(copyGeneralData, convertPO)
-//}
+
+// Task ordering
+convertPO {
+    mustRunAfter(copyGeneralData)
+}
+
+tasks.preBuild {
+    dependsOn(copyGeneralData, convertPO)
+}
 
 dependencies {
     implementation(libs.kotlin.stdlib)
