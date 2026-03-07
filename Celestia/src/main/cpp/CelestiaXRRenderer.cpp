@@ -96,7 +96,7 @@ struct CelestiaOpenXR {
     bool exitRequested    = false;
     bool enableMultisample = false;
     int resolutionMultiplier = 1;
-    std::string fontPath = "";
+    std::string fontPath;
     int ttcIndex = 0;
 
     int actualSampleCount = 1;
@@ -105,6 +105,7 @@ struct CelestiaOpenXR {
     CelestiaCore* corePtr = nullptr;
     int32_t lastResizeWidth = 0;
     int32_t lastResizeHeight = 0;
+    XrTime  lastPredictedDisplayTime = 0;
     void setCorePointer(CelestiaCore* c) { corePtr = c; }
 
     std::thread renderThread;
@@ -170,7 +171,7 @@ jmethodID CelestiaOpenXR::engineStartedMethod = nullptr;
 jmethodID CelestiaOpenXR::controllerButtonMethod = nullptr;
 jmethodID CelestiaOpenXR::joystickAxisMethod = nullptr;
 
-static void buildViewMatrix(const XrPosef& pose, float* result);
+static Matrix4f buildViewMatrix(const XrPosef& pose);
 
 // ── Custom projection mode for asymmetric XR frustums ─────────────────────────
 class CustomPerspectiveProjectionMode : public celestia::engine::PerspectiveProjectionMode
@@ -349,12 +350,6 @@ void CelestiaOpenXR::renderLoop() {
         }
         
         if (sessionRunning) {
-            if (!engineStartedCalled) {
-                bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod, static_cast<jint>(actualSampleCount), static_cast<jfloat>(actualResolutionMultiplier)));
-                if (!started)
-                    break;
-                engineStartedCalled = true;
-            }
             renderFrame(env);
         } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -645,52 +640,15 @@ void CelestiaOpenXR::createActions() {
     XR_CHECK(xrAttachSessionActionSets(session, &attachInfo), "xrAttachSessionActionSets");
 }
 
-static void buildViewMatrix(const XrPosef& pose, float* result) {
-    // pose is Camera-to-World. We need World-to-Camera (View Matrix) matching visionOS simd_inverse
-    const float x = pose.orientation.x;
-    const float y = pose.orientation.y;
-    const float z = pose.orientation.z;
-    const float w = pose.orientation.w;
-
-    const float x2 = x + x, y2 = y + y, z2 = z + z;
-    const float xx = x * x2,  xy = x * y2,  xz = x * z2;
-    const float yy = y * y2,  yz = y * z2,  zz = z * z2;
-    const float wx = w * x2,  wy = w * y2,  wz = w * z2;
-
-    // Camera-to-World rotation matrix
-    float r00 = 1.0f - (yy + zz);
-    float r01 = xy - wz;
-    float r02 = xz + wy;
-
-    float r10 = xy + wz;
-    float r11 = 1.0f - (xx + zz);
-    float r12 = yz - wx;
-
-    float r20 = xz - wy;
-    float r21 = yz + wx;
-    float r22 = 1.0f - (xx + yy);
-
-    // Camera-to-World translation
-    float tx = pose.position.x;
-    float ty = pose.position.y;
-    float tz = pose.position.z;
-
-    // To get World-to-Camera (inverse of Camera-to-World), we transpose the rotation
-    // and multiply the negatively translated position by the transposed rotation.
-    // Transposed rotation:
-    result[0] = r00;  result[4] = r10;  result[8] = r20;   result[12] = 0.0f;
-    result[1] = r01;  result[5] = r11;  result[9] = r21;   result[13] = 0.0f;
-    result[2] = r02;  result[6] = r12;  result[10] = r22;  result[14] = 0.0f;
-
-    // Inverse translation: -R^T * T
-    result[12] = -(r00 * tx + r10 * ty + r20 * tz);
-    result[13] = -(r01 * tx + r11 * ty + r21 * tz);
-    result[14] = -(r02 * tx + r12 * ty + r22 * tz);
-
-    result[3] = 0.0f;
-    result[7] = 0.0f;
-    result[11] = 0.0f;
-    result[15] = 1.0f;
+static Matrix4f buildViewMatrix(const XrPosef& pose) {
+    // pose is Camera-to-World; invert to get World-to-Camera: [R^T | -R^T*T]
+    Quaternionf q(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+    Vector3f t(pose.position.x, pose.position.y, pose.position.z);
+    Matrix3f R = q.toRotationMatrix();
+    Matrix4f view = Matrix4f::Identity();
+    view.topLeftCorner<3, 3>() = R.transpose();
+    view.topRightCorner<3, 1>() = -(R.transpose() * t);
+    return view;
 }
 
 // ── start / stop / resume / destroy ──────────────────────────────────────────
@@ -827,6 +785,19 @@ void CelestiaOpenXR::handleSessionStateChange(XrSessionState newState) {
 void CelestiaOpenXR::renderFrame(JNIEnv* env) {
     if (!sessionRunning) return;
 
+    if (!engineStartedCalled) {
+        bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod, static_cast<jint>(actualSampleCount), static_cast<jfloat>(actualResolutionMultiplier)));
+        if (!started) {
+            exitRequested = true;
+            return;
+        }
+        engineStartedCalled = true;
+        struct timespec ts{};
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        // Set to current time
+        lastPredictedDisplayTime = static_cast<XrTime>(ts.tv_sec) * 1000000000LL + ts.tv_nsec;
+    }
+
     // ── Wait ─────────────────────────────────────────────────────────────────
     XrFrameWaitInfo  waitInfo{XR_TYPE_FRAME_WAIT_INFO};
     XrFrameState     frameState{XR_TYPE_FRAME_STATE};
@@ -905,6 +876,12 @@ void CelestiaOpenXR::renderFrame(JNIEnv* env) {
         }
     }
 
+    // ── Tick simulation to predicted presentation time ────────────────────────
+    if (corePtr) {
+        corePtr->tick(static_cast<double>(frameState.predictedDisplayTime - lastPredictedDisplayTime) * 1.0e-9);
+        lastPredictedDisplayTime = frameState.predictedDisplayTime;
+    }
+
     std::vector<XrCompositionLayerBaseHeader*> layers;
     XrCompositionLayerProjection               layerProj{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
     std::array<XrCompositionLayerProjectionView, 2> projViews{};
@@ -968,16 +945,15 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
     if (corePtr) {
         auto* core = corePtr;
 
-        float nearZ = 0.05f;
-        float farZ = 10000.0f; // Celestia will adjust this, just a default
+        float nearZ = 0.1f;
+        float farZ = CustomPerspectiveProjectionMode::maximumFarZ;
 
         float left   = nearZ * tanf(view.fov.angleLeft);
         float right  = nearZ * tanf(view.fov.angleRight);
         float bottom = nearZ * tanf(view.fov.angleDown);
         float top    = nearZ * tanf(view.fov.angleUp);
 
-        float viewMat[16];
-        buildViewMatrix(view.pose, viewMat);
+        Matrix4f viewMatrix = buildViewMatrix(view.pose);
 
         if (eyeIndex == 0) {
             if (hasPendingTasks)
@@ -988,18 +964,12 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
 
         // Set up the asymmetric projection for this eye
         renderer->setProjectionMode(std::make_shared<CustomPerspectiveProjectionMode>(left, right, top, bottom, nearZ, farZ, static_cast<float>(eye.width), static_cast<float>(eye.height)));
-
-        Matrix4f viewMatrix = Map<const Matrix4f>(viewMat);
         renderer->setCameraTransform(viewMatrix.block<3, 3>(0, 0).cast<double>());
 
         if (eye.width != lastResizeWidth || eye.height != lastResizeHeight) {
             core->resize(eye.width, eye.height);
             lastResizeWidth = eye.width;
             lastResizeHeight = eye.height;
-        }
-
-        if (eyeIndex == 0) {
-            core->tick();
         }
 
         core->draw();
