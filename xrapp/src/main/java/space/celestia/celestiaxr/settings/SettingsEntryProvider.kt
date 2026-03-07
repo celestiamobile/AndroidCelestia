@@ -228,6 +228,12 @@ private val staticRendererItems: List<SettingsItem> = listOf(
     )),
     SettingsCommonItem(CelestiaString("Advanced", "Advanced setting items"), listOf(
         SettingsCommonItem.Section(listOf(
+            SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ResolutionMultiplier, displayName = CelestiaString("Render Resolution", ""), options = listOf(
+                Pair(1, CelestiaString("1x", "")),
+                Pair(2, CelestiaString("2x", "")),
+                Pair(4, CelestiaString("4x", "")),
+                Pair(8, CelestiaString("8x", "")),
+            ), defaultSelection = 1),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", ""))
         ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
     )),

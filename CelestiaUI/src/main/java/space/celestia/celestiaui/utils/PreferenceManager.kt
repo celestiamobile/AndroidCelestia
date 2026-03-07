@@ -59,7 +59,8 @@ class PreferenceManager(context: Context, name: String) {
         MigrationTargetDirectory,
         UseMediaDirForAddons,
         DetectVirtualDisplay,
-        LocalSettingMigration
+        LocalSettingMigration,
+        ResolutionMultiplier
         ;
 
         override val valueString: String

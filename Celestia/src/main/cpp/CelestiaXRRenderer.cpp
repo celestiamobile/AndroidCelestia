@@ -95,6 +95,10 @@ struct CelestiaOpenXR {
     bool sessionRunning   = false;
     bool exitRequested    = false;
     bool enableMultisample = false;
+    int resolutionMultiplier = 1;
+
+    int actualSampleCount = 1;
+    float actualResolutionMultiplier = 1;
 
     CelestiaCore* corePtr = nullptr;
     int32_t lastResizeWidth = 0;
@@ -339,8 +343,7 @@ void CelestiaOpenXR::renderLoop() {
         
         if (sessionRunning) {
             if (!engineStartedCalled) {
-                jint sampleCount = enableMultisample ? (jint)eyeSwapchains[0].sampleCount : 1;
-                bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod, sampleCount));
+                bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod, static_cast<jint>(actualSampleCount), static_cast<jfloat>(actualResolutionMultiplier)));
                 if (!started)
                     break;
                 engineStartedCalled = true;
@@ -521,19 +524,22 @@ bool CelestiaOpenXR::createSwapchains() {
     for (uint32_t i = 0; i < 2 && i < viewCount; ++i) {
         const auto& vc = viewConfigs[i];
 
+        actualSampleCount = enableMultisample ? std::min(vc.maxSwapchainSampleCount, 4u) : 1;
+        actualResolutionMultiplier = std::min(std::min(static_cast<float>(resolutionMultiplier), static_cast<float>(vc.maxImageRectWidth) / static_cast<float>(vc.recommendedImageRectWidth)),static_cast<float>(vc.maxImageRectHeight) / static_cast<float>(vc.recommendedImageRectHeight));
+
         XrSwapchainCreateInfo sci{XR_TYPE_SWAPCHAIN_CREATE_INFO};
         sci.usageFlags  = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
         sci.format      = GL_SRGB8_ALPHA8; // Workaround for https://communityforums.atmeta.com/discussions/dev-openxr/srgbrgb-giving-washed-outbright-image/957475
-        sci.sampleCount = enableMultisample ? std::min(vc.maxSwapchainSampleCount, 4u) : 1;
-        sci.width       = vc.recommendedImageRectWidth;
-        sci.height      = vc.recommendedImageRectHeight;
+        sci.sampleCount = actualSampleCount;
+        sci.width       = static_cast<uint32_t>(vc.recommendedImageRectWidth * actualResolutionMultiplier);
+        sci.height      = static_cast<uint32_t>(vc.recommendedImageRectHeight * actualResolutionMultiplier);
         sci.faceCount   = 1;
         sci.arraySize   = 1;
         sci.mipCount    = 1;
 
         EyeSwapchain& eye = eyeSwapchains[i];
-        eye.width       = (int32_t)sci.width;
-        eye.height      = (int32_t)sci.height;
+        eye.width       = static_cast<int32_t>(sci.width);
+        eye.height      = static_cast<int32_t>(sci.height);
         eye.sampleCount = sci.sampleCount;
 
         XR_CHECK(xrCreateSwapchain(session, &sci, &eye.handle), "xrCreateSwapchain");
@@ -1025,16 +1031,21 @@ Java_space_celestia_celestia_XRRenderer_c_1initialize(JNIEnv* env, jobject thiz,
 
     jclass clazz = env->GetObjectClass(thiz);
     CelestiaOpenXR::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
-    CelestiaOpenXR::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(I)Z");
+    CelestiaOpenXR::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(IF)Z");
     CelestiaOpenXR::controllerButtonMethod = env->GetMethodID(clazz, "controllerButton", "(IZ)V");
     CelestiaOpenXR::joystickAxisMethod = env->GetMethodID(clazz, "joystickAxis", "(IF)V");
 }
 
+extern "C"
 JNIEXPORT void JNICALL
-Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv* env, jobject /*thiz*/, jlong pointer, jobject activity, jboolean enableMultisample) {
+Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv *env, jobject thiz, jlong pointer,
+                                                 jobject activity, jboolean enable_multisample,
+                                                 jint resolution_multiplier) {
+
     LOGI("JNI: start");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
-    xr->enableMultisample = static_cast<bool>(enableMultisample);
+    xr->enableMultisample = static_cast<bool>(enable_multisample);
+    xr->resolutionMultiplier = static_cast<int>(resolution_multiplier);
     xr->init(env, activity);
 }
 
