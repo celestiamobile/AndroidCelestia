@@ -164,7 +164,7 @@ object AppModule {
     @Provides
     @Flavor
     fun provideFlavor(): String {
-        return "sideload" // TODO: fix this
+        return "quest"
     }
 
     @Singleton
