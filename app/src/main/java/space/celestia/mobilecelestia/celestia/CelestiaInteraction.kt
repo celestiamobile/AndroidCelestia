@@ -28,8 +28,6 @@ import androidx.annotation.RequiresApi
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.celestiaui.control.viewmodel.JoystickAction
-import space.celestia.celestiaui.info.model.CelestiaAction
-import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.utils.PreferenceManager
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executor
@@ -406,7 +404,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             // Listeners in Android T SDK do not have optional parameters, might
             // cause NullPointerException, ignore it
             scaleGestureDetector.onTouchEvent(event)
-        } catch (ignored: Throwable) {}
+        } catch (_: Throwable) {}
 
         if (isScaling) {
             if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
@@ -430,7 +428,7 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             if (gestureDetector.onTouchEvent(event)) {
                 return true
             }
-        } catch(ignored: Throwable) {
+        } catch(_: Throwable) {
             return true
         }
 
@@ -712,8 +710,6 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             xRight += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
             yRight += getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
         }
-
-        if (xLeft == 0f && yLeft == 0f && xRight == 0f && yRight == 0f) return
 
         val shouldInvertX = appSettings[PreferenceManager.PredefinedKey.ControllerInvertX] == "true"
         val shouldInvertY = appSettings[PreferenceManager.PredefinedKey.ControllerInvertY] == "true"
