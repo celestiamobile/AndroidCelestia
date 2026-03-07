@@ -12,14 +12,19 @@ import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
+import space.celestia.celestiafoundation.favorite.BookmarkNode
+import space.celestia.celestiafoundation.utils.FileUtils
 import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
+import space.celestia.celestiaui.favorite.getCurrentBookmarks
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.resource.CommonWebFragment
 import space.celestia.celestiaui.utils.AppURL
@@ -82,6 +87,15 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                         if (favorite is FavoriteBookmarkItem && favorite.isLeaf) {
                             shareURLDirect(favorite.bookmark.name, favorite.bookmark.url)
                         }
+                    },
+                    saveFavorites = {
+                        // TODO:
+//                        val favorites = getCurrentBookmarks()
+//                        try {
+//                            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
+//                            val str = Gson().toJson(favorites, myType)
+//                            FileUtils.writeTextToFile(str, favoriteJsonFilePath)
+//                        } catch (ignored: Throwable) { }
                     }
                 )
             }

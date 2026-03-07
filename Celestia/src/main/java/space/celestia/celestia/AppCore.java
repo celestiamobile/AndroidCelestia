@@ -920,10 +920,12 @@ public class AppCore {
     public boolean isPaused() { return c_isPaused(pointer); }
     public @NonNull String getMessageText() { return c_getMessageText(pointer); }
     public boolean isLightTravelDelayEnabled() { return c_isLightTravelDelayEnabled(pointer); }
+    public @NonNull AppState getState() { return c_getState(pointer); }
 
     private static native double c_getTimeScale(long pointer);
     private static native void c_setTimeScale(long pointer, double timeScale);
     private static native boolean c_isPaused(long pointer);
     private static native String c_getMessageText(long pointer);
     private static native boolean c_isLightTravelDelayEnabled(long pointer);
+    private static native AppState c_getState(long pointer);
 }
