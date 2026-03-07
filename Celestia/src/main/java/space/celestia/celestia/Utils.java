@@ -26,6 +26,18 @@ public class Utils {
     public static native @NonNull
     Vector rectToSpherical(@NonNull Vector rect);
     public static native double AUToKilometers(double au);
+    public static native double lightYearsToParsecs(double ly);
+    public static native double parsecsToLightYears(double pc);
+    public static native double lightYearsToKilometers(double ly);
+    public static native double kilometersToLightYears(double km);
+    public static native double lightYearsToAU(double ly);
+    public static native double AUtoLightYears(double au);
+    public static native double kilometersToAU(double km);
+    public static native double AUtoKilometers(double au);
+    public static native double microLightYearsToKilometers(double mly);
+    public static native double kilometersToMicroLightYears(double km);
+    public static native double microLightYearsToAU(double mly);
+    public static native double AUtoMicroLightYears(double au);
     public static native double degFromRad(double rad);
     public static native float[] transformQuaternion(float[] q, float angleZ);
 

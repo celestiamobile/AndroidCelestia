@@ -7,6 +7,7 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
 import dagger.Module
+import kotlinx.coroutines.flow.MutableSharedFlow
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -168,5 +169,12 @@ object AppModule {
     @Provides
     fun provideSettingsEntryProvider(): SettingsEntryProvider {
         return SettingsEntryProviderImpl()
+    }
+
+    @Singleton
+    @Provides
+    @AlertMessages
+    fun provideAlertMessages(): MutableSharedFlow<String> {
+        return MutableSharedFlow(extraBufferCapacity = 1)
     }
 }

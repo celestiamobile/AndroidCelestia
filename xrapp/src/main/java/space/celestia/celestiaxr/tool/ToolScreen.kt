@@ -53,7 +53,7 @@ private sealed class AddonFetchResult {
 }
 
 @Composable
-fun ToolScreen(page: Tool.Page, linkClicked: (String, Boolean) -> Unit, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, requestRunFavoriteScript: (String) -> Unit, requestOpenCelestiaURL: (String) -> Unit, requestShareFavorite: (MutableFavoriteBaseItem) -> Unit) {
+fun ToolScreen(page: Tool.Page, linkClicked: (String, Boolean) -> Unit, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, requestRunFavoriteScript: (String) -> Unit, requestOpenCelestiaURL: (String) -> Unit, requestShareFavorite: (MutableFavoriteBaseItem) -> Unit, saveFavorites: () -> Unit) {
     val viewModel: ToolViewModel = hiltViewModel()
     val context = LocalContext.current
     when (page) {
@@ -129,7 +129,7 @@ fun ToolScreen(page: Tool.Page, linkClicked: (String, Boolean) -> Unit, requestR
                 requestOpenCelestiaURL(favorite.bookmark.url)
             }, openScriptRequested = { favorite ->
                 requestRunFavoriteScript(favorite.script.filename)
-            })
+            }, saveFavorites = saveFavorites)
         }
         is Tool.Page.Settings -> {
             Settings(

@@ -3,7 +3,6 @@ package space.celestia.celestiaxr
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.EntryPoint
@@ -25,6 +24,7 @@ import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiaui.control.viewmodel.JoystickAction
+import space.celestia.celestiaui.control.viewmodel.JoystickHandler
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
@@ -33,6 +33,8 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
+import kotlinx.coroutines.flow.MutableSharedFlow
+import space.celestia.celestiaxr.di.AlertMessages
 import space.celestia.celestiaxr.home.HomeActivity
 import java.io.File
 import java.io.IOException
@@ -56,6 +58,10 @@ class XRActivity : ComponentActivity() {
 
     @Inject
     lateinit var defaultFilePaths: FilePaths
+
+    @AlertMessages
+    @Inject
+    lateinit var alertMessages: MutableSharedFlow<String>
 
     lateinit var appStatusReporter: AppStatusReporter
 
@@ -236,31 +242,12 @@ class XRActivity : ComponentActivity() {
          language = getString(R.string.celestia_language)
     }
 
-    private fun joystickButtonKeyAction(keyCode: Int): JoystickAction {
-        return when (keyCode) {
-            KeyEvent.KEYCODE_BUTTON_A -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapA]?.toIntOrNull(), JoystickAction.Key.Celestia.MoveSlower) }
-            KeyEvent.KEYCODE_BUTTON_B -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapB]?.toIntOrNull(), JoystickAction.Key.None) }
-            KeyEvent.KEYCODE_BUTTON_X -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapX]?.toIntOrNull(), JoystickAction.Key.Celestia.MoveFaster) }
-            KeyEvent.KEYCODE_BUTTON_Y -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapY]?.toIntOrNull(), JoystickAction.Key.None) }
-            KeyEvent.KEYCODE_DPAD_UP -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadUp]?.toIntOrNull(), JoystickAction.Key.Celestia.PitchUp) }
-            KeyEvent.KEYCODE_DPAD_DOWN -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadDown]?.toIntOrNull(), JoystickAction.Key.Celestia.PitchDown) }
-            KeyEvent.KEYCODE_DPAD_LEFT -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadLeft]?.toIntOrNull(), JoystickAction.Key.Celestia.RollLeft) }
-            KeyEvent.KEYCODE_DPAD_RIGHT -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapDpadRight]?.toIntOrNull(), JoystickAction.Key.Celestia.RollRight) }
-            KeyEvent.KEYCODE_BUTTON_L1 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapLB]?.toIntOrNull(), JoystickAction.Key.None) }
-            KeyEvent.KEYCODE_BUTTON_L2 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapLT]?.toIntOrNull(), JoystickAction.Key.Celestia.RollLeft) }
-            KeyEvent.KEYCODE_BUTTON_R1 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapRB]?.toIntOrNull(), JoystickAction.Key.None) }
-            KeyEvent.KEYCODE_BUTTON_R2 -> { JoystickAction.get(appSettings[PreferenceManager.PredefinedKey.ControllerRemapRT]?.toIntOrNull(), JoystickAction.Key.Celestia.RollRight) }
-            KeyEvent.KEYCODE_BUTTON_START -> JoystickAction.Key.ShowMenu
-            else -> JoystickAction.Key.None
-        }
-    }
-
     private fun loadConfigSuccess() {
         xrRenderer.setEngineStartedListener { _ ->
             return@setEngineStartedListener initCelestia()
         }
         xrRenderer.setControllerButtonListener { button, up ->
-            when (val action = joystickButtonKeyAction(button)) {
+            when (val action = JoystickHandler.joystickButtonKeyAction(button, appSettings)) {
                 is JoystickAction.Key.Celestia -> {
                     action.invoke(appCore, up)
                 }
@@ -312,7 +299,7 @@ class XRActivity : ComponentActivity() {
 
     private fun loadConfigFailed(error: Throwable) {
         Log.e(TAG, "Initialization failed, $error")
-        // showError(error)
+        alertMessages.tryEmit(error.message ?: CelestiaString("Unknown error", ""))
     }
 
     private fun celestiaLoadingFailed() {
@@ -500,7 +487,9 @@ class XRActivity : ComponentActivity() {
             val fallbackConfigPath = defaultFilePaths.configFilePath
             val fallbackDataPath = defaultFilePaths.dataDirectoryPath
             if (fallbackConfigPath != cfg || fallbackDataPath != data) {
-                // TODO: Loading fallback default directory, show an alert
+                lifecycleScope.launch {
+                    alertMessages.tryEmit(CelestiaString("Error loading data, fallback to original configuration.", ""))
+                }
                 AppCore.chdir(fallbackDataPath)
                 AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", language, countryCode)
                 if (!appCore.startSimulation(fallbackConfigPath, addonDirs, appStatusReporter)) {

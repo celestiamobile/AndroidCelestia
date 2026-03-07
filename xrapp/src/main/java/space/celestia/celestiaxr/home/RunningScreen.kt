@@ -30,6 +30,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import space.celestia.celestia.AppState
+import space.celestia.celestia.Observer
 import space.celestia.celestia.Utils
 import space.celestia.celestiaxr.tool.Tool
 import space.celestia.celestiaxr.tool.ToolActivity
@@ -37,15 +39,14 @@ import space.celestia.celestiaxr.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DateFormat
+import java.text.NumberFormat
 import java.util.Locale
 
 data class SimulationState(
-    val time: Double = 0.0,
-    val timeScale: Double = 1.0,
-    val isPaused: Boolean = false,
+    val appState: AppState? = null,
     val selectedObjectName: String = "",
-    val speed: Double = 0.0,
-    val coordinateSystem: Int = 0,
+    val referenceObjectName: String = "",
+    val targetObjectName: String = "",
     val messageText: String = ""
 )
 
@@ -60,26 +61,25 @@ fun RunningScreen() {
         val job = scope.launch {
             while (true) {
                 viewModel.xrRenderer.enqueueTask {
-                    val time = viewModel.appCore.simulation.time
-                    val timeScale = viewModel.appCore.timeScale
-                    val isPaused = viewModel.appCore.isPaused
-                    val observer = viewModel.appCore.simulation.activeObserver
-                    val speed = observer.speed
-                    val coordinateSystem = observer.coordinateSystem
-                    val selection = viewModel.appCore.simulation.selection
-                    val selectedName = if (!selection.isEmpty) {
-                        viewModel.appCore.simulation.universe.getNameForSelection(selection)
+                    val appState = viewModel.appCore.state
+                    val universe = viewModel.appCore.simulation.universe
+                    val selectedObjectName = if (!appState.selectedObject.isEmpty) {
+                        universe.getNameForSelection(appState.selectedObject)
+                    } else ""
+                    val referenceObjectName = if (!appState.referenceObject.isEmpty) {
+                        universe.getNameForSelection(appState.referenceObject)
+                    } else ""
+                    val targetObjectName = if (!appState.targetObject.isEmpty) {
+                        universe.getNameForSelection(appState.targetObject)
                     } else ""
                     val messageText = viewModel.appCore.messageText
 
                     scope.launch {
                         simulationState = SimulationState(
-                            time = time,
-                            timeScale = timeScale,
-                            isPaused = isPaused,
-                            selectedObjectName = selectedName,
-                            speed = speed,
-                            coordinateSystem = coordinateSystem,
+                            appState = appState,
+                            selectedObjectName = selectedObjectName,
+                            referenceObjectName = referenceObjectName,
+                            targetObjectName = targetObjectName,
                             messageText = messageText
                         )
                     }
@@ -92,32 +92,34 @@ fun RunningScreen() {
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
-            .padding(16.dp)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Tools Section
             SectionHeader("Tools")
             ToolsSection()
 
-            // Stats Section
-            SectionHeader("Stats")
-            StatsSection(simulationState, dateFormatter)
+            val appState = simulationState.appState
+            if (appState != null) {
+                SectionHeader("Stats")
+                StatsSection(simulationState, appState, dateFormatter)
+            }
 
-            // Messages Section
             if (simulationState.messageText.isNotEmpty()) {
                 SectionHeader("Messages")
                 MessagesSection(simulationState.messageText)
             }
         }
+
+        BottomActionBar()
     }
 }
 
@@ -160,19 +162,29 @@ private fun ToolsSection() {
 }
 
 @Composable
-private fun StatsSection(state: SimulationState, dateFormatter: DateFormat) {
+private fun StatsSection(state: SimulationState, appState: AppState, dateFormatter: DateFormat) {
+    val isMetric = remember { usesMetricSystem() }
+    val numberFormatter = remember { NumberFormat.getNumberInstance() }
     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-        StatRow("Time", formatJulianDate(state.time, dateFormatter))
+        StatRow("Time", formatTime(appState.time, appState.isPaused, appState.isLightTravelDelayEnabled, dateFormatter))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        StatRow("Time Scale", formatTimeScale(state.timeScale, state.isPaused))
+        StatRow("Time Scale", formatTimeScale(appState.timeScale, numberFormatter))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         if (state.selectedObjectName.isNotEmpty()) {
             StatRow("Selected", state.selectedObjectName)
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            if (appState.showDistanceToSelection) {
+                StatRow("Distance", formatLength(appState.distanceToSelectionSurface, isMetric, numberFormatter))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                if (appState.showDistanceToSelectionCenter) {
+                    StatRow("Distance to Center", formatLength(appState.distanceToSelectionCenter, isMetric, numberFormatter))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
+            }
         }
-        StatRow("Speed", formatSpeed(state.speed))
+        StatRow("Mode", formatCoordinateSystem(appState.coordinateSystem, state.referenceObjectName, state.targetObjectName))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        StatRow("Mode", formatCoordinateSystem(state.coordinateSystem))
+        StatRow("Speed", formatSpeed(appState.speed.toDouble(), isMetric, numberFormatter))
     }
 }
 
@@ -206,41 +218,123 @@ private fun MessagesSection(messageText: String) {
     )
 }
 
-private fun formatJulianDate(julianDate: Double, formatter: DateFormat): String {
-    val date = Utils.createDateFromJulianDay(julianDate)
-    return formatter.format(date)
-}
-
-private fun formatTimeScale(timeScale: Double, isPaused: Boolean): String {
-    if (isPaused) return "Paused"
+private fun formatTime(julianDate: Double, isPaused: Boolean, isLightTravelDelayEnabled: Boolean, formatter: DateFormat): String {
+    val time = formatter.format(Utils.createDateFromJulianDay(julianDate))
     return when {
-        timeScale == 1.0 -> "1× (Real time)"
-        timeScale > 0 && timeScale < 1 -> "%.6f×".format(timeScale)
-        else -> "%.0f×".format(timeScale)
+        isPaused && isLightTravelDelayEnabled -> "$time LT (Paused)"
+        isPaused -> "$time (Paused)"
+        isLightTravelDelayEnabled -> "$time LT"
+        else -> time
     }
 }
 
-private fun formatSpeed(speed: Double): String {
-    // Speed is in microlight-years per second from Celestia engine
-    // Convert to km/s: 1 light-year = 9.461e12 km, 1 microly = 9.461e6 km
-    val kmPerSec = speed * 9.461e6
+private fun formatTimeScale(timeScale: Double, formatter: NumberFormat): String {
     return when {
-        kmPerSec < 1.0 -> "%.2f m/s".format(kmPerSec * 1000.0)
-        kmPerSec < 1000.0 -> "%.2f km/s".format(kmPerSec)
-        kmPerSec < 299792.458 -> "%.0f km/s".format(kmPerSec)
-        else -> "%.4f c".format(kmPerSec / 299792.458)
+        timeScale == 1.0 -> "Real Time"
+        timeScale == -1.0 -> "-Real Time"
+        kotlin.math.abs(timeScale) < 1e-15 -> "Time Stopped"
+        else -> "${formatNumber(timeScale, formatter)}× Real Time"
     }
 }
 
-private fun formatCoordinateSystem(coordinateSystem: Int): String {
+private const val oneMiInKm = 1.60934
+private const val oneFtInKm = 0.0003048
+
+private fun usesMetricSystem(): Boolean {
+    return Locale.getDefault().country !in setOf("US", "LR", "MM")
+}
+
+private fun formatNumber(number: Double, formatter: NumberFormat): String {
+    val abs = kotlin.math.abs(number)
+    val fractionDigits = when {
+        abs >= 1000.0 -> 0
+        abs >= 10.0 -> 1
+        abs >= 1.0 -> 2
+        else -> 4
+    }
+    formatter.minimumFractionDigits = fractionDigits
+    formatter.maximumFractionDigits = fractionDigits
+    return formatter.format(number)
+}
+
+private fun formatLength(km: Double, isMetric: Boolean, formatter: NumberFormat): String {
+    val ly = Utils.kilometersToLightYears(km)
+    val mpcThreshold = Utils.parsecsToLightYears(1e6)
+    val kpcThreshold = 0.5 * Utils.parsecsToLightYears(1e3)
+    val number: Double
+    val unit: String
+    if (kotlin.math.abs(ly) >= mpcThreshold) {
+        unit = "Mpc"
+        number = Utils.lightYearsToParsecs(ly) / 1e6
+    } else if (kotlin.math.abs(ly) >= kpcThreshold) {
+        unit = "kpc"
+        number = Utils.lightYearsToParsecs(ly) / 1e3
+    } else {
+        val au = Utils.kilometersToAU(km)
+        if (kotlin.math.abs(au) >= 1000.0) {
+            unit = "ly"
+            number = ly
+        } else if (km >= 10000000.0) {
+            unit = "au"
+            number = au
+        } else if (!isMetric) {
+            if (km >= oneMiInKm) {
+                unit = "mi"
+                number = km / oneMiInKm
+            } else {
+                unit = "ft"
+                number = km / oneFtInKm
+            }
+        } else {
+            if (km >= 1.0) {
+                unit = "km"
+                number = km
+            } else {
+                unit = "m"
+                number = km * 1000.0
+            }
+        }
+    }
+    return "${formatNumber(number, formatter)} $unit"
+}
+
+private fun formatSpeed(speed: Double, isMetric: Boolean, formatter: NumberFormat): String {
+    val au = Utils.kilometersToAU(speed)
+    val number: Double
+    val unit: String
+    if (kotlin.math.abs(au) >= 1000.0) {
+        unit = "ly/s"
+        number = Utils.kilometersToLightYears(speed)
+    } else if (speed >= 10000000.0) {
+        unit = "au/s"
+        number = au
+    } else if (!isMetric) {
+        if (speed >= oneMiInKm) {
+            unit = "mi/s"
+            number = speed / oneMiInKm
+        } else {
+            unit = "ft/s"
+            number = speed / oneFtInKm
+        }
+    } else {
+        if (speed >= 1.0) {
+            unit = "km/s"
+            number = speed
+        } else {
+            unit = "m/s"
+            number = speed * 1000.0
+        }
+    }
+    return "${formatNumber(number, formatter)} $unit"
+}
+
+private fun formatCoordinateSystem(coordinateSystem: Int, referenceName: String, targetName: String): String {
     return when (coordinateSystem) {
-        0 -> "Universal"
-        1 -> "Ecliptical"
-        2 -> "Body Fixed"
-        3 -> "Phase Lock"
-        4 -> "Chase"
-        5 -> "Phase Lock (Target)"
-        6 -> "Unknown"
+        Observer.COORDINATE_SYSTEM_ECLIPTICAL -> "Follow $referenceName"
+        Observer.COORDINATE_SYSTEM_BODY_FIXED -> "Sync Orbit $referenceName"
+        Observer.COORDINATE_SYSTEM_PHASE_LOCK -> "Lock $referenceName → $targetName"
+        Observer.COORDINATE_SYSTEM_CHASE -> "Chase $referenceName"
+        Observer.COORDINATE_SYSTEM_UNIVERSAL -> "Freeflight"
         else -> "Unknown"
     }
 }
