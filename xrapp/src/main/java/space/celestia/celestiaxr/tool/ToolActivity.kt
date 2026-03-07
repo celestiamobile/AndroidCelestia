@@ -25,6 +25,7 @@ import space.celestia.celestiafoundation.utils.FileUtils
 import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
 import space.celestia.celestiaui.favorite.getCurrentBookmarks
+import space.celestia.celestiaui.favorite.updateCurrentBookmarks
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.resource.CommonWebFragment
 import space.celestia.celestiaui.utils.AppURL
@@ -43,6 +44,8 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
 
     @Inject
     lateinit var appCore: AppCore
+
+    private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
 
     companion object {
         const val EXTRA_TOOL = "extra_tool"
@@ -88,14 +91,23 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                             shareURLDirect(favorite.bookmark.name, favorite.bookmark.url)
                         }
                     },
+                    readFavorites = {
+                        var favorites = arrayListOf<BookmarkNode>()
+                        try {
+                            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
+                            val str = FileUtils.readFileToText(favoriteJsonFilePath)
+                            val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
+                            favorites = decoded
+                        } catch (_: Throwable) { }
+                        updateCurrentBookmarks(favorites)
+                    },
                     saveFavorites = {
-                        // TODO:
-//                        val favorites = getCurrentBookmarks()
-//                        try {
-//                            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
-//                            val str = Gson().toJson(favorites, myType)
-//                            FileUtils.writeTextToFile(str, favoriteJsonFilePath)
-//                        } catch (ignored: Throwable) { }
+                        val favorites = getCurrentBookmarks()
+                        try {
+                            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
+                            val str = Gson().toJson(favorites, myType)
+                            FileUtils.writeTextToFile(str, favoriteJsonFilePath)
+                        } catch (_: Throwable) { }
                     }
                 )
             }
@@ -132,7 +144,7 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                 withContext(Dispatchers.Main) {
                     openAppURL(AppURL.Script(scriptFile.absolutePath))
                 }
-            } catch (ignored: Throwable) {}
+            } catch (_: Throwable) {}
         }
     }
 

@@ -53,7 +53,7 @@ private sealed class AddonFetchResult {
 }
 
 @Composable
-fun ToolScreen(page: Tool.Page, linkClicked: (String, Boolean) -> Unit, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, requestRunFavoriteScript: (String) -> Unit, requestOpenCelestiaURL: (String) -> Unit, requestShareFavorite: (MutableFavoriteBaseItem) -> Unit, saveFavorites: () -> Unit) {
+fun ToolScreen(page: Tool.Page, linkClicked: (String, Boolean) -> Unit, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, requestRunFavoriteScript: (String) -> Unit, requestOpenCelestiaURL: (String) -> Unit, requestShareFavorite: (MutableFavoriteBaseItem) -> Unit, readFavorites: () -> Unit, saveFavorites: () -> Unit) {
     val viewModel: ToolViewModel = hiltViewModel()
     val context = LocalContext.current
     when (page) {
@@ -123,13 +123,24 @@ fun ToolScreen(page: Tool.Page, linkClicked: (String, Boolean) -> Unit, requestR
             TimeSettingsContainer()
         }
         is Tool.Page.Favorites -> {
-            FavoriteContainer(shareRequested = {
-                requestShareFavorite(it)
-            }, openBookmarkRequested = { favorite ->
-                requestOpenCelestiaURL(favorite.bookmark.url)
-            }, openScriptRequested = { favorite ->
-                requestRunFavoriteScript(favorite.script.filename)
-            }, saveFavorites = saveFavorites)
+            var favoritesRead by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                readFavorites()
+                favoritesRead = true
+            }
+            if (favoritesRead) {
+                FavoriteContainer(shareRequested = {
+                    requestShareFavorite(it)
+                }, openBookmarkRequested = { favorite ->
+                    requestOpenCelestiaURL(favorite.bookmark.url)
+                }, openScriptRequested = { favorite ->
+                    requestRunFavoriteScript(favorite.script.filename)
+                }, saveFavorites = saveFavorites)
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
         }
         is Tool.Page.Settings -> {
             Settings(
