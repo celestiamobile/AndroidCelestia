@@ -35,15 +35,18 @@
 
     <application
         android:name=".CelestiaApplication"
-        android:allowBackup="false"
         android:hardwareAccelerated="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/extraction_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:largeHeap="true"
+        android:hasFragileUserData="true"
+        android:theme="@style/AppTheme"
+        android:resizeableActivity="true"
+        android:localeConfig="@xml/locales_config">
         <activity
             android:name=".home.HomeActivity"
             android:exported="false"
@@ -78,6 +81,15 @@
                 <category android:name="com.oculus.intent.category.VR" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
     </application>
 
     <queries>
