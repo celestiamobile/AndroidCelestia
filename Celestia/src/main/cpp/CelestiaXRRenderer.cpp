@@ -524,7 +524,7 @@ bool CelestiaOpenXR::createSwapchains() {
         XrSwapchainCreateInfo sci{XR_TYPE_SWAPCHAIN_CREATE_INFO};
         sci.usageFlags  = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
         sci.format      = GL_SRGB8_ALPHA8; // Workaround for https://communityforums.atmeta.com/discussions/dev-openxr/srgbrgb-giving-washed-outbright-image/957475
-        sci.sampleCount = enableMultisample ? vc.recommendedSwapchainSampleCount : 1;
+        sci.sampleCount = enableMultisample ? std::min(vc.maxSwapchainSampleCount, 4u) : 1;
         sci.width       = vc.recommendedImageRectWidth;
         sci.height      = vc.recommendedImageRectHeight;
         sci.faceCount   = 1;
