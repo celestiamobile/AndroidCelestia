@@ -50,6 +50,8 @@ class FavoriteFragment : Fragment() {
                         listener?.openFavoriteBookmark(item)
                     }, openScriptRequested = { item ->
                         listener?.openFavoriteScript(item)
+                    }, saveFavorites = {
+                        listener?.saveFavorites()
                     })
                 }
             }
@@ -67,7 +69,6 @@ class FavoriteFragment : Fragment() {
 
     override fun onDetach() {
         super.onDetach()
-        listener?.saveFavorites()
         listener = null
     }
 
