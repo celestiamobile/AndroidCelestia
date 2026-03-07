@@ -12,6 +12,7 @@ package space.celestia.celestia;
 import android.app.Activity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,14 +34,14 @@ public class XRRenderer implements AutoCloseable {
         c_initialize(pointer);
     }
 
-    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier) {
+    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, @Nullable String fontPath, int ttcIndex) {
         if (started) return;
-        start(activity, enableMultisample, resolutionMultiplier);
+        start(activity, enableMultisample, resolutionMultiplier, fontPath, ttcIndex);
     }
 
-    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier) {
+    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, @Nullable String fontPath, int ttcIndex) {
         started = true;
-        c_start(pointer, activity, enableMultisample, resolutionMultiplier);
+        c_start(pointer, activity, enableMultisample, resolutionMultiplier, fontPath, ttcIndex);
     }
 
     public void resume() {
@@ -130,12 +131,21 @@ public class XRRenderer implements AutoCloseable {
             task.call();
     }
 
+    public void showOverlayMessage(@NonNull String message) {
+        c_setOverlayMessage(pointer, message);
+    }
+
+    public void clearOverlayMessage() {
+        c_setOverlayMessage(pointer, null);
+    }
+
     private static native long c_createNativeXRObject();
     private native void c_initialize(long pointer);
-    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier);
+    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier, String fontPath, int ttcIndex);
     private native void c_resume(long pointer);
     private native void c_pause(long pointer);
     private native void c_destroy(long pointer);
     private native void c_setCorePointer(long pointer, long corePtr);
     private native void c_setHasPendingTasks(long pointer, boolean hasPendingTasks);
+    private native void c_setOverlayMessage(long pointer, String message);
 }
