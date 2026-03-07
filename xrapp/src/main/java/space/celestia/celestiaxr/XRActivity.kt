@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -11,8 +13,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,8 +35,8 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
-import kotlinx.coroutines.flow.MutableSharedFlow
-import space.celestia.celestiaxr.di.AlertMessages
+import space.celestia.celestiaxr.di.AlertMessage
+import space.celestia.celestiaxr.di.PanelState
 import space.celestia.celestiaxr.home.HomeActivity
 import space.celestia.celestiaxr.settings.RenderSettings
 import java.io.File
@@ -60,9 +62,15 @@ class XRActivity : ComponentActivity() {
     @Inject
     lateinit var defaultFilePaths: FilePaths
 
-    @AlertMessages
+    @AlertMessage
     @Inject
-    lateinit var alertMessages: MutableSharedFlow<String>
+    lateinit var alertMessage: MutableState<String?>
+
+    @PanelState
+    @Inject
+    lateinit var panelState: MutableState<Boolean>
+
+    private var panelStateObservation: Job? = null
 
     lateinit var appStatusReporter: AppStatusReporter
 
@@ -98,6 +106,8 @@ class XRActivity : ComponentActivity() {
 
     private val fontDirPath: String
         get() = defaultFilePaths.fontDirectoryPath
+
+    private class Fonts(val regular: CustomFont, val bold: CustomFont)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
@@ -153,10 +163,7 @@ class XRActivity : ComponentActivity() {
         super.onStart()
 
         xrRenderer.resume()
-        lifecycleScope.launch {
-            delay(100)
-            openHomePanelIfNeeded()
-        }
+        openHomePanelIfNeeded()
     }
 
     override fun onStop() {
@@ -167,6 +174,7 @@ class XRActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
+        panelStateObservation?.cancel()
         exitProcess(0)
     }
 
@@ -213,32 +221,32 @@ class XRActivity : ComponentActivity() {
 
     private fun loadConfig() {
         availableInstalledFonts = mapOf(
-            "ja" to Pair(
+            "ja" to Fonts(
                 CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
                 CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
             ),
-            "ka" to Pair(
+            "ka" to Fonts(
                 CustomFont("$fontDirPath/NotoSansGeorgian-Regular.ttf", 0),
                 CustomFont("$fontDirPath/NotoSansGeorgian-Bold.ttf", 0)
             ),
-            "ko" to Pair(
+            "ko" to Fonts(
                 CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
                 CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
             ),
-            "zh_CN" to Pair(
+            "zh_CN" to Fonts(
                 CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
                 CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
             ),
-            "zh_TW" to Pair(
+            "zh_TW" to Fonts(
                 CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
                 CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
             ),
-            "ar" to Pair(
+            "ar" to Fonts(
                 CustomFont("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
                 CustomFont("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
             )
         )
-        defaultInstalledFont = Pair(
+        defaultInstalledFont = Fonts(
             CustomFont("$fontDirPath/NotoSans-Regular.ttf", 0),
             CustomFont("$fontDirPath/NotoSans-Bold.ttf", 0)
         )
@@ -287,11 +295,12 @@ class XRActivity : ComponentActivity() {
                 }
             }
         }
-        xrRenderer.startConditionally(this, renderSettings.enableMultisample, renderSettings.resolutionMultiplier)
+        val appFont = (availableInstalledFonts[language] ?: defaultInstalledFont)?.bold
+        xrRenderer.startConditionally(this, renderSettings.enableMultisample, renderSettings.resolutionMultiplier, appFont?.path, appFont?.ttcIndex ?: 0)
     }
 
     private fun openHomePanelIfNeeded() {
-        if (!HomeActivity.hasOpenedActivity) {
+        if (!panelState.value) {
             if (isDestroyed || isFinishing) return
 
             val panelIntent = Intent(this@XRActivity, HomeActivity::class.java).apply {
@@ -303,7 +312,7 @@ class XRActivity : ComponentActivity() {
 
     private fun loadConfigFailed(error: Throwable) {
         Log.e(TAG, "Initialization failed, $error")
-        alertMessages.tryEmit(error.message ?: CelestiaString("Unknown error", ""))
+        alertMessage.value = error.message ?: CelestiaString("Unknown error", "")
     }
 
     private fun celestiaLoadingFailed() {
@@ -438,6 +447,18 @@ class XRActivity : ComponentActivity() {
     private fun celestiaLoadingFinished() {
         resourceManager.addonDirectory = addonPaths.firstOrNull()
         resourceManager.scriptDirectory = extraScriptPaths.firstOrNull()
+
+        panelStateObservation = lifecycleScope.launch {
+            snapshotFlow { panelState.value }.collect { visible ->
+                withContext(executor.asCoroutineDispatcher()) {
+                    if (visible) {
+                        xrRenderer.clearOverlayMessage()
+                    } else {
+                        xrRenderer.showOverlayMessage("Tap the menu button to open overlay")
+                    }
+                }
+            }
+        }
     }
 
     private fun createAddonFolder() {
@@ -492,7 +513,7 @@ class XRActivity : ComponentActivity() {
             val fallbackDataPath = defaultFilePaths.dataDirectoryPath
             if (fallbackConfigPath != cfg || fallbackDataPath != data) {
                 lifecycleScope.launch {
-                    alertMessages.tryEmit(CelestiaString("Error loading data, fallback to original configuration.", ""))
+                    alertMessage.value = CelestiaString("Error loading data, fallback to original configuration.", "")
                 }
                 AppCore.chdir(fallbackDataPath)
                 AppCore.setLocaleDirectoryPath("$fallbackDataPath/locale", language, countryCode)
@@ -514,8 +535,8 @@ class XRActivity : ComponentActivity() {
         appCore.screenDPI = (appCore.screenDPI * resolutionMultiplier).toInt()
 
         val preferredInstalledFont = availableInstalledFonts[language] ?: defaultInstalledFont
-        val normalFont = preferredInstalledFont?.first
-        val boldFont = preferredInstalledFont?.second
+        val normalFont = preferredInstalledFont?.regular
+        val boldFont = preferredInstalledFont?.bold
         if (normalFont != null) {
             appCore.setFont(normalFont.path, normalFont.ttcIndex, 9)
             appCore.setRendererFont(
@@ -552,7 +573,7 @@ class XRActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "134"
+        private const val CURRENT_DATA_VERSION = "133"
         // 133 1.9.10, Localization update data update (ab865c0979679cafdd962d2d726e819acbc26cb0)
 
         private const val CELESTIA_ROOT_FOLDER_NAME = "CelestiaResources"
@@ -563,13 +584,15 @@ class XRActivity : ComponentActivity() {
         private var extraScriptPaths: List<String> = listOf()
         private var language: String = "en"
 
-        private var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
-        private var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
+        private var availableInstalledFonts: Map<String, Fonts> = mapOf()
+        private var defaultInstalledFont: Fonts? = null
 
         private const val TAG = "XRActivity"
 
         init {
+            System.loadLibrary("ziputils")
             System.loadLibrary("celestia")
+            AppCore.setUpLocale()
         }
     }
 }

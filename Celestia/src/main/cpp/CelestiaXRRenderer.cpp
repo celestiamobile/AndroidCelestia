@@ -96,6 +96,8 @@ struct CelestiaOpenXR {
     bool exitRequested    = false;
     bool enableMultisample = false;
     int resolutionMultiplier = 1;
+    std::string fontPath = "";
+    int ttcIndex = 0;
 
     int actualSampleCount = 1;
     float actualResolutionMultiplier = 1;
@@ -121,6 +123,8 @@ struct CelestiaOpenXR {
     static jmethodID engineStartedMethod;
     static jmethodID controllerButtonMethod;
     static jmethodID joystickAxisMethod;
+
+    std::string overlayMessage{};
 
     XrActionSet actionSet = XR_NULL_HANDLE;
     std::array<XrAction, kButtonCount> buttonActions = {};
@@ -152,6 +156,9 @@ private:
                    const XrView& view,
                    XrCompositionLayerProjectionView& projView,
                    JNIEnv* env);
+
+
+    std::unique_ptr<Overlay> overlay{ nullptr };
 };
 
 #ifndef GL_FRAMEBUFFER_SRGB
@@ -977,12 +984,13 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
                 env->CallVoidMethod(javaObject, CelestiaOpenXR::flushTasksMethod);
         }
 
+        auto renderer = core->getRenderer();
+
         // Set up the asymmetric projection for this eye
-        core->getRenderer()->setProjectionMode(std::make_shared<CustomPerspectiveProjectionMode>(
-            left, right, top, bottom, nearZ, farZ, static_cast<float>(eye.width), static_cast<float>(eye.height)));
+        renderer->setProjectionMode(std::make_shared<CustomPerspectiveProjectionMode>(left, right, top, bottom, nearZ, farZ, static_cast<float>(eye.width), static_cast<float>(eye.height)));
 
         Matrix4f viewMatrix = Map<const Matrix4f>(viewMat);
-        core->getRenderer()->setCameraTransform(viewMatrix.block<3, 3>(0, 0).cast<double>());
+        renderer->setCameraTransform(viewMatrix.block<3, 3>(0, 0).cast<double>());
 
         if (eye.width != lastResizeWidth || eye.height != lastResizeHeight) {
             core->resize(eye.width, eye.height);
@@ -995,6 +1003,30 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
         }
 
         core->draw();
+
+        if (!overlayMessage.empty()) {
+            if (overlay == nullptr && !fontPath.empty()) {
+                auto font = LoadTextureFont(renderer, fontPath, ttcIndex, 24);
+                if (font != nullptr) {
+                    overlay = std::make_unique<Overlay>(*renderer);
+                    overlay->setFont(font);
+                    overlay->setTextAlignment(
+                            celestia::engine::TextLayout::HorizontalAlignment::Center);
+                }
+            }
+
+            if (overlay != nullptr) {
+                overlay->setWindowSize(eye.width, eye.height);
+                overlay->begin();
+                overlay->setColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+                overlay->beginText();
+                overlay->moveBy(eye.width / 2, eye.height / 2);
+                overlay->print(overlayMessage);
+                overlay->endText();
+                overlay->end();
+            }
+        }
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1040,12 +1072,20 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv *env, jobject thiz, jlong pointer,
                                                  jobject activity, jboolean enable_multisample,
-                                                 jint resolution_multiplier) {
+                                                 jint resolution_multiplier, jstring font_path,
+                                                 jint ttc_index) {
 
     LOGI("JNI: start");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
     xr->enableMultisample = static_cast<bool>(enable_multisample);
     xr->resolutionMultiplier = static_cast<int>(resolution_multiplier);
+    if (font_path != nullptr)
+    {
+        const char *c_str = env->GetStringUTFChars(font_path, nullptr);
+        xr->fontPath = c_str;
+        xr->ttcIndex = ttc_index;
+        env->ReleaseStringUTFChars(font_path, c_str);
+    }
     xr->init(env, activity);
 }
 
@@ -1080,9 +1120,19 @@ Java_space_celestia_celestia_XRRenderer_c_1setCorePointer(JNIEnv* /*env*/, jobje
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1setHasPendingTasks(JNIEnv* /*env*/, jobject /*thiz*/, jlong pointer, jboolean hasPendingTasks) {
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
-    if (xr) {
-        xr->setHasPendingTasks(static_cast<bool>(hasPendingTasks));
-    }
+    xr->setHasPendingTasks(static_cast<bool>(hasPendingTasks));
 }
 
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_XRRenderer_c_1setOverlayMessage(JNIEnv *env, jobject thiz,
+                                                             jlong pointer, jstring message) {
+    auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
+    if (message != nullptr) {
+        const char *c_str = env->GetStringUTFChars(message, nullptr);
+        xr->overlayMessage = c_str;
+        env->ReleaseStringUTFChars(message, c_str);
+    } else {
+        xr->overlayMessage = "";
+    }
+}
 } // extern "C"

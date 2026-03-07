@@ -1,6 +1,7 @@
 package space.celestia.celestiaxr.di
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
@@ -174,10 +175,13 @@ object AppModule {
 
     @Singleton
     @Provides
-    @AlertMessages
-    fun provideAlertMessages(): MutableSharedFlow<String> {
-        return MutableSharedFlow(extraBufferCapacity = 1)
-    }
+    @AlertMessage
+    fun provideAlertMessage() = mutableStateOf<String?>(null)
+
+    @Singleton
+    @Provides
+    @PanelState
+    fun providePanelState() = mutableStateOf(false)
 
     @Singleton
     @Provides

@@ -1,5 +1,6 @@
 package space.celestia.celestiaxr.viewmodel
 
+import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -8,7 +9,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.XRRenderer
 import space.celestia.celestiaui.utils.AppStatusReporter
-import space.celestia.celestiaxr.di.AlertMessages
+import space.celestia.celestiaxr.di.AlertMessage
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
@@ -18,7 +19,5 @@ class MainViewModel @Inject constructor(
     val appCore: AppCore,
     val xrRenderer: XRRenderer,
     val executor: Executor,
-    @AlertMessages private val mutableAlertMessages: MutableSharedFlow<String>
-) : ViewModel() {
-    val alertMessages: SharedFlow<String> = mutableAlertMessages.asSharedFlow()
-}
+    @param: AlertMessage val alertMessage: MutableState<String?>
+) : ViewModel()
