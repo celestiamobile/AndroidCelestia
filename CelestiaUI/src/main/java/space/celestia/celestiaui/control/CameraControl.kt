@@ -78,10 +78,12 @@ fun CameraControl(paddingValues: PaddingValues, cameraControlObserverModeClicked
         StepperRow(name = CelestiaString("Zoom (Distance)", "Zoom in/out in Camera Control, this changes the relative distance to the object"), minusAction = CameraControlAction.ZoomOut, plusAction = CameraControlAction.ZoomIn, modifier = internalViewModifier)
         Footer(text = CelestiaString("Long press on stepper to zoom in/out.", ""))
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-        CheckboxRow(primaryText = CelestiaString("Enable Gyroscope Control", "Enable gyroscope control for camera rotation"), checked = viewModel.sessionSettings.isGyroscopeEnabled, onCheckedChange = {
-            viewModel.sessionSettings.isGyroscopeEnabled = it
-        })
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+        if (viewModel.sessionSettings.isGyroscopeSupported) {
+            CheckboxRow(primaryText = CelestiaString("Enable Gyroscope Control", "Enable gyroscope control for camera rotation"), checked = viewModel.sessionSettings.isGyroscopeEnabled, onCheckedChange = {
+                viewModel.sessionSettings.isGyroscopeEnabled = it
+            })
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+        }
         TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = {
             cameraControlObserverModeClicked()
         }))

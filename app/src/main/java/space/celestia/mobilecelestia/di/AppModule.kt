@@ -171,7 +171,7 @@ object AppModule {
     @Singleton
     @Provides
     fun provideSessionSettings(): SessionSettings {
-        return SessionSettings()
+        return SessionSettings(isGyroscopeSupported = true)
     }
 
     @Singleton

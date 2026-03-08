@@ -4,6 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-class SessionSettings {
+class SessionSettings(val isGyroscopeSupported: Boolean) {
     var isGyroscopeEnabled: Boolean by mutableStateOf(false)
 }
