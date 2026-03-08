@@ -58,11 +58,11 @@ import androidx.lifecycle.LifecycleOwner
 @Composable
 inline fun <reified T : Fragment> AndroidFragment(
     modifier: Modifier = Modifier,
-    fragmentState: space.celestia.celestiaui.compose.FragmentState = _root_ide_package_.space.celestia.celestiaui.compose.rememberFragmentState(),
+    fragmentState: FragmentState = rememberFragmentState(),
     arguments: Bundle = Bundle.EMPTY,
     noinline onUpdate: (T) -> Unit = { }
 ) {
-    _root_ide_package_.space.celestia.celestiaui.compose.AndroidFragment(
+    AndroidFragment(
         clazz = T::class.java,
         modifier,
         fragmentState,
@@ -91,7 +91,7 @@ inline fun <reified T : Fragment> AndroidFragment(
 fun <T : Fragment> AndroidFragment(
     clazz: Class<T>,
     modifier: Modifier = Modifier,
-    fragmentState: space.celestia.celestiaui.compose.FragmentState = _root_ide_package_.space.celestia.celestiaui.compose.rememberFragmentState(),
+    fragmentState: FragmentState = rememberFragmentState(),
     arguments: Bundle = Bundle.EMPTY,
     onUpdate: (T) -> Unit = { }
 ) {
@@ -102,7 +102,7 @@ fun <T : Fragment> AndroidFragment(
     }
     val context = LocalContext.current
     val containerFactory = remember {
-        _root_ide_package_.space.celestia.celestiaui.compose.FragmentContainerViewFactory(
+        FragmentContainerViewFactory(
             View.generateViewId()
         )
     }
@@ -184,9 +184,9 @@ private class FragmentContainerViewFactory(val containerId: Int) : (Context) -> 
 }
 
 @Composable
-fun rememberFragmentState(): space.celestia.celestiaui.compose.FragmentState {
-    return rememberSaveable(saver = _root_ide_package_.space.celestia.celestiaui.compose.fragmentStateSaver()) {
-        _root_ide_package_.space.celestia.celestiaui.compose.FragmentState()
+fun rememberFragmentState(): FragmentState {
+    return rememberSaveable(saver = fragmentStateSaver()) {
+        FragmentState()
     }
 }
 
