@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import space.celestia.celestia.AppState
+import space.celestia.celestiaui.utils.CelestiaString
 import java.text.DateFormat
 import java.text.NumberFormat
 
@@ -21,25 +22,25 @@ internal fun StatsSection(state: SimulationState, appState: AppState, dateFormat
     val isMetric = remember { usesMetricSystem() }
     val numberFormatter = remember { NumberFormat.getNumberInstance() }
     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-        StatRow("Time", formatTime(appState.time, appState.isPaused, appState.isLightTravelDelayEnabled, dateFormatter))
+        StatRow(CelestiaString("Time", ""), formatTime(appState.time, appState.isPaused, appState.isLightTravelDelayEnabled, dateFormatter))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        StatRow("Time Scale", formatTimeScale(appState.timeScale, numberFormatter))
+        StatRow(CelestiaString("Time Scale", ""), formatTimeScale(appState.timeScale, numberFormatter))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         if (state.selectedObjectName.isNotEmpty()) {
-            StatRow("Selected", state.selectedObjectName)
+            StatRow(CelestiaString("Selected", ""), state.selectedObjectName)
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             if (appState.showDistanceToSelection) {
-                StatRow("Distance", formatLength(appState.distanceToSelectionSurface, isMetric, numberFormatter))
+                StatRow(CelestiaString("Distance", "Distance to the object (in Go to)"), formatLength(appState.distanceToSelectionSurface, isMetric, numberFormatter))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 if (appState.showDistanceToSelectionCenter) {
-                    StatRow("Distance to Center", formatLength(appState.distanceToSelectionCenter, isMetric, numberFormatter))
+                    StatRow(CelestiaString("Distance to Center", ""), formatLength(appState.distanceToSelectionCenter, isMetric, numberFormatter))
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
             }
         }
-        StatRow("Mode", formatCoordinateSystem(appState.coordinateSystem, state.referenceObjectName, state.targetObjectName))
+        StatRow(CelestiaString("Mode", ""), formatCoordinateSystem(appState.coordinateSystem, state.referenceObjectName, state.targetObjectName))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        StatRow("Speed", formatSpeed(appState.speed.toDouble(), isMetric, numberFormatter))
+        StatRow(CelestiaString("Speed", ""), formatSpeed(appState.speed.toDouble(), isMetric, numberFormatter))
     }
 }
 

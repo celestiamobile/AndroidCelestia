@@ -11,7 +11,7 @@ sealed interface Tool {
 
     sealed class Page : Tool, Parcelable {
         @Parcelize
-        data object Info : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Info", "") }
+        data object Info : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Get Info", "Action for getting info about current selected object") }
         @Parcelize
         data object StarBrowser : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Star Browser", "") }
         @Parcelize
