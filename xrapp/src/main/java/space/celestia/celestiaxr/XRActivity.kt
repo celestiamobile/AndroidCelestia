@@ -580,7 +580,7 @@ class XRActivity : ComponentActivity() {
         private const val CELESTIA_SCRIPT_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/scripts"
 
         private var addonPaths: List<String> = listOf()
-        private var extraScriptPaths: List<String> = listOf()
+        var extraScriptPaths: List<String> = listOf()
         private var language: String = "en"
 
         private var availableInstalledFonts: Map<String, Fonts> = mapOf()
