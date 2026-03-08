@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.XRRenderer
+import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.utils.AppStatusReporter
+import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaxr.di.AlertMessage
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -19,5 +21,6 @@ class MainViewModel @Inject constructor(
     val appCore: AppCore,
     val xrRenderer: XRRenderer,
     val executor: Executor,
-    @param: AlertMessage val alertMessage: MutableState<String?>
+    @param: AlertMessage val alertMessage: MutableState<String?>,
+    @param: AppSettingsNoBackup val appSettingsNoBackup: PreferenceManager
 ) : ViewModel()
