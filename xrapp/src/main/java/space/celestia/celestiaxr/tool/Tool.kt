@@ -4,14 +4,15 @@ import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import space.celestia.celestia.Selection
+import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiaui.utils.CelestiaString
 
 sealed interface Tool {
     val title: String
 
+    data object Info : Tool { override val title get() = CelestiaString("Get Info", "Action for getting info about current selected object") }
+
     sealed class Page : Tool, Parcelable {
-        @Parcelize
-        data object Info : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Get Info", "Action for getting info about current selected object") }
         @Parcelize
         data object StarBrowser : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Star Browser", "") }
         @Parcelize
@@ -44,7 +45,7 @@ sealed interface Tool {
         data class ObjectInfo(val selection: Selection) : Page() { @IgnoredOnParcel override val title = "" }
 
         @Parcelize
-        data class Addon(val id: String) : Page() { @IgnoredOnParcel override val title = "" }
+        data class Addon(val item: ResourceItem) : Page() { @IgnoredOnParcel override val title = "" }
 
         @Parcelize
         data class Article(val id: String) : Page() { @IgnoredOnParcel override val title = "" }
@@ -52,7 +53,7 @@ sealed interface Tool {
 
     companion object {
         val all: List<Tool> = listOf(
-            Page.Info, Page.StarBrowser, Page.Search, Page.GoTo, Page.EclipseFinder,
+            Info, Page.StarBrowser, Page.Search, Page.GoTo, Page.EclipseFinder,
             Page.CameraControl, Page.CurrentTime, Page.Favorites, Page.Settings,
             Page.InstalledAddons, Page.GetAddons, Page.Help
         )

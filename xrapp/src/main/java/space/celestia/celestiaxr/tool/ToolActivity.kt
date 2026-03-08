@@ -20,18 +20,23 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Script
 import space.celestia.celestiafoundation.favorite.BookmarkNode
 import space.celestia.celestiafoundation.utils.FileUtils
 import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
 import space.celestia.celestiaui.favorite.getCurrentBookmarks
 import space.celestia.celestiaui.favorite.updateCurrentBookmarks
+import space.celestia.celestiaui.favorite.updateCurrentDestinations
+import space.celestia.celestiaui.favorite.updateCurrentScripts
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.resource.CommonWebFragment
+import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.utils.AppURL
 import space.celestia.celestiaui.utils.AppURLResult
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.showAlert
+import space.celestia.celestiaxr.XRActivity
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executor
@@ -44,6 +49,9 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
 
     @Inject
     lateinit var appCore: AppCore
+
+    @Inject
+    lateinit var resourceAPI: ResourceAPIService
 
     private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
 
@@ -100,6 +108,12 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                             favorites = decoded
                         } catch (_: Throwable) { }
                         updateCurrentBookmarks(favorites)
+                        val scripts = Script.getScriptsInDirectory("scripts", true)
+                        for (extraScriptPath in XRActivity.extraScriptPaths) {
+                            scripts.addAll(Script.getScriptsInDirectory(extraScriptPath, true))
+                        }
+                        updateCurrentScripts(scripts)
+                        updateCurrentDestinations(appCore.destinations)
                     },
                     saveFavorites = {
                         val favorites = getCurrentBookmarks()
@@ -249,9 +263,12 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                 }
             }
             is AppURL.Addon -> {
-                val intent = Intent(this, ToolActivity::class.java)
-                intent.putExtra(EXTRA_TOOL, Tool.Page.Addon(url.id))
-                startActivity(intent)
+                try {
+                    val item = resourceAPI.item(lang = AppCore.getLanguage(), item = url.id)
+                    val intent = Intent(this, ToolActivity::class.java)
+                    intent.putExtra(EXTRA_TOOL, Tool.Page.Addon(item))
+                    startActivity(intent)
+                } catch (_: Throwable) {}
             }
             is AppURL.Article -> {
                 val intent = Intent(this, ToolActivity::class.java)

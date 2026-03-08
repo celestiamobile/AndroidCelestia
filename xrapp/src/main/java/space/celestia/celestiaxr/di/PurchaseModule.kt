@@ -1,5 +1,6 @@
 package space.celestia.celestiaxr.di
 
+import androidx.compose.runtime.Composable
 import androidx.fragment.app.Fragment
 import dagger.Module
 import dagger.Provides
@@ -13,9 +14,8 @@ class PurchaseManagerImpl: PurchaseManager {
         return false
     }
 
-    override fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment? {
-        return null
-    }
+    @Composable
+    override fun ManagerScreen(preferredPlayOfferId: String?) {}
 
     override fun purchaseToken(): String? {
         return null
