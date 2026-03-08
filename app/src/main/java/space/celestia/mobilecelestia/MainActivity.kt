@@ -35,6 +35,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
@@ -86,6 +89,7 @@ import space.celestia.celestiafoundation.utils.versionName
 import space.celestia.mobilecelestia.browser.BrowserFragment
 import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
 import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
+import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaPresentation
 import space.celestia.mobilecelestia.celestia.RendererSettings
@@ -118,7 +122,6 @@ import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
-import space.celestia.mobilecelestia.loading.LoadingFragment
 import space.celestia.mobilecelestia.resource.AddonDownloadFragment
 import space.celestia.mobilecelestia.resource.AddonFragment
 import space.celestia.mobilecelestia.resource.AddonManagerFragment
@@ -131,8 +134,7 @@ import space.celestia.celestiaui.settings.viewmodel.CustomFont
 import space.celestia.mobilecelestia.settings.SettingsFragment
 import space.celestia.mobilecelestia.settings.TimeSettingsFragment
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
-import space.celestia.mobilecelestia.toolbar.ToolbarAction
-import space.celestia.mobilecelestia.toolbar.ToolbarFragment
+import space.celestia.mobilecelestia.menu.ToolbarAction
 import space.celestia.mobilecelestia.travel.GoToContainerFragment
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.AppURL
@@ -142,6 +144,8 @@ import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaui.utils.showAlert
 import space.celestia.celestiaui.utils.showError
 import space.celestia.celestiaui.utils.showOptions
+import space.celestia.mobilecelestia.loading.LoadingScreen
+import space.celestia.mobilecelestia.menu.MenuScreen
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -155,7 +159,6 @@ import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
-    ToolbarFragment.Listener,
     InfoFragment.Listener,
     SearchFragment.Listener,
     BrowserFragment.Listener,
@@ -249,6 +252,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var activePresentation: CelestiaPresentation? = null
     private var pendingDisplay: Display? = null
 
+    private var showCelestiaPlus = mutableStateOf<Boolean?>(null)
+
     private var mediaRouterCallback: MediaRouter.SimpleCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -284,6 +289,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         appStatusReporter.register(this)
+
+        findViewById<ComposeView>(R.id.loading_fragment_container).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    LoadingScreen()
+                }
+            }
+        }
+
+        findViewById<ComposeView>(R.id.drawer).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    showCelestiaPlus.value?.let { show ->
+                        MenuScreen(if (show) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()) { action ->
+                            toolbarActionSelected(action)
+                        }
+                    }
+                }
+            }
+        }
 
         // Handle notch
         ViewCompat.setOnApplyWindowInsetsListener( findViewById<View>(android.R.id.content).rootView) { _, insets ->
@@ -331,7 +358,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
             return@setOnApplyWindowInsetsListener builder.build()
         }
-        findViewById<FrameLayout>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        findViewById<View>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         findViewById<FrameLayout>(R.id.toolbar_overlay).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
@@ -576,12 +603,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun loadExternalConfig(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.loading_fragment_container, LoadingFragment.newInstance(), LOADING_FRAGMENT_TAG)
-                .commitAllowingStateLoss()
-        }
         appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -646,18 +667,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun celestiaLoadingFinished() {
-        supportFragmentManager.findFragmentById(R.id.loading_fragment_container)?.let {
-            supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
-        }
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
         findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
-        if (supportFragmentManager.findFragmentById(R.id.drawer) == null) {
-            val actions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.drawer, ToolbarFragment.newInstance(actions), DRAWER_FRAGMENT_TAG)
-                .commitAllowingStateLoss()
-        }
+        showCelestiaPlus.value = purchaseManager.canUseInAppPurchase()
+        findViewById<View>(R.id.drawer).visibility = View.VISIBLE
 
         if (onBackPressedCallback == null) {
             val weakSelf = WeakReference(this)
@@ -1130,7 +1143,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         drawerLayout.openDrawer(GravityCompat.END, true)
     }
 
-    override fun onToolbarActionSelected(action: ToolbarAction) {
+    private fun toolbarActionSelected(action: ToolbarAction) {
         executeToolbarAction(action)
     }
 
@@ -2122,8 +2135,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 
         private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
-        private const val DRAWER_FRAGMENT_TAG = "drawer_fragment"
-        private const val LOADING_FRAGMENT_TAG = "loading_fragment"
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 
         private const val FILE_PROVIDER_AUTHORITY = "space.celestia.mobilecelestia.fileprovider"

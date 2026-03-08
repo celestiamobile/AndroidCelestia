@@ -105,7 +105,7 @@
 
         </space.celestia.mobilecelestia.common.SheetLayout>
 
-        <FrameLayout
+        <androidx.compose.ui.platform.ComposeView
             android:id="@+id/loading_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -113,11 +113,12 @@
             style="@style/Container" />
     </FrameLayout>
 
-    <FrameLayout
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/drawer"
         android:layout_width="@dimen/toolbar_default_width"
         android:layout_height="match_parent"
         android:layout_gravity="end"
+        android:visibility="gone"
         style="@style/Container">
-    </FrameLayout>
+    </androidx.compose.ui.platform.ComposeView>
 </androidx.drawerlayout.widget.DrawerLayout>
