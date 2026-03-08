@@ -454,7 +454,7 @@ class XRActivity : ComponentActivity() {
                     if (visible) {
                         xrRenderer.clearOverlayMessage()
                     } else {
-                        xrRenderer.showOverlayMessage("Tap the menu button to open overlay")
+                        xrRenderer.showOverlayMessage(CelestiaString("Tap the menu button to open overlay", "Hint for user to open the overlay"))
                     }
                 }
             }
