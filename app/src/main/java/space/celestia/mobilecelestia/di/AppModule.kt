@@ -151,6 +151,14 @@ object AppModule {
             settings[PreferenceManager.PredefinedKey.LocalSettingMigration] = "true"
             settings.stopEditing()
         }
+        if (appSettings[PreferenceManager.PredefinedKey.OnboardMessage] == "true") {
+            appSettings.startEditing()
+            settings.startEditing()
+            appSettings[PreferenceManager.PredefinedKey.OnboardMessage] = null
+            settings[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
+            appSettings.stopEditing()
+            settings.stopEditing()
+        }
         return settings
     }
 
