@@ -565,7 +565,6 @@ class XRActivity : ComponentActivity() {
         appCore.disableSelectionPointer()
         appCore.setHudOverlayImageEnabled(false)
 
-        appCore.tick()
         appCore.start()
 
         appStatusReporter.updateState(AppStatusReporter.State.LOADING_SUCCESS)
