@@ -579,7 +579,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (savedInstanceState == null) {
             supportFragmentManager
                 .beginTransaction()
-                .add(R.id.loading_fragment_container, LoadingFragment.newInstance())
+                .add(R.id.loading_fragment_container, LoadingFragment.newInstance(), LOADING_FRAGMENT_TAG)
                 .commitAllowingStateLoss()
         }
         appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING)
@@ -655,7 +655,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val actions = if (purchaseManager.canUseInAppPurchase()) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()
             supportFragmentManager
                 .beginTransaction()
-                .add(R.id.drawer, ToolbarFragment.newInstance(actions))
+                .add(R.id.drawer, ToolbarFragment.newInstance(actions), DRAWER_FRAGMENT_TAG)
                 .commitAllowingStateLoss()
         }
 
@@ -1116,7 +1116,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         )
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.celestia_fragment_container, celestiaFragment)
+            .add(R.id.celestia_fragment_container, celestiaFragment, TAG_CELESTIA_FRAGMENT)
             .commitAllowingStateLoss()
     }
 
@@ -2122,6 +2122,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 
         private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
+        private const val DRAWER_FRAGMENT_TAG = "drawer_fragment"
+        private const val LOADING_FRAGMENT_TAG = "loading_fragment"
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 
         private const val FILE_PROVIDER_AUTHORITY = "space.celestia.mobilecelestia.fileprovider"
@@ -2140,6 +2142,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
 
         private val supportedScriptTypes = listOf("cel", "celx")
+        private const val TAG_CELESTIA_FRAGMENT = "celestia_fragment"
 
         init {
             System.loadLibrary("ziputils")
