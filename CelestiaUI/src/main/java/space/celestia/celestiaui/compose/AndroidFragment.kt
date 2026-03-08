@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -101,10 +103,9 @@ fun <T : Fragment> AndroidFragment(
         FragmentManager.findFragmentManager(view)
     }
     val context = LocalContext.current
+    val containerId by rememberSaveable { mutableIntStateOf(View.generateViewId()) }
     val containerFactory = remember {
-        FragmentContainerViewFactory(
-            View.generateViewId()
-        )
+        FragmentContainerViewFactory(containerId)
     }
     AndroidView(factory = containerFactory, modifier)
 
