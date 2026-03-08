@@ -828,8 +828,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun openURLOrScriptOrGreeting() {
-        if (appSettings[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
-            appSettings[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
+        if (appSettingsNoBackup[PreferenceManager.PredefinedKey.OnboardMessage] != "true") {
+            appSettingsNoBackup[PreferenceManager.PredefinedKey.OnboardMessage] = "true"
             showHelp()
             urlToOpen = null
             return
