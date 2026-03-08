@@ -24,7 +24,7 @@ import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.ApplicationId
 import space.celestia.celestiaui.di.CoreSettings
-import space.celestia.celestiaui.di.Flavor
+import space.celestia.celestiaui.di.Platform
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
@@ -162,9 +162,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    @Flavor
-    fun provideFlavor(): String {
-        return "quest"
+    fun providePlatform(): Platform {
+        return Platform(name = "quest", flavor = null)
     }
 
     @Singleton
@@ -187,7 +186,7 @@ object AppModule {
     @Provides
     fun providerRenderSettings(@AppSettings appSettings: PreferenceManager): RenderSettings {
         val resolutionMultiplierValue = appSettings[PreferenceManager.PredefinedKey.ResolutionMultiplier]?.toIntOrNull()
-        val resolutionMultiplier = if (resolutionMultiplierValue != null && listOf(1, 2, 4, 8).contains(resolutionMultiplierValue)) {
+        val resolutionMultiplier = if (resolutionMultiplierValue != null && listOf(1, 2, 4).contains(resolutionMultiplierValue)) {
             resolutionMultiplierValue
         } else {
             1

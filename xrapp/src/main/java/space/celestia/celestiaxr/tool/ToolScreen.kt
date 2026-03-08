@@ -252,7 +252,7 @@ fun ToolScreen(page: Tool.Page, linkClicked: (String, Boolean) -> Unit, requestR
         is Tool.Page.Article -> {
             val uri by remember { mutableStateOf(URLHelper.buildInAppGuideURI(
                 id = page.id, language = AppCore.getLanguage(),
-                flavor = viewModel.flavor,
+                platform = viewModel.platform,
                 purchaseManager = viewModel.purchaseManager
             )) }
             Scaffold { paddingValues ->
