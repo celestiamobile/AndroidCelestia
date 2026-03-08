@@ -97,7 +97,7 @@ import space.celestia.mobilecelestia.control.CameraControlContainerFragment
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
-import space.celestia.celestiaui.di.Flavor
+import space.celestia.celestiaui.di.Platform
 import space.celestia.mobilecelestia.control.ContinuousAction
 import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
@@ -201,9 +201,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     @Inject
     lateinit var executor: Executor
 
-    @Flavor
     @Inject
-    lateinit var flavor: String
+    lateinit var platform: Platform
 
     @Inject
     lateinit var purchaseManager: PurchaseManager
@@ -859,7 +858,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
                 is AppURL.Article -> {
                     lifecycleScope.launch {
-                        showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = it.id, language = lang, flavor = flavor, purchaseManager = purchaseManager), matchingQueryKeys = listOf("guide"), filterURL = true))
+                        showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = it.id, language = lang, platform = platform, purchaseManager = purchaseManager), matchingQueryKeys = listOf("guide"), filterURL = true))
                     }
                 }
                 is AppURL.Object -> {
@@ -894,7 +893,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val result = resourceAPI.latest("news", lang)
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
-                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, flavor = flavor, purchaseManager = purchaseManager), matchingQueryKeys = listOf("guide"), filterURL = true))
+                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, platform = platform, purchaseManager = purchaseManager), matchingQueryKeys = listOf("guide"), filterURL = true))
             } catch (ignored: Throwable) {}
         }
     }
@@ -1331,11 +1330,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             .buildUpon()
             .appendQueryParameter("objectPath", objectPath)
             .appendQueryParameter("lang", AppCore.getLanguage())
-            .appendQueryParameter("platform", "android")
-            .appendQueryParameter("distribution", flavor)
+            .appendQueryParameter("platform", platform.name)
             .appendQueryParameter("theme", "dark")
             .appendQueryParameter("transparentBackground", "true")
             .appendQueryParameter("api", "2")
+        if (platform.flavor != null)
+            builder = builder.appendQueryParameter("distribution", platform.flavor)
         if (purchaseManager.canUseInAppPurchase())
             builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
         lifecycleScope.launch {

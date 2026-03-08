@@ -7,7 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
-import space.celestia.celestiaui.di.Flavor
+import space.celestia.celestiaui.di.Platform
 import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
@@ -23,6 +23,6 @@ sealed class AddonManagerPage {
 }
 
 @HiltViewModel
-class AddonManagerViewModel @Inject constructor(val appCore: AppCore, val executor: Executor, val resourceManager: ResourceManager, val addonUpdateManager: AddonUpdateManager, val resourceAPI: ResourceAPIService, val purchaseManager: PurchaseManager, @param:Flavor val flavor: String): ViewModel() {
+class AddonManagerViewModel @Inject constructor(val appCore: AppCore, val executor: Executor, val resourceManager: ResourceManager, val addonUpdateManager: AddonUpdateManager, val resourceAPI: ResourceAPIService, val purchaseManager: PurchaseManager, val platform: Platform): ViewModel() {
     val backStack = mutableStateListOf<AddonManagerPage>(AddonManagerPage.Home)
 }

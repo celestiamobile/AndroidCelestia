@@ -2,64 +2,65 @@ package space.celestia.celestiaui.utils
 
 import android.net.Uri
 import androidx.core.net.toUri
+import space.celestia.celestiaui.di.Platform
 import space.celestia.celestiaui.purchase.PurchaseManager
 import kotlin.collections.iterator
 
 class URLHelper {
     companion object {
-        fun buildInAppGuideURI(id: String, language: String, flavor: String, shareable: Boolean? = null, purchaseManager: PurchaseManager): Uri {
+        fun buildInAppGuideURI(id: String, language: String, platform: Platform, shareable: Boolean? = null, purchaseManager: PurchaseManager): Uri {
             val baseURL = "https://celestia.mobi/resources/guide"
             var builder = baseURL.toUri()
                 .buildUpon()
                 .appendQueryParameter("guide", id)
                 .appendQueryParameter("lang", language)
-                .appendQueryParameter("platform", "android")
+                .appendQueryParameter("platform", platform.name)
                 .appendQueryParameter("supportsSafeArea", "true")
-                .appendQueryParameter("distribution", flavor)
                 .appendQueryParameter("theme", "dark")
                 .appendQueryParameter("transparentBackground", "true")
                 .appendQueryParameter("api", "2")
-            if (shareable != null) {
+            if (platform.flavor != null)
+                builder = builder.appendQueryParameter("distribution", platform.flavor)
+            if (shareable != null)
                 builder = builder.appendQueryParameter("share", if (shareable) "true" else "false")
-            }
-            if (purchaseManager.canUseInAppPurchase()) {
+            if (purchaseManager.canUseInAppPurchase())
                 builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
-            }
             return builder.build()
         }
 
-        fun buildInAppGuideShortURI(path: String, language: String, flavor: String, shareable: Boolean? = null): Uri {
+        fun buildInAppGuideShortURI(path: String, language: String, platform: Platform, shareable: Boolean? = null): Uri {
             val baseURL = "https://celestia.mobi"
             var builder = baseURL.toUri()
                 .buildUpon()
                 .path(path)
                 .appendQueryParameter("lang", language)
-                .appendQueryParameter("platform", "android")
+                .appendQueryParameter("platform", platform.name)
                 .appendQueryParameter("supportsSafeArea", "true")
-                .appendQueryParameter("distribution", flavor)
                 .appendQueryParameter("theme", "dark")
                 .appendQueryParameter("transparentBackground", "true")
                 .appendQueryParameter("api", "2")
-            if (shareable != null) {
+            if (platform.flavor != null)
+                builder = builder.appendQueryParameter("distribution", platform.flavor)
+            if (shareable != null)
                 builder = builder.appendQueryParameter("share", if (shareable) "true" else "false")
-            }
             return builder.build()
         }
 
-        fun buildInAppAddonURI(id: String, language: String, flavor: String): Uri {
+        fun buildInAppAddonURI(id: String, language: String, platform: Platform): Uri {
             val baseURL = "https://celestia.mobi/resources/item"
-            return baseURL.toUri()
+            var builder = baseURL.toUri()
                 .buildUpon()
                 .appendQueryParameter("item", id)
                 .appendQueryParameter("lang", language)
-                .appendQueryParameter("platform", "android")
+                .appendQueryParameter("platform", platform.name)
                 .appendQueryParameter("supportsSafeArea", "true")
-                .appendQueryParameter("distribution", flavor)
                 .appendQueryParameter("theme", "dark")
                 .appendQueryParameter("transparentBackground", "true")
                 .appendQueryParameter("titleVisibility", "collapsed")
                 .appendQueryParameter("api", "2")
-                .build()
+            if (platform.flavor != null)
+                builder = builder.appendQueryParameter("distribution", platform.flavor)
+            return builder.build()
         }
     }
 }

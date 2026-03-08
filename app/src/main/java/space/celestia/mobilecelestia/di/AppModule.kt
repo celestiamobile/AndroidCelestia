@@ -23,7 +23,7 @@ import space.celestia.celestiaui.control.viewmodel.SessionSettings
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
-import space.celestia.celestiaui.di.Flavor
+import space.celestia.celestiaui.di.Platform
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
@@ -183,9 +183,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    @Flavor
-    fun provideFlavor(): String {
-        return BuildConfig.FLAVOR
+    fun providePlatform(): Platform {
+        return Platform(name = "android", flavor = BuildConfig.FLAVOR)
     }
 
     @Singleton

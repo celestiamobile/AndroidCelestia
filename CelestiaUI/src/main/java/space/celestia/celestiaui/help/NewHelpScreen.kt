@@ -13,7 +13,7 @@ fun NewHelpScreen(linkClicked: (String) -> Unit) {
     val viewModel: HelpViewModel = hiltViewModel()
     Scaffold { paddingValues ->
         WebPage(
-            uri = URLHelper.buildInAppGuideShortURI("/help/welcome", AppCore.getLanguage(), flavor = viewModel.flavor, shareable = false),
+            uri = URLHelper.buildInAppGuideShortURI("/help/welcome", AppCore.getLanguage(), platform = viewModel.platform, shareable = false),
             filterURL = true,
             matchingQueryKeys = listOf("guide"),
             paddingValues = paddingValues,

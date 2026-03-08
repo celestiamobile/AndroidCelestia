@@ -197,7 +197,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
             uri = URLHelper.buildInAppAddonURI(
                 info.id,
                 AppCore.getLanguage(),
-                flavor = viewModel.flavor
+                platform = viewModel.platform
             ),
             contextDirectory = viewModel.resourceManager.contextDirectory(info),
             filterURL = true,
