@@ -79,3 +79,4 @@ asset-pack = { id = "com.android.asset-pack" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref ="hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref ="ksp" }
+parcelize = { id = "kotlin-parcelize" }
