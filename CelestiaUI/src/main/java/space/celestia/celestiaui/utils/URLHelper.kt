@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.core.net.toUri
 import space.celestia.celestiaui.di.Platform
 import space.celestia.celestiaui.purchase.PurchaseManager
-import kotlin.collections.iterator
 
 class URLHelper {
     companion object {
@@ -60,6 +59,23 @@ class URLHelper {
                 .appendQueryParameter("api", "2")
             if (platform.flavor != null)
                 builder = builder.appendQueryParameter("distribution", platform.flavor)
+            return builder.build()
+        }
+
+        fun buildInAppRelatedAddonsURI(objectPath: String, language: String, platform: Platform, purchaseManager: PurchaseManager): Uri {
+            val baseURL = "https://celestia.mobi/resources/itemsByObjectPath"
+            var builder = baseURL.toUri()
+                .buildUpon()
+                .appendQueryParameter("objectPath", objectPath)
+                .appendQueryParameter("lang", language)
+                .appendQueryParameter("platform", platform.name)
+                .appendQueryParameter("theme", "dark")
+                .appendQueryParameter("transparentBackground", "true")
+                .appendQueryParameter("api", "2")
+            if (platform.flavor != null)
+                builder = builder.appendQueryParameter("distribution", platform.flavor)
+            if (purchaseManager.canUseInAppPurchase())
+                builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
             return builder.build()
         }
     }

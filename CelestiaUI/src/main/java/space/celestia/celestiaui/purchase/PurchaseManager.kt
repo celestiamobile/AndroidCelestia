@@ -1,9 +1,10 @@
 package space.celestia.celestiaui.purchase
 
-import androidx.fragment.app.Fragment
+import androidx.compose.runtime.Composable
 
 interface PurchaseManager {
     fun canUseInAppPurchase(): Boolean
-    fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment?
     fun purchaseToken(): String?
+    @Composable
+    fun ManagerScreen(preferredPlayOfferId: String?)
 }

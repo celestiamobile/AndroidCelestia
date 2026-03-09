@@ -52,7 +52,6 @@ import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiaui.control.viewmodel.SessionSettings
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.info.getAvailableMarkers
-import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners

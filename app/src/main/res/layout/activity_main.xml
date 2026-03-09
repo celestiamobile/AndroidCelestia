@@ -99,7 +99,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
-                        android:clickable="true" />
+                        android:clickable="true">
+                        <androidx.compose.ui.platform.ComposeView
+                            android:id="@+id/bottom_sheet_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"/>
+                    </FrameLayout>
                 </LinearLayout>
             </FrameLayout>
 
@@ -109,16 +114,20 @@
             android:id="@+id/loading_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clickable="true"
-            style="@style/Container" />
+            android:clickable="true"/>
     </FrameLayout>
 
-    <androidx.compose.ui.platform.ComposeView
+    <FrameLayout
         android:id="@+id/drawer"
         android:layout_width="@dimen/toolbar_default_width"
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:visibility="gone"
         style="@style/Container">
-    </androidx.compose.ui.platform.ComposeView>
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/drawer_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            style="@style/Container"/>
+    </FrameLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

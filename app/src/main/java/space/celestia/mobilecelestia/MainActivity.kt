@@ -25,13 +25,13 @@ import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
@@ -54,7 +54,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -81,61 +80,30 @@ import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.FileUtils
-import space.celestia.celestiaui.utils.URLHelper
 import space.celestia.celestiafoundation.utils.deleteRecursively
 import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
 import space.celestia.celestiafoundation.utils.versionName
-import space.celestia.mobilecelestia.browser.BrowserFragment
-import space.celestia.mobilecelestia.browser.SubsystemBrowserFragment
-import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.celestiaui.compose.Mdc3Theme
-import space.celestia.mobilecelestia.celestia.CelestiaFragment
-import space.celestia.mobilecelestia.celestia.CelestiaPresentation
-import space.celestia.mobilecelestia.celestia.RendererSettings
-import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.common.RoundedCorners
-import space.celestia.mobilecelestia.common.SheetLayout
-import space.celestia.mobilecelestia.control.BottomControlAction
-import space.celestia.mobilecelestia.control.CameraControlContainerFragment
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.celestiaui.di.Platform
-import space.celestia.mobilecelestia.control.ContinuousAction
-import space.celestia.mobilecelestia.control.CustomAction
-import space.celestia.mobilecelestia.control.CustomActionType
-import space.celestia.mobilecelestia.control.InstantAction
-import space.celestia.mobilecelestia.control.OverflowItem
-import space.celestia.mobilecelestia.eventfinder.EventFinderContainerFragment
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
-import space.celestia.mobilecelestia.favorite.FavoriteFragment
 import space.celestia.celestiaui.favorite.FavoriteScriptItem
 import space.celestia.celestiaui.favorite.MutableFavoriteBaseItem
 import space.celestia.celestiaui.favorite.getCurrentBookmarks
 import space.celestia.celestiaui.favorite.updateCurrentBookmarks
 import space.celestia.celestiaui.favorite.updateCurrentDestinations
 import space.celestia.celestiaui.favorite.updateCurrentScripts
-import space.celestia.mobilecelestia.help.NewHelpFragment
-import space.celestia.mobilecelestia.info.InfoFragment
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
-import space.celestia.mobilecelestia.resource.AddonDownloadFragment
-import space.celestia.mobilecelestia.resource.AddonFragment
-import space.celestia.mobilecelestia.resource.AddonManagerFragment
 import space.celestia.celestiaui.resource.CommonWebFragment
-import space.celestia.mobilecelestia.resource.SimpleWebFragment
-import space.celestia.mobilecelestia.resource.WebBrowserFragment
 import space.celestia.celestiaui.resource.model.ResourceAPIService
-import space.celestia.mobilecelestia.search.SearchFragment
 import space.celestia.celestiaui.settings.viewmodel.CustomFont
-import space.celestia.mobilecelestia.settings.SettingsFragment
-import space.celestia.mobilecelestia.settings.TimeSettingsFragment
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
-import space.celestia.mobilecelestia.menu.ToolbarAction
-import space.celestia.mobilecelestia.travel.GoToContainerFragment
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.AppURL
 import space.celestia.celestiaui.utils.AppURLResult
@@ -144,8 +112,23 @@ import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaui.utils.showAlert
 import space.celestia.celestiaui.utils.showError
 import space.celestia.celestiaui.utils.showOptions
+import space.celestia.mobilecelestia.celestia.CelestiaFragment
+import space.celestia.mobilecelestia.celestia.CelestiaPresentation
+import space.celestia.mobilecelestia.celestia.RendererSettings
+import space.celestia.mobilecelestia.common.EdgeInsets
+import space.celestia.mobilecelestia.common.RoundedCorners
+import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.control.BottomControlAction
+import space.celestia.mobilecelestia.control.ContinuousAction
+import space.celestia.mobilecelestia.control.CustomAction
+import space.celestia.mobilecelestia.control.CustomActionType
+import space.celestia.mobilecelestia.control.InstantAction
+import space.celestia.mobilecelestia.control.OverflowItem
 import space.celestia.mobilecelestia.loading.LoadingScreen
 import space.celestia.mobilecelestia.menu.MenuScreen
+import space.celestia.mobilecelestia.menu.ToolbarAction
+import space.celestia.mobilecelestia.tool.ToolScreen
+import space.celestia.mobilecelestia.tool.viewmodel.ToolPage
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -159,21 +142,9 @@ import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main),
-    InfoFragment.Listener,
-    SearchFragment.Listener,
-    BrowserFragment.Listener,
-    SubsystemBrowserFragment.Listener,
-    NewHelpFragment.Listener,
-    FavoriteFragment.Listener,
-    SettingsFragment.Listener,
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    AddonFragment.Listener,
-    AddonDownloadFragment.Listener,
-    AddonManagerFragment.Listener,
-    WebBrowserFragment.Listener,
-    CommonWebFragment.Listener,
-    CameraControlContainerFragment.Listener {
+    CommonWebFragment.Listener {
 
     @AppSettings
     @Inject
@@ -254,6 +225,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private var showCelestiaPlus = mutableStateOf<Boolean?>(null)
 
+    private val viewModel: MainViewModel by viewModels()
+
     private var mediaRouterCallback: MediaRouter.SimpleCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -299,7 +272,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
-        findViewById<ComposeView>(R.id.drawer).apply {
+        findViewById<ComposeView>(R.id.drawer_content).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 Mdc3Theme {
@@ -308,6 +281,44 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                             toolbarActionSelected(action)
                         }
                     }
+                }
+            }
+        }
+
+        findViewById<ComposeView>(R.id.bottom_sheet_content).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Mdc3Theme {
+                    ToolScreen(
+                        backStack = viewModel.backStack,
+                        linkClicked = { link, localizable ->
+                            openLink(link, localizable)
+                        },
+                        providePreferredDisplay = {
+                            settingsProvidePreferredDisplay()
+                        },
+                        refreshRateChanged = {
+                            settingsRefreshRateChanged(it)
+                        },
+                        requestRunScript = {
+                            webRequestRunScript(it)
+                        },
+                        requestShareAddon = { name, id ->
+                            webRequestShareAddon(name, id)
+                        },
+                        shareRequested = {
+                            shareFavoriteItem(it)
+                        },
+                        openBookmarkRequested = {
+                            openFavoriteBookmark(it)
+                        },
+                        openScriptRequested = {
+                            openFavoriteScript(it)
+                        },
+                        saveFavorites = {
+                            saveFavorites()
+                        }
+                    )
                 }
             }
         }
@@ -352,7 +363,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
-        val bottomSheetContainer = findViewById<FrameLayout>(R.id.bottom_sheet)
+        val bottomSheetContainer = findViewById<View>(R.id.bottom_sheet)
         ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
             val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
             val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
@@ -360,7 +371,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         findViewById<View>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        findViewById<FrameLayout>(R.id.toolbar_overlay).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        findViewById<View>(R.id.toolbar_overlay).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
             celestiaLoadingFailed()
@@ -389,7 +400,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         when (currentState) {
             AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
-                loadExternalConfig(savedState)
+                loadExternalConfig()
             }
             AppStatusReporter.State.LOADING -> {
                 // Do nothing
@@ -510,7 +521,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         if (activePresentation?.display != presentationDisplay) {
-            Log.i(TAG, "Dismissing presentation because the current route no longer has a presentation display.");
+            Log.i(TAG, "Dismissing presentation because the current route no longer has a presentation display.")
             activePresentation?.dismiss()
             activePresentation = null
         }
@@ -602,7 +613,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         bottomSheetContainer.requestLayout()
     }
 
-    private fun loadExternalConfig(savedInstanceState: Bundle?) {
+    private fun loadExternalConfig() {
         appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -677,8 +688,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val backPressedCallback = object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     val self = weakSelf.get() ?: return
-                    val frag = self.supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-                    if (frag != null) {
+                    if (!viewModel.backStack.isEmpty()) {
                         self.lifecycleScope.launch {
                             self.hideOverlay(true)
                         }
@@ -865,13 +875,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     lifecycleScope.launch {
                         try {
                             val result = resourceAPI.item(lang, it.id)
-                            showBottomSheetFragment(AddonFragment.newInstance(result))
-                        } catch (ignored: Throwable) {}
+                            showBottomSheetTool(ToolPage.Addon(result))
+                        } catch (_: Throwable) {}
                     }
                 }
                 is AppURL.Article -> {
                     lifecycleScope.launch {
-                        showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = it.id, language = lang, platform = platform, purchaseManager = purchaseManager), matchingQueryKeys = listOf("guide"), filterURL = true))
+                        showBottomSheetTool(ToolPage.Article(it.id))
                     }
                 }
                 is AppURL.Object -> {
@@ -906,7 +916,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 val result = resourceAPI.latest("news", lang)
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
-                showBottomSheetFragment(SimpleWebFragment.newInstance(URLHelper.buildInAppGuideURI(id = result.id, language = lang, platform = platform, purchaseManager = purchaseManager), matchingQueryKeys = listOf("guide"), filterURL = true))
+                showBottomSheetTool(ToolPage.Article(result.id))
             } catch (ignored: Throwable) {}
         }
     }
@@ -1224,67 +1234,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInAppPurchase(preferredPlayOfferId: String?) = lifecycleScope.launch {
-        val fragment = purchaseManager.createInAppPurchaseFragment(preferredPlayOfferId) ?: return@launch
-        showBottomSheetFragment(fragment)
+        showBottomSheetTool(ToolPage.SubscriptionManager(preferredPlayOfferId))
     }
 
-    override fun infoRequestOpenSubsystem(selection: Selection) {
-        if (selection.`object` == null) return
-        lifecycleScope.launch {
-            showBottomSheetFragment(SubsystemBrowserFragment.newInstance(selection))
-        }
-    }
-
-    override fun infoRequestOpenSubscriptionManagement() {
-        showInAppPurchase(null)
-    }
-
-    override fun infoRequestOpenRelatedAddons(objectPath: String) {
-        showRelatedAddons(objectPath)
-    }
-
-    override fun infoLinkClicked(link: String) {
-        openLink(link, false)
-    }
-
-    override fun searchLinkClicked(link: String) {
-        openLink(link, false)
-    }
-
-    override fun searchRequestOpenSubsystem(selection: Selection) {
-        infoRequestOpenSubsystem(selection)
-    }
-
-    override fun searchRequestOpenRelatedAddons(objectPath: String) {
-        showRelatedAddons(objectPath)
-    }
-
-    override fun searchRequestOpenSubscriptionManagement() {
-        showInAppPurchase(null)
-    }
-
-    override fun browserRequestSubsystem(selection: Selection) {
-        infoRequestOpenSubsystem(selection)
-    }
-
-    override fun browserRequestOpenSubscriptionManagement() {
-        showInAppPurchase(null)
-    }
-
-    override fun browserRequestOpenRelatedAddons(objectPath: String) {
-        showRelatedAddons(objectPath)
-    }
-
-    override fun webRequestRunScript(script: File) {
+    private fun webRequestRunScript(script: File) {
         openCelestiaURL(script.absolutePath)
-    }
-
-    override fun webRequestOpenAddonDownload() {
-        openAddonDownload()
-    }
-
-    override fun webRequestOpenSubscriptionManagement() {
-        showInAppPurchase(null)
     }
 
     override fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
@@ -1335,25 +1289,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showInAppPurchase(preferredPlayOfferId)
     }
 
-    private fun showRelatedAddons(objectPath: String) {
-        val baseURL = "https://celestia.mobi/resources/itemsByObjectPath"
-        var builder = baseURL.toUri()
-            .buildUpon()
-            .appendQueryParameter("objectPath", objectPath)
-            .appendQueryParameter("lang", AppCore.getLanguage())
-            .appendQueryParameter("platform", platform.name)
-            .appendQueryParameter("theme", "dark")
-            .appendQueryParameter("transparentBackground", "true")
-            .appendQueryParameter("api", "2")
-        if (platform.flavor != null)
-            builder = builder.appendQueryParameter("distribution", platform.flavor)
-        if (purchaseManager.canUseInAppPurchase())
-            builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
-        lifecycleScope.launch {
-            showBottomSheetFragment(WebBrowserFragment.newInstance(builder.build()))
-        }
-    }
-
     private fun onInstantActionSelected(item: CelestiaAction) {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) { appCore.perform(item) }
     }
@@ -1370,13 +1305,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         when (type) {
             CustomActionType.ShowTimeSettings -> {
                 lifecycleScope.launch {
-                    showBottomSheetFragment(TimeSettingsFragment.newInstance())
+                    showBottomSheetTool(ToolPage.TimeSettings)
                 }
             }
         }
     }
 
-    override fun webRequestShareAddon(name: String, id: String) {
+    private fun webRequestShareAddon(name: String, id: String) {
         val baseURL = "https://celestia.mobi/resources/item"
         val uri = baseURL.toUri().buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", AppCore.getLanguage()).build()
         shareURLDirect(name, uri.toString())
@@ -1402,23 +1337,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun browserAddonCategoryRequested(addonCategory: BrowserPredefinedItem.CategoryInfo) {
-        openAddonCategory(addonCategory)
-    }
 
-    override fun browserLinkClicked(link: String) {
-        openLink(link, false)
-    }
-
-    override fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean) {
-        openLink(link, localizable)
-    }
-
-    override fun helpLinkClicked(link: String) {
-        openLink(link, false)
-    }
-
-    override fun shareFavoriteItem(item: MutableFavoriteBaseItem) {
+    private fun shareFavoriteItem(item: MutableFavoriteBaseItem) {
         if (item is FavoriteBookmarkItem && item.bookmark.isLeaf) {
             shareURLDirect(item.bookmark.name, item.bookmark.url)
         }
@@ -1442,7 +1362,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         updateCurrentBookmarks(favorites)
     }
 
-    override fun saveFavorites() {
+    private fun saveFavorites() {
         val favorites = getCurrentBookmarks()
         try {
             val myType = object : TypeToken<List<BookmarkNode>>() {}.type
@@ -1451,19 +1371,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         } catch (ignored: Throwable) { }
     }
 
-    override fun openFavoriteBookmark(item: FavoriteBookmarkItem) {
+    private fun openFavoriteBookmark(item: FavoriteBookmarkItem) {
         openCelestiaURL(item.bookmark.url)
     }
 
-    override fun openFavoriteScript(item: FavoriteScriptItem) {
+    private fun openFavoriteScript(item: FavoriteScriptItem) {
         openCelestiaURL(item.script.filename)
     }
 
-    override fun settingsLinkClicked(link: String, localizable: Boolean) {
-        openLink(link, localizable)
-    }
-
-    override fun settingsProvidePreferredDisplay(): Display? {
+    private fun settingsProvidePreferredDisplay(): Display? {
         val presentation = activePresentation
         if (presentation != null)
             return presentation.display
@@ -1475,12 +1391,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun settingsRefreshRateChanged(frameRateOption: Int) {
+    private fun settingsRefreshRateChanged(frameRateOption: Int) {
         (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
-    }
-
-    override fun settingsOpenSubscriptionManagement() {
-        showInAppPurchase(null)
     }
 
     private fun showUnsupportedAction() {
@@ -1576,11 +1488,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private suspend fun hideBottomSheet(animated: Boolean) {
         hideView(animated, R.id.bottom_sheet_card, false)
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
-        val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-        if (fragment != null) {
-            supportFragmentManager.beginTransaction().hide(fragment).remove(fragment).setPrimaryNavigationFragment(null)
-                .commitAllowingStateLoss()
-        }
+        viewModel.backStack.clear()
     }
 
     private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean) {
@@ -1667,12 +1575,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun  hideKeyboard() {
-        (getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-    }
-
     private fun showInfo(selection: Selection) = lifecycleScope.launch {
-        showBottomSheetFragment(InfoFragment.newInstance(selection))
+        showBottomSheetTool(ToolPage.Info(selection))
     }
 
     private fun showSendFeedback() {
@@ -1800,11 +1704,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showSearch() = lifecycleScope.launch {
-        showBottomSheetFragment(SearchFragment.newInstance())
+        showBottomSheetTool(ToolPage.Search)
     }
 
     private fun showBrowser() = lifecycleScope.launch {
-        showBottomSheetFragment(BrowserFragment.newInstance())
+        showBottomSheetTool(ToolPage.Browser)
     }
 
     private fun showTimeControl() = lifecycleScope.launch {
@@ -1858,11 +1762,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showCameraControl() = lifecycleScope.launch {
-        showBottomSheetFragment(CameraControlContainerFragment.newInstance())
+        showBottomSheetTool(ToolPage.CameraControl)
     }
 
     private fun showHelp() = lifecycleScope.launch {
-        showBottomSheetFragment(NewHelpFragment.newInstance())
+        showBottomSheetTool(ToolPage.Help)
     }
 
     private fun showFavorite() = lifecycleScope.launch {
@@ -1873,11 +1777,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         updateCurrentScripts(scripts)
         updateCurrentDestinations(appCore.destinations)
-        showBottomSheetFragment(FavoriteFragment.newInstance())
+        showBottomSheetTool(ToolPage.Favorites)
     }
 
     private fun showSettings() = lifecycleScope.launch {
-        showBottomSheetFragment(SettingsFragment.newInstance())
+        showBottomSheetTool(ToolPage.Settings)
     }
 
     private fun showShare() {
@@ -1932,39 +1836,32 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showEventFinder() = lifecycleScope.launch {
-        showBottomSheetFragment(EventFinderContainerFragment.newInstance())
+        showBottomSheetTool(ToolPage.EventFinder)
     }
 
     // Resource
     private fun showInstalledAddons() = lifecycleScope.launch {
-        showBottomSheetFragment(AddonManagerFragment.newInstance())
+        showBottomSheetTool(ToolPage.InstalledAddons)
     }
 
     private fun openAddonDownload() = lifecycleScope.launch {
-        showBottomSheetFragment(AddonDownloadFragment.newInstance())
-    }
-
-    private fun openAddonCategory(info: BrowserPredefinedItem.CategoryInfo) = lifecycleScope.launch {
-        showBottomSheetFragment(AddonDownloadFragment.newInstance(info.isLeaf, info.id))
+        showBottomSheetTool(ToolPage.AddonDownload(null, null))
     }
 
     private fun showGoTo() = lifecycleScope.launch {
-        showBottomSheetFragment(GoToContainerFragment.newInstance())
+        showBottomSheetTool(ToolPage.GoTo)
     }
 
     // Utilities
-    private suspend fun showBottomSheetFragment(fragment: Fragment) {
+
+    private suspend fun showBottomSheetTool(page: ToolPage) {
         hideOverlay(true)
-        showBottomSheetFragmentDirect(fragment)
+        showBottomSheetToolDirect(page)
     }
 
-    private suspend fun showBottomSheetFragmentDirect(fragment: Fragment) {
+    private suspend fun showBottomSheetToolDirect(page: ToolPage) {
+        viewModel.backStack.add(page)
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.bottom_sheet, fragment, BOTTOM_SHEET_ROOT_FRAGMENT_TAG)
-            .setPrimaryNavigationFragment(fragment)
-            .commitAllowingStateLoss()
         showView(true, R.id.bottom_sheet_card, false)
     }
 
@@ -2128,7 +2025,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
         private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
 
-        private const val BOTTOM_SHEET_ROOT_FRAGMENT_TAG = "bottom-sheet-root"
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 
         private const val FILE_PROVIDER_AUTHORITY = "space.celestia.mobilecelestia.fileprovider"

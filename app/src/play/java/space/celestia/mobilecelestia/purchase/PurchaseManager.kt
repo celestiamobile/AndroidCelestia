@@ -3,6 +3,7 @@ package space.celestia.mobilecelestia.purchase
 import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
+import androidx.compose.runtime.Composable
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener
@@ -48,10 +49,10 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
         return true
     }
 
-    override fun createInAppPurchaseFragment(preferredPlayOfferId: String?): Fragment? {
-        return SubscriptionManagerFragment.newInstance(preferredPlayOfferId)
+    @Composable
+    override fun ManagerScreen(preferredPlayOfferId: String?) {
+        SubscriptionManagerScreen(preferredPlayOfferId)
     }
-
     override fun purchaseToken(): String? {
         return cachedPurchaseToken
     }
