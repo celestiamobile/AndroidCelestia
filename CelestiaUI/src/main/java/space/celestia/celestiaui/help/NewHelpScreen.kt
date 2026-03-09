@@ -1,6 +1,9 @@
 package space.celestia.celestiaui.help
 
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import space.celestia.celestia.AppCore
@@ -11,7 +14,9 @@ import space.celestia.celestiaui.resource.WebPage
 @Composable
 fun NewHelpScreen(linkClicked: (String) -> Unit) {
     val viewModel: HelpViewModel = hiltViewModel()
-    Scaffold { paddingValues ->
+    Scaffold(
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)
+    ) { paddingValues ->
         WebPage(
             uri = URLHelper.buildInAppGuideShortURI("/help/welcome", AppCore.getLanguage(), platform = viewModel.platform, shareable = false),
             filterURL = true,
