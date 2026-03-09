@@ -10,26 +10,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
-import androidx.core.os.BundleCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.AppCore
-import space.celestia.celestia.Script
-import space.celestia.celestiafoundation.favorite.BookmarkNode
-import space.celestia.celestiafoundation.utils.FileUtils
 import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
-import space.celestia.celestiaui.favorite.getCurrentBookmarks
-import space.celestia.celestiaui.favorite.updateCurrentBookmarks
-import space.celestia.celestiaui.favorite.updateCurrentDestinations
-import space.celestia.celestiaui.favorite.updateCurrentScripts
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.resource.CommonWebFragment
 import space.celestia.celestiaui.resource.model.ResourceAPIService
@@ -38,7 +28,6 @@ import space.celestia.celestiaui.utils.AppURL
 import space.celestia.celestiaui.utils.AppURLResult
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.showAlert
-import space.celestia.celestiaxr.XRActivity
 import space.celestia.celestiaxr.tool.viewmodel.ToolViewModel
 import java.io.File
 import java.util.UUID
@@ -56,20 +45,12 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
     @Inject
     lateinit var resourceAPI: ResourceAPIService
 
-    private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
-
     companion object {
         const val EXTRA_TOOL = "extra_tool"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val tool = intent.extras?.let { BundleCompat.getParcelable(it, EXTRA_TOOL, Tool.Page::class.java) }
-        if (tool == null) {
-            finish()
-            return
-        }
-
         enableEdgeToEdge()
         setContent {
             Mdc3Theme {
@@ -105,31 +86,7 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                         }
                     },
                     providePreferredDisplay = { null },
-                    refreshRateChanged = { _  -> },
-//                    readFavorites = {
-//                        var favorites = arrayListOf<BookmarkNode>()
-//                        try {
-//                            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
-//                            val str = FileUtils.readFileToText(favoriteJsonFilePath)
-//                            val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
-//                            favorites = decoded
-//                        } catch (_: Throwable) { }
-//                        updateCurrentBookmarks(favorites)
-//                        val scripts = Script.getScriptsInDirectory("scripts", true)
-//                        for (extraScriptPath in XRActivity.extraScriptPaths) {
-//                            scripts.addAll(Script.getScriptsInDirectory(extraScriptPath, true))
-//                        }
-//                        updateCurrentScripts(scripts)
-//                        updateCurrentDestinations(appCore.destinations)
-//                    },
-                    saveFavorites = {
-                        val favorites = getCurrentBookmarks()
-                        try {
-                            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
-                            val str = Gson().toJson(favorites, myType)
-                            FileUtils.writeTextToFile(str, favoriteJsonFilePath)
-                        } catch (_: Throwable) { }
-                    }
+                    refreshRateChanged = { _  -> }
                 )
             }
         }
@@ -265,7 +222,7 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                     }
                 } else {
                     val intent = Intent(this, ToolActivity::class.java)
-                    intent.putExtra(EXTRA_TOOL, Tool.Page.ObjectInfo(selection))
+                    intent.putExtra(EXTRA_TOOL, Tool.Page.ObjectInfo(selection).page)
                     startActivity(intent)
                 }
             }
@@ -273,13 +230,13 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                 try {
                     val item = resourceAPI.item(lang = AppCore.getLanguage(), item = url.id)
                     val intent = Intent(this, ToolActivity::class.java)
-                    intent.putExtra(EXTRA_TOOL, Tool.Page.Addon(item))
+                    intent.putExtra(EXTRA_TOOL, Tool.Page.Addon(item).page)
                     startActivity(intent)
                 } catch (_: Throwable) {}
             }
             is AppURL.Article -> {
                 val intent = Intent(this, ToolActivity::class.java)
-                intent.putExtra(EXTRA_TOOL, Tool.Page.Article(url.id))
+                intent.putExtra(EXTRA_TOOL, Tool.Page.Article(url.id).page)
                 startActivity(intent)
             }
         }

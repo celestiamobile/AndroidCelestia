@@ -38,18 +38,16 @@ internal fun ToolsSection(onHelpOpened: (() -> Unit)? = null) {
                             scope.launch {
                                 val selection = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.selection }
                                 val intent = Intent(context, ToolActivity::class.java)
-                                intent.putExtra(ToolActivity.EXTRA_TOOL, Tool.Page.ObjectInfo(selection))
+                                intent.putExtra(ToolActivity.EXTRA_TOOL, Tool.Page.ObjectInfo(selection).page)
                                 context.startActivity(intent)
                             }
                         }
                         is Tool.Page -> {
                             if (tool is Tool.Page.Help) {
                                 onHelpOpened?.invoke()
-                            } else if (tool is Tool.Page.Favorites) {
-
                             }
                             val intent = Intent(context, ToolActivity::class.java)
-                            intent.putExtra(ToolActivity.EXTRA_TOOL, tool)
+                            intent.putExtra(ToolActivity.EXTRA_TOOL, tool.page)
                             context.startActivity(intent)
                         }
                     }

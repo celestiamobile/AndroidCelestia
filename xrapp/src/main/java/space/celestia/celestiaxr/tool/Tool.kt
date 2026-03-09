@@ -1,10 +1,8 @@
 package space.celestia.celestiaxr.tool
 
-import android.os.Parcelable
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
 import space.celestia.celestia.Selection
 import space.celestia.celestiafoundation.resource.model.ResourceItem
+import space.celestia.celestiaui.tool.viewmodel.ToolPage
 import space.celestia.celestiaui.utils.CelestiaString
 
 sealed interface Tool {
@@ -12,43 +10,22 @@ sealed interface Tool {
 
     data object Info : Tool { override val title get() = CelestiaString("Get Info", "Action for getting info about current selected object") }
 
-    sealed class Page : Tool, Parcelable {
-        @Parcelize
-        data object StarBrowser : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Star Browser", "") }
-        @Parcelize
-        data object Search : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Search", "") }
-        @Parcelize
-        data object GoTo : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Go to Object", "") }
-        @Parcelize
-        data object EclipseFinder : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Eclipse Finder", "") }
-        @Parcelize
-        data object CameraControl : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Camera Control", "Observer control") }
-        @Parcelize
-        data object CurrentTime : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Current Time", "") }
-        @Parcelize
-        data object Favorites : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Favorites", "Favorites (currently bookmarks and scripts)") }
-        @Parcelize
-        data object Settings : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Settings", "") }
-        @Parcelize
-        data object InstalledAddons : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Installed Add-ons", "Open a page for managing installed add-ons") }
-        @Parcelize
-        data object GetAddons : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Get Add-ons", "Open webpage for downloading add-ons") }
-        @Parcelize
-        data object Help : Page() { @IgnoredOnParcel override val title get() = CelestiaString("Help", "") }
-
-        @Parcelize
-        data class Subsystem(val selection: Selection) : Page() { @IgnoredOnParcel override val title = "" }
-        @Parcelize
-        data class GetCategoryAddon(val isLeaf: Boolean, val categoryId: String) : Page() { @IgnoredOnParcel override val title = "" }
-
-        @Parcelize
-        data class ObjectInfo(val selection: Selection) : Page() { @IgnoredOnParcel override val title = "" }
-
-        @Parcelize
-        data class Addon(val item: ResourceItem) : Page() { @IgnoredOnParcel override val title = "" }
-
-        @Parcelize
-        data class Article(val id: String) : Page() { @IgnoredOnParcel override val title = "" }
+    sealed interface Page : Tool {
+        val page: ToolPage
+        data object StarBrowser : Page { override val title get() = CelestiaString("Star Browser", ""); override val page: ToolPage get() = ToolPage.Browser }
+        data object Search : Page { override val title get() = CelestiaString("Search", ""); override val page: ToolPage get() = ToolPage.Search }
+        data object GoTo : Page { override val title get() = CelestiaString("Go to Object", ""); override val page: ToolPage get() = ToolPage.GoTo }
+        data object EclipseFinder : Page { override val title get() = CelestiaString("Eclipse Finder", ""); override val page: ToolPage get() = ToolPage.EventFinder }
+        data object CameraControl : Page { override val title get() = CelestiaString("Camera Control", "Observer control"); override val page: ToolPage get() = ToolPage.CameraControl }
+        data object CurrentTime : Page { override val title get() = CelestiaString("Current Time", ""); override val page: ToolPage get() = ToolPage.TimeSettings }
+        data object Favorites : Page { override val title get() = CelestiaString("Favorites", "Favorites (currently bookmarks and scripts)"); override val page: ToolPage get() = ToolPage.Favorites }
+        data object Settings : Page { override val title get() = CelestiaString("Settings", ""); override val page: ToolPage get() = ToolPage.Settings }
+        data object InstalledAddons : Page { override val title get() = CelestiaString("Installed Add-ons", "Open a page for managing installed add-ons"); override val page: ToolPage get() = ToolPage.InstalledAddons }
+        data object GetAddons : Page { override val title get() = CelestiaString("Get Add-ons", "Open webpage for downloading add-ons"); override val page: ToolPage get() = ToolPage.AddonDownload(null, null) }
+        data object Help : Page { override val title get() = CelestiaString("Help", ""); override val page: ToolPage get() = ToolPage.Help }
+        data class ObjectInfo(val selection: Selection) : Page { override val title = ""; override val page: ToolPage get() = ToolPage.Info(selection) }
+        data class Addon(val item: ResourceItem) : Page { override val title = ""; override val page: ToolPage get() = ToolPage.Addon(item) }
+        data class Article(val id: String) : Page { override val title = ""; override val page: ToolPage get() = ToolPage.Article(id) }
     }
 
     companion object {

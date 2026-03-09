@@ -25,6 +25,7 @@ import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.ApplicationId
 import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.celestiaui.di.Platform
+import space.celestia.celestiaui.favorite.viewmodel.FavoriteManager
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
@@ -192,5 +193,11 @@ object AppModule {
             1
         }
         return RenderSettings(enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true", resolutionMultiplier = resolutionMultiplier)
+    }
+
+    @Singleton
+    @Provides
+    fun provideFavoriteManager(@ApplicationContext context: Context, appCore: AppCore): FavoriteManager {
+        return FavoriteManager("${context.filesDir.absolutePath}/favorites.json", appCore)
     }
 }
