@@ -1203,11 +1203,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 showSpeedControl()
             }
             ToolbarAction.NewsArchive -> {
-                val baseURL = "https://celestia.mobi/news"
-                val uri = baseURL.toUri().buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
                 lifecycleScope.launch {
                     hideOverlay(true)
-                    openURL(uri.toString())
+                    openLink("https://celestia.mobi/news", true)
                 }
             }
             ToolbarAction.Download -> {
@@ -1246,11 +1244,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun infoLinkClicked(link: String) {
-        openURL(link)
+        openLink(link, false)
     }
 
     override fun searchLinkClicked(link: String) {
-        openURL(link)
+        openLink(link, false)
     }
 
     override fun searchRequestOpenSubsystem(selection: Selection) {
@@ -1320,7 +1318,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onExternalWebLinkClicked(url: String) {
-        openURL(url)
+        openLink(url, false)
     }
 
     override fun onShareURL(title: String, url: String) {
@@ -1409,7 +1407,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun browserLinkClicked(link: String) {
-        openURL(link)
+        openLink(link, false)
     }
 
     override fun onObserverModeLearnMoreClicked(link: String, localizable: Boolean) {
@@ -1417,7 +1415,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun helpLinkClicked(link: String) {
-        openURL(link)
+        openLink(link, false)
     }
 
     override fun shareFavoriteItem(item: MutableFavoriteBaseItem) {
@@ -1529,10 +1527,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch {
             showAlert(CelestiaString("Error loading data, fallback to original configuration.", ""))
         }
-    }
-
-    private fun openURL(url: String) {
-        openURI(url.toUri())
     }
 
     private fun openURI(uri: Uri) {
@@ -1792,7 +1786,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun reportBugSuggestFeatureFallback() {
-        openURL(FEEDBACK_GITHUB_LINK)
+        openLink(FEEDBACK_GITHUB_LINK, false)
     }
 
     fun writeTextToFileWithName(text: String, directory: File, fileName: String): File? {
