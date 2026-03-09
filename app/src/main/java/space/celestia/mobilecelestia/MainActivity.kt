@@ -25,7 +25,6 @@ import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -127,8 +126,8 @@ import space.celestia.mobilecelestia.control.OverflowItem
 import space.celestia.mobilecelestia.loading.LoadingScreen
 import space.celestia.mobilecelestia.menu.MenuScreen
 import space.celestia.mobilecelestia.menu.ToolbarAction
-import space.celestia.mobilecelestia.tool.ToolScreen
-import space.celestia.mobilecelestia.tool.viewmodel.ToolPage
+import space.celestia.celestiaui.tool.ToolScreen
+import space.celestia.celestiaui.tool.viewmodel.ToolPage
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -1234,7 +1233,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showInAppPurchase(preferredPlayOfferId: String?) = lifecycleScope.launch {
-        showBottomSheetTool(ToolPage.SubscriptionManager(preferredPlayOfferId))
+        if (purchaseManager.canUseInAppPurchase())
+            showBottomSheetTool(ToolPage.SubscriptionManager(preferredPlayOfferId))
     }
 
     private fun webRequestRunScript(script: File) {

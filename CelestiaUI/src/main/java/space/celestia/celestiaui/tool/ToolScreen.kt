@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.tool
+package space.celestia.celestiaui.tool
 
 import android.view.Display
 import androidx.compose.animation.slideInHorizontally
@@ -38,8 +38,8 @@ import space.celestia.celestiaui.settings.Settings
 import space.celestia.celestiaui.settings.TimeSettingsContainer
 import space.celestia.celestiaui.travel.GoToContainer
 import space.celestia.celestiaui.utils.URLHelper
-import space.celestia.mobilecelestia.tool.viewmodel.ToolPage
-import space.celestia.mobilecelestia.tool.viewmodel.ToolViewModel
+import space.celestia.celestiaui.tool.viewmodel.ToolPage
+import space.celestia.celestiaui.tool.viewmodel.ToolViewModel
 import java.io.File
 
 @Composable
@@ -66,7 +66,7 @@ fun ToolScreen(
                     providePreferredDisplay = providePreferredDisplay,
                     refreshRateChanged = refreshRateChanged,
                     openSubscriptionManagement = {
-                        if (backStack is MutableList) {
+                        if (backStack is MutableList && viewModel.purchaseManager.canUseInAppPurchase()) {
                             backStack.add(ToolPage.SubscriptionManager(null))
                         }
                     }
@@ -78,7 +78,7 @@ fun ToolScreen(
                         linkClicked(it, false)
                     },
                     openSubscriptionManagement = {
-                        if (backStack is MutableList) {
+                        if (backStack is MutableList && viewModel.purchaseManager.canUseInAppPurchase()) {
                             backStack.add(ToolPage.SubscriptionManager(null))
                         }
                     },
@@ -106,7 +106,7 @@ fun ToolScreen(
                         linkClicked(it, false)
                     },
                     openSubscriptionManagement = {
-                        if (backStack is MutableList) {
+                        if (backStack is MutableList && viewModel.purchaseManager.canUseInAppPurchase()) {
                             backStack.add(ToolPage.SubscriptionManager(null))
                         }
                     },
@@ -135,7 +135,7 @@ fun ToolScreen(
                             linkClicked(it, false)
                         },
                         openSubscriptionManagement = {
-                            if (backStack is MutableList) {
+                            if (backStack is MutableList && viewModel.purchaseManager.canUseInAppPurchase()) {
                                 backStack.add(ToolPage.SubscriptionManager(null))
                             }
                         },
@@ -177,7 +177,7 @@ fun ToolScreen(
                         }
                     },
                     openSubscriptionManagement = {
-                        if (backStack is MutableList) {
+                        if (backStack is MutableList && viewModel.purchaseManager.canUseInAppPurchase()) {
                             backStack.add(ToolPage.SubscriptionManager(null))
                         }
                     }
@@ -233,7 +233,7 @@ fun ToolScreen(
                     requestRunScript = requestRunScript,
                     requestShareAddon = requestShareAddon,
                     openSubscriptionManagement = {
-                        if (backStack is MutableList) {
+                        if (backStack is MutableList && viewModel.purchaseManager.canUseInAppPurchase()) {
                             backStack.add(ToolPage.SubscriptionManager(null))
                         }
                     },

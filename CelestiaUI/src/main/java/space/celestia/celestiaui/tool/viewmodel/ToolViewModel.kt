@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.tool.viewmodel
+package space.celestia.celestiaui.tool.viewmodel
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
