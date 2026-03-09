@@ -24,6 +24,7 @@ import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.celestiaui.di.Platform
+import space.celestia.celestiaui.favorite.viewmodel.FavoriteManager
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
@@ -191,5 +192,11 @@ object AppModule {
     @Provides
     fun provideSettingsEntryProvider(): SettingsEntryProvider {
         return SettingsEntryProviderImpl()
+    }
+
+    @Singleton
+    @Provides
+    fun provideFavoriteManager(@ApplicationContext context: Context, appCore: AppCore): FavoriteManager {
+        return FavoriteManager("${context.filesDir.absolutePath}/favorites.json", appCore)
     }
 }

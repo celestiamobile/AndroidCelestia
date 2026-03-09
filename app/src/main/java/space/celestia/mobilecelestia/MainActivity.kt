@@ -56,8 +56,6 @@ import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -72,9 +70,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
-import space.celestia.celestia.Script
 import space.celestia.celestia.Selection
-import space.celestia.celestiafoundation.favorite.BookmarkNode
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
@@ -91,10 +87,6 @@ import space.celestia.celestiaui.di.Platform
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
 import space.celestia.celestiaui.favorite.FavoriteScriptItem
 import space.celestia.celestiaui.favorite.MutableFavoriteBaseItem
-import space.celestia.celestiaui.favorite.getCurrentBookmarks
-import space.celestia.celestiaui.favorite.updateCurrentBookmarks
-import space.celestia.celestiaui.favorite.updateCurrentDestinations
-import space.celestia.celestiaui.favorite.updateCurrentScripts
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
@@ -158,8 +150,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var appSettingsNoBackup: PreferenceManager
 
     private val legacyCelestiaParentPath by lazy { this.filesDir.absolutePath }
-
-    private val favoriteJsonFilePath by lazy { "${filesDir.absolutePath}/favorites.json" }
 
     @Inject
     lateinit var appCore: AppCore
@@ -313,9 +303,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                         },
                         openScriptRequested = {
                             openFavoriteScript(it)
-                        },
-                        saveFavorites = {
-                            saveFavorites()
                         }
                     )
                 }
@@ -1351,26 +1338,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openURI(uri)
     }
 
-    private fun readFavorites() {
-        var favorites = arrayListOf<BookmarkNode>()
-        try {
-            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
-            val str = FileUtils.readFileToText(favoriteJsonFilePath)
-            val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
-            favorites = decoded
-        } catch (ignored: Throwable) { }
-        updateCurrentBookmarks(favorites)
-    }
-
-    private fun saveFavorites() {
-        val favorites = getCurrentBookmarks()
-        try {
-            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
-            val str = Gson().toJson(favorites, myType)
-            FileUtils.writeTextToFile(str, favoriteJsonFilePath)
-        } catch (ignored: Throwable) { }
-    }
-
     private fun openFavoriteBookmark(item: FavoriteBookmarkItem) {
         openCelestiaURL(item.bookmark.url)
     }
@@ -1770,13 +1737,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun showFavorite() = lifecycleScope.launch {
-        readFavorites()
-        val scripts = Script.getScriptsInDirectory("scripts", true)
-        for (extraScriptPath in extraScriptPaths) {
-            scripts.addAll(Script.getScriptsInDirectory(extraScriptPath, true))
-        }
-        updateCurrentScripts(scripts)
-        updateCurrentDestinations(appCore.destinations)
         showBottomSheetTool(ToolPage.Favorites)
     }
 

@@ -52,8 +52,7 @@ fun ToolScreen(
     requestShareAddon: (String, String) -> Unit,
     shareRequested: (MutableFavoriteBaseItem) -> Unit,
     openBookmarkRequested: (FavoriteBookmarkItem) -> Unit,
-    openScriptRequested: (FavoriteScriptItem) -> Unit,
-    saveFavorites: () -> Unit
+    openScriptRequested: (FavoriteScriptItem) -> Unit
 ) {
     if (backStack.isEmpty()) return
 
@@ -217,7 +216,6 @@ fun ToolScreen(
             is ToolPage.Favorites -> NavEntry(entry) {
                 FavoriteContainer(
                     shareRequested = shareRequested,
-                    saveFavorites = saveFavorites,
                     openBookmarkRequested = openBookmarkRequested,
                     openScriptRequested = openScriptRequested
                 )

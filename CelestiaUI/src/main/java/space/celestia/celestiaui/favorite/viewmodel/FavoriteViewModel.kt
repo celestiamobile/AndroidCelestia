@@ -16,6 +16,6 @@ sealed class Page {
 }
 
 @HiltViewModel
-class FavoriteViewModel @Inject constructor(val appCore: AppCore, val executor: Executor) : ViewModel() {
+class FavoriteViewModel @Inject constructor(val appCore: AppCore, val executor: Executor, val favoriteManager: FavoriteManager) : ViewModel() {
     val backStack = mutableStateListOf<Page>(Page.Item(FavoriteRoot()))
 }
