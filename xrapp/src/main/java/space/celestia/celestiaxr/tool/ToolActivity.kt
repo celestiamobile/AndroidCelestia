@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -32,11 +33,13 @@ import space.celestia.celestiaui.favorite.updateCurrentScripts
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.resource.CommonWebFragment
 import space.celestia.celestiaui.resource.model.ResourceAPIService
+import space.celestia.celestiaui.tool.ToolScreen
 import space.celestia.celestiaui.utils.AppURL
 import space.celestia.celestiaui.utils.AppURLResult
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.showAlert
 import space.celestia.celestiaxr.XRActivity
+import space.celestia.celestiaxr.tool.viewmodel.ToolViewModel
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executor
@@ -70,9 +73,11 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
         enableEdgeToEdge()
         setContent {
             Mdc3Theme {
+                val viewModel: ToolViewModel = hiltViewModel()
                 val scope = rememberCoroutineScope()
+
                 ToolScreen(
-                    page = tool,
+                    backStack = viewModel.backStack,
                     linkClicked = { link, localized ->
                         openLink(link, localized)
                     },
@@ -84,37 +89,39 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                     requestShareAddon = { name, id ->
                         shareAddon(name, id)
                     },
-                    requestRunFavoriteScript = { scriptPath ->
+                    openScriptRequested = { file ->
                         scope.launch(executor.asCoroutineDispatcher()) {
-                            appCore.runScript(scriptPath)
+                            appCore.runScript(file.script.filename)
                         }
                     },
-                    requestOpenCelestiaURL = { url ->
+                    openBookmarkRequested = { bookmark ->
                         scope.launch(executor.asCoroutineDispatcher()) {
-                            appCore.goToURL(url)
+                            appCore.goToURL(bookmark.bookmark.url)
                         }
                     },
-                    requestShareFavorite = { favorite ->
+                    shareRequested = { favorite ->
                         if (favorite is FavoriteBookmarkItem && favorite.isLeaf) {
                             shareURLDirect(favorite.bookmark.name, favorite.bookmark.url)
                         }
                     },
-                    readFavorites = {
-                        var favorites = arrayListOf<BookmarkNode>()
-                        try {
-                            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
-                            val str = FileUtils.readFileToText(favoriteJsonFilePath)
-                            val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
-                            favorites = decoded
-                        } catch (_: Throwable) { }
-                        updateCurrentBookmarks(favorites)
-                        val scripts = Script.getScriptsInDirectory("scripts", true)
-                        for (extraScriptPath in XRActivity.extraScriptPaths) {
-                            scripts.addAll(Script.getScriptsInDirectory(extraScriptPath, true))
-                        }
-                        updateCurrentScripts(scripts)
-                        updateCurrentDestinations(appCore.destinations)
-                    },
+                    providePreferredDisplay = { null },
+                    refreshRateChanged = { _  -> },
+//                    readFavorites = {
+//                        var favorites = arrayListOf<BookmarkNode>()
+//                        try {
+//                            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
+//                            val str = FileUtils.readFileToText(favoriteJsonFilePath)
+//                            val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
+//                            favorites = decoded
+//                        } catch (_: Throwable) { }
+//                        updateCurrentBookmarks(favorites)
+//                        val scripts = Script.getScriptsInDirectory("scripts", true)
+//                        for (extraScriptPath in XRActivity.extraScriptPaths) {
+//                            scripts.addAll(Script.getScriptsInDirectory(extraScriptPath, true))
+//                        }
+//                        updateCurrentScripts(scripts)
+//                        updateCurrentDestinations(appCore.destinations)
+//                    },
                     saveFavorites = {
                         val favorites = getCurrentBookmarks()
                         try {
