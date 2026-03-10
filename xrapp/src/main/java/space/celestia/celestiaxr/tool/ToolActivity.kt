@@ -6,11 +6,11 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +45,8 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
     @Inject
     lateinit var resourceAPI: ResourceAPIService
 
+    private val viewModel: ToolViewModel by viewModels()
+
     companion object {
         const val EXTRA_TOOL = "extra_tool"
     }
@@ -54,9 +56,7 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
         enableEdgeToEdge()
         setContent {
             Mdc3Theme {
-                val viewModel: ToolViewModel = hiltViewModel()
                 val scope = rememberCoroutineScope()
-
                 ToolScreen(
                     backStack = viewModel.backStack,
                     linkClicked = { link, localized ->
@@ -221,23 +221,17 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                         }
                     }
                 } else {
-                    val intent = Intent(this, ToolActivity::class.java)
-                    intent.putExtra(EXTRA_TOOL, Tool.Page.ObjectInfo(selection).page)
-                    startActivity(intent)
+                    viewModel.backStack.add(Tool.Page.ObjectInfo(selection).page)
                 }
             }
             is AppURL.Addon -> {
                 try {
                     val item = resourceAPI.item(lang = AppCore.getLanguage(), item = url.id)
-                    val intent = Intent(this, ToolActivity::class.java)
-                    intent.putExtra(EXTRA_TOOL, Tool.Page.Addon(item).page)
-                    startActivity(intent)
+                    viewModel.backStack.add(Tool.Page.Addon(item).page)
                 } catch (_: Throwable) {}
             }
             is AppURL.Article -> {
-                val intent = Intent(this, ToolActivity::class.java)
-                intent.putExtra(EXTRA_TOOL, Tool.Page.Article(url.id).page)
-                startActivity(intent)
+                viewModel.backStack.add(Tool.Page.Article(url.id).page)
             }
         }
     }
