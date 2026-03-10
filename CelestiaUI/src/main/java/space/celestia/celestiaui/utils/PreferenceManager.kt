@@ -87,6 +87,7 @@ class PreferenceManager(context: Context, name: String) {
         } else {
             editor.apply()
         }
+        et = null
     }
 
     @SuppressLint("CommitPrefEdits")
