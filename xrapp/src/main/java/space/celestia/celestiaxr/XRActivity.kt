@@ -30,6 +30,7 @@ import space.celestia.celestiaui.control.viewmodel.JoystickHandler
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
+import space.celestia.celestiaui.favorite.viewmodel.FavoriteManager
 import space.celestia.celestiaui.settings.viewmodel.CustomFont
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
@@ -69,6 +70,9 @@ class XRActivity : ComponentActivity() {
     @PanelState
     @Inject
     lateinit var panelState: MutableState<Boolean>
+
+    @Inject
+    lateinit var favoriteManager: FavoriteManager
 
     private var panelStateObservation: Job? = null
 
@@ -447,6 +451,7 @@ class XRActivity : ComponentActivity() {
     private fun celestiaLoadingFinished() {
         resourceManager.addonDirectory = addonPaths.firstOrNull()
         resourceManager.scriptDirectory = extraScriptPaths.firstOrNull()
+        favoriteManager.extraScriptPaths = extraScriptPaths
 
         panelStateObservation = lifecycleScope.launch {
             snapshotFlow { panelState.value }.collect { visible ->
