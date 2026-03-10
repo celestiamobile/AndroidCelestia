@@ -1819,14 +1819,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     // Utilities
 
     private suspend fun showBottomSheetTool(page: ToolPage) {
-        hideOverlay(true)
+        hideMenu(animated = true)
         showBottomSheetToolDirect(page)
     }
 
     private suspend fun showBottomSheetToolDirect(page: ToolPage) {
+        val backStackWasEmpty = viewModel.backStack.isEmpty()
         viewModel.backStack.add(page)
-        findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
-        showView(true, R.id.bottom_sheet_card, false)
+        if (backStackWasEmpty) {
+            findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
+            showView(true, R.id.bottom_sheet_card, false)
+        }
     }
 
     private suspend fun showToolbarActions(actions: List<BottomControlAction>, overflowItems: List<OverflowItem> = listOf()) {
