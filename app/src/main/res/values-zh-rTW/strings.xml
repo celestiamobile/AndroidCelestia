@@ -24,4 +24,17 @@
     <plurals name="subscription_offer_price_with_phase_template_per_day">
         <item quantity="other">%1$s 訂閱 %2$d 天</item>
     </plurals>
+
+    <plurals name="subscription_offer_price_template_per_year_multiple">
+        <item quantity="other">每$2$d年 %1$s</item>
+    </plurals>
+    <plurals name="subscription_offer_price_template_per_month_multiple">
+        <item quantity="other">每$2$d月 %1$s</item>
+    </plurals>
+    <plurals name="subscription_offer_price_template_per_week_multiple">
+        <item quantity="other">每$2$d週 %1$s</item>
+    </plurals>
+    <plurals name="subscription_offer_price_template_per_day_multiple">
+        <item quantity="other">每$2$d天 %1$s</item>
+    </plurals>
 </resources>

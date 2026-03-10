@@ -44,4 +44,21 @@
         <item quantity="one">%1$s for %2$d day</item>
         <item quantity="other">%1$s for %2$d days</item>
     </plurals>
+
+    <plurals name="subscription_offer_price_template_per_year_multiple">
+        <item quantity="one">%1$s every year</item>
+        <item quantity="other">%1$s every $2$d years</item>
+    </plurals>
+    <plurals name="subscription_offer_price_template_per_month_multiple">
+        <item quantity="one">%1$s every month</item>
+        <item quantity="other">%1$s every $2$d months</item>
+    </plurals>
+    <plurals name="subscription_offer_price_template_per_week_multiple">
+        <item quantity="one">%1$s every week</item>
+        <item quantity="other">%1$s every $2$d weeks</item>
+    </plurals>
+    <plurals name="subscription_offer_price_template_per_day_multiple">
+        <item quantity="one">%1$s every day</item>
+        <item quantity="other">%1$s every $2$d days</item>
+    </plurals>
 </resources>

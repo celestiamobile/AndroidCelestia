@@ -3,8 +3,8 @@ package space.celestia.mobilecelestia.purchase
 import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
+import android.os.Build
 import androidx.compose.runtime.Composable
-import androidx.fragment.app.Fragment
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener
 import com.android.billingclient.api.BillingClient
@@ -26,11 +26,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.purchase.PurchaseManager
-import space.celestia.mobilecelestia.BuildConfig
-import space.celestia.mobilecelestia.R
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.mobilecelestia.BuildConfig
+import space.celestia.mobilecelestia.R
 import java.lang.ref.WeakReference
+import java.time.Period
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -328,16 +329,126 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
     }
 }
 
+private sealed interface Duration {
+    val value: Int
+
+    data class Year(override val value: Int) : Duration
+    data class Month(override val value: Int) : Duration
+    data class Week(override val value: Int) : Duration
+    data class Day(override val value: Int) : Duration
+
+    companion object {
+        fun fromString(value: String): Duration? {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    val period = Period.parse(value)
+                    if (period.years > 0) {
+                        return Year(period.years)
+                    } else if (period.months > 0) {
+                        return Month(period.months)
+                    } else {
+                        val days = period.days
+                        if (days > 0) {
+                            return if (days % 7 == 0) {
+                                Week(days / 7)
+                            } else {
+                                Day(days)
+                            }
+                        }
+                        return null
+                    }
+
+                } catch (_: Throwable) {
+                    return null
+                }
+            } else {
+                return if (value.contains("Y")) {
+                    Year(1)
+                } else if (value.contains("M")) {
+                    Month(1)
+                } else if (value.contains("W")) {
+                    Week(1)
+                } else if (value.contains("D")) {
+                    Day(1)
+                } else {
+                    null
+                }
+            }
+        }
+    }
+
+    val singleCyclePriceTemplate: Int
+        get() {
+            return when (this) {
+                is Year -> {
+                    R.string.subscription_offer_price_template_per_year
+                }
+                is Month -> {
+                    R.string.subscription_offer_price_template_per_month
+                }
+                is Week -> {
+                    R.string.subscription_offer_price_template_per_week
+                }
+                is Day -> {
+                    R.string.subscription_offer_price_template_per_day
+                }
+            }
+        }
+
+    val multipleCyclePriceTemplate: Int
+        get() {
+            return when (this) {
+                is Year -> {
+                    R.plurals.subscription_offer_price_template_per_year_multiple
+                }
+                is Month -> {
+                    R.plurals.subscription_offer_price_template_per_month_multiple
+                }
+                is Week -> {
+                    R.plurals.subscription_offer_price_template_per_week_multiple
+                }
+                is Day -> {
+                    R.plurals.subscription_offer_price_template_per_day_multiple
+                }
+            }
+        }
+
+    val offerPriceTemplate: Int
+        get() {
+            return when (this) {
+                is Year -> {
+                    R.plurals.subscription_offer_price_with_phase_template_per_year
+                }
+
+                is Month -> {
+                    R.plurals.subscription_offer_price_with_phase_template_per_month
+                }
+
+                is Week -> {
+                    R.plurals.subscription_offer_price_with_phase_template_per_week
+                }
+
+                is Day -> {
+                    R.plurals.subscription_offer_price_with_phase_template_per_day
+                }
+            }
+        }
+}
+
 private fun ProductDetails.SubscriptionOfferDetails.formattedPriceLine1(resources: Resources): String {
     val phases = this.pricingPhases.pricingPhaseList
     if (phases.isEmpty()) return resources.getString(R.string.subscription_offer_price_unavailable)
     val phase = phases[0]
-    if (phases.size < 2) return phase.formattedPrice
+    if (phases.size < 2)
+        return phase.cyclePrice(resources)
+
+    val duration = Duration.fromString(phase.billingPeriod) ?: return resources.getString(R.string.subscription_offer_price_unavailable)
+    val count = duration.value * phase.billingCycleCount
     return resources.getQuantityString(
-        phase.cyclePriceTemplateWithPhase,
-        phase.billingCycleCount,
-        if (phase.priceAmountMicros == 0L) CelestiaString("Free", "Subscription price indicating the subscription is free") else resources.getString(phase.cyclePriceTemplate, phase.formattedPrice),
-        phase.billingCycleCount
+        duration.offerPriceTemplate,
+        count,
+        phase.cyclePrice(resources),
+        count
     )
 }
 
@@ -345,7 +456,7 @@ private fun ProductDetails.SubscriptionOfferDetails.formattedPriceLine2(resource
     val phases = this.pricingPhases.pricingPhaseList
     if (phases.size < 2) return null
     val phase = phases[1]
-    return resources.getString(R.string.subscription_offer_price_template_thereafter, if (phase.priceAmountMicros == 0L) CelestiaString("Free", "Subscription price indicating the subscription is free") else resources.getString(phase.cyclePriceTemplate, phase.formattedPrice))
+    return resources.getString(R.string.subscription_offer_price_template_thereafter, phase.cyclePrice(resources))
 }
 
 private fun ProductDetails.SubscriptionOfferDetails.offersFreeTrial(): Boolean {
@@ -355,30 +466,13 @@ private fun ProductDetails.SubscriptionOfferDetails.offersFreeTrial(): Boolean {
     return phase.priceAmountMicros == 0L
 }
 
-private val ProductDetails.PricingPhase.cyclePriceTemplate: Int
-    get() {
-        if (billingPeriod.contains("Y")) {
-            return R.string.subscription_offer_price_template_per_year
-        } else if (billingPeriod.contains("M")) {
-            return R.string.subscription_offer_price_template_per_month
-        } else if (billingPeriod.contains("W")) {
-            return R.string.subscription_offer_price_template_per_week
-        } else if (billingPeriod.contains("D")) {
-            return R.string.subscription_offer_price_template_per_day
-        }
-        return 0
-    }
+private fun ProductDetails.PricingPhase.cyclePrice(resources: Resources): String {
+    if (priceAmountMicros == 0L)
+        return CelestiaString("Free", "Subscription price indicating the subscription is free")
 
-private val ProductDetails.PricingPhase.cyclePriceTemplateWithPhase: Int
-    get() {
-        if (billingPeriod.contains("Y")) {
-            return R.plurals.subscription_offer_price_with_phase_template_per_year
-        } else if (billingPeriod.contains("M")) {
-            return R.plurals.subscription_offer_price_with_phase_template_per_month
-        } else if (billingPeriod.contains("W")) {
-            return R.plurals.subscription_offer_price_with_phase_template_per_week
-        } else if (billingPeriod.contains("D")) {
-            return R.plurals.subscription_offer_price_with_phase_template_per_day
-        }
-        return 0
+    val duration = Duration.fromString(billingPeriod) ?: return resources.getString(R.string.subscription_offer_price_unavailable)
+    if (duration.value == 1) {
+        return resources.getString(duration.singleCyclePriceTemplate, formattedPrice)
     }
+    return resources.getQuantityString(duration.multipleCyclePriceTemplate, duration.value, formattedPrice, duration.value)
+}
