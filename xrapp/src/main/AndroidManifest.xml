@@ -92,6 +92,7 @@
                 android:name="autoStoreLocales"
                 android:value="true" />
         </service>
+        <meta-data android:name="com.oculus.vr.focusaware" android:value="true"/>
     </application>
 
     <queries>
