@@ -87,6 +87,7 @@ import space.celestia.celestiaui.di.Platform
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
 import space.celestia.celestiaui.favorite.FavoriteScriptItem
 import space.celestia.celestiaui.favorite.MutableFavoriteBaseItem
+import space.celestia.celestiaui.favorite.viewmodel.FavoriteManager
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
@@ -163,6 +164,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var resourceManager: ResourceManager
     @Inject
     lateinit var executor: Executor
+    @Inject
+    lateinit var favoriteManager: FavoriteManager
 
     @Inject
     lateinit var platform: Platform
@@ -706,6 +709,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         resourceManager.addonDirectory = addonPaths.firstOrNull()
         resourceManager.scriptDirectory = extraScriptPaths.firstOrNull()
+        favoriteManager.extraScriptPaths = extraScriptPaths
         readyForInteraction = true
 
         if (!initialURLCheckPerformed) {
