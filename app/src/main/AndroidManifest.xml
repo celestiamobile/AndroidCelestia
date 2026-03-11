@@ -13,7 +13,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="696"
+    android:versionCode="697"
     android:versionName="1.9.11">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
@@ -110,19 +110,19 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="celestia.mobi"
-                    android:pathPattern="/resources/item" />
+                <data android:scheme="https" />
+                <data android:host="celestia.mobi" />
+                <data android:path="/resources/item" />
+                <data android:pathPrefix="/resources/item/" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="celestia.mobi"
-                    android:pathPattern="/resources/guide" />
+                <data android:scheme="https" />
+                <data android:host="celestia.mobi" />
+                <data android:path="/resources/guide" />
+                <data android:pathPrefix="/resources/guide/" />
             </intent-filter>
         </activity>
         <provider

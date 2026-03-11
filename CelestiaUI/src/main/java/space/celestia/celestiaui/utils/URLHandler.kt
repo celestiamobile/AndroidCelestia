@@ -44,18 +44,25 @@ sealed class AppURL {
                 return AppURLResult.Success(CelURL(uri.toString()))
             } else if (uri.scheme == "https") {
                 if (uri.host == "celestia.mobi") {
-                    when (uri.path) {
-                        "/resources/item" -> {
-                            val id = uri.getQueryParameter("item") ?: return AppURLResult.Failure.MissingParameter
-                            return AppURLResult.Success(Addon(id))
+                    val segments = uri.pathSegments.filter { it.isNotEmpty() }
+                    if (segments.size >= 2 && segments[0] == "resources") {
+                        when (segments[1]) {
+                            "item" -> {
+                                val id = if (segments.size > 2) segments[2] else uri.getQueryParameter("item")
+                                if (id.isNullOrEmpty()) return AppURLResult.Failure.MissingParameter
+                                return AppURLResult.Success(Addon(id))
+                            }
+                            "guide" -> {
+                                val id = if (segments.size > 2) segments[2] else uri.getQueryParameter("guide")
+                                if (id.isNullOrEmpty()) return AppURLResult.Failure.MissingParameter
+                                return AppURLResult.Success(Article(id))
+                            }
+                            else -> {
+                                return AppURLResult.Failure.UnknownPath
+                            }
                         }
-                        "/resources/guide" -> {
-                            val guide = uri.getQueryParameter("guide") ?: return AppURLResult.Failure.MissingParameter
-                            return AppURLResult.Success(Article(guide))
-                        }
-                        else -> {
-                            return AppURLResult.Failure.UnknownPath
-                        }
+                    } else {
+                        return AppURLResult.Failure.UnknownPath
                     }
                 } else {
                     return AppURLResult.Failure.UnknownHost
