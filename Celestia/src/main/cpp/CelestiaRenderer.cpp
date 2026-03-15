@@ -88,7 +88,8 @@ public:
     EGLDisplay display = EGL_NO_DISPLAY;
     CelestiaSurface surface;
     CelestiaSurface presentationSurface;
-    EGLContext context = EGL_NO_CONTEXT;
+    ANativeWindow *swappyWindow{ nullptr };
+    EGLContext context{ EGL_NO_CONTEXT };
     EGLConfig config { nullptr };
     EGLint format {};
     int sampleCount { 0 };
@@ -404,8 +405,14 @@ void CelestiaRenderer::setSurface(JNIEnv *env, jobject m_surface, bool presentat
         s.window = ANativeWindow_fromSurface(env, m_surface);
     else
         s.window = nullptr;
-    if (s.window)
-        SwappyGL_setWindow(s.window);
+
+    ANativeWindow *newSwappyWindow = presentationSurface.window != nullptr ? presentationSurface.window : surface.window;
+    if (newSwappyWindow != swappyWindow)
+    {
+        SwappyGL_setWindow(newSwappyWindow);
+        swappyWindow = newSwappyWindow;
+    }
+
     unlock();
 }
 
