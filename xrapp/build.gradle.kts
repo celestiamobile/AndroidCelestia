@@ -12,6 +12,7 @@ plugins {
 android {
     compileSdk = libs.versions.compile.sdk.get().toInt()
     buildToolsVersion = libs.versions.build.tools.get()
+    ndkVersion = libs.versions.ndk.get()
 
     packaging {
         jniLibs {
