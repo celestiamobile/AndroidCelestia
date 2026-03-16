@@ -122,8 +122,14 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
                     alert = TimeSettingsAlert.BadTimeString
                 }) {
                     alert = null
-                    currentTime = it
-                    currentJulianDay = it.julianDay
+                    scope.launch {
+                        val julianDay = it.julianDay
+                        withContext(viewModel.executor.asCoroutineDispatcher()) {
+                            viewModel.appCore.simulation.time = julianDay
+                        }
+                        currentTime = it
+                        currentJulianDay = julianDay
+                    }
                 }
             }
             is TimeSettingsAlert.JulianDayInput -> {

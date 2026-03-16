@@ -522,8 +522,8 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             return joystickHandler.onKey(keyCode, event)
         }
 
-        // Ignore Back button action
-        if (event.keyCode == KeyEvent.KEYCODE_BACK)
+        // Ignore back, volume up/down, mute button action
+        if (event.keyCode == KeyEvent.KEYCODE_BACK || event.keyCode == KeyEvent.KEYCODE_VOLUME_UP || event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || event.keyCode == KeyEvent.KEYCODE_VOLUME_MUTE)
             return false
 
         if (event.action == KeyEvent.ACTION_UP)
