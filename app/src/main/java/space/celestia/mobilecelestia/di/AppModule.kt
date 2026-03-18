@@ -28,6 +28,8 @@ import space.celestia.celestiaui.favorite.viewmodel.FavoriteManager
 import space.celestia.mobilecelestia.common.CelestiaExecutor
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
+import space.celestia.celestiaui.resource.model.FeatureFlags
+import space.celestia.celestiaui.resource.model.FeatureFlagsManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
 import space.celestia.celestiaui.utils.AppStatusReporter
@@ -78,6 +80,18 @@ object AppModule {
     @Provides
     fun provideAddonUpdateManager(resourceAPI: ResourceAPIService, resourceManager: ResourceManager): AddonUpdateManager {
         return AddonUpdateManager(resourceManager = resourceManager, resourceAPI = resourceAPI)
+    }
+
+    @Singleton
+    @Provides
+    fun provideFeatureFlagsManager(resourceAPI: ResourceAPIService, @AppSettingsNoBackup appSettings: PreferenceManager, platform: Platform): FeatureFlagsManager {
+        return FeatureFlagsManager(resourceAPI = resourceAPI, preferenceManager = appSettings, platform = platform.name)
+    }
+
+    @Singleton
+    @Provides
+    fun provideFeatureFlags(featureFlagsManager: FeatureFlagsManager): FeatureFlags {
+        return featureFlagsManager.get()
     }
 
     @Singleton

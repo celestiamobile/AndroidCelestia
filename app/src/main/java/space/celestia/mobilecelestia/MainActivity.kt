@@ -93,6 +93,8 @@ import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.celestiaui.resource.CommonWebFragment
+import space.celestia.celestiaui.resource.model.FeatureFlags
+import space.celestia.celestiaui.resource.model.FeatureFlagsManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.settings.viewmodel.CustomFont
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
@@ -169,6 +171,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     @Inject
     lateinit var platform: Platform
+
+    @Inject
+    lateinit var featureFlagsManager: FeatureFlagsManager
+
+    @Inject
+    lateinit var featureFlags: FeatureFlags
 
     @Inject
     lateinit var purchaseManager: PurchaseManager
@@ -717,6 +725,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             initialSetUpComplete()
             openURLOrScriptOrGreeting()
             setUpDisplayListenerIfNeeded()
+            lifecycleScope.launch {
+                featureFlagsManager.update(AppCore.getLanguage())
+            }
         }
     }
 

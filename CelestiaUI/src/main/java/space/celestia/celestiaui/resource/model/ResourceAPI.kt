@@ -65,4 +65,10 @@ interface ResourceAPIService {
     suspend fun updates(
         @Body body: UpdateRequest
     ): Map<String, AddonUpdate>
+
+    @GET("features")
+    suspend fun features(
+        @Query("platform") platform: String,
+        @Query("lang") lang: String
+    ): Map<String, Double>
 }
