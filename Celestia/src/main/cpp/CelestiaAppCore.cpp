@@ -74,6 +74,8 @@ jmethodID completionInitMethodID = nullptr;
 jclass timelinePhaseClz = nullptr;
 jmethodID timelinePhaseInitMethodID = nullptr;
 
+pthread_key_t javaEnvKey;
+
 extern "C" {
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {

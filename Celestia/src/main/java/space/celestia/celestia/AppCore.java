@@ -72,7 +72,7 @@ public class AppCore {
         int requestSystemAccess();
     }
 
-    private final long pointer;
+    protected final long pointer;
     private boolean initialized;
     private Simulation simulation;
     private ContextMenuHandler contextMenuHandler;
@@ -264,9 +264,6 @@ public class AppCore {
     }
     public static void chdir(String path) { c_chdir(path);}
 
-    public void setRenderer(Renderer renderer) {
-        renderer.setCorePointer(pointer);
-    }
     public boolean saveScreenshot(@NonNull String filePath, int imageType) {
         return c_saveScreenshot(pointer, filePath, imageType);
     }

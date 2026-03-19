@@ -104,7 +104,7 @@ object AppModule {
     @Provides
     fun provideRenderer(appCore: AppCore): Renderer {
         val renderer = Renderer()
-        appCore.setRenderer(renderer)
+        renderer.setAppCore(appCore)
         return renderer
     }
 

@@ -476,9 +476,13 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_JNI_DIR}/CelestiaPlanetarySystem.cpp
         ${CELESTIA_JNI_DIR}/CelestiaObserver.cpp
         ${CELESTIA_JNI_DIR}/CelestiaDestination.cpp
-        ${CELESTIA_JNI_DIR}/CelestiaRenderer.cpp
         ${CELESTIA_JNI_DIR}/CelestiaFont.cpp
         )
+
+if (FLAVOR STREQUAL "mobile")
+    list(APPEND CELESTIA_SOURCES
+        ${CELESTIA_JNI_DIR}/CelestiaRenderer.cpp)
+endif()
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../../../../dependencies")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")
@@ -556,7 +560,9 @@ set_target_properties(icudata PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR
 add_library(icui18n STATIC IMPORTED)
 set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libicui18n.a)
 
-find_package(games-frame-pacing REQUIRED CONFIG)
+if (FLAVOR STREQUAL "mobile")
+    find_package(games-frame-pacing REQUIRED CONFIG)
+endif()
 
 add_library(
         celestia
@@ -584,5 +590,10 @@ target_link_libraries(
         icui18n
         EGL
         android
-        games-frame-pacing::swappy_static
         ${log-lib} )
+
+if (FLAVOR STREQUAL "mobile")
+    target_link_libraries(
+        celestia
+        games-frame-pacing::swappy_static)
+endif()

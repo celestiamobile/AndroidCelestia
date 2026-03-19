@@ -95,8 +95,8 @@ public class Renderer implements AutoCloseable {
         c_setPresentationSurface(pointer, surface);
     }
 
-    protected void setCorePointer(long ptr) {
-        c_setCorePointer(pointer, ptr);
+    public void setAppCore(@NonNull AppCore appCore) {
+        c_setCorePointer(pointer, appCore.pointer);
     }
 
     public void setSurfaceSize(int width, int height) {

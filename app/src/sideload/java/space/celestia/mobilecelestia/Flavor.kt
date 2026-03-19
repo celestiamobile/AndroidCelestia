@@ -32,6 +32,7 @@ fun CelestiaApplication.setUpFlavor() {
         options.addBundleId("BUNDLE_UUID")
         options.addBundleId("FLAVOR_BUNDLE_UUID")
         options.addBundleId("CELESTIA_BUNDLE_UUID")
+        options.addBundleId("CELESTIA_FLAVOR_BUNDLE_UUID")
         options.addBundleId("CELESTIA_FOUNDATION_BUNDLE_UUID")
         options.addBundleId("LINK_PREVIEW_BUNDLE_UUID")
         options.addBundleId("ZIP_UTILS_BUNDLE_UUID")

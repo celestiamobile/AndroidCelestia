@@ -104,38 +104,43 @@ jobs:
           mkdir -p AndroidCelestia/dependencies
           tar -xzf /tmp/android-dependencies.tar.gz -C AndroidCelestia/dependencies
 
+      - name: Set Flavor Variables (APK)
+        if: matrix.outputFormat == 'apk'
+        run: |
+          echo "FLAVOR=sideload" >> $GITHUB_ENV
+          echo "FLAVOR_TASK=sideloadRelease" >> $GITHUB_ENV
+
+      - name: Set Flavor Variables (AAB)
+        if: matrix.outputFormat == 'aab'
+        run: |
+          echo "FLAVOR=play" >> $GITHUB_ENV
+          echo "FLAVOR_TASK=playRelease" >> $GITHUB_ENV
+
       - name: Replace Sentry Placeholders
         working-directory: '${{ github.workspace }}/AndroidCelestia'
         run: |
-          sed -ie "s#SENTRY-DSN#${{ secrets.SENTRY_DSN }}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#SENTRY-DSN#${{ secrets.SENTRY_DSN }}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#SENTRY-DSN#${{ secrets.SENTRY_DSN }}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
 
           BUNDLE_UUID=$(uuidgen)
           FLAVOR_BUNDLE_UUID=$(uuidgen)
           CELESTIA_BUNDLE_UUID=$(uuidgen)
+          CELESTIA_FLAVOR_BUNDLE_UUID=$(uuidgen)
           CELESTIA_FOUNDATION_BUNDLE_UUID=$(uuidgen)
           LINK_PREVIEW_BUNDLE_UUID=$(uuidgen)
           ZIP_UTILS_BUNDLE_UUID=$(uuidgen)
           PROGUARD_UUID=$(uuidgen)
 
-          sed -ie "s#FLAVOR_BUNDLE_UUID#${FLAVOR_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#FLAVOR_BUNDLE_UUID#${FLAVOR_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#CELESTIA_BUNDLE_UUID#${CELESTIA_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#CELESTIA_BUNDLE_UUID#${CELESTIA_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#CELESTIA_FOUNDATION_BUNDLE_UUID#${CELESTIA_FOUNDATION_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#CELESTIA_FOUNDATION_BUNDLE_UUID#${CELESTIA_FOUNDATION_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#LINK_PREVIEW_BUNDLE_UUID#${LINK_PREVIEW_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#LINK_PREVIEW_BUNDLE_UUID#${LINK_PREVIEW_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#ZIP_UTILS_BUNDLE_UUID#${ZIP_UTILS_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#ZIP_UTILS_BUNDLE_UUID#${ZIP_UTILS_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#BUNDLE_UUID#${BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#BUNDLE_UUID#${BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#FLAVOR_BUNDLE_UUID#${FLAVOR_BUNDLE_UUID}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#CELESTIA_BUNDLE_UUID#${CELESTIA_BUNDLE_UUID}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#CELESTIA_FLAVOR_BUNDLE_UUID#${CELESTIA_FLAVOR_BUNDLE_UUID}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#CELESTIA_FOUNDATION_BUNDLE_UUID#${CELESTIA_FOUNDATION_BUNDLE_UUID}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#LINK_PREVIEW_BUNDLE_UUID#${LINK_PREVIEW_BUNDLE_UUID}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#ZIP_UTILS_BUNDLE_UUID#${ZIP_UTILS_BUNDLE_UUID}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#BUNDLE_UUID#${BUNDLE_UUID}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
 
           PROGUARD_METHOD_SEED=$(echo $PROGUARD_UUID | tr -d '-')
-          sed -ie "s#PROGUARD_UUID#${PROGUARD_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#PROGUARD_UUID#${PROGUARD_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#PROGUARD_METHOD_SEED#${PROGUARD_METHOD_SEED}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
-          sed -ie "s#PROGUARD_METHOD_SEED#${PROGUARD_METHOD_SEED}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#PROGUARD_UUID#${PROGUARD_UUID}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#PROGUARD_METHOD_SEED#${PROGUARD_METHOD_SEED}#g" app/src/${{ env.FLAVOR }}/java/space/celestia/mobilecelestia/Flavor.kt
 
           echo "BUNDLE_UUID=${BUNDLE_UUID}" >> $GITHUB_ENV
           echo "FLAVOR_BUNDLE_UUID=${FLAVOR_BUNDLE_UUID}" >> $GITHUB_ENV
@@ -208,18 +213,6 @@ jobs:
           path: '${{ runner.temp }}/artifacts'
           retention-days: 90
 
-      - name: Set Flavor Variables (APK)
-        if: matrix.outputFormat == 'apk'
-        run: |
-          echo "FLAVOR=sideload" >> $GITHUB_ENV
-          echo "FLAVOR_TASK=sideloadRelease" >> $GITHUB_ENV
-
-      - name: Set Flavor Variables (AAB)
-        if: matrix.outputFormat == 'aab'
-        run: |
-          echo "FLAVOR=play" >> $GITHUB_ENV
-          echo "FLAVOR_TASK=playRelease" >> $GITHUB_ENV
-
       - name: Upload Symbols
         working-directory: '${{ github.workspace }}/AndroidCelestia'
         env:
@@ -232,6 +225,7 @@ jobs:
           sentry-cli debug-files bundle-jvm --output bundle --debug-id $BUNDLE_UUID app/src/main/java
           sentry-cli debug-files bundle-jvm --output bundle --debug-id $FLAVOR_BUNDLE_UUID app/src/$FLAVOR/java
           sentry-cli debug-files bundle-jvm --output bundle --debug-id $CELESTIA_BUNDLE_UUID Celestia/src/main/java
+          sentry-cli debug-files bundle-jvm --output bundle --debug-id $CELESTIA_FLAVOR_BUNDLE_UUID Celestia/src/mobile/java
           sentry-cli debug-files bundle-jvm --output bundle --debug-id $CELESTIA_FOUNDATION_BUNDLE_UUID CelestiaFoundation/src/main/java
           sentry-cli debug-files bundle-jvm --output bundle --debug-id $LINK_PREVIEW_BUNDLE_UUID LinkPreview/src/main/java
           sentry-cli debug-files bundle-jvm --output bundle --debug-id $ZIP_UTILS_BUNDLE_UUID ZipUtils/src/main/java

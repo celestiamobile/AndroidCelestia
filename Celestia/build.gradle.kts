@@ -63,6 +63,19 @@ android {
     }
 
     namespace = "space.celestia.celestia"
+
+    flavorDimensions += "renderer"
+    productFlavors {
+        create("mobile") {
+            dimension = "renderer"
+
+            externalNativeBuild {
+                cmake {
+                    arguments += listOf("-DFLAVOR=mobile")
+                }
+            }
+        }
+    }
 }
 
 kotlin {
@@ -71,7 +84,9 @@ kotlin {
     }
 }
 
+val mobileImplementation by configurations
+
 dependencies {
     implementation(libs.androidx.annotation)
-    implementation(libs.androidx.games.frame.pacing)
+    mobileImplementation(libs.androidx.games.frame.pacing)
 }

@@ -29,8 +29,6 @@
 #define CELESTIA_RENDERER_FRAME_30FPS           2
 #define CELESTIA_RENDERER_FRAME_20FPS           3
 
-pthread_key_t javaEnvKey;
-
 struct CelestiaSurface
 {
     ANativeWindow *window{ nullptr };
