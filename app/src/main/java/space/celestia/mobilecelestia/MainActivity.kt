@@ -1314,8 +1314,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun webRequestShareAddon(name: String, id: String) {
-        val baseURL = "https://celestia.mobi/resources/item"
-        val uri = baseURL.toUri().buildUpon().appendQueryParameter("item", id).appendQueryParameter("lang", AppCore.getLanguage()).build()
+        val baseURL = "https://celestia.mobi/resources/item/${id}"
+        val uri = baseURL.toUri().buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
         shareURLDirect(name, uri.toString())
     }
 
