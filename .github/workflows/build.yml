@@ -1,0 +1,262 @@
+# Required secrets:
+#   KEYSTORE_BASE64               - Base64-encoded celestia.jks keystore file
+#   JARSIGNER_KEYSTORE_PASSWORD   - Keystore password
+#   JARSIGNER_KEY_PASSWORD        - Key password for the 'celestia' alias
+#   SENTRY_AUTH_TOKEN             - Sentry auth token
+#   SENTRY_DSN                    - Sentry DSN for Android
+
+name: Build
+
+on:
+  push:
+    branches:
+      - 'releases/*'
+      - main
+      - develop
+  pull_request:
+    branches:
+      - 'releases/*'
+      - main
+      - develop
+
+env:
+  DEPENDENCY_VERSION: '1.0.51'
+  CONTENT_COMMIT_HASH: '54e4760132be3617e4782fee8eefcfce6694f4ff'
+
+jobs:
+  build:
+    name: 'Build ${{ matrix.name }}'
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - outputFormat: apk
+            name: APK
+          - outputFormat: aab
+            name: AAB
+
+    steps:
+      - name: Checkout AndroidCelestia
+        uses: actions/checkout@v4
+        with:
+          path: AndroidCelestia
+          fetch-depth: 0
+
+      - name: Checkout Celestia
+        uses: actions/checkout@v4
+        with:
+          repository: celestiamobile/Celestia
+          path: Celestia
+          fetch-depth: 0
+
+      - name: Checkout CelestiaContent
+        uses: actions/checkout@v4
+        with:
+          repository: CelestiaProject/CelestiaContent
+          path: CelestiaContent
+          fetch-depth: 0
+
+      - name: Checkout CelestiaLocalization
+        uses: actions/checkout@v4
+        with:
+          repository: celestiamobile/CelestiaLocalization
+          path: CelestiaLocalization
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        run: sudo apt update && sudo apt install -y gettext gperf imagemagick wget
+
+      - name: Install Sentry-CLI
+        run: curl -sL https://sentry.io/get-cli/ | sh
+
+      - name: Checkout Branch
+        if: github.event_name != 'pull_request'
+        run: |
+          cd Celestia
+          git checkout origin/${{ github.ref_name }}
+          cd ../CelestiaLocalization
+          git checkout origin/${{ github.ref_name }}
+
+      - name: Checkout Branch (PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          cd Celestia
+          git checkout origin/${{ github.event.pull_request.base.ref }}
+          cd ../CelestiaLocalization
+          git checkout origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Checkout Content
+        run: |
+          cd CelestiaContent
+          git checkout ${{ env.CONTENT_COMMIT_HASH }}
+
+      - name: Running imagemagick
+        run: sh $GITHUB_WORKSPACE/AndroidCelestia/app/downsize_textures.sh
+
+      - name: Running gperf
+        run: sh $GITHUB_WORKSPACE/AndroidCelestia/app/run_gperf.sh $GITHUB_WORKSPACE/Celestia
+
+      - name: Download Pre-built Dependencies
+        run: |
+          wget https://github.com/celestiamobile/apple-android-dependencies/releases/download/${{ env.DEPENDENCY_VERSION }}/android-dependencies.tar.gz -O /tmp/android-dependencies.tar.gz
+          mkdir -p AndroidCelestia/dependencies
+          tar -xzf /tmp/android-dependencies.tar.gz -C AndroidCelestia/dependencies
+
+      - name: Replace Sentry Placeholders
+        working-directory: '${{ github.workspace }}/AndroidCelestia'
+        run: |
+          sed -ie "s#SENTRY-DSN#${{ secrets.SENTRY_DSN }}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#SENTRY-DSN#${{ secrets.SENTRY_DSN }}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+
+          BUNDLE_UUID=$(uuidgen)
+          FLAVOR_BUNDLE_UUID=$(uuidgen)
+          CELESTIA_BUNDLE_UUID=$(uuidgen)
+          CELESTIA_FOUNDATION_BUNDLE_UUID=$(uuidgen)
+          LINK_PREVIEW_BUNDLE_UUID=$(uuidgen)
+          ZIP_UTILS_BUNDLE_UUID=$(uuidgen)
+          PROGUARD_UUID=$(uuidgen)
+
+          sed -ie "s#FLAVOR_BUNDLE_UUID#${FLAVOR_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#FLAVOR_BUNDLE_UUID#${FLAVOR_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#CELESTIA_BUNDLE_UUID#${CELESTIA_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#CELESTIA_BUNDLE_UUID#${CELESTIA_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#CELESTIA_FOUNDATION_BUNDLE_UUID#${CELESTIA_FOUNDATION_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#CELESTIA_FOUNDATION_BUNDLE_UUID#${CELESTIA_FOUNDATION_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#LINK_PREVIEW_BUNDLE_UUID#${LINK_PREVIEW_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#LINK_PREVIEW_BUNDLE_UUID#${LINK_PREVIEW_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#ZIP_UTILS_BUNDLE_UUID#${ZIP_UTILS_BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#ZIP_UTILS_BUNDLE_UUID#${ZIP_UTILS_BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#BUNDLE_UUID#${BUNDLE_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#BUNDLE_UUID#${BUNDLE_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+
+          PROGUARD_METHOD_SEED=$(echo $PROGUARD_UUID | tr -d '-')
+          sed -ie "s#PROGUARD_UUID#${PROGUARD_UUID}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#PROGUARD_UUID#${PROGUARD_UUID}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#PROGUARD_METHOD_SEED#${PROGUARD_METHOD_SEED}#g" app/src/play/java/space/celestia/mobilecelestia/Flavor.kt
+          sed -ie "s#PROGUARD_METHOD_SEED#${PROGUARD_METHOD_SEED}#g" app/src/sideload/java/space/celestia/mobilecelestia/Flavor.kt
+
+          echo "BUNDLE_UUID=${BUNDLE_UUID}" >> $GITHUB_ENV
+          echo "FLAVOR_BUNDLE_UUID=${FLAVOR_BUNDLE_UUID}" >> $GITHUB_ENV
+          echo "CELESTIA_BUNDLE_UUID=${CELESTIA_BUNDLE_UUID}" >> $GITHUB_ENV
+          echo "CELESTIA_FOUNDATION_BUNDLE_UUID=${CELESTIA_FOUNDATION_BUNDLE_UUID}" >> $GITHUB_ENV
+          echo "LINK_PREVIEW_BUNDLE_UUID=${LINK_PREVIEW_BUNDLE_UUID}" >> $GITHUB_ENV
+          echo "ZIP_UTILS_BUNDLE_UUID=${ZIP_UTILS_BUNDLE_UUID}" >> $GITHUB_ENV
+          echo "PROGUARD_UUID=${PROGUARD_UUID}" >> $GITHUB_ENV
+
+      - name: Set Build Number
+        working-directory: '${{ github.workspace }}/AndroidCelestia'
+        run: |
+          BUILD_NUMBER=$((6661 + ${{ github.run_number }}))
+          sed -ie "s/android:versionCode=\"[0-9]*\"/android:versionCode=\"${BUILD_NUMBER}\"/" app/src/main/AndroidManifest.xml
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build APK
+        if: matrix.outputFormat == 'apk'
+        working-directory: '${{ github.workspace }}/AndroidCelestia'
+        run: ./gradlew assembleSideloadRelease -Dorg.gradle.jvmargs=-Xmx3072m
+
+      - name: Build AAB
+        if: matrix.outputFormat == 'aab'
+        working-directory: '${{ github.workspace }}/AndroidCelestia'
+        run: ./gradlew bundlePlayRelease -Dorg.gradle.jvmargs=-Xmx3072m
+
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/celestia.jks
+
+      - name: Sign APK
+        if: matrix.outputFormat == 'apk'
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | sort -V | tail -1)
+          for APK in $(find $GITHUB_WORKSPACE/AndroidCelestia -name "*.apk"); do
+            $APKSIGNER sign \
+              --ks $RUNNER_TEMP/celestia.jks \
+              --ks-pass pass:${{ secrets.JARSIGNER_KEYSTORE_PASSWORD }} \
+              --ks-key-alias celestia \
+              --key-pass pass:${{ secrets.JARSIGNER_KEY_PASSWORD }} \
+              "$APK"
+          done
+
+      - name: Sign AAB
+        if: matrix.outputFormat == 'aab'
+        run: |
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore $RUNNER_TEMP/celestia.jks \
+            -storepass ${{ secrets.JARSIGNER_KEYSTORE_PASSWORD }} \
+            -keypass ${{ secrets.JARSIGNER_KEY_PASSWORD }} \
+            $GITHUB_WORKSPACE/AndroidCelestia/app/build/outputs/bundle/playRelease/*.aab celestia
+
+      - name: Remove Redundant AAB
+        if: matrix.outputFormat == 'aab'
+        run: rm -rf $GITHUB_WORKSPACE/AndroidCelestia/app/build/intermediates/intermediary_bundle/*
+
+      - name: Copy APK/AAB
+        run: |
+          mkdir -p $RUNNER_TEMP/artifacts
+          find $GITHUB_WORKSPACE/AndroidCelestia -name "*.${{ matrix.outputFormat }}" -exec cp {} $RUNNER_TEMP/artifacts/ \;
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: '${{ matrix.outputFormat }}'
+          path: '${{ runner.temp }}/artifacts'
+          retention-days: 90
+
+      - name: Set Flavor Variables (APK)
+        if: matrix.outputFormat == 'apk'
+        run: |
+          echo "FLAVOR=sideload" >> $GITHUB_ENV
+          echo "FLAVOR_TASK=sideloadRelease" >> $GITHUB_ENV
+
+      - name: Set Flavor Variables (AAB)
+        if: matrix.outputFormat == 'aab'
+        run: |
+          echo "FLAVOR=play" >> $GITHUB_ENV
+          echo "FLAVOR_TASK=playRelease" >> $GITHUB_ENV
+
+      - name: Upload Symbols
+        working-directory: '${{ github.workspace }}/AndroidCelestia'
+        env:
+          SENTRY_ORG: celestia-vs
+          SENTRY_PROJECT: android
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          shopt -s globstar
+          mkdir bundle
+          sentry-cli debug-files bundle-jvm --output bundle --debug-id $BUNDLE_UUID app/src/main/java
+          sentry-cli debug-files bundle-jvm --output bundle --debug-id $FLAVOR_BUNDLE_UUID app/src/$FLAVOR/java
+          sentry-cli debug-files bundle-jvm --output bundle --debug-id $CELESTIA_BUNDLE_UUID Celestia/src/main/java
+          sentry-cli debug-files bundle-jvm --output bundle --debug-id $CELESTIA_FOUNDATION_BUNDLE_UUID CelestiaFoundation/src/main/java
+          sentry-cli debug-files bundle-jvm --output bundle --debug-id $LINK_PREVIEW_BUNDLE_UUID LinkPreview/src/main/java
+          sentry-cli debug-files bundle-jvm --output bundle --debug-id $ZIP_UTILS_BUNDLE_UUID ZipUtils/src/main/java
+          sentry-cli debug-files upload --type jvm bundle
+          sentry-cli upload-proguard --uuid $PROGUARD_UUID app/build/outputs/mapping/$FLAVOR_TASK/mapping.txt
+          sentry-cli debug-files upload --include-sources Celestia/build/intermediates/cxx/RelWithDebInfo/
+          sentry-cli debug-files upload --include-sources ZipUtils/build/intermediates/cxx/RelWithDebInfo/
+
+          mkdir symbols
+          cp -r Celestia/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
+          cp -r ZipUtils/build/intermediates/cxx/RelWithDebInfo/**/obj/* symbols
+
+          mkdir mapping
+          cp app/build/outputs/mapping/$FLAVOR_TASK/mapping.txt mapping
+
+      - name: Upload Symbols Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: '${{ matrix.outputFormat }}-symbols'
+          path: '${{ github.workspace }}/AndroidCelestia/symbols'
+          retention-days: 90
+
+      - name: Upload Mapping Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: '${{ matrix.outputFormat }}-mapping'
+          path: '${{ github.workspace }}/AndroidCelestia/mapping/mapping.txt'
+          retention-days: 90
