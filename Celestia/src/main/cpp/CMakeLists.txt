@@ -502,6 +502,10 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DEIGEN_NO_DEBUG)
 endif()
 
+if (FLAVOR STREQUAL "mobile")
+    find_package(games-frame-pacing REQUIRED CONFIG)
+endif()
+
 include_directories(
         ${CMAKE_SOURCE_DIR}
         ${CELESTIA_SRC_DIR}
@@ -559,10 +563,6 @@ set_target_properties(icudata PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR
 
 add_library(icui18n STATIC IMPORTED)
 set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libicui18n.a)
-
-if (FLAVOR STREQUAL "mobile")
-    find_package(games-frame-pacing REQUIRED CONFIG)
-endif()
 
 add_library(
         celestia
