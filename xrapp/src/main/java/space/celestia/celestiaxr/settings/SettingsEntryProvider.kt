@@ -6,7 +6,6 @@ import space.celestia.celestiaui.control.viewmodel.JoystickAction
 import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.celestiaui.settings.viewmodel.Footer
 import space.celestia.celestiaui.settings.viewmodel.SettingsCommonItem
-import space.celestia.celestiaui.settings.viewmodel.SettingsCurrentTimeItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsDataLocationItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
 import space.celestia.celestiaui.settings.viewmodel.SettingsFontItem
@@ -146,40 +145,6 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
 )
 
 private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
-    SettingsCommonItem.create(
-        SettingsKey.TimeZone.displayName,
-        listOf(
-            SettingsSelectionSingleItem(key = SettingsKey.TimeZone, options = listOf(
-                Pair(0, CelestiaString("Local Time", "")),
-                Pair(1, CelestiaString("UTC", "")),
-            ), displayName = SettingsKey.TimeZone.displayName, defaultSelection = 0, showTitle = false)
-        )
-    ),
-    SettingsCommonItem.create(
-        SettingsKey.DateFormat.displayName,
-        listOf(
-            SettingsSelectionSingleItem(key = SettingsKey.DateFormat, options = listOf(
-                Pair(0, CelestiaString("Default", "")),
-                Pair(1, CelestiaString("YYYY MMM DD HH:MM:SS TZ", "")),
-                Pair(2, CelestiaString("UTC Offset", "")),
-            ), displayName = SettingsKey.DateFormat.displayName, defaultSelection = 1, showTitle = false)
-        )
-    ),
-    SettingsCurrentTimeItem(),
-    SettingsCommonItem.create(
-        SettingsKey.MeasurementSystem.displayName,
-        listOf(
-            SettingsSelectionSingleItem(key = SettingsKey.MeasurementSystem, options = listOf(
-                Pair(0, CelestiaString("Metric", "Metric measurement system")),
-                Pair(1, CelestiaString("Imperial", "Imperial measurement system")),
-            ), displayName = SettingsKey.MeasurementSystem.displayName, defaultSelection = 0, showTitle = false),
-            SettingsSelectionSingleItem(key = SettingsKey.TemperatureScale, options = listOf(
-                Pair(0, CelestiaString("Kelvin", "Temperature scale")),
-                Pair(1, CelestiaString("Celsius", "Temperature scale")),
-                Pair(2, CelestiaString("Fahrenheit", "Temperature scale")),
-            ), displayName = SettingsKey.TemperatureScale.displayName, defaultSelection = 0, showTitle = true)
-        )
-    ),
     SettingsLanguageItem(),
 )
 

@@ -597,8 +597,9 @@ class XRActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "133"
-        // 133 1.9.10, Localization update data update (ab865c0979679cafdd962d2d726e819acbc26cb0)
+        private const val CURRENT_DATA_VERSION = "136"
+        // 136: 1.9.14 Data update (9f34ed77b4e7117458734affaefd5015bf38c6ff)
+        // 133: 1.9.10 Localization update data update (ab865c0979679cafdd962d2d726e819acbc26cb0)
 
         private const val CELESTIA_ROOT_FOLDER_NAME = "CelestiaResources"
         private const val CELESTIA_EXTRA_FOLDER_NAME = "${CELESTIA_ROOT_FOLDER_NAME}/extras"
@@ -612,11 +613,5 @@ class XRActivity : ComponentActivity() {
         private var defaultInstalledFont: Fonts? = null
 
         private const val TAG = "XRActivity"
-
-        init {
-            System.loadLibrary("ziputils")
-            System.loadLibrary("celestia")
-            AppCore.setUpLocale()
-        }
     }
 }

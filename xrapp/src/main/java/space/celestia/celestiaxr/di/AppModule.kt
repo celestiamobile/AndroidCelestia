@@ -19,6 +19,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.XRRenderer
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.FilePaths
+import space.celestia.celestiafoundation.utils.versionName
 import space.celestia.celestiaui.control.viewmodel.SessionSettings
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
@@ -205,8 +206,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideFeatureFlagsManager(resourceAPI: ResourceAPIService, @AppSettingsNoBackup appSettings: PreferenceManager, platform: Platform): FeatureFlagsManager {
-        return FeatureFlagsManager(resourceAPI = resourceAPI, preferenceManager = appSettings, platform = platform.name)
+    fun provideFeatureFlagsManager(@ApplicationContext context: Context, resourceAPI: ResourceAPIService, @AppSettingsNoBackup appSettings: PreferenceManager, platform: Platform): FeatureFlagsManager {
+        return FeatureFlagsManager(resourceAPI = resourceAPI, preferenceManager = appSettings, platform = platform.name, distribution = null, version = context.versionName)
     }
 
     @Singleton

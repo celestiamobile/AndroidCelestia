@@ -224,6 +224,11 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                     viewModel.backStack.add(Tool.Page.ObjectInfo(selection).page)
                 }
             }
+            is AppURL.SetTime -> {
+                withContext(executor.asCoroutineDispatcher()) {
+                    appCore.simulation.time = url.julianDay
+                }
+            }
             is AppURL.Addon -> {
                 try {
                     val item = resourceAPI.item(lang = AppCore.getLanguage(), item = url.id)
