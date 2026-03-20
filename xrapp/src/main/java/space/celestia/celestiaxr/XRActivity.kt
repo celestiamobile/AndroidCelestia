@@ -122,6 +122,14 @@ class XRActivity : ComponentActivity() {
     lateinit var featureFlags: FeatureFlags
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Guard against Android backup restricted mode where the custom Application is not loaded,
+        // which would cause Hilt's EntryPointAccessors to throw IllegalStateException.
+        // See https://issuetracker.google.com/issues/160946170
+        if (applicationContext !is CelestiaApplication) {
+            finish()
+            return
+        }
+
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
         appStatusReporter = factory.getAppStatusReporter()
         val currentState = appStatusReporter.state
