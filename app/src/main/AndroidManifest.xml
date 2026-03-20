@@ -145,6 +145,9 @@
         </service>
 
         <meta-data android:name="io.sentry.auto-init" android:value="false" />
+        <property
+            android:name="android.app.backup.PROPERTY_USE_RESTRICTED_BACKUP_MODE"
+            android:value="false" />
     </application>
 
     <queries>

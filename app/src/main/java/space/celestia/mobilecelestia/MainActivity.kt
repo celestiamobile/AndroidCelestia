@@ -230,6 +230,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private var mediaRouterCallback: MediaRouter.SimpleCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Guard against Android backup restricted mode where the custom Application is not loaded,
+        // which would cause Hilt's EntryPointAccessors to throw IllegalStateException.
+        // See https://issuetracker.google.com/issues/160946170
+        if (applicationContext !is CelestiaApplication) {
+            finish()
+            return
+        }
+
         enableEdgeToEdge()
 
         val factory = EntryPointAccessors.fromApplication(this, AppStatusInterface::class.java)
