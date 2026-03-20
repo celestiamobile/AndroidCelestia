@@ -16,7 +16,8 @@ import java.util.UUID
 class FeatureFlagsManager(
     private val resourceAPI: ResourceAPIService,
     private val preferenceManager: PreferenceManager,
-    private val platform: String
+    private val platform: String,
+    private val version: String
 ) {
     companion object {
         // Add new flag keys here
@@ -28,7 +29,7 @@ class FeatureFlagsManager(
 
     suspend fun update(lang: String) {
         try {
-            val result = resourceAPI.features(platform = platform, lang = lang)
+            val result = resourceAPI.features(platform = platform, lang = lang, version = version)
 
             val deviceIdKey = PreferenceManager.CustomKey(DEVICE_ID_KEY)
             val deviceId = preferenceManager[deviceIdKey] ?: run {
