@@ -272,7 +272,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         appStatusReporter.register(this)
 
         findViewById<ComposeView>(R.id.loading_fragment_container).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent {
                 Mdc3Theme {
                     LoadingScreen()
@@ -281,7 +281,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         findViewById<ComposeView>(R.id.drawer_content).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent {
                 Mdc3Theme {
                     showCelestiaPlus.value?.let { show ->
@@ -294,7 +294,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         findViewById<ComposeView>(R.id.bottom_sheet_content).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent {
                 Mdc3Theme {
                     ToolScreen(
@@ -385,7 +385,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         if (savedState != null) {
             val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
-            val bottomSheetVisible = savedState.getBoolean(BOTTOM_SHEET_VISIBLE_TAG, false)
             @Suppress("UNCHECKED_CAST")
             currentToolbarActions = BundleCompat.getSerializable(savedState, TOOLBAR_ACTIONS_TAG, ArrayList::class.java) as? List<BottomControlAction> ?: listOf()
             @Suppress("UNCHECKED_CAST")
@@ -395,8 +394,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
             findViewById<View>(R.id.bottom_toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
 
-            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.bottom_sheet_card).visibility = if (bottomSheetVisible) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (viewModel.backStack.isNotEmpty()) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.bottom_sheet_card).visibility = if (viewModel.backStack.isNotEmpty()) View.VISIBLE else View.GONE
 
             if (currentToolbarActions.isNotEmpty() && toolbarVisible) {
                 showToolbarActionsDirect(currentToolbarActions, currentToolbarOverflowActions)
@@ -425,7 +424,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(BOTTOM_SHEET_VISIBLE_TAG, findViewById<View>(R.id.bottom_sheet_overlay).isVisible)
         outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.bottom_toolbar_container).isVisible)
         outState.putSerializable(TOOLBAR_ACTIONS_TAG, ArrayList<BottomControlAction>(currentToolbarActions))
         outState.putSerializable(TOOLBAR_OVERFLOW_ACTIONS_TAG, ArrayList<OverflowItem>(currentToolbarOverflowActions))
@@ -2010,8 +2008,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val TOOLBAR_ACTIONS_TAG = "toolbar_actions"
         private const val TOOLBAR_OVERFLOW_ACTIONS_TAG = "toolbar_overflow_actions"
         private const val TOOLBAR_VISIBLE_TAG = "toolbar_visible"
-        private const val BOTTOM_SHEET_VISIBLE_TAG = "bottom_sheet_visible"
-
         private const val ARG_INITIAL_URL_CHECK_PERFORMED = "initial-url-check-performed"
 
         private const val FILE_PROVIDER_AUTHORITY = "space.celestia.mobilecelestia.fileprovider"
