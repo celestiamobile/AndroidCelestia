@@ -22,16 +22,13 @@ class FeatureFlagsManager(
     companion object {
         // Add new flag keys here
         private val flagKeys = listOf("dummy", "composeSurface")
-
-        private const val STORAGE_KEY = "FeatureFlagsData"
-        private const val DEVICE_ID_KEY = "FeatureFlagsDeviceID"
     }
 
     suspend fun update(lang: String) {
         try {
             val result = resourceAPI.features(platform = platform, lang = lang, version = version)
 
-            val deviceIdKey = PreferenceManager.CustomKey(DEVICE_ID_KEY)
+            val deviceIdKey = PreferenceManager.PredefinedKey.DeviceID
             val deviceId = preferenceManager[deviceIdKey] ?: run {
                 val newId = UUID.randomUUID().toString()
                 preferenceManager[deviceIdKey] = newId
@@ -49,12 +46,12 @@ class FeatureFlagsManager(
             val json = JSONObject()
             for (key in flagKeys)
                 json.put(key, evaluated[key] ?: false)
-            preferenceManager[PreferenceManager.CustomKey(STORAGE_KEY)] = json.toString()
+            preferenceManager[PreferenceManager.PredefinedKey.FeatureFlags] = json.toString()
         } catch (_: Throwable) {}
     }
 
     fun get(): FeatureFlags {
-        val stored = preferenceManager[PreferenceManager.CustomKey(STORAGE_KEY)]
+        val stored = preferenceManager[PreferenceManager.PredefinedKey.FeatureFlags]
             ?: return FeatureFlags()
         return try {
             val json = JSONObject(stored)

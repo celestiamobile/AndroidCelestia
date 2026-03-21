@@ -16,10 +16,12 @@ import io.sentry.Hint
 import io.sentry.SentryEvent
 import io.sentry.android.core.SentryAndroid
 import kotlinx.coroutines.launch
+import space.celestia.celestiaui.utils.PreferenceManager
 import java.io.File
 
 private var reportParentFolder: File? = null
 private const val installedAddonListFileName = "installed-addons.txt"
+private const val featureFlagsFileName = "feature-flags.txt"
 
 private fun proguardSeedPROGUARD_METHOD_SEED() { }
 
@@ -63,7 +65,7 @@ fun CelestiaApplication.setUpFlavor() {
             options.eventProcessors.add(object : EventProcessor {
                 override fun process(event: SentryEvent, hint: Hint): SentryEvent {
                     if (event.isCrashed) {
-                        for (fileNames in listOf(installedAddonListFileName)) {
+                        for (fileNames in listOf(installedAddonListFileName, featureFlagsFileName)) {
                             val file = File(reportFolder, fileNames)
                             if (file.exists()) {
                                 hint.addAttachment(Attachment(file.absolutePath))
@@ -82,4 +84,5 @@ fun MainActivity.initialSetUpComplete() = lifecycleScope.launch {
     val reportFolder = reportParentFolder ?: return@launch
     val installedAddonsText = resourceManager.installedResourcesAsync().joinToString(separator = "\n") { "${it.name}/${it.id}" }
     writeTextToFileWithName(installedAddonsText, reportFolder, installedAddonListFileName)
+    writeTextToFileWithName(appSettingsNoBackup[PreferenceManager.PredefinedKey.FeatureFlags] ?: "", reportFolder, featureFlagsFileName)
 }
