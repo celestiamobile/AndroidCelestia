@@ -97,7 +97,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     private var lastRotationQuaternion: FloatArray? = null
 
     // MARK: Interaction
-    private var rendererContainer: FrameLayout? = null
+    private lateinit var interactionView: FrameLayout
     private var viewInteraction: CelestiaInteraction? = null
 
     // Parameters for child fragment
@@ -187,8 +187,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             }
         }
 
-        // Store reference to renderer container for touch handling
-        rendererContainer = view.findViewById(R.id.celestia_renderer_container)
+        interactionView = view.findViewById(R.id.interaction_view)
 
         val weakSelf = WeakReference(this)
         ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
@@ -280,7 +279,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     }
 
     private fun setUpInteractions() {
-        val container = rendererContainer ?: return
+        val container = interactionView
         controlViewContainer.isVisible = true
 
         // Set up control buttons
@@ -633,7 +632,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         // Show context menu on main thread
         lifecycleScope.launch {
             // Context menu needs to be shown on the renderer container
-            rendererContainer?.showContextMenu(x / rendererSettings.scaleFactor, y / rendererSettings.scaleFactor)
+            interactionView.showContextMenu(x / rendererSettings.scaleFactor, y / rendererSettings.scaleFactor)
         }
     }
 
