@@ -18,6 +18,16 @@ import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.compose.foundation.AndroidExternalSurface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.IntSize
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,19 +40,20 @@ import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.purchase.PurchaseManager
-import space.celestia.mobilecelestia.MainActivity
-import space.celestia.mobilecelestia.R
-import space.celestia.mobilecelestia.common.EdgeInsets
+import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.settings.viewmodel.boldFont
 import space.celestia.celestiaui.settings.viewmodel.normalFont
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.mobilecelestia.MainActivity
+import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.EdgeInsets
 import java.util.Locale
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusReporter.Listener {
+class CelestiaRendererFragment : Fragment(), AppStatusReporter.Listener {
 
     @Inject
     lateinit var appCore: AppCore
@@ -64,9 +75,11 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
     lateinit var purchaseManager: PurchaseManager
     @Inject
     lateinit var defaultFilePaths: FilePaths
+    @Inject
+    lateinit var featureFlags: FeatureFlags
 
     // MARK: GL View
-    private lateinit var glView: CelestiaView
+    private lateinit var glView: View
 
     // Parameters
     private var pathToLoad: String? = null
@@ -184,13 +197,69 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
 
     private fun setUpGLView(container: FrameLayout) {
         // Cannot use rendererSettings.scaleFactor here because it is before any updateContentScale call
-        val view = CelestiaView(requireActivity(), if (rendererSettings.enableFullResolution) 1.0f else (1.0f / density))
+        val scaleFactor = if (rendererSettings.enableFullResolution) 1.0f else (1.0f / density)
+        if (featureFlags.composeSurface) {
+            val composeView = ComposeView(requireActivity()).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    var surfaceSize by remember { mutableStateOf(IntSize(1, 1)) }
+                    AndroidExternalSurface(
+                        modifier = Modifier.onSizeChanged { size ->
+                            surfaceSize = IntSize(
+                                (size.width.toFloat() * scaleFactor).toInt(),
+                                (size.height.toFloat() * scaleFactor).toInt()
+                            )
+                        },
+                        surfaceSize = surfaceSize
+                    ) {
+                        onSurface { surface, width, height ->
+                            renderer.setSurface(surface)
+                            renderer.setFrameRateOption(rendererSettings.frameRateOption)
+                            renderer.setSurfaceSize(width, height)
+                            haveSurface = true
+                            if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
+                                loadingFinished()
+                            }
 
-        glView = view
+                            surface.onChanged { width, height ->
+                                Log.d(TAG, "Resize to $width x $height")
+                                renderer.setSurfaceSize(width, height)
+                            }
+
+                            surface.onDestroyed {
+                                renderer.setSurface(null)
+                            }
+                        }
+                    }
+                }
+            }
+            glView = composeView
+        } else {
+            val celestiaView = CelestiaView(requireActivity(), scaleFactor)
+            celestiaView.holder?.addCallback(object: SurfaceHolder.Callback {
+                override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+                    Log.d(TAG, "Resize to $width x $height")
+                    renderer.setSurfaceSize(width, height)
+                }
+
+                override fun surfaceCreated(holder: SurfaceHolder) {
+                    renderer.setSurface(holder.surface)
+                    renderer.setFrameRateOption(rendererSettings.frameRateOption)
+                    haveSurface = true
+                    if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
+                        loadingFinished()
+                    }
+                }
+
+                override fun surfaceDestroyed(holder: SurfaceHolder) {
+                    renderer.setSurface(null)
+                }
+            })
+            glView = celestiaView
+        }
 
         renderer.startConditionally(requireActivity(), rendererSettings.enableMultisample)
-        container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-        view.holder?.addCallback(this)
+        container.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
     }
 
     private fun loadCelestia(samples: Int): Boolean {
@@ -324,24 +393,6 @@ class CelestiaRendererFragment : Fragment(), SurfaceHolder.Callback, AppStatusRe
         listener?.celestiaRendererReady()
 
         Log.d(TAG, "Ready to display")
-    }
-
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        renderer.setSurface(holder.surface)
-        renderer.setFrameRateOption(rendererSettings.frameRateOption)
-        haveSurface = true
-        if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
-            loadingFinished()
-        }
-    }
-
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        Log.d(TAG, "Resize to $width x $height")
-        renderer.setSurfaceSize(width, height)
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        renderer.setSurface(null)
     }
 
     companion object {

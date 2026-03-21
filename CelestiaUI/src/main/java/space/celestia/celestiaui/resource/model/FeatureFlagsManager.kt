@@ -21,7 +21,7 @@ class FeatureFlagsManager(
 ) {
     companion object {
         // Add new flag keys here
-        private val flagKeys = listOf("dummy")
+        private val flagKeys = listOf("dummy", "composeSurface")
 
         private const val STORAGE_KEY = "FeatureFlagsData"
         private const val DEVICE_ID_KEY = "FeatureFlagsDeviceID"
@@ -59,7 +59,8 @@ class FeatureFlagsManager(
         return try {
             val json = JSONObject(stored)
             FeatureFlags(
-                dummy = json.optBoolean("dummy", false)
+                dummy = json.optBoolean("dummy", false),
+                composeSurface = json.optBoolean("composeSurface", false)
             )
         } catch (_: Throwable) {
             FeatureFlags()

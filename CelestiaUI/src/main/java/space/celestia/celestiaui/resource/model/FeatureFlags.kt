@@ -10,5 +10,6 @@
 package space.celestia.celestiaui.resource.model
 
 data class FeatureFlags(
-    val dummy: Boolean = false
+    val dummy: Boolean = false,
+    val composeSurface: Boolean = false
 )
