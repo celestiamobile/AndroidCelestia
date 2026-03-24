@@ -1,6 +1,8 @@
 package space.celestia.celestiaui.tool
 
 import android.view.Display
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -251,7 +253,8 @@ fun ToolScreen(
             }
         }
     }, transitionSpec = {
-        slideInHorizontally(initialOffsetX = { it }) togetherWith slideOutHorizontally(targetOffsetX = { -it })
+        if (backStack.size == 1) EnterTransition.None togetherWith ExitTransition.None
+        else slideInHorizontally(initialOffsetX = { it }) togetherWith slideOutHorizontally(targetOffsetX = { -it })
     }, popTransitionSpec = {
         slideInHorizontally(initialOffsetX = { -it }) togetherWith slideOutHorizontally(targetOffsetX = { it })
     }, predictivePopTransitionSpec = {

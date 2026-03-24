@@ -394,8 +394,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
             findViewById<View>(R.id.bottom_toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
 
-            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (viewModel.backStack.isNotEmpty()) View.VISIBLE else View.GONE
-            findViewById<View>(R.id.bottom_sheet_card).visibility = if (viewModel.backStack.isNotEmpty()) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.bottom_sheet_overlay).visibility = if (viewModel.bottomSheetVisible.value) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.bottom_sheet_card).visibility = if (viewModel.bottomSheetVisible.value) View.VISIBLE else View.GONE
 
             if (currentToolbarActions.isNotEmpty() && toolbarVisible) {
                 showToolbarActionsDirect(currentToolbarActions, currentToolbarOverflowActions)
@@ -1476,7 +1476,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private suspend fun hideBottomSheet(animated: Boolean) {
         hideView(animated, R.id.bottom_sheet_card, false)
         findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.INVISIBLE
-        viewModel.backStack.clear()
+        viewModel.bottomSheetVisible.value = false
     }
 
     private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean) {
@@ -1841,9 +1841,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private suspend fun showBottomSheetToolDirect(page: ToolPage) {
-        val backStackWasEmpty = viewModel.backStack.isEmpty()
+        val wasVisible = viewModel.bottomSheetVisible.value
+        if (!wasVisible) {
+            viewModel.backStack.clear()
+        }
         viewModel.backStack.add(page)
-        if (backStackWasEmpty) {
+        viewModel.bottomSheetVisible.value = true
+        if (!wasVisible) {
             findViewById<View>(R.id.bottom_sheet_overlay).visibility = View.VISIBLE
             showView(true, R.id.bottom_sheet_card, false)
         }
