@@ -4,17 +4,15 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
-import java.io.Serializable
 
 const val settingUnmarkAllID = "UnmarkAll"
 
-sealed class Footer: Serializable {
-    data class Text(val text: String): Footer(), Serializable
-    data class TextWithLink(val text: String, val linkText: String, val link: String, val localizable: Boolean): Footer(),
-        Serializable
+sealed class Footer {
+    data class Text(val text: String): Footer()
+    data class TextWithLink(val text: String, val linkText: String, val link: String, val localizable: Boolean): Footer()
 }
 
-enum class SettingsKey : PreferenceManager.Key, Serializable {
+enum class SettingsKey : PreferenceManager.Key {
     // Boolean values
     ShowStars,
     ShowPlanets,
@@ -302,7 +300,7 @@ class SettingsSliderItem(
     private val internalKey: SettingsKey,
     val minValue: Double = 0.0,
     val maxValue: Double = 1.0
-) : SettingsItem, Serializable {
+) : SettingsItem {
     val key: String = internalKey.valueString
 
     override val name: String
@@ -314,7 +312,7 @@ class SettingsPreferenceSwitchItem(
     private val displayName: String,
     val defaultOn: Boolean = false,
     val subtitle: String? = null
-) : SettingsItem, Serializable {
+) : SettingsItem {
     override val name: String
         get() = displayName
 }
@@ -326,12 +324,12 @@ class SettingsPreferenceSliderItem(
     val minValue: Double = 0.0,
     val maxValue: Double = 1.0,
     val defaultValue: Double = 0.0
-) : SettingsItem, Serializable {
+) : SettingsItem {
     override val name: String
         get() = displayName
 }
 
-class SettingsLanguageItem : SettingsItem, Serializable {
+class SettingsLanguageItem : SettingsItem {
     override val name: String
         get() = CelestiaString("Language", "Display language setting")
 }
@@ -342,7 +340,7 @@ class SettingsSwitchItem(
     val volatile: Boolean,
     val representation: Representation = Representation.Checkmark,
     val subtitle: String? = null
-) : SettingsItem, Serializable {
+) : SettingsItem {
     enum class Representation {
         Checkmark, Switch;
     }
@@ -358,7 +356,7 @@ class SettingsPreferenceSelectionItem(
     private val displayName: String,
     val options: List<Pair<Int, String>>,
     val defaultSelection: Int
-) : SettingsItem, Serializable {
+) : SettingsItem {
     override val name: String
         get() = displayName
 }
@@ -370,7 +368,7 @@ class SettingsSelectionSingleItem(
     val defaultSelection: Int,
     val showTitle: Boolean = true,
     val subtitle: String? = null
-) : SettingsItem, Serializable {
+) : SettingsItem {
     override val name: String
         get() = displayName
 
@@ -381,48 +379,44 @@ class SettingsCurrentTimeItem : SettingsItem {
     override val name: String
         get() = CelestiaString("Current Time", "")
 }
-class SettingsDataLocationItem : SettingsItem, Serializable {
+class SettingsDataLocationItem : SettingsItem {
     override val name: String
         get() = CelestiaString("Data Location", "Title for celestia.cfg, data location setting")
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
-class SettingsFontItem : SettingsItem, Serializable {
+class SettingsFontItem : SettingsItem {
     override val name: String
         get() = CelestiaString("Font", "")
 }
 
-class SettingsToolbarItem : SettingsItem, Serializable {
+class SettingsToolbarItem : SettingsItem {
     override val name: String
         get() = CelestiaString("Toolbar", "Toolbar customization entry in Settings")
 }
 
 
-class SettingsRefreshRateItem : SettingsItem, Serializable {
+class SettingsRefreshRateItem : SettingsItem {
     override val name: String
         get() = CelestiaString("Frame Rate", "Frame rate of simulation")
 }
 
-class SettingsRenderInfoItem : SettingsItem, Serializable {
+class SettingsRenderInfoItem : SettingsItem {
     override val name: String
         get() = CelestiaString("Render Info", "Information about renderer")
 }
 
-class SettingsAboutItem : SettingsItem, Serializable {
+class SettingsAboutItem : SettingsItem {
     override val name: String
         get() = CelestiaString("About", "About Celestia")
 }
 
-class SettingsUnknownTextItem(override val name: String, val id: String) : SettingsItem,
-    Serializable
+class SettingsUnknownTextItem(override val name: String, val id: String) : SettingsItem
 
-class SettingsActionItem(override val name: String, val action: Int): SettingsItem,
-    Serializable
+class SettingsActionItem(override val name: String, val action: Int): SettingsItem
 
-class SettingsCommonItem(override val name: String, val sections: List<Section>) : SettingsItem,
-    Serializable {
-    class Section(val rows: List<SettingsItem>, val header: String? = "", val footer: Footer? = null) :
-        Serializable
+class SettingsCommonItem(override val name: String, val sections: List<Section>) : SettingsItem {
+    class Section(val rows: List<SettingsItem>, val header: String? = "", val footer: Footer? = null)
 
     companion object {
         fun create(name: String, items: List<SettingsItem>): SettingsCommonItem {

@@ -7,6 +7,7 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,6 +42,7 @@ import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiaui.R
@@ -53,17 +55,14 @@ import space.celestia.celestiaui.resource.CommonWebFragment.Companion.ARG_URI
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.utils.CelestiaString
 import java.io.File
-import java.io.Serializable
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 
-sealed class WebError: Serializable {
-    data object NotAvailable: WebError(), Serializable {
-        private fun readResolve(): Any = NotAvailable
-    }
-    data object Loading: WebError(), Serializable {
-        private fun readResolve(): Any = Loading
-    }
+sealed class WebError: Parcelable {
+    @Parcelize
+    data object NotAvailable: WebError()
+    @Parcelize
+    data object Loading: WebError()
 }
 
 @Composable

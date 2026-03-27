@@ -9,6 +9,7 @@
 
 package space.celestia.celestiaui.resource
 
+import android.os.Parcelable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
@@ -47,19 +49,15 @@ import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.resource.viewmodel.AddonViewModel
 import space.celestia.celestiaui.utils.CelestiaString
 import java.io.File
-import java.io.Serializable
 
 
-sealed class AddonState: Serializable {
-    data object None: AddonState(), Serializable {
-        private fun readResolve(): Any = None
-    }
-    data object Downloading: AddonState(), Serializable {
-        private fun readResolve(): Any = Downloading
-    }
-    data object Installed: AddonState(), Serializable {
-        private fun readResolve(): Any = Installed
-    }
+sealed class AddonState: Parcelable {
+    @Parcelize
+    data object None: AddonState()
+    @Parcelize
+    data object Downloading: AddonState()
+    @Parcelize
+    data object Installed: AddonState()
 }
 
 sealed class AddonAlert {
