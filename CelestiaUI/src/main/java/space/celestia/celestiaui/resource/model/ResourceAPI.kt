@@ -69,6 +69,7 @@ interface ResourceAPIService {
     @GET("features")
     suspend fun features(
         @Query("platform") platform: String,
+        @Query("distribution") distribution: String?,
         @Query("lang") lang: String,
         @Query("version") version: String
     ): Map<String, Double>

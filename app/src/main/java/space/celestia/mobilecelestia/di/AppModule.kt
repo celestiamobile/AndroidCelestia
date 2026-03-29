@@ -86,7 +86,7 @@ object AppModule {
     @Singleton
     @Provides
     fun provideFeatureFlagsManager(@ApplicationContext context: Context, resourceAPI: ResourceAPIService, @AppSettingsNoBackup appSettings: PreferenceManager, platform: Platform): FeatureFlagsManager {
-        return FeatureFlagsManager(resourceAPI = resourceAPI, preferenceManager = appSettings, platform = platform.name, version = context.versionName)
+        return FeatureFlagsManager(resourceAPI = resourceAPI, preferenceManager = appSettings, platform = platform.name, distribution = platform.flavor, version = context.versionName)
     }
 
     @Singleton

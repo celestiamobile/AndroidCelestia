@@ -17,6 +17,7 @@ class FeatureFlagsManager(
     private val resourceAPI: ResourceAPIService,
     private val preferenceManager: PreferenceManager,
     private val platform: String,
+    private val distribution: String?,
     private val version: String
 ) {
     companion object {
@@ -26,7 +27,7 @@ class FeatureFlagsManager(
 
     suspend fun update(lang: String) {
         try {
-            val result = resourceAPI.features(platform = platform, lang = lang, version = version)
+            val result = resourceAPI.features(platform = platform, distribution = distribution, lang = lang, version = version)
 
             val deviceIdKey = PreferenceManager.PredefinedKey.DeviceID
             val deviceId = preferenceManager[deviceIdKey] ?: run {
