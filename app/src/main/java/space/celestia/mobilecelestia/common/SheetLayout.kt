@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import androidx.customview.widget.ViewDragHelper
 import kotlin.math.max
 import kotlin.math.min
+import androidx.core.view.isGone
 
 class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, attrs) {
     private val dragHelper: ViewDragHelper
@@ -94,7 +95,7 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
         for (i in 0 until childCount) {
             val child = getChildAt(i)
 
-            if (child.visibility == GONE)
+            if (child.isGone)
                 continue
 
             val childWidth = if (shouldNotOccupyFullWidth) calculateChildWidth(containerWidth, density) else (containerWidth - edgeInsets.left - edgeInsets.right)
@@ -115,7 +116,7 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
 
         for (i in 0 until childCount) {
             val child = getChildAt(i)
-            if (child.visibility == GONE)
+            if (child.isGone)
                 continue
 
             val sheetHeight = min(containerHeight - edgeInsets.top, edgeInsets.bottom + ((containerHeight - edgeInsets.top - edgeInsets.bottom) * sheetMaxHeightRatio).toInt())
@@ -142,17 +143,11 @@ class SheetLayout(context: Context, attrs: AttributeSet): ViewGroup(context, att
     }
 
     private fun calculateChildWidth(containerWidth: Int, density: Float): Int {
-        var widthUpperBound = containerWidth - edgeInsets.left - edgeInsets.right - sheetPaddingNonFullWidthDp * 2 * density
-        widthUpperBound = min(widthUpperBound, containerWidth * sheetMaxWidthRatio)
-        val widthLowerBound = min(widthUpperBound, containerWidth * sheetMinWidthRatio)
-        return max(widthLowerBound, min(widthUpperBound, sheetStandardWidthDp * density)).toInt()
+        return (density * (if (containerWidth / density > 1024) 393 else 320)).toInt()
     }
 
     companion object {
         private const val sheetPaddingNonFullWidthDp = 16
-        private const val sheetStandardWidthDp = 320
-        private const val sheetMinWidthRatio = 0.3f
-        private const val sheetMaxWidthRatio = 0.5f
         private const val sheetMaxHeightRatio = 0.9
         private const val sheetHandleHeight = 30
         const val sheetMaxFullWidthDp = 600
