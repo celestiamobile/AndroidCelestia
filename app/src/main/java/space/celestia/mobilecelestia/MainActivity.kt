@@ -912,6 +912,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                         }
                     }
                 }
+                is AppURL.SetTime -> {
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                        appCore.simulation.setTime(it.julianDay)
+                    }
+                }
             }
             urlToOpen = null
             return

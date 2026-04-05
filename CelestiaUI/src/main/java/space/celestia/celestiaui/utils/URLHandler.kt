@@ -35,6 +35,7 @@ sealed class AppURL {
             data class SelectAnd(val action: CelestiaAction): Action()
         }
     }
+    data class SetTime(val julianDay: Double): AppURL()
     
     companion object {
         suspend fun fromUri(uri: Uri, activity: Activity): AppURLResult {
@@ -101,6 +102,11 @@ sealed class AppURL {
                             }
                         }
                         return AppURLResult.Success(Object(path, action))
+                    }
+                    "settime" -> {
+                        val julianDay = uri.getQueryParameter("julianDay")?.toDoubleOrNull()
+                            ?: return AppURLResult.Failure.MissingParameter
+                        return AppURLResult.Success(SetTime(julianDay))
                     }
                     else -> {
                         return AppURLResult.Failure.UnknownHost
