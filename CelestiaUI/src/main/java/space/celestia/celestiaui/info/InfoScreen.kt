@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
@@ -74,7 +75,7 @@ private sealed class InfoAlert {
     data object RequireCelestiaPlus: InfoAlert()
 }
 
-private data class InfoContextObject(val actions: List<InfoActionItem>, val name: String, val overview: String, val webInfoURL: URL?)
+private data class InfoContextObject(val actions: List<InfoActionItem>, val name: String, val overview: AnnotatedString, val webInfoURL: URL?)
 @Composable
 fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -> Unit, openSubsystem: () -> Unit, openRelatedAddons: (String) -> Unit, openSubscriptionManagement: () -> Unit, paddingValues: PaddingValues, modifier: Modifier = Modifier) {
     val viewModel: InfoViewModel = hiltViewModel()

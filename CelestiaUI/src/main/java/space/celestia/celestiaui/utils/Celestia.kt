@@ -9,6 +9,9 @@
 
 package space.celestia.celestiaui.utils
 
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
 import space.celestia.celestia.*
 import space.celestia.celestiafoundation.favorite.BookmarkNode
 import java.text.DateFormat
@@ -23,24 +26,24 @@ val AppCore.currentBookmark: BookmarkNode?
         return BookmarkNode(name, currentURL, null)
     }
 
-fun AppCore.getOverviewForSelection(selection: Selection): String {
+fun AppCore.getOverviewForSelection(selection: Selection): AnnotatedString {
     return when (val obj = selection.`object`) {
         is Body -> {
             getOverviewForBody(obj)
         }
         is Star -> {
-            getOverviewForStar(obj)
+            AnnotatedString(getOverviewForStar(obj))
         }
         is DSO -> {
-            getOverviewForDSO(obj)
+            AnnotatedString(getOverviewForDSO(obj))
         }
         else -> {
-            CelestiaString("No overview available.", "No overview for an object")
+            AnnotatedString(CelestiaString("No overview available.", "No overview for an object"))
         }
     }
 }
 
-private fun AppCore.getOverviewForBody(body: Body): String {
+private fun AppCore.getOverviewForBody(body: Body): AnnotatedString {
     val lines = arrayListOf<String>()
 
     val radius = body.radius
@@ -111,20 +114,37 @@ private fun AppCore.getOverviewForBody(body: Body): String {
         lines.add(CelestiaString("Has atmosphere", "Indicate that an object has atmosphere"))
     }
 
+    data class TimeLink(val line: String, val timeString: String, val julianDay: Double)
+    val timeLinks = arrayListOf<TimeLink>()
+
     val timeline = body.timeline
     if (timeline.phaseCount > 0) {
         val startTime = timeline.getPhase(0).startTime
         val endTime = timeline.getPhase(timeline.phaseCount - 1).endTime
         val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
         if (!startTime.isInfinite()) {
-            lines.add(CelestiaString("Start time: %s", "Template for the start time of a body, usually a spacecraft").format(formatter.format(Utils.createDateFromJulianDay(startTime))))
+            val timeString = formatter.format(Utils.createDateFromJulianDay(startTime))
+            val line = CelestiaString("Start time: %s", "Template for the start time of a body, usually a spacecraft").format(timeString)
+            timeLinks.add(TimeLink(line, timeString, startTime))
         }
         if (!endTime.isInfinite()) {
-            lines.add(CelestiaString("End time: %s", "Template for the end time of a body, usually a spacecraft").format(formatter.format(Utils.createDateFromJulianDay(endTime))))
+            val timeString = formatter.format(Utils.createDateFromJulianDay(endTime))
+            val line = CelestiaString("End time: %s", "Template for the end time of a body, usually a spacecraft").format(timeString)
+            timeLinks.add(TimeLink(line, timeString, endTime))
         }
     }
 
-    return lines.joinToString(separator = "\n")
+    return buildAnnotatedString {
+        append(lines.joinToString(separator = "\n"))
+        for (timeLink in timeLinks) {
+            if (length > 0) append("\n")
+            val lineStart = length
+            append(timeLink.line)
+            val linkStart = lineStart + timeLink.line.indexOf(timeLink.timeString)
+            val linkEnd = linkStart + timeLink.timeString.length
+            addLink(LinkAnnotation.Url("celestia://settime?julianDay=${timeLink.julianDay}"), linkStart, linkEnd)
+        }
+    }
 }
 
 private fun AppCore.getOverviewForStar(star: Star): String {
