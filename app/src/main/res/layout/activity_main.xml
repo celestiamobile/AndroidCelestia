@@ -57,15 +57,15 @@
             </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
         </FrameLayout>
 
-        <space.celestia.mobilecelestia.common.SheetLayout
-            android:id="@+id/bottom_sheet_overlay"
+        <space.celestia.mobilecelestia.common.LegacySheetLayout
+            android:id="@+id/legacy_bottom_sheet_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="invisible"
+            android:visibility="gone"
             style="@style/Container">
 
             <FrameLayout
-                android:id="@+id/bottom_sheet_card"
+                android:id="@+id/legacy_bottom_sheet_card"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:background="@drawable/bottom_sheet_card_background">
@@ -95,20 +95,31 @@
                             android:background="@drawable/grabber"/>
                     </FrameLayout>
                     <FrameLayout
-                        android:id="@+id/bottom_sheet"
+                        android:id="@+id/legacy_bottom_sheet"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:clickable="true">
                         <androidx.compose.ui.platform.ComposeView
-                            android:id="@+id/bottom_sheet_content"
+                            android:id="@+id/legacy_bottom_sheet_content"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"/>
                     </FrameLayout>
                 </LinearLayout>
             </FrameLayout>
 
-        </space.celestia.mobilecelestia.common.SheetLayout>
+        </space.celestia.mobilecelestia.common.LegacySheetLayout>
+
+        <FrameLayout
+            android:id="@+id/bottom_sheet_insets"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/bottom_sheet_host"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
 
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/loading_fragment_container"

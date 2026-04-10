@@ -55,7 +55,7 @@ import space.celestia.celestiaui.info.getAvailableMarkers
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
-import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.common.SHEET_MAX_FULL_WIDTH_DP
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
@@ -192,7 +192,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         val weakSelf = WeakReference(this)
         ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
             val self = weakSelf.get() ?: return@setOnApplyWindowInsetsListener insets
-            val hasRegularHorizontalSpace =  self.resources.configuration.screenWidthDp > SheetLayout.sheetMaxFullWidthDp
+            val hasRegularHorizontalSpace =  self.resources.configuration.screenWidthDp > SHEET_MAX_FULL_WIDTH_DP
             val safeInsets = EdgeInsets(
                 insets,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RoundedCorners(insets) else RoundedCorners(0, 0, 0, 0),

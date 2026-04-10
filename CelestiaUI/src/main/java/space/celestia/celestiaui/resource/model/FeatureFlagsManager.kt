@@ -22,7 +22,7 @@ class FeatureFlagsManager(
 ) {
     companion object {
         // Add new flag keys here
-        private val flagKeys = listOf("dummy", "composeSurface")
+        private val flagKeys = listOf("dummy", "composeSurface", "composeSheet")
     }
 
     suspend fun update(lang: String) {
@@ -58,7 +58,8 @@ class FeatureFlagsManager(
             val json = JSONObject(stored)
             FeatureFlags(
                 dummy = json.optBoolean("dummy", false),
-                composeSurface = json.optBoolean("composeSurface", false)
+                composeSurface = json.optBoolean("composeSurface", false),
+                composeSheet = json.optBoolean("composeSheet", false)
             )
         } catch (_: Throwable) {
             FeatureFlags()
