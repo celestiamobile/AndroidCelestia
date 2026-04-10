@@ -308,7 +308,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                             visible = viewModel.bottomSheetVisible.value,
                             onDismiss = {
                                 viewModel.bottomSheetVisible.value = false
-                                viewModel.backStack.clear()
                             }
                         ) {
                             ToolScreenContent()
@@ -1501,7 +1500,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private suspend fun hideBottomSheet(animated: Boolean = true) {
         if (useComposeSheet) {
             viewModel.bottomSheetVisible.value = false
-            viewModel.backStack.clear()
         } else {
             hideView(animated, R.id.legacy_bottom_sheet_card, false)
             findViewById<View>(R.id.legacy_bottom_sheet_overlay).visibility = View.INVISIBLE
