@@ -34,6 +34,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -1863,7 +1864,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     // Utilities
 
-    @androidx.compose.runtime.Composable
+    @Composable
     private fun ToolScreenContent() {
         ToolScreen(
             backStack = viewModel.backStack,
