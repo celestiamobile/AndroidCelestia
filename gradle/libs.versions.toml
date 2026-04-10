@@ -1,7 +1,7 @@
 [versions]
 activity-ktx = "1.13.0"
 android-build-gradle = "9.1.0"
-annotation = "1.9.1"
+annotation = "1.10.0"
 appcompat = "1.7.1"
 billing-ktx = "8.3.0"
 build_tools = "36.0.0"
@@ -33,7 +33,7 @@ retrofit = "3.0.0"
 sentry-android = "8.37.1"
 target_sdk = "36"
 webkit = "1.15.0"
-navigation3 = "1.0.1"
+navigation3 = "1.1.0"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
