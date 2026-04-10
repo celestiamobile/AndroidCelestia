@@ -691,7 +691,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val backPressedCallback = object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     val self = weakSelf.get() ?: return
-                    if (!viewModel.backStack.isEmpty()) {
+                    if (!viewModel.backStack.isEmpty() && viewModel.bottomSheetVisible.value) {
                         self.lifecycleScope.launch {
                             self.hideOverlay(true)
                         }
