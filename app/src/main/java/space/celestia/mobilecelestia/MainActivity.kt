@@ -535,7 +535,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
                 val displayType = method.invoke(presentationDisplay) as Int
                 if (displayType == 5) return
-            } catch (ignored: Throwable) {}
+            } catch (_: Throwable) {}
         }
 
         if (activePresentation?.display != presentationDisplay) {
@@ -574,7 +574,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 pendingDisplay = null
                 try {
                     activePresentation?.show()
-                } catch (ignored: Throwable) {
+                } catch (_: Throwable) {
                     activePresentation = null
                 }
             },
@@ -933,7 +933,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
                 is AppURL.SetTime -> {
                     lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                        appCore.simulation.setTime(it.julianDay)
+                        appCore.simulation.time = it.julianDay
                     }
                 }
             }
@@ -948,7 +948,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
                 showBottomSheetTool(ToolPage.Article(result.id))
-            } catch (ignored: Throwable) {}
+            } catch (_: Throwable) {}
         }
     }
 
@@ -960,7 +960,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             File(legacyCelestiaParentPath, FilePaths.CELESTIA_FONT_FOLDER_NAME).deleteRecursively()
             File(defaultFilePaths.dataDirectoryPath).deleteRecursively()
             File(defaultFilePaths.fontDirectoryPath).deleteRecursively()
-        } catch (ignored: Exception) {}
+        } catch (_: Exception) {}
         AssetUtils.copyFileOrDir(this@MainActivity, FilePaths.CELESTIA_DATA_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
         AssetUtils.copyFileOrDir(this@MainActivity, FilePaths.CELESTIA_FONT_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
         appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
@@ -1001,7 +1001,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val value = coreSettings[PreferenceManager.CustomKey(key)] ?: return null
             return try {
                 value.toInt()
-            } catch (exp: NumberFormatException) {
+            } catch (_: NumberFormatException) {
                 null
             }
         }
@@ -1019,7 +1019,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             val value = coreSettings[PreferenceManager.CustomKey(key)] ?: return null
             return try {
                 value.toDouble()
-            } catch (exp: NumberFormatException) {
+            } catch (_: NumberFormatException) {
                 null
             }
         }
@@ -1076,7 +1076,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 map[key] = json[key]
             }
             return map
-        } catch (ignored: Throwable) {}
+        } catch (_: Throwable) {}
         return mapOf()
     }
 
@@ -1155,7 +1155,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 if (dir.exists() || dir.mkdirs()) {
                     availablePaths.add(dir.absolutePath)
                 }
-            } catch (ignored: Throwable) {}
+            } catch (_: Throwable) {}
         }
         return availablePaths
     }
@@ -1293,7 +1293,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 withContext(Dispatchers.Main) {
                     openCelestiaURL(scriptFile.absolutePath)
                 }
-            } catch (ignored: Throwable) {}
+            } catch (_: Throwable) {}
         }
     }
 
@@ -1715,7 +1715,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         return try {
             FileUtils.writeTextToFile(text, proposedFile)
             proposedFile
-        } catch (ignored: Throwable) {
+        } catch (_: Throwable) {
             null
         }
     }
