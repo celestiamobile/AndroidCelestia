@@ -261,7 +261,7 @@ bool CelestiaRenderer::initialize()
         if (versionStr) {
             LOG_INFO("OpenGL Version: %s", versionStr);
             // Check if version string contains "OpenGL ES 3" or higher
-            hasOpenGLES3 = (strstr(versionStr, "OpenGL ES 3.") != nullptr);
+            hasOpenGLES3 = celestia::gl::checkVersion(celestia::gl::Version::GLES_3_0);
             if (hasOpenGLES3) {
                 LOG_INFO("OpenGL ES 3.0+ detected, MSAA will be available");
             } else {
@@ -537,14 +537,14 @@ void CelestiaRenderer::setupOffscreenBuffers() {
         glGenRenderbuffers(1, &offscreenDepthRb);
 
         glBindTexture(GL_TEXTURE_2D, offscreenTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, hasOpenGLES3 ? GL_RGBA8 : GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         glBindRenderbuffer(GL_RENDERBUFFER, offscreenDepthRb);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+        glRenderbufferStorage(GL_RENDERBUFFER, hasOpenGLES3 ? GL_DEPTH_COMPONENT24 : (celestia::gl::OES_depth24 ? GL_DEPTH_COMPONENT24_OES : GL_DEPTH_COMPONENT16), width, height);
 
         glBindFramebuffer(GL_FRAMEBUFFER, offscreenFbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, offscreenTexture, 0);
@@ -566,7 +566,7 @@ void CelestiaRenderer::setupOffscreenBuffers() {
 
             // Create multisample depth renderbuffer
             glBindRenderbuffer(GL_RENDERBUFFER, msaaDepthRb);
-            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT16, width, height);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT24, width, height);
 
             // Attach to MSAA framebuffer
             glBindFramebuffer(GL_FRAMEBUFFER, msaaFbo);
