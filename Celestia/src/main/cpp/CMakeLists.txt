@@ -352,6 +352,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/render.cpp
         ${CELESTIA_SRC_DIR}/celengine/render.h
         ${CELESTIA_SRC_DIR}/celengine/renderflags.h
+        ${CELESTIA_SRC_DIR}/celengine/rendercolors.cpp
+        ${CELESTIA_SRC_DIR}/celengine/rendercolors.h
         ${CELESTIA_SRC_DIR}/celengine/renderglsl.cpp
         ${CELESTIA_SRC_DIR}/celengine/renderglsl.h
         ${CELESTIA_SRC_DIR}/celengine/renderinfo.h
