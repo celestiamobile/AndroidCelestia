@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-enum class SheetDetent { Hidden, PartiallyExpanded, Expanded }
+enum class SheetDetent { Hidden, QuarterExpanded, PartiallyExpanded, Expanded }
 
 @Composable
 fun SheetLayout(
@@ -76,6 +76,7 @@ fun SheetLayout(
 
         val expandedOffsetPx = fullHeightPx - sheetHeightPx
         val partialOffsetPx = fullHeightPx * 0.5f
+        val quarterOffsetPx = fullHeightPx * 0.75f
         val hiddenOffsetPx = fullHeightPx
 
         val state = remember {
@@ -87,6 +88,7 @@ fun SheetLayout(
                 state.updateAnchors(
                     newAnchors = DraggableAnchors {
                         SheetDetent.Hidden at hiddenOffsetPx
+                        SheetDetent.QuarterExpanded at quarterOffsetPx
                         SheetDetent.PartiallyExpanded at partialOffsetPx
                         SheetDetent.Expanded at expandedOffsetPx
                     },
