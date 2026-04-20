@@ -125,7 +125,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
             val context = InfoContextObject(
                 actions = actions,
                 name = if (showTitle) viewModel.appCore.simulation.universe.getNameForSelection(selection) else "",
-                overview = viewModel.appCore.getOverviewForSelection(selection),
+                overview = viewModel.appCore.getOverviewForSelection(selection, linkClicked),
                 webInfoURL = connectionURL
             )
             val cockpitStatus = if (selection.body?.canBeUsedAsCockpit() == true) {

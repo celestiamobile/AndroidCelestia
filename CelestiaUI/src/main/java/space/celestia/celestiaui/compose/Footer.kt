@@ -69,8 +69,12 @@ fun FooterLink(text: String, links: List<Link>, action: (String) -> Unit, modifi
                 end = endIndex
             )
 
-            addLink(LinkAnnotation.Clickable(tag = "URL${entry.index}", linkInteractionListener = { _ ->
-                action(entry.value.url)
+            addLink(LinkAnnotation.Url(entry.value.url, linkInteractionListener = { it ->
+                when (it) {
+                    is LinkAnnotation.Url -> {
+                        action(it.url)
+                    }
+                }
             }), start = startIndex, end = endIndex)
         }
     }

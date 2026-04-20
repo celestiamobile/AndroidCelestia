@@ -11,6 +11,7 @@ package space.celestia.celestiaui.utils
 
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
 import androidx.compose.ui.text.buildAnnotatedString
 import space.celestia.celestia.*
 import space.celestia.celestiafoundation.favorite.BookmarkNode
@@ -26,10 +27,10 @@ val AppCore.currentBookmark: BookmarkNode?
         return BookmarkNode(name, currentURL, null)
     }
 
-fun AppCore.getOverviewForSelection(selection: Selection): AnnotatedString {
+fun AppCore.getOverviewForSelection(selection: Selection, linkHandler: ((String) -> Unit)?): AnnotatedString {
     return when (val obj = selection.`object`) {
         is Body -> {
-            getOverviewForBody(obj)
+            getOverviewForBody(obj, linkHandler)
         }
         is Star -> {
             AnnotatedString(getOverviewForStar(obj))
@@ -43,7 +44,7 @@ fun AppCore.getOverviewForSelection(selection: Selection): AnnotatedString {
     }
 }
 
-private fun AppCore.getOverviewForBody(body: Body): AnnotatedString {
+private fun AppCore.getOverviewForBody(body: Body, linkHandler: ((String) -> Unit)?): AnnotatedString {
     val lines = arrayListOf<String>()
 
     val radius = body.radius
@@ -142,7 +143,13 @@ private fun AppCore.getOverviewForBody(body: Body): AnnotatedString {
             append(timeLink.line)
             val linkStart = lineStart + timeLink.line.indexOf(timeLink.timeString)
             val linkEnd = linkStart + timeLink.timeString.length
-            addLink(LinkAnnotation.Url("celestia://settime?julianDay=${timeLink.julianDay}"), linkStart, linkEnd)
+            addLink(LinkAnnotation.Url("celestia://settime?julianDay=${timeLink.julianDay}", linkInteractionListener = if (linkHandler != null) LinkInteractionListener {
+                when (it) {
+                    is LinkAnnotation.Url -> {
+                        linkHandler(it.url)
+                    }
+                }
+            } else null), linkStart, linkEnd)
         }
     }
 }
