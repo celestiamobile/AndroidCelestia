@@ -68,11 +68,11 @@ android {
     flavorDimensions += "distribution"
     productFlavors {
         create("sideload") {
-            isDefault = true
             dimension = "distribution"
             assetPacks += emptyList()
         }
         create("unofficial") {
+            isDefault = true
             dimension = "distribution"
             assetPacks += emptyList()
         }
