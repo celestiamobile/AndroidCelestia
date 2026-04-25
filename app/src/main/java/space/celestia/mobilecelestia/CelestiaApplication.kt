@@ -3,6 +3,7 @@ package space.celestia.mobilecelestia
 import android.app.Application
 import com.google.android.material.color.DynamicColors
 import dagger.hilt.android.HiltAndroidApp
+import space.celestia.celestia.AppCore
 
 @HiltAndroidApp
 class CelestiaApplication: Application() {
@@ -10,6 +11,10 @@ class CelestiaApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        System.loadLibrary("ziputils")
+        System.loadLibrary("celestia")
+        AppCore.setUpLocale()
 
         DynamicColors.applyToActivitiesIfAvailable(this)
 

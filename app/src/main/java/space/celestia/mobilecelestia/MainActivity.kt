@@ -2093,11 +2093,5 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         private val supportedScriptTypes = listOf("cel", "celx")
         private const val TAG_CELESTIA_FRAGMENT = "celestia_fragment"
-
-        init {
-            System.loadLibrary("ziputils")
-            System.loadLibrary("celestia")
-            AppCore.setUpLocale()
-        }
     }
 }
