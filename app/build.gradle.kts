@@ -125,7 +125,7 @@ tasks.preBuild {
 }
 
 // Google Services plugin only runs for the play flavor (where google-services.json
-// is provided via CI secret at src/play/google-services.json). Disable the
+// is provided via CI secret at app/google-services.json). Disable the
 // processXxxGoogleServices task for non-play variants so those flavors build
 // without the file.
 androidComponents {
