@@ -15,8 +15,6 @@ import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.MainActivity
 
-const val pushNotificationsAvailable = false
-
 @Suppress("UNUSED_PARAMETER")
 fun MainActivity.setUpPushNotifications(
     appSettings: PreferenceManager,

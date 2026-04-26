@@ -26,8 +26,6 @@ import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaui.utils.showAlertAsync
 import space.celestia.mobilecelestia.MainActivity
 
-const val pushNotificationsAvailable = true
-
 fun MainActivity.setUpPushNotifications(
     appSettings: PreferenceManager,
     appSettingsNoBackup: PreferenceManager,

@@ -1,5 +1,6 @@
 package space.celestia.mobilecelestia.settings
 
+import android.os.Build
 import space.celestia.celestiaui.common.CommonSectionV2
 import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.celestiaui.resource.model.FeatureFlags
@@ -11,7 +12,7 @@ class SettingsEntryProviderImpl(private val featureFlags: FeatureFlags) : Settin
     override fun settings(purchaseManager: PurchaseManager): List<CommonSectionV2<SettingsItem>> {
         val sections = mutableListOf<CommonSectionV2<SettingsItem>>()
         sections.addAll(mainSettingSectionsBeforePlus)
-        if (featureFlags.pushNotificationPlay) {
+        if (featureFlags.pushNotificationPlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             pushNotificationSettingsSection()?.let { sections.add(it) }
         }
         if (purchaseManager.canUseInAppPurchase()) {

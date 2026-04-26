@@ -25,10 +25,15 @@ sealed class AppURLResult {
 }
 
 sealed class AppURL {
+    enum class Source {
+        PushNotification,
+        ExternalLink,
+    }
+
     data class Script(val path: String): AppURL()
     data class CelURL(val url: String): AppURL()
-    data class Addon(val id: String): AppURL()
-    data class Article(val id: String): AppURL()
+    data class Addon(val id: String, val source: Source): AppURL()
+    data class Article(val id: String, val source: Source): AppURL()
     data class Object(val path: String, val action: Action?): AppURL() {
         sealed class Action {
             data object Select: Action()
@@ -51,12 +56,12 @@ sealed class AppURL {
                             "item" -> {
                                 val id = if (segments.size > 2) segments[2] else uri.getQueryParameter("item")
                                 if (id.isNullOrEmpty()) return AppURLResult.Failure.MissingParameter
-                                return AppURLResult.Success(Addon(id))
+                                return AppURLResult.Success(Addon(id, Source.ExternalLink))
                             }
                             "guide" -> {
                                 val id = if (segments.size > 2) segments[2] else uri.getQueryParameter("guide")
                                 if (id.isNullOrEmpty()) return AppURLResult.Failure.MissingParameter
-                                return AppURLResult.Success(Article(id))
+                                return AppURLResult.Success(Article(id, Source.ExternalLink))
                             }
                             else -> {
                                 return AppURLResult.Failure.UnknownPath
@@ -71,14 +76,14 @@ sealed class AppURL {
             } else if (uri.scheme == "celaddon") {
                 if (uri.host == "item") {
                     val id = uri.getQueryParameter("item") ?: return AppURLResult.Failure.MissingParameter
-                    return AppURLResult.Success(Addon(id))
+                    return AppURLResult.Success(Addon(id, Source.ExternalLink))
                 } else {
                     return AppURLResult.Failure.UnknownHost
                 }
             } else if (uri.scheme == "celguide") {
                 if (uri.host == "guide") {
                     val id = uri.getQueryParameter("guide") ?: return AppURLResult.Failure.MissingParameter
-                    return AppURLResult.Success(Article(id))
+                    return AppURLResult.Success(Article(id, Source.ExternalLink))
                 } else {
                     return AppURLResult.Failure.UnknownHost
                 }
@@ -86,11 +91,11 @@ sealed class AppURL {
                 when (uri.host) {
                     "article" -> {
                         val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return AppURLResult.Failure.MissingParameter
-                        return AppURLResult.Success(Article(id))
+                        return AppURLResult.Success(Article(id, Source.ExternalLink))
                     }
                     "addon" -> {
                         val id = uri.pathSegments.firstOrNull({ !it.isEmpty() }) ?: return AppURLResult.Failure.MissingParameter
-                        return AppURLResult.Success(Addon(id))
+                        return AppURLResult.Success(Addon(id, Source.ExternalLink))
                     }
                     "object" -> {
                         val path = uri.pathSegments.filter({ !it.isEmpty() }).joinToString("/")

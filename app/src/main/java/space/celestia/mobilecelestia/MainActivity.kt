@@ -835,13 +835,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val articleID = intent.getStringExtra("article-id")
         if (addonID != null) {
             intent.removeExtra("addon-id")
-            urlToOpen = AppURL.Addon(addonID)
+            urlToOpen = AppURL.Addon(addonID, AppURL.Source.PushNotification)
             if (readyForInteraction) openURLOrScriptOrGreeting()
             return
         }
         if (articleID != null) {
             intent.removeExtra("article-id")
-            urlToOpen = AppURL.Article(articleID)
+            urlToOpen = AppURL.Article(articleID, AppURL.Source.PushNotification)
             if (readyForInteraction) openURLOrScriptOrGreeting()
             return
         }
@@ -928,6 +928,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
                 is AppURL.Article -> {
                     lifecycleScope.launch {
+                        if (it.source == AppURL.Source.PushNotification) {
+                            latestNewsID = it.id
+                        }
                         showBottomSheetTool(ToolPage.Article(it.id))
                     }
                 }
@@ -973,7 +976,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             } catch (_: Throwable) {}
 
-            if (featureFlags.pushNotificationPlay) {
+            if (featureFlags.pushNotificationPlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 setUpPushNotifications(appSettings, appSettingsNoBackup, pushNotificationRegistrar)
             }
         }
