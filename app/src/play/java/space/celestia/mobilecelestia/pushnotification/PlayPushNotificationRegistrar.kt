@@ -78,11 +78,6 @@ internal fun PreferenceManager.isPushTypeEnabled(key: PreferenceManager.Predefin
     return this[key] != "false"
 }
 
-internal fun PreferenceManager.anyPushTypeEnabled(): Boolean =
-    isPushTypeEnabled(PreferenceManager.PredefinedKey.PushWeeklyAddon) ||
-        isPushTypeEnabled(PreferenceManager.PredefinedKey.PushLatestNews) ||
-        isPushTypeEnabled(PreferenceManager.PredefinedKey.PushFeaturedAddon)
-
 internal fun PreferenceManager.enabledPushContentTypes(): List<String> {
     val list = mutableListOf<String>()
     if (isPushTypeEnabled(PreferenceManager.PredefinedKey.PushWeeklyAddon))
@@ -92,22 +87,6 @@ internal fun PreferenceManager.enabledPushContentTypes(): List<String> {
     if (isPushTypeEnabled(PreferenceManager.PredefinedKey.PushFeaturedAddon))
         list.add(PushNotificationContentType.FEATURED_ADDON.rawValue)
     return list
-}
-
-internal fun PreferenceManager.enableAllPushTypes() {
-    startEditing()
-    this[PreferenceManager.PredefinedKey.PushWeeklyAddon] = "true"
-    this[PreferenceManager.PredefinedKey.PushLatestNews] = "true"
-    this[PreferenceManager.PredefinedKey.PushFeaturedAddon] = "true"
-    stopEditing()
-}
-
-internal fun PreferenceManager.disableAllPushTypes() {
-    startEditing()
-    this[PreferenceManager.PredefinedKey.PushWeeklyAddon] = "false"
-    this[PreferenceManager.PredefinedKey.PushLatestNews] = "false"
-    this[PreferenceManager.PredefinedKey.PushFeaturedAddon] = "false"
-    stopEditing()
 }
 
 private fun buildRegisterRequest(token: String, appSettings: PreferenceManager, platform: Platform): RegisterRequest = RegisterRequest(
