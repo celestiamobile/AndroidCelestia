@@ -966,13 +966,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch {
             try {
                 val result = resourceAPI.latest(platform.name, platform.flavor, "news", lang)
-                if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) {
-                    setUpPushNotifications(appSettings, appSettingsNoBackup, pushNotificationRegistrar)
+                if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] != result.id) {
+                    latestNewsID = result.id
+                    showBottomSheetTool(ToolPage.Article(result.id))
                     return@launch
                 }
-                latestNewsID = result.id
-                showBottomSheetTool(ToolPage.Article(result.id))
-            } catch (_: Throwable) {
+            } catch (_: Throwable) {}
+
+            if (featureFlags.pushNotificationPlay) {
                 setUpPushNotifications(appSettings, appSettingsNoBackup, pushNotificationRegistrar)
             }
         }

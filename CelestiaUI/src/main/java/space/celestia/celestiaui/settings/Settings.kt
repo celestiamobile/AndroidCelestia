@@ -90,7 +90,7 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
                         Text(CelestiaString("Language", "Display language setting"))
                     }
                     is Page.PushNotifications -> {
-                        Text(CelestiaString("Push Notifications", "Push notification settings entry"))
+                        Text(CelestiaString("Notifications", "Push notification settings entry"))
                     }
                     is Page.Font -> {
                         Text(CelestiaString("Font", ""))

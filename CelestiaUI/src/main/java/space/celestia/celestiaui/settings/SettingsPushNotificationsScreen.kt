@@ -158,16 +158,16 @@ private fun GrantedContent(paddingValues: PaddingValues, viewModel: SettingsView
         }
         item {
             SwitchRow(
-                primaryText = CelestiaString("Latest News", "Latest news push notification setting"),
-                checked = latestNews,
-                onCheckedChange = { latestNews = it }
+                primaryText = CelestiaString("Featured Add-on", "Featured add-on push notification setting"),
+                checked = featuredAddon,
+                onCheckedChange = { featuredAddon = it }
             )
         }
         item {
             SwitchRow(
-                primaryText = CelestiaString("Featured Add-on", "Featured add-on push notification setting"),
-                checked = featuredAddon,
-                onCheckedChange = { featuredAddon = it }
+                primaryText = CelestiaString("Latest News", "Latest news push notification setting"),
+                checked = latestNews,
+                onCheckedChange = { latestNews = it }
             )
         }
         item { Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall))) }

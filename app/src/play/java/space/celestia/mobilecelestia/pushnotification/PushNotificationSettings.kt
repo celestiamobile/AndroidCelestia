@@ -19,6 +19,6 @@ import space.celestia.celestiaui.utils.CelestiaString
 fun pushNotificationSettingsSection(): CommonSectionV2<SettingsItem>? {
     return CommonSectionV2(
         listOf(SettingsPushNotificationsItem()),
-        CelestiaString("Push Notifications", "Push notification settings section header")
+        CelestiaString("Notifications", "Push notification settings section header")
     )
 }

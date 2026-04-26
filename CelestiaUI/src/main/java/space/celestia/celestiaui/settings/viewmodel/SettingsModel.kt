@@ -336,7 +336,7 @@ class SettingsLanguageItem : SettingsItem {
 
 class SettingsPushNotificationsItem : SettingsItem {
     override val name: String
-        get() = CelestiaString("Push Notifications", "Push notification settings entry")
+        get() = CelestiaString("Notifications", "Push notification settings entry")
 }
 
 class SettingsSwitchItem(

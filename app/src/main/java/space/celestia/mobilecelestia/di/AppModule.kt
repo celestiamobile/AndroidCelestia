@@ -216,8 +216,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideSettingsEntryProvider(): SettingsEntryProvider {
-        return SettingsEntryProviderImpl()
+    fun provideSettingsEntryProvider(featureFlags: FeatureFlags): SettingsEntryProvider {
+        return SettingsEntryProviderImpl(featureFlags)
     }
 
     @Singleton
