@@ -11,6 +11,7 @@ package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -1331,6 +1332,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (id == latestNewsID) {
             appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
             lifecycleScope.launch { pushNotificationRegistrar.register() }
+        }
+        cancelNotificationsForArticle(id)
+    }
+
+    private fun cancelNotificationsForArticle(articleId: String) {
+        val nm = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager ?: return
+        for (active in nm.activeNotifications) {
+            if (active.notification.extras.getString("article-id") == articleId) {
+                if (active.tag != null) {
+                    nm.cancel(active.tag, active.id)
+                } else {
+                    nm.cancel(active.id)
+                }
+            }
         }
     }
 

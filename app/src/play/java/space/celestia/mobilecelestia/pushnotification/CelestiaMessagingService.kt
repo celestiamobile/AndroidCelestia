@@ -16,6 +16,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -77,6 +78,11 @@ class CelestiaMessagingService : FirebaseMessagingService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val notificationExtras = Bundle().apply {
+            message.data["article-id"]?.let { putString("article-id", it) }
+            message.data["addon-id"]?.let { putString("addon-id", it) }
+        }
+
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setColor(getColor(R.color.notification_icon_color))
@@ -86,6 +92,7 @@ class CelestiaMessagingService : FirebaseMessagingService() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
+            .addExtras(notificationExtras)
 
         val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(requestCode, builder.build())
