@@ -17,10 +17,10 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,7 +41,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -49,7 +48,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
-import space.celestia.celestiaui.compose.Footer
+import space.celestia.celestiaui.compose.EmptyHint
 import space.celestia.celestiaui.compose.SwitchRow
 import space.celestia.celestiaui.settings.viewmodel.SettingsViewModel
 import space.celestia.celestiaui.utils.CelestiaString
@@ -133,7 +132,9 @@ private fun GrantedContent(paddingValues: PaddingValues, viewModel: SettingsView
     }
 
     LazyColumn(
-        modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(rememberNestedScrollInteropConnection()),
         contentPadding = paddingValues
     ) {
         item { Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short))) }
@@ -181,34 +182,30 @@ private fun GrantedContent(paddingValues: PaddingValues, viewModel: SettingsView
 
 @Composable
 private fun DeniedContent(paddingValues: PaddingValues, context: android.content.Context) {
-    Column(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(paddingValues)
-            .padding(dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize()
+            .padding(paddingValues),
+        contentAlignment = Alignment.Center
     ) {
-        Spacer(Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
-        Footer(
+        EmptyHint(
             text = CelestiaString(
                 "Notifications are disabled. Enable them in System Settings to receive push notifications from Celestia.",
                 "Push notifications denied explanation"
-            )
-        )
-        FilledTonalButton(onClick = {
-            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(
-                    Settings.EXTRA_APP_PACKAGE, context.packageName
-                )
-            } else {
-                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", context.packageName, null)
+            ),
+            actionText = CelestiaString("Open System Settings", "Button to open system notification settings"),
+            actionHandler = {
+                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(
+                        Settings.EXTRA_APP_PACKAGE, context.packageName
+                    )
+                } else {
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
                 }
+                context.startActivity(intent)
             }
-            context.startActivity(intent)
-        }) {
-            Text(CelestiaString("Open System Settings", "Button to open system notification settings"))
-        }
+        )
     }
 }
