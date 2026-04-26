@@ -1331,7 +1331,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onReceivedACK(id: String) {
         if (id == latestNewsID) {
             appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
-            lifecycleScope.launch { pushNotificationRegistrar.register() }
+            if (featureFlags.pushNotificationPlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                lifecycleScope.launch { pushNotificationRegistrar.register() }
+            }
         }
         cancelNotificationsForArticle(id)
     }

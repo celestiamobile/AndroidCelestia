@@ -54,10 +54,7 @@ class PlayPushNotificationRegistrar @Inject constructor(
         appSettingsNoBackup[PreferenceManager.PredefinedKey.FCMToken] = token
         try {
             userAPI.register(buildRegisterRequest(token, appSettings, platform))
-        } catch (error: Throwable) {
-            print(error)
-            // Will retry on next launch / next prefs change.
-        }
+        } catch (_: Throwable) {}
     }
 
     private fun hasNotificationPermission(): Boolean {
