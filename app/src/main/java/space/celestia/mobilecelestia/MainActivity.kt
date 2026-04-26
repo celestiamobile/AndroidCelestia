@@ -753,7 +753,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             initialURLCheckPerformed = true
             initialSetUpComplete()
             openURLOrScriptOrGreeting()
-            setUpPushNotifications(appSettings, pushNotificationRegistrar)
             setUpDisplayListenerIfNeeded()
             lifecycleScope.launch {
                 featureFlagsManager.update(AppCore.getLanguage())
@@ -950,10 +949,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch {
             try {
                 val result = resourceAPI.latest(platform.name, platform.flavor, "news", lang)
-                if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
+                if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) {
+                    setUpPushNotifications(appSettings, pushNotificationRegistrar)
+                    return@launch
+                }
                 latestNewsID = result.id
                 showBottomSheetTool(ToolPage.Article(result.id))
-            } catch (_: Throwable) {}
+            } catch (_: Throwable) {
+                setUpPushNotifications(appSettings, pushNotificationRegistrar)
+            }
         }
     }
 
