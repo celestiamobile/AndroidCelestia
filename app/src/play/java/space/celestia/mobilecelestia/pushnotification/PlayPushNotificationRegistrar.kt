@@ -25,6 +25,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.tasks.await
 import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.di.AppSettings
+import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.Platform
 import space.celestia.celestiaui.pushnotification.PushNotificationContentType
 import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
@@ -39,6 +40,7 @@ import javax.inject.Singleton
 class PlayPushNotificationRegistrar @Inject constructor(
     @param: ApplicationContext private val context: Context,
     @param: AppSettings private val appSettings: PreferenceManager,
+    @param: AppSettingsNoBackup private val appSettingsNoBackup: PreferenceManager,
     private val userAPI: UserAPIService,
     private val platform: Platform
 ) : PushNotificationRegistrar {
@@ -49,10 +51,11 @@ class PlayPushNotificationRegistrar @Inject constructor(
         } catch (_: Throwable) {
             return
         }
-        appSettings[PreferenceManager.PredefinedKey.FCMToken] = token
+        appSettingsNoBackup[PreferenceManager.PredefinedKey.FCMToken] = token
         try {
             userAPI.register(buildRegisterRequest(token, appSettings, platform))
-        } catch (_: Throwable) {
+        } catch (error: Throwable) {
+            print(error)
             // Will retry on next launch / next prefs change.
         }
     }

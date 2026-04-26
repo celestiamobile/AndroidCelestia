@@ -24,7 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import space.celestia.celestiaui.di.AppSettings
+import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.MainActivity
@@ -35,9 +35,9 @@ private const val NOTIFICATION_CHANNEL_ID = "celestia_default"
 
 @AndroidEntryPoint
 class CelestiaMessagingService : FirebaseMessagingService() {
-    @AppSettings
+    @AppSettingsNoBackup
     @Inject
-    lateinit var appSettings: PreferenceManager
+    lateinit var appSettingsNoBackup: PreferenceManager
 
     @Inject
     lateinit var registrar: PushNotificationRegistrar
@@ -45,7 +45,7 @@ class CelestiaMessagingService : FirebaseMessagingService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNewToken(token: String) {
-        appSettings[PreferenceManager.PredefinedKey.FCMToken] = token
+        appSettingsNoBackup[PreferenceManager.PredefinedKey.FCMToken] = token
         // The registrar gates on notification permission, so on Android 13+ this
         // is a no-op until the user has granted permission.
         scope.launch { registrar.register() }

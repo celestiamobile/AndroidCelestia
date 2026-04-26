@@ -20,6 +20,7 @@ const val pushNotificationsAvailable = false
 @Suppress("UNUSED_PARAMETER")
 fun MainActivity.setUpPushNotifications(
     appSettings: PreferenceManager,
+    appSettingsNoBackup: PreferenceManager,
     registrar: PushNotificationRegistrar
 ) {
     // Push notifications are only available in the play flavor.

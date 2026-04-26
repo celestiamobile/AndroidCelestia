@@ -30,15 +30,17 @@ const val pushNotificationsAvailable = true
 
 fun MainActivity.setUpPushNotifications(
     appSettings: PreferenceManager,
+    appSettingsNoBackup: PreferenceManager,
     registrar: PushNotificationRegistrar
 ) {
-    val flow = PushNotificationFlow(this, appSettings, registrar)
+    val flow = PushNotificationFlow(this, appSettings, appSettingsNoBackup, registrar)
     lifecycleScope.launch { flow.runFirstRunOrReregister() }
 }
 
 private class PushNotificationFlow(
     private val activity: MainActivity,
     private val appSettings: PreferenceManager,
+    private val appSettingsNoBackup: PreferenceManager,
     private val registrar: PushNotificationRegistrar
 ) {
     private val permissionChannel = Channel<Boolean>(Channel.RENDEZVOUS)
@@ -59,7 +61,7 @@ private class PushNotificationFlow(
             registrar.register()
             return
         }
-        val asked = appSettings[PreferenceManager.PredefinedKey.PushNotificationsAsked] == "true"
+        val asked = appSettingsNoBackup[PreferenceManager.PredefinedKey.PushNotificationsAsked] == "true"
         if (!asked) {
             runFirstRun()
         }
@@ -79,7 +81,7 @@ private class PushNotificationFlow(
             "Push notification opt-in dialog message"
         )
         val result = activity.showAlertAsync(title, message, showCancel = true)
-        appSettings[PreferenceManager.PredefinedKey.PushNotificationsAsked] = "true"
+        appSettingsNoBackup[PreferenceManager.PredefinedKey.PushNotificationsAsked] = "true"
 
         if (result == AlertResult.OK && ensureNotificationsPermission()) {
             appSettings.enableAllPushTypes()
