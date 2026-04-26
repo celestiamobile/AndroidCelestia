@@ -35,6 +35,7 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsUnknownTextItem
 import space.celestia.celestiaui.settings.viewmodel.settingUnmarkAllID
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.mobilecelestia.pushnotification.pushNotificationSettingsSection
 
 private val staticDisplayItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(CelestiaString("Objects", ""), listOf(
@@ -371,11 +372,12 @@ val celestiaPlusSettingSection: List<CommonSectionV2<SettingsItem>> by lazy {
     }
 }
 
-val mainSettingSectionsBeforePlus: List<CommonSectionV2<SettingsItem>> = listOf(
+val mainSettingSectionsBeforePlus: List<CommonSectionV2<SettingsItem>> = listOfNotNull(
     CommonSectionV2(staticDisplayItems, CelestiaString("Display", "Display settings")),
     CommonSectionV2(staticTimeAndRegionItems, CelestiaString("Time & Region", "time and region related settings")),
     CommonSectionV2(staticRendererItems, CelestiaString("Renderer", "In settings")),
     CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "Advanced setting items")),
+    pushNotificationSettingsSection(),
 )
 
 val mainSettingSectionsAfterPlus: List<CommonSectionV2<SettingsItem>> = listOf(

@@ -97,6 +97,8 @@ import space.celestia.celestiaui.resource.CommonWebFragment
 import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.resource.model.FeatureFlagsManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
+import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
+import space.celestia.mobilecelestia.pushnotification.setUpPushNotifications
 import space.celestia.celestiaui.settings.viewmodel.CustomFont
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
@@ -165,6 +167,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var rendererSettings: RendererSettings
     @Inject
     lateinit var resourceAPI: ResourceAPIService
+    @Inject
+    lateinit var pushNotificationRegistrar: PushNotificationRegistrar
     @Inject
     lateinit var resourceManager: ResourceManager
     @Inject
@@ -749,6 +753,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             initialURLCheckPerformed = true
             initialSetUpComplete()
             openURLOrScriptOrGreeting()
+            setUpPushNotifications(appSettings, pushNotificationRegistrar)
             setUpDisplayListenerIfNeeded()
             lifecycleScope.launch {
                 featureFlagsManager.update(AppCore.getLanguage())
@@ -1300,6 +1305,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onReceivedACK(id: String) {
         if (id == latestNewsID) {
             appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
+            lifecycleScope.launch { pushNotificationRegistrar.register() }
         }
     }
 

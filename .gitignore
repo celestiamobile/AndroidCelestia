@@ -9,3 +9,5 @@ local.properties
 .gradle
 CelestiaResources
 dependencies
+app/google-services.json
+app/src/play/google-services.json

@@ -1,0 +1,17 @@
+/*
+ * PushNotificationSettings.kt
+ *
+ * Copyright (C) 2025-present, Celestia Development Team
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ */
+
+package space.celestia.mobilecelestia.pushnotification
+
+import space.celestia.celestiaui.common.CommonSectionV2
+import space.celestia.celestiaui.settings.viewmodel.SettingsItem
+
+fun pushNotificationSettingsSection(): CommonSectionV2<SettingsItem>? = null

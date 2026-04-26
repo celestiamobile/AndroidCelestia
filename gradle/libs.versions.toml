@@ -34,6 +34,8 @@ sentry-android = "8.37.1"
 target_sdk = "36"
 webkit = "1.15.0"
 navigation3 = "1.1.1"
+firebase-bom = "34.12.0"
+google-services = "4.4.4"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
@@ -75,6 +77,9 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentry-android" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+google-services = { group = "com.google.gms", name = "google-services", version.ref = "google-services" }
 
 [plugins]
 android-application = { id = "com.android.application" }
@@ -84,3 +89,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 hilt = { id = "com.google.dagger.hilt.android", version.ref ="hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref ="ksp" }
 parcelize = { id = "kotlin-parcelize" }
+google-services = { id = "com.google.gms.google-services" }
