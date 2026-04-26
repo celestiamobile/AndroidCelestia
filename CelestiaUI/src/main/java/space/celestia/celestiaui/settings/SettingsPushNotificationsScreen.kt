@@ -105,7 +105,18 @@ fun SettingsPushNotificationsScreen(paddingValues: PaddingValues) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                permissionState = checkPermission()
+                val newState = checkPermission()
+                if (newState == PushPermissionState.Granted && permissionState != PushPermissionState.Granted) {
+                    // Permission was granted out-of-band (e.g., via system settings).
+                    // Mirror the in-screen launcher: enable defaults and register.
+                    viewModel.appSettings.startEditing()
+                    viewModel.appSettings[PreferenceManager.PredefinedKey.PushWeeklyAddon] = "true"
+                    viewModel.appSettings[PreferenceManager.PredefinedKey.PushLatestNews] = "true"
+                    viewModel.appSettings[PreferenceManager.PredefinedKey.PushFeaturedAddon] = "true"
+                    viewModel.appSettings.stopEditing()
+                    scope.launch { viewModel.pushNotificationRegistrar.register() }
+                }
+                permissionState = newState
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
