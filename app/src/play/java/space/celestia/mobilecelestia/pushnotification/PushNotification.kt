@@ -26,18 +26,18 @@ import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaui.utils.showAlertAsync
 import space.celestia.mobilecelestia.MainActivity
 
+@Suppress("UNUSED_PARAMETER")
 fun MainActivity.setUpPushNotifications(
     appSettings: PreferenceManager,
     appSettingsNoBackup: PreferenceManager,
     registrar: PushNotificationRegistrar
 ) {
-    val flow = PushNotificationFlow(this, appSettings, appSettingsNoBackup, registrar)
+    val flow = PushNotificationFlow(this, appSettingsNoBackup, registrar)
     lifecycleScope.launch { flow.runFirstRunOrReregister() }
 }
 
 private class PushNotificationFlow(
     private val activity: MainActivity,
-    private val appSettings: PreferenceManager,
     private val appSettingsNoBackup: PreferenceManager,
     private val registrar: PushNotificationRegistrar
 ) {
@@ -81,14 +81,9 @@ private class PushNotificationFlow(
         val result = activity.showAlertAsync(title, message, showCancel = true)
         appSettingsNoBackup[PreferenceManager.PredefinedKey.PushNotificationsAsked] = "true"
 
-        if (result == AlertResult.OK && ensureNotificationsPermission()) {
-            appSettings.enableAllPushTypes()
-        } else {
-            appSettings.disableAllPushTypes()
+        if (result == AlertResult.OK) {
+            ensureNotificationsPermission()
         }
-        // Always sync with the server: with all types disabled this sends an
-        // empty contentTypes (server clears the row), cleaning up any stale
-        // pre-dialog registration on devices where permission is implicit.
         registrar.register()
     }
 
