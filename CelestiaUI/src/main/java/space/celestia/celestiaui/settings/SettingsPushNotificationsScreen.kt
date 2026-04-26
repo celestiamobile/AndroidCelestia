@@ -68,7 +68,6 @@ fun SettingsPushNotificationsScreen(paddingValues: PaddingValues) {
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        viewModel.appSettings[PreferenceManager.PredefinedKey.PushNotificationsAsked] = "true"
         if (granted) {
             // Permission granted via this screen → enable all types by default.
             viewModel.appSettings.startEditing()

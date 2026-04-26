@@ -43,7 +43,6 @@ class PlayPushNotificationRegistrar @Inject constructor(
     private val platform: Platform
 ) : PushNotificationRegistrar {
     override suspend fun register() {
-        if (appSettings[PreferenceManager.PredefinedKey.PushNotificationsAsked] != "true") return
         if (!hasNotificationPermission()) return
         val token = try {
             FirebaseMessaging.getInstance().token.await()

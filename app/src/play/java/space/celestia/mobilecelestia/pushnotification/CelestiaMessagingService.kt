@@ -35,7 +35,8 @@ class CelestiaMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         appSettings[PreferenceManager.PredefinedKey.FCMToken] = token
-        if (appSettings[PreferenceManager.PredefinedKey.PushNotificationsAsked] != "true") return
+        // The registrar gates on notification permission, so on Android 13+ this
+        // is a no-op until the user has granted permission.
         scope.launch { registrar.register() }
     }
 

@@ -52,15 +52,24 @@ private class PushNotificationFlow(
     }
 
     suspend fun runFirstRunOrReregister() {
+        if (hasNotificationPermission()) {
+            // Permission is already granted — no need to ask. Just keep the
+            // server in sync (empty contentTypes if all types disabled, server
+            // clears the row).
+            registrar.register()
+            return
+        }
         val asked = appSettings[PreferenceManager.PredefinedKey.PushNotificationsAsked] == "true"
         if (!asked) {
             runFirstRun()
-        } else {
-            // Always reregister on launch (even when no types are enabled) so the
-            // server stays in sync — empty contentTypes tells the server to clear
-            // this token's row. The registrar itself gates by permission + token.
-            registrar.register()
         }
+        // Permission missing and we've already asked — don't reprompt.
+    }
+
+    private fun hasNotificationPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
+        return ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
     }
 
     private suspend fun runFirstRun() {
@@ -72,18 +81,15 @@ private class PushNotificationFlow(
         val result = activity.showAlertAsync(title, message, showCancel = true)
         appSettings[PreferenceManager.PredefinedKey.PushNotificationsAsked] = "true"
 
-        if (result != AlertResult.OK) {
-            appSettings.disableAllPushTypes()
-            return
-        }
-
-        val granted = ensureNotificationsPermission()
-        if (granted) {
+        if (result == AlertResult.OK && ensureNotificationsPermission()) {
             appSettings.enableAllPushTypes()
-            registrar.register()
         } else {
             appSettings.disableAllPushTypes()
         }
+        // Always sync with the server: with all types disabled this sends an
+        // empty contentTypes (server clears the row), cleaning up any stale
+        // pre-dialog registration on devices where permission is implicit.
+        registrar.register()
     }
 
     private suspend fun ensureNotificationsPermission(): Boolean {
