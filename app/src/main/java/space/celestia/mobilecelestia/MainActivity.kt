@@ -829,6 +829,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun handleIntent(intent: Intent) {
+        // Push notification tap: FCM passes the data payload as Intent extras.
+        // Route to the addon or article page using the existing AppURL flow.
+        val addonID = intent.getStringExtra("addon-id")
+        val articleID = intent.getStringExtra("article-id")
+        if (addonID != null) {
+            intent.removeExtra("addon-id")
+            urlToOpen = AppURL.Addon(addonID)
+            if (readyForInteraction) openURLOrScriptOrGreeting()
+            return
+        }
+        if (articleID != null) {
+            intent.removeExtra("article-id")
+            urlToOpen = AppURL.Article(articleID)
+            if (readyForInteraction) openURLOrScriptOrGreeting()
+            return
+        }
+
         val uri = intent.data ?: return
 
         showToast(CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT)
