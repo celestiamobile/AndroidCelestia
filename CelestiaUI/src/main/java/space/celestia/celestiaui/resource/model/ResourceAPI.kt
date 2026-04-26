@@ -51,6 +51,8 @@ data class UpdateRequest(
 interface ResourceAPIService {
     @GET("latest")
     suspend fun latest(
+        @Query("platform") platform: String,
+        @Query("distribution") distribution: String?,
         @Query("type") type: String,
         @Query("lang") lang: String
     ): GuideItem

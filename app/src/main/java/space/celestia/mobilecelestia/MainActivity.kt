@@ -944,7 +944,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         // Check news
         lifecycleScope.launch {
             try {
-                val result = resourceAPI.latest("news", lang)
+                val result = resourceAPI.latest(platform.name, platform.flavor, "news", lang)
                 if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
                 latestNewsID = result.id
                 showBottomSheetTool(ToolPage.Article(result.id))
