@@ -151,21 +151,21 @@ private fun GrantedContent(paddingValues: PaddingValues, viewModel: SettingsView
         item { Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short))) }
         item {
             SwitchRow(
-                primaryText = CelestiaString("Weekly Add-on", "Weekly add-on push notification setting"),
+                primaryText = CelestiaString("Weekly Add-on", "Push notification content type — weekly featured add-on"),
                 checked = weeklyAddon,
                 onCheckedChange = { weeklyAddon = it }
             )
         }
         item {
             SwitchRow(
-                primaryText = CelestiaString("Featured Add-on", "Featured add-on push notification setting"),
+                primaryText = CelestiaString("Featured Add-on", "Push notification content type — featured add-on"),
                 checked = featuredAddon,
                 onCheckedChange = { featuredAddon = it }
             )
         }
         item {
             SwitchRow(
-                primaryText = CelestiaString("Latest News", "Latest news push notification setting"),
+                primaryText = CelestiaString("Latest News", "Push notification content type — latest news"),
                 checked = latestNews,
                 onCheckedChange = { latestNews = it }
             )
@@ -185,7 +185,7 @@ private fun GrantedContent(paddingValues: PaddingValues, viewModel: SettingsView
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal))
             ) {
-                Text(CelestiaString("Save", "Save button on push notifications screen"))
+                Text(CelestiaString("Save", "Save push notification preferences"))
             }
         }
     }
@@ -201,10 +201,10 @@ private fun DeniedContent(paddingValues: PaddingValues, context: android.content
     ) {
         EmptyHint(
             text = CelestiaString(
-                "Notifications are disabled. Enable them in System Settings to receive push notifications from Celestia.",
-                "Push notifications denied explanation"
+                "Notifications are turned off for Celestia. Enable them in System Settings to subscribe to updates.",
+                "Push notification denied state explanation"
             ),
-            actionText = CelestiaString("Open System Settings", "Button to open system notification settings"),
+            actionText = CelestiaString("Open System Settings", "Push notification denied state action"),
             actionHandler = {
                 val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(
