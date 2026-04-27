@@ -10,7 +10,6 @@
 package space.celestia.celestiaui.pushnotification
 
 import androidx.annotation.Keep
-import com.google.gson.annotations.SerializedName
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -24,15 +23,15 @@ enum class PushNotificationContentType(val rawValue: String) {
 
 @Keep
 data class RegisterRequest(
-    @SerializedName("token") val token: String,
-    @SerializedName("tokenType") val tokenType: String,
-    @SerializedName("lang") val lang: String,
-    @SerializedName("timezone") val timezone: String,
-    @SerializedName("contentTypes") val contentTypes: List<String>,
-    @SerializedName("api") val api: Int,
-    @SerializedName("platform") val platform: String,
-    @SerializedName("distribution") val distribution: String?,
-    @SerializedName("lastShownNewsID") val lastShownNewsID: String?
+    val token: String,
+    val tokenType: String,
+    val lang: String,
+    val timezone: String,
+    val contentTypes: List<String>,
+    val api: Int,
+    val platform: String,
+    val distribution: String?,
+    val lastShownNewsID: String?
 )
 
 interface UserAPIService {
