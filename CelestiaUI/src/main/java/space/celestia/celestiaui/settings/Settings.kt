@@ -43,6 +43,7 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsCurrentTimeItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsDataLocationItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsFontItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsLanguageItem
+import space.celestia.celestiaui.settings.viewmodel.SettingsPushNotificationsItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsRefreshRateItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsRenderInfoItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsToolbarItem
@@ -87,6 +88,9 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
                     }
                     is Page.Language -> {
                         Text(CelestiaString("Language", "Display language setting"))
+                    }
+                    is Page.PushNotifications -> {
+                        Text(CelestiaString("Notifications", "Push notification settings entry"))
                     }
                     is Page.Font -> {
                         Text(CelestiaString("Font", ""))
@@ -160,6 +164,10 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
                                     viewModel.backStack.add(Page.Language)
                                 }
 
+                                is SettingsPushNotificationsItem -> {
+                                    viewModel.backStack.add(Page.PushNotifications)
+                                }
+
                                 is SettingsFontItem -> {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                                         viewModel.backStack.add(Page.Font)
@@ -203,6 +211,9 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
                     }
                     is Page.Language -> NavEntry(route) {
                         LanguageSettingsScreen(paddingValues)
+                    }
+                    is Page.PushNotifications -> NavEntry(route) {
+                        SettingsPushNotificationsScreen(paddingValues)
                     }
                     is Page.Font -> NavEntry(route) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

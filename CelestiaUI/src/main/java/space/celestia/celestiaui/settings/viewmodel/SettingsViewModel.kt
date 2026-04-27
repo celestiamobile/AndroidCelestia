@@ -21,6 +21,7 @@ import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.ApplicationId
 import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.celestiaui.purchase.PurchaseManager
+import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
 import space.celestia.celestiaui.utils.PreferenceManager
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -34,12 +35,13 @@ sealed class Page {
     data object DataLocation: Page()
     data object About: Page()
     data object Language: Page()
+    data object PushNotifications: Page()
     data object Toolbar: Page()
     @RequiresApi(Build.VERSION_CODES.Q)
     data object Font: Page()
 }
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(val appCore: AppCore, val executor: Executor, @param:AppSettings val appSettings: PreferenceManager, @param:AppSettingsNoBackup val appSettingsNoBackup: PreferenceManager, @param:CoreSettings val coreSettings: PreferenceManager, val purchaseManager: PurchaseManager, val defaultFilePaths: FilePaths, @param:ApplicationId val applicationId: String, val settingsEntryProvider: SettingsEntryProvider) : ViewModel() {
+class SettingsViewModel @Inject constructor(val appCore: AppCore, val executor: Executor, @param:AppSettings val appSettings: PreferenceManager, @param:AppSettingsNoBackup val appSettingsNoBackup: PreferenceManager, @param:CoreSettings val coreSettings: PreferenceManager, val purchaseManager: PurchaseManager, val defaultFilePaths: FilePaths, @param:ApplicationId val applicationId: String, val settingsEntryProvider: SettingsEntryProvider, val pushNotificationRegistrar: PushNotificationRegistrar) : ViewModel() {
     val backStack = mutableStateListOf<Page>(Page.Home)
 }

@@ -36,6 +36,7 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.BuildConfig
+import space.celestia.celestiaui.pushnotification.UserAPIService
 import space.celestia.mobilecelestia.settings.SettingsEntryProviderImpl
 import java.lang.reflect.Type
 import java.util.Date
@@ -69,6 +70,16 @@ object AppModule {
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ResourceAPIService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideUserAPI(): UserAPIService {
+        return Retrofit.Builder()
+            .baseUrl("https://celestia.mobi/api/2/users/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(UserAPIService::class.java)
     }
 
     @Singleton
@@ -205,8 +216,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideSettingsEntryProvider(): SettingsEntryProvider {
-        return SettingsEntryProviderImpl()
+    fun provideSettingsEntryProvider(featureFlags: FeatureFlags): SettingsEntryProvider {
+        return SettingsEntryProviderImpl(featureFlags)
     }
 
     @Singleton

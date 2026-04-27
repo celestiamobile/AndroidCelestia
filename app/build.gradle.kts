@@ -18,6 +18,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.parcelize)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -123,6 +124,21 @@ tasks.preBuild {
     dependsOn(copyLocalizedFiles, copyGeneralData, convertPO)
 }
 
+// Google Services plugin only runs for the play flavor (where google-services.json
+// is provided via CI secret at app/google-services.json). Disable the
+// processXxxGoogleServices task for non-play variants so those flavors build
+// without the file.
+androidComponents {
+    onVariants { variant ->
+        val googleServicesTaskName =
+            "process${variant.name.replaceFirstChar(Char::uppercase)}GoogleServices"
+        val shouldEnableGoogleServices = variant.flavorName?.contains("play") ?: false
+        tasks.matching { it.name == googleServicesTaskName }.configureEach {
+            enabled = shouldEnableGoogleServices
+        }
+    }
+}
+
 val playImplementation by configurations
 val sideloadImplementation by configurations
 
@@ -174,6 +190,8 @@ dependencies {
     playImplementation(libs.billing.ktx)
     playImplementation(libs.androidx.media3.exoplayer)
     playImplementation(libs.androidx.media3.ui)
+    playImplementation(platform(libs.firebase.bom))
+    playImplementation(libs.firebase.messaging)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

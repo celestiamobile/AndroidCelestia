@@ -61,7 +61,12 @@ class PreferenceManager(context: Context, name: String) {
         DetectVirtualDisplay,
         LocalSettingMigration,
         FeatureFlags,
-        DeviceID
+        DeviceID,
+        PushNotificationsAsked,
+        PushWeeklyAddon,
+        PushLatestNews,
+        PushFeaturedAddon,
+        FCMToken
         ;
 
         override val valueString: String

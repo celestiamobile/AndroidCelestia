@@ -4,6 +4,7 @@
 #   JARSIGNER_KEY_PASSWORD        - Key password for the 'celestia' alias
 #   SENTRY_AUTH_TOKEN             - Sentry auth token
 #   SENTRY_DSN                    - Sentry DSN for Android
+#   GOOGLE_SERVICES_JSON          - Contents of google-services.json (play flavor only)
 
 name: Build
 
@@ -173,6 +174,12 @@ jobs:
         if: matrix.outputFormat == 'apk'
         working-directory: '${{ github.workspace }}/AndroidCelestia'
         run: ./gradlew assembleSideloadRelease -Dorg.gradle.jvmargs=-Xmx3072m
+
+      - name: Write google-services.json
+        if: matrix.outputFormat == 'aab'
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: printf '%s' "$GOOGLE_SERVICES_JSON" > $GITHUB_WORKSPACE/AndroidCelestia/app/google-services.json
 
       - name: Build AAB
         if: matrix.outputFormat == 'aab'

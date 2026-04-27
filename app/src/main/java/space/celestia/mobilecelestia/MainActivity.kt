@@ -11,6 +11,7 @@ package space.celestia.mobilecelestia
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -97,6 +98,8 @@ import space.celestia.celestiaui.resource.CommonWebFragment
 import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.resource.model.FeatureFlagsManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
+import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
+import space.celestia.mobilecelestia.pushnotification.setUpPushNotifications
 import space.celestia.celestiaui.settings.viewmodel.CustomFont
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
@@ -165,6 +168,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     lateinit var rendererSettings: RendererSettings
     @Inject
     lateinit var resourceAPI: ResourceAPIService
+    @Inject
+    lateinit var pushNotificationRegistrar: PushNotificationRegistrar
     @Inject
     lateinit var resourceManager: ResourceManager
     @Inject
@@ -825,6 +830,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun handleIntent(intent: Intent) {
+        // Push notification tap: FCM passes the data payload as Intent extras.
+        // Route to the addon or article page using the existing AppURL flow.
+        val addonID = intent.getStringExtra("addon-id")
+        val articleID = intent.getStringExtra("article-id")
+        if (addonID != null) {
+            intent.removeExtra("addon-id")
+            urlToOpen = AppURL.Addon(addonID, AppURL.Source.PushNotification)
+            if (readyForInteraction) openURLOrScriptOrGreeting()
+            return
+        }
+        if (articleID != null) {
+            intent.removeExtra("article-id")
+            urlToOpen = AppURL.Article(articleID, AppURL.Source.PushNotification)
+            if (readyForInteraction) openURLOrScriptOrGreeting()
+            return
+        }
+
         val uri = intent.data ?: return
 
         showToast(CelestiaString("Opening external file or URL…", ""), Toast.LENGTH_SHORT)
@@ -907,6 +929,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
                 is AppURL.Article -> {
                     lifecycleScope.launch {
+                        if (it.source == AppURL.Source.PushNotification) {
+                            latestNewsID = it.id
+                        }
                         showBottomSheetTool(ToolPage.Article(it.id))
                     }
                 }
@@ -945,10 +970,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         lifecycleScope.launch {
             try {
                 val result = resourceAPI.latest(platform.name, platform.flavor, "news", lang)
-                if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] == result.id) { return@launch }
-                latestNewsID = result.id
-                showBottomSheetTool(ToolPage.Article(result.id))
+                if (appSettings[PreferenceManager.PredefinedKey.LastNewsID] != result.id) {
+                    latestNewsID = result.id
+                    showBottomSheetTool(ToolPage.Article(result.id))
+                    return@launch
+                }
             } catch (_: Throwable) {}
+
+            if (featureFlags.pushNotificationPlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                setUpPushNotifications(appSettings, appSettingsNoBackup, pushNotificationRegistrar)
+            }
         }
     }
 
@@ -1300,6 +1331,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onReceivedACK(id: String) {
         if (id == latestNewsID) {
             appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
+            if (featureFlags.pushNotificationPlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                lifecycleScope.launch { pushNotificationRegistrar.register() }
+            }
+        }
+        cancelNotificationsForArticle(id)
+    }
+
+    private fun cancelNotificationsForArticle(articleId: String) {
+        val nm = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager ?: return
+        for (active in nm.activeNotifications) {
+            if (active.notification.extras.getString("article-id") == articleId) {
+                if (active.tag != null) {
+                    nm.cancel(active.tag, active.id)
+                } else {
+                    nm.cancel(active.id)
+                }
+            }
         }
     }
 
