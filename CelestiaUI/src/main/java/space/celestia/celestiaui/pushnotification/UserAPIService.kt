@@ -9,6 +9,7 @@
 
 package space.celestia.celestiaui.pushnotification
 
+import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -21,6 +22,7 @@ enum class PushNotificationContentType(val rawValue: String) {
     override fun toString(): String = rawValue
 }
 
+@Keep
 data class RegisterRequest(
     val token: String,
     val tokenType: String,
