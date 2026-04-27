@@ -24,14 +24,14 @@ enum class PushNotificationContentType(val rawValue: String) {
 
 @Keep
 data class RegisterRequest(
-    val token: String,
-    val tokenType: String,
-    val lang: String,
-    val timezone: String,
-    val contentTypes: List<String>,
-    val api: Int,
-    val platform: String,
-    val distribution: String?,
+    @SerializedName("token") val token: String,
+    @SerializedName("tokenType") val tokenType: String,
+    @SerializedName("lang") val lang: String,
+    @SerializedName("timezone") val timezone: String,
+    @SerializedName("contentTypes") val contentTypes: List<String>,
+    @SerializedName("api") val api: Int,
+    @SerializedName("platform") val platform: String,
+    @SerializedName("distribution") val distribution: String?,
     @SerializedName("lastShownNewsID") val lastShownNewsID: String?
 )
 
