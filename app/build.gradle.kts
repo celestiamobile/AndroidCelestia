@@ -130,9 +130,12 @@ tasks.preBuild {
 // without the file.
 androidComponents {
     onVariants { variant ->
-        val googleTask =
-            tasks.findByName("process${variant.name.replaceFirstChar(Char::uppercase)}GoogleServices")
-        googleTask?.enabled = variant.flavorName?.contains("play") ?: false
+        val googleServicesTaskName =
+            "process${variant.name.replaceFirstChar(Char::uppercase)}GoogleServices"
+        val shouldEnableGoogleServices = variant.flavorName?.contains("play") ?: false
+        tasks.matching { it.name == googleServicesTaskName }.configureEach {
+            enabled = shouldEnableGoogleServices
+        }
     }
 }
 
