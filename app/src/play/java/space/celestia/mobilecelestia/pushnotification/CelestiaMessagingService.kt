@@ -14,10 +14,12 @@ package space.celestia.mobilecelestia.pushnotification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.core.app.NotificationCompat
+import androidx.core.content.getSystemService
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -62,7 +64,7 @@ class CelestiaMessagingService : FirebaseMessagingService() {
         val body = notification.body
         if (title.isNullOrEmpty() && body.isNullOrEmpty()) return
 
-        ensureChannel()
+        ensurePushNotificationChannel(this)
 
         val launchIntent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -98,15 +100,16 @@ class CelestiaMessagingService : FirebaseMessagingService() {
         nm.notify(requestCode, builder.build())
     }
 
-    private fun ensureChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        if (nm.getNotificationChannel(NOTIFICATION_CHANNEL_ID) != null) return
-        val channel = NotificationChannel(
-            NOTIFICATION_CHANNEL_ID,
-            getString(R.string.app_name),
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        nm.createNotificationChannel(channel)
-    }
+}
+
+internal fun ensurePushNotificationChannel(context: Context) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+    val nm = context.getSystemService<NotificationManager>() ?: return
+    if (nm.getNotificationChannel(NOTIFICATION_CHANNEL_ID) != null) return
+    val channel = NotificationChannel(
+        NOTIFICATION_CHANNEL_ID,
+        context.getString(R.string.app_name),
+        NotificationManager.IMPORTANCE_HIGH
+    )
+    nm.createNotificationChannel(channel)
 }

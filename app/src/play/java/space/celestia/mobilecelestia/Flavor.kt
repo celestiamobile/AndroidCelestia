@@ -17,6 +17,7 @@ import io.sentry.SentryEvent
 import io.sentry.android.core.SentryAndroid
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.mobilecelestia.pushnotification.ensurePushNotificationChannel
 import java.io.File
 
 private var reportParentFolder: File? = null
@@ -26,6 +27,11 @@ private const val featureFlagsFileName = "feature-flags.txt"
 private fun proguardSeedPROGUARD_METHOD_SEED() { }
 
 fun CelestiaApplication.setUpFlavor() {
+    // Create the push notification channel as early as possible so background
+    // FCM-displayed notifications (which Android won't route through our service)
+    // land in our channel — at IMPORTANCE_HIGH — instead of FCM's fallback.
+    ensurePushNotificationChannel(this)
+
     SentryAndroid.init(this) { options ->
         options.dsn = "SENTRY-DSN"
         options.isDebug = BuildConfig.DEBUG
