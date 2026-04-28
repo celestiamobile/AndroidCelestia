@@ -29,6 +29,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
+import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
@@ -45,12 +46,16 @@ class CelestiaMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var registrar: PushNotificationRegistrar
 
+    @Inject
+    lateinit var featureFlags: FeatureFlags
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNewToken(token: String) {
         appSettingsNoBackup[PreferenceManager.PredefinedKey.FCMToken] = token
-        // The registrar gates on notification permission, so on Android 13+ this
-        // is a no-op until the user has granted permission.
+        if (!featureFlags.pushNotificationPlay || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        // The registrar gates on notification permission, so this is a no-op
+        // until the user has granted permission.
         scope.launch { registrar.register() }
     }
 
