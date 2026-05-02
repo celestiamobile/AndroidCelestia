@@ -33,7 +33,6 @@ import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.celestiaui.favorite.viewmodel.FavoriteManager
 import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.resource.model.FeatureFlagsManager
-import space.celestia.celestiaui.settings.viewmodel.CustomFont
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.CelestiaString
@@ -110,11 +109,6 @@ class XRActivity : ComponentActivity() {
     private val celestiaDataDirPath: String
         get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath] ?: defaultFilePaths.dataDirectoryPath
 
-    private val fontDirPath: String
-        get() = defaultFilePaths.fontDirectoryPath
-
-    private class Fonts(val regular: CustomFont, val bold: CustomFont)
-
     @Inject
     lateinit var featureFlagsManager: FeatureFlagsManager
 
@@ -150,6 +144,9 @@ class XRActivity : ComponentActivity() {
                     AppStatusReporter.State.LOADING_SUCCESS -> {
                         self.celestiaLoadingSucceeded()
                     }
+                    AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS -> {
+                        self.loadConfigSuccess()
+                    }
                     AppStatusReporter.State.EXTERNAL_LOADING_FAILURE, AppStatusReporter.State.LOADING_FAILURE -> {
                         self.celestiaLoadingFailed()
                     }
@@ -166,6 +163,9 @@ class XRActivity : ComponentActivity() {
         when (currentState) {
             AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
                 loadExternalConfig()
+            }
+            AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS -> {
+                loadConfigSuccess()
             }
             AppStatusReporter.State.LOADING -> {
                 // Do nothing
@@ -210,10 +210,9 @@ class XRActivity : ComponentActivity() {
     private fun copyAssetsAndRemoveOldAssets() {
         try {
             File(defaultFilePaths.dataDirectoryPath).deleteRecursively()
-            File(defaultFilePaths.fontDirectoryPath).deleteRecursively()
+            File(defaultFilePaths.legacyFontsDirectoryPath).deleteRecursively()
         } catch (_: Exception) {}
         AssetUtils.copyFileOrDir(this@XRActivity, FilePaths.CELESTIA_DATA_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
-        AssetUtils.copyFileOrDir(this@XRActivity, FilePaths.CELESTIA_FONT_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
         appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
     }
 
@@ -226,10 +225,7 @@ class XRActivity : ComponentActivity() {
                 createAddonFolder()
                 if (!isActive) return@launch
                 loadConfig()
-                if (!isActive) return@launch
-                withContext(Dispatchers.Main) {
-                    loadConfigSuccess()
-                }
+                appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS)
             } catch (error: Throwable) {
                 withContext(Dispatchers.Main) {
                     appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING_FAILURE)
@@ -240,41 +236,10 @@ class XRActivity : ComponentActivity() {
     }
 
     private fun loadConfig() {
-        availableInstalledFonts = mapOf(
-            "ja" to Fonts(
-                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
-                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
-            ),
-            "ka" to Fonts(
-                CustomFont("$fontDirPath/NotoSansGeorgian-Regular.ttf", 0),
-                CustomFont("$fontDirPath/NotoSansGeorgian-Bold.ttf", 0)
-            ),
-            "ko" to Fonts(
-                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
-                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
-            ),
-            "zh_CN" to Fonts(
-                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
-                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
-            ),
-            "zh_TW" to Fonts(
-                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
-                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
-            ),
-            "ar" to Fonts(
-                CustomFont("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
-                CustomFont("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
-            )
-        )
-        defaultInstalledFont = Fonts(
-            CustomFont("$fontDirPath/NotoSans-Regular.ttf", 0),
-            CustomFont("$fontDirPath/NotoSans-Bold.ttf", 0)
-        )
-
          language = getString(R.string.celestia_language)
     }
 
-    private fun loadConfigSuccess() {
+    private fun loadConfigSuccess() = lifecycleScope.launch {
         xrRenderer.setEngineStartedListener { _, resolutionMultiplier ->
             return@setEngineStartedListener initCelestia(resolutionMultiplier)
         }
@@ -315,8 +280,7 @@ class XRActivity : ComponentActivity() {
                 }
             }
         }
-        val appFont = (availableInstalledFonts[language] ?: defaultInstalledFont)?.bold
-        xrRenderer.startConditionally(this, renderSettings.enableMultisample, renderSettings.resolutionMultiplier, appFont?.path, appFont?.ttcIndex ?: 0)
+        xrRenderer.startConditionally(this@XRActivity, renderSettings.enableMultisample, renderSettings.resolutionMultiplier)
     }
 
     private fun openHomePanelIfNeeded() {
@@ -341,6 +305,10 @@ class XRActivity : ComponentActivity() {
 
     private fun celestiaLoadingSucceeded() = lifecycleScope.launch(executor.asCoroutineDispatcher()) {
         readSettings()
+        appCore.hudDetail = 0
+        appCore.setHudMessagesEnabled(false)
+        appCore.disableSelectionPointer()
+        appCore.setHudOverlayImageEnabled(false)
         appStatusReporter.updateState(AppStatusReporter.State.FINISHED)
     }
 
@@ -552,43 +520,12 @@ class XRActivity : ComponentActivity() {
             }
         }
 
-        if (!appCore.startRenderer()) {
+        if (!appCore.startRenderer(renderSettings.enableSRGBRendering)) {
             appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }
 
         appCore.screenDPI = (appCore.screenDPI * resolutionMultiplier).toInt()
-
-        val preferredInstalledFont = availableInstalledFonts[language] ?: defaultInstalledFont
-        val normalFont = preferredInstalledFont?.regular
-        val boldFont = preferredInstalledFont?.bold
-        if (normalFont != null) {
-            appCore.setFont(normalFont.path, normalFont.ttcIndex, 9)
-            appCore.setRendererFont(
-                normalFont.path,
-                normalFont.ttcIndex,
-                9,
-                AppCore.RENDER_FONT_STYLE_NORMAL
-            )
-        }
-        if (boldFont != null) {
-            appCore.setTitleFont(
-                boldFont.path,
-                boldFont.ttcIndex,
-                15
-            )
-            appCore.setRendererFont(
-                boldFont.path,
-                boldFont.ttcIndex,
-                15,
-                AppCore.RENDER_FONT_STYLE_LARGE
-            )
-        }
-
-        appCore.hudDetail = 0
-        appCore.setHudMessagesEnabled(false)
-        appCore.disableSelectionPointer()
-        appCore.setHudOverlayImageEnabled(false)
 
         appCore.start()
 
@@ -597,7 +534,10 @@ class XRActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "136"
+        private const val CURRENT_DATA_VERSION = "147"
+        // 147: 1.9.17 Localization update data update (7926c3ccd126dae60e702b3b6b499cf2d07e3565)
+        // 142: 1.9.16 Localization update data update (fcad6702ae267ba04fce023ee71038df5c02caf8)
+        // 138: 1.9.15 Localization update data update (67a542671ace4ed5c92e32519525716038498f11)
         // 136: 1.9.14 Data update (9f34ed77b4e7117458734affaefd5015bf38c6ff)
         // 133: 1.9.10 Localization update data update (ab865c0979679cafdd962d2d726e819acbc26cb0)
 
@@ -608,9 +548,6 @@ class XRActivity : ComponentActivity() {
         private var addonPaths: List<String> = listOf()
         var extraScriptPaths: List<String> = listOf()
         private var language: String = "en"
-
-        private var availableInstalledFonts: Map<String, Fonts> = mapOf()
-        private var defaultInstalledFont: Fonts? = null
 
         private const val TAG = "XRActivity"
     }
