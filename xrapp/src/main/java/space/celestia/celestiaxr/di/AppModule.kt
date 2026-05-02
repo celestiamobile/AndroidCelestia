@@ -2,19 +2,15 @@ package space.celestia.celestiaxr.di
 
 import android.content.Context
 import androidx.compose.runtime.mutableStateOf
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
-import com.google.gson.JsonParseException
 import dagger.Module
-import kotlinx.coroutines.flow.MutableSharedFlow
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.XRRenderer
 import space.celestia.celestiafoundation.resource.model.ResourceManager
@@ -27,6 +23,7 @@ import space.celestia.celestiaui.di.ApplicationId
 import space.celestia.celestiaui.di.CoreSettings
 import space.celestia.celestiaui.di.Platform
 import space.celestia.celestiaui.favorite.viewmodel.FavoriteManager
+import space.celestia.celestiaui.pushnotification.UserAPIService
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
 import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.resource.model.FeatureFlagsManager
@@ -42,34 +39,31 @@ import java.lang.reflect.Type
 import java.util.Date
 import java.util.concurrent.Executor
 import javax.inject.Singleton
+import kotlin.Boolean
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    private val json = Json { ignoreUnknownKeys = true }
+
     @Singleton
     @Provides
     fun provideResourceAPI(): ResourceAPIService {
-        class DateAdapter : JsonDeserializer<Date> {
-            override fun deserialize(
-                json: JsonElement?,
-                typeOfT: Type?,
-                context: JsonDeserializationContext?
-            ): Date {
-                try {
-                    val seconds = json?.asDouble ?: return Date()
-                    return Date((seconds * 1000.0).toLong())
-                } catch(e: Throwable) {
-                    throw JsonParseException(e)
-                }
-            }
-        }
-
-        val gson = GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create()
         return Retrofit.Builder()
             .baseUrl("https://celestia.mobi/api/2/resource/")
-            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(ResourceAPIService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideUserAPI(): UserAPIService {
+        return Retrofit.Builder()
+            .baseUrl("https://celestia.mobi/api/2/users/")
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(UserAPIService::class.java)
     }
 
     @Singleton
@@ -195,7 +189,7 @@ object AppModule {
         } else {
             1
         }
-        return RenderSettings(enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true", resolutionMultiplier = resolutionMultiplier)
+        return RenderSettings(enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true", resolutionMultiplier = resolutionMultiplier, enableSRGBRendering = appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true")
     }
 
     @Singleton
