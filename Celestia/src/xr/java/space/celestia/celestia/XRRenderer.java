@@ -34,14 +34,14 @@ public class XRRenderer implements AutoCloseable {
         c_initialize(pointer);
     }
 
-    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, @Nullable String fontPath, int ttcIndex) {
+    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier) {
         if (started) return;
-        start(activity, enableMultisample, resolutionMultiplier, fontPath, ttcIndex);
+        start(activity, enableMultisample, resolutionMultiplier);
     }
 
-    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, @Nullable String fontPath, int ttcIndex) {
+    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier) {
         started = true;
-        c_start(pointer, activity, enableMultisample, resolutionMultiplier, fontPath, ttcIndex);
+        c_start(pointer, activity, enableMultisample, resolutionMultiplier);
     }
 
     public void resume() {
@@ -140,7 +140,7 @@ public class XRRenderer implements AutoCloseable {
 
     private static native long c_createNativeXRObject();
     private native void c_initialize(long pointer);
-    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier, String fontPath, int ttcIndex);
+    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier);
     private native void c_resume(long pointer);
     private native void c_pause(long pointer);
     private native void c_destroy(long pointer);

@@ -86,8 +86,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.ktx)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.drawerlayout)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -95,9 +93,9 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
 
     implementation(libs.material)
-    implementation(libs.gson)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
+    implementation(libs.converter.kotlinx.serialization)
     implementation(libs.okhttp)
 
     implementation(libs.androidx.webkit)

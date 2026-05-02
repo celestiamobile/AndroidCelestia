@@ -9,8 +9,16 @@
 #include <cmath>
 
 #include <celestia/celestiacore.h>
+#include <celengine/overlay.h>
 #include <celengine/perspectiveprojectionmode.h>
+#include <celengine/textlayout.h>
 #include <celmath/frustum.h>
+#include <celttf/truetypefont.h>
+#include <celutil/gettext.h>
+
+#include <filesystem>
+#include <string>
+#include <string_view>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -96,8 +104,6 @@ struct CelestiaOpenXR {
     bool exitRequested    = false;
     bool enableMultisample = false;
     int resolutionMultiplier = 1;
-    std::string fontPath;
-    int ttcIndex = 0;
 
     int actualSampleCount = 1;
     float actualResolutionMultiplier = 1;
@@ -160,6 +166,7 @@ private:
 
 
     std::unique_ptr<Overlay> overlay{ nullptr };
+    bool hasTriedCreatingOverlayFont{ false };
 };
 
 #ifndef GL_FRAMEBUFFER_SRGB
@@ -975,8 +982,22 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
         core->draw();
 
         if (!overlayMessage.empty()) {
-            if (overlay == nullptr && !fontPath.empty()) {
-                auto font = LoadTextureFont(renderer, fontPath, ttcIndex, 24);
+            if (overlay == nullptr && !hasTriedCreatingOverlayFont) {
+                hasTriedCreatingOverlayFont = true;
+                const char *orig = N_("DEFAULT_MAIN_FONT");
+                const char *translated = _(orig);
+                std::string mainFontPath = orig == translated ? "NotoSans-Regular.ttf,9" : translated;
+
+                // mainFontPath is either "<filename>,<size>" or
+                // "<filename>,<ttcIndex>,<size>". Replace the trailing size
+                // with 24 so the XR overlay uses a larger font.
+                auto lastComma = mainFontPath.rfind(',');
+                if (lastComma != std::string::npos)
+                    mainFontPath.replace(lastComma + 1, std::string::npos, "24");
+                else
+                    mainFontPath += ",24";
+
+                auto font = LoadTextureFont(renderer, std::filesystem::path("fonts") / mainFontPath);
                 if (font != nullptr) {
                     overlay = std::make_unique<Overlay>(*renderer);
                     overlay->setFont(font);
@@ -1042,20 +1063,12 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv *env, jobject thiz, jlong pointer,
                                                  jobject activity, jboolean enable_multisample,
-                                                 jint resolution_multiplier, jstring font_path,
-                                                 jint ttc_index) {
+                                                 jint resolution_multiplier) {
 
     LOGI("JNI: start");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
     xr->enableMultisample = static_cast<bool>(enable_multisample);
     xr->resolutionMultiplier = static_cast<int>(resolution_multiplier);
-    if (font_path != nullptr)
-    {
-        const char *c_str = env->GetStringUTFChars(font_path, nullptr);
-        xr->fontPath = c_str;
-        xr->ttcIndex = ttc_index;
-        env->ReleaseStringUTFChars(font_path, c_str);
-    }
     xr->init(env, activity);
 }
 
