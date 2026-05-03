@@ -198,65 +198,41 @@ class CelestiaRendererFragment : Fragment(), AppStatusReporter.Listener {
     private fun setUpGLView(container: FrameLayout) {
         // Cannot use rendererSettings.scaleFactor here because it is before any updateContentScale call
         val scaleFactor = if (rendererSettings.enableFullResolution) 1.0f else (1.0f / density)
-        if (featureFlags.composeSurface) {
-            val composeView = ComposeView(requireActivity()).apply {
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-                setContent {
-                    var surfaceSize by remember { mutableStateOf(IntSize(1, 1)) }
-                    AndroidExternalSurface(
-                        modifier = Modifier.onSizeChanged { size ->
-                            surfaceSize = IntSize(
-                                (size.width.toFloat() * scaleFactor).toInt(),
-                                (size.height.toFloat() * scaleFactor).toInt()
-                            )
-                        },
-                        surfaceSize = surfaceSize
-                    ) {
-                        onSurface { surface, width, height ->
-                            renderer.setSurface(surface)
-                            renderer.setFrameRateOption(rendererSettings.frameRateOption)
+        val composeView = ComposeView(requireActivity()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                var surfaceSize by remember { mutableStateOf(IntSize(1, 1)) }
+                AndroidExternalSurface(
+                    modifier = Modifier.onSizeChanged { size ->
+                        surfaceSize = IntSize(
+                            (size.width.toFloat() * scaleFactor).toInt(),
+                            (size.height.toFloat() * scaleFactor).toInt()
+                        )
+                    },
+                    surfaceSize = surfaceSize
+                ) {
+                    onSurface { surface, width, height ->
+                        renderer.setSurface(surface)
+                        renderer.setFrameRateOption(rendererSettings.frameRateOption)
+                        renderer.setSurfaceSize(width, height)
+                        haveSurface = true
+                        if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
+                            loadingFinished()
+                        }
+
+                        surface.onChanged { width, height ->
+                            Log.d(TAG, "Resize to $width x $height")
                             renderer.setSurfaceSize(width, height)
-                            haveSurface = true
-                            if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
-                                loadingFinished()
-                            }
+                        }
 
-                            surface.onChanged { width, height ->
-                                Log.d(TAG, "Resize to $width x $height")
-                                renderer.setSurfaceSize(width, height)
-                            }
-
-                            surface.onDestroyed {
-                                renderer.setSurface(null)
-                            }
+                        surface.onDestroyed {
+                            renderer.setSurface(null)
                         }
                     }
                 }
             }
-            glView = composeView
-        } else {
-            val celestiaView = CelestiaView(requireActivity(), scaleFactor)
-            celestiaView.holder?.addCallback(object: SurfaceHolder.Callback {
-                override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-                    Log.d(TAG, "Resize to $width x $height")
-                    renderer.setSurfaceSize(width, height)
-                }
-
-                override fun surfaceCreated(holder: SurfaceHolder) {
-                    renderer.setSurface(holder.surface)
-                    renderer.setFrameRateOption(rendererSettings.frameRateOption)
-                    haveSurface = true
-                    if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
-                        loadingFinished()
-                    }
-                }
-
-                override fun surfaceDestroyed(holder: SurfaceHolder) {
-                    renderer.setSurface(null)
-                }
-            })
-            glView = celestiaView
         }
+        glView = composeView
 
         renderer.startConditionally(requireActivity(), rendererSettings.enableMultisample)
         container.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
