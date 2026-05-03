@@ -19,6 +19,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.AndroidExternalSurface
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -201,32 +203,40 @@ class CelestiaRendererFragment : Fragment(), AppStatusReporter.Listener {
         val composeView = ComposeView(requireActivity()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                var surfaceSize by remember { mutableStateOf(IntSize(1, 1)) }
-                AndroidExternalSurface(
-                    modifier = Modifier.onSizeChanged { size ->
-                        surfaceSize = IntSize(
-                            (size.width.toFloat() * scaleFactor).toInt(),
-                            (size.height.toFloat() * scaleFactor).toInt()
-                        )
-                    },
-                    surfaceSize = surfaceSize
+                var surfaceSize by remember { mutableStateOf(IntSize.Zero) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .onSizeChanged { size ->
+                            surfaceSize = IntSize(
+                                (size.width.toFloat() * scaleFactor).toInt(),
+                                (size.height.toFloat() * scaleFactor).toInt()
+                            )
+                        }
                 ) {
-                    onSurface { surface, width, height ->
-                        renderer.setSurface(surface)
-                        renderer.setFrameRateOption(rendererSettings.frameRateOption)
-                        renderer.setSurfaceSize(width, height)
-                        haveSurface = true
-                        if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
-                            loadingFinished()
-                        }
+                    if (surfaceSize.width > 0 && surfaceSize.height > 0) {
+                        AndroidExternalSurface(
+                            modifier = Modifier.fillMaxSize(),
+                            surfaceSize = surfaceSize
+                        ) {
+                            onSurface { surface, width, height ->
+                                renderer.setSurface(surface)
+                                renderer.setFrameRateOption(rendererSettings.frameRateOption)
+                                renderer.setSurfaceSize(width, height)
+                                haveSurface = true
+                                if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
+                                    loadingFinished()
+                                }
 
-                        surface.onChanged { width, height ->
-                            Log.d(TAG, "Resize to $width x $height")
-                            renderer.setSurfaceSize(width, height)
-                        }
+                                surface.onChanged { width, height ->
+                                    Log.d(TAG, "Resize to $width x $height")
+                                    renderer.setSurfaceSize(width, height)
+                                }
 
-                        surface.onDestroyed {
-                            renderer.setSurface(null)
+                                surface.onDestroyed {
+                                    renderer.setSurface(null)
+                                }
+                            }
                         }
                     }
                 }
