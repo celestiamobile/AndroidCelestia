@@ -234,7 +234,6 @@ class CelestiaRendererFragment : Fragment(), AppStatusReporter.Listener {
 
                                 surface.onDestroyed {
                                     haveSurface = false
-                                    surfaceSize = IntSize.Zero
                                     renderer.setSurface(null)
                                 }
                             }

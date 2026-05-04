@@ -270,7 +270,6 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
 
                     surface.onDestroyed {
                         haveSurface = false
-                        surfaceSize = IntSize.Zero
                         viewModel.renderer.setSurface(null)
                     }
                 }
