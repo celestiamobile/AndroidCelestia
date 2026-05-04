@@ -8,7 +8,6 @@ import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.purchase.PurchaseManager
-import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.celestia.RendererSettings

@@ -14,7 +14,6 @@ import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -234,6 +233,8 @@ class CelestiaRendererFragment : Fragment(), AppStatusReporter.Listener {
                                 }
 
                                 surface.onDestroyed {
+                                    haveSurface = false
+                                    surfaceSize = IntSize.Zero
                                     renderer.setSurface(null)
                                 }
                             }
