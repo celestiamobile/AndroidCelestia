@@ -27,7 +27,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.animation.doOnEnd
 import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
@@ -37,6 +42,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -59,6 +65,7 @@ import space.celestia.mobilecelestia.common.SHEET_MAX_FULL_WIDTH_DP
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
+import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.settings.ToolbarAction
 import space.celestia.celestiaui.settings.toolbarItems
 import space.celestia.celestiaui.utils.AlertResult
@@ -90,6 +97,8 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     lateinit var sessionSettings: SessionSettings
     @Inject
     lateinit var rendererSettings: RendererSettings
+    @Inject
+    lateinit var featureFlags: FeatureFlags
 
     private lateinit var sensorManager: SensorManager
     private var gyroscope: Sensor? = null
@@ -110,6 +119,10 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     private var pendingTarget: Selection? = null
     private var browserItems: ArrayList<BrowserItem> = arrayListOf()
     private var savedInsets = EdgeInsets()
+    // Used by the compose renderer path (featureFlags.composeSurfaceV2) to drive RendererScreen.
+    private var safeAreaInsetsState by mutableStateOf(EdgeInsets())
+    private val frameRateOptionEvents = MutableSharedFlow<Int>(extraBufferCapacity = 1)
+    private val reapplyContentScaleEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     private var isControlViewVisible = true
     private var hideAnimator: ObjectAnimator? = null
@@ -173,11 +186,30 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
 
         controlViewContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
-        // Create and add the renderer fragment
-        if (savedInstanceState == null) {
-            val data = pathToLoad
-            val cfg = cfgToLoad
-            if (data != null && cfg != null) {
+        // Create and add the renderer fragment / compose host
+        val data = pathToLoad
+        val cfg = cfgToLoad
+        if (data != null && cfg != null) {
+            if (featureFlags.composeSurfaceV2) {
+                val container = view.findViewById<FrameLayout>(R.id.celestia_renderer_container)
+                val composeView = ComposeView(requireActivity()).apply {
+                    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                    setContent {
+                        RendererScreen(
+                            pathToLoad = data,
+                            cfgToLoad = cfg,
+                            addonDirsToLoad = addonDirsToLoad,
+                            languageOverride = languageOverride,
+                            safeAreaInsets = safeAreaInsetsState,
+                            frameRateOptionEvents = frameRateOptionEvents,
+                            reapplyContentScaleEvents = reapplyContentScaleEvents,
+                            celestiaRendererReady = { celestiaRendererReady() },
+                            celestiaRendererLoadingFromFallback = { celestiaRendererLoadingFromFallback() },
+                        )
+                    }
+                }
+                container.addView(composeView)
+            } else if (savedInstanceState == null) {
                 val rendererFragment = CelestiaRendererFragment.newInstance(
                     data, cfg, addonDirsToLoad, languageOverride
                 )
@@ -254,19 +286,31 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     }
 
     fun updateFrameRateOption(newFrameRateOption: Int) {
-        val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
-        rendererFragment?.updateFrameRateOption(newFrameRateOption)
+        if (featureFlags.composeSurfaceV2) {
+            frameRateOptionEvents.tryEmit(newFrameRateOption)
+        } else {
+            val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
+            rendererFragment?.updateFrameRateOption(newFrameRateOption)
+        }
     }
 
     fun reapplyContentScale() {
-        val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
-        rendererFragment?.reapplyContentScale()
+        if (featureFlags.composeSurfaceV2) {
+            reapplyContentScaleEvents.tryEmit(Unit)
+        } else {
+            val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
+            rendererFragment?.reapplyContentScale()
+        }
     }
 
     private fun handleInsetsChanged(newInsets: EdgeInsets) {
         savedInsets = newInsets
-        val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
-        rendererFragment?.handleInsetsChanged(newInsets)
+        if (featureFlags.composeSurfaceV2) {
+            safeAreaInsetsState = newInsets
+        } else {
+            val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
+            rendererFragment?.handleInsetsChanged(newInsets)
+        }
     }
 
     // Callback from CelestiaRendererFragment when rendering is ready

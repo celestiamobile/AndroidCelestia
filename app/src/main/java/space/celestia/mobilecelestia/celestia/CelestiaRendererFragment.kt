@@ -14,11 +14,12 @@ import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.AndroidExternalSurface
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -198,65 +199,51 @@ class CelestiaRendererFragment : Fragment(), AppStatusReporter.Listener {
     private fun setUpGLView(container: FrameLayout) {
         // Cannot use rendererSettings.scaleFactor here because it is before any updateContentScale call
         val scaleFactor = if (rendererSettings.enableFullResolution) 1.0f else (1.0f / density)
-        if (featureFlags.composeSurface) {
-            val composeView = ComposeView(requireActivity()).apply {
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-                setContent {
-                    var surfaceSize by remember { mutableStateOf(IntSize(1, 1)) }
-                    AndroidExternalSurface(
-                        modifier = Modifier.onSizeChanged { size ->
+        val composeView = ComposeView(requireActivity()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                var surfaceSize by remember { mutableStateOf(IntSize.Zero) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .onSizeChanged { size ->
                             surfaceSize = IntSize(
                                 (size.width.toFloat() * scaleFactor).toInt(),
                                 (size.height.toFloat() * scaleFactor).toInt()
                             )
-                        },
-                        surfaceSize = surfaceSize
-                    ) {
-                        onSurface { surface, width, height ->
-                            renderer.setSurface(surface)
-                            renderer.setFrameRateOption(rendererSettings.frameRateOption)
-                            renderer.setSurfaceSize(width, height)
-                            haveSurface = true
-                            if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
-                                loadingFinished()
-                            }
-
-                            surface.onChanged { width, height ->
-                                Log.d(TAG, "Resize to $width x $height")
+                        }
+                ) {
+                    if (surfaceSize.width > 0 && surfaceSize.height > 0) {
+                        AndroidExternalSurface(
+                            modifier = Modifier.fillMaxSize(),
+                            surfaceSize = surfaceSize
+                        ) {
+                            onSurface { surface, width, height ->
+                                renderer.setSurface(surface)
+                                renderer.setFrameRateOption(rendererSettings.frameRateOption)
                                 renderer.setSurfaceSize(width, height)
-                            }
+                                haveSurface = true
+                                if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
+                                    loadingFinished()
+                                }
 
-                            surface.onDestroyed {
-                                renderer.setSurface(null)
+                                surface.onChanged { width, height ->
+                                    Log.d(TAG, "Resize to $width x $height")
+                                    renderer.setSurfaceSize(width, height)
+                                }
+
+                                surface.onDestroyed {
+                                    haveSurface = false
+                                    surfaceSize = IntSize.Zero
+                                    renderer.setSurface(null)
+                                }
                             }
                         }
                     }
                 }
             }
-            glView = composeView
-        } else {
-            val celestiaView = CelestiaView(requireActivity(), scaleFactor)
-            celestiaView.holder?.addCallback(object: SurfaceHolder.Callback {
-                override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-                    Log.d(TAG, "Resize to $width x $height")
-                    renderer.setSurfaceSize(width, height)
-                }
-
-                override fun surfaceCreated(holder: SurfaceHolder) {
-                    renderer.setSurface(holder.surface)
-                    renderer.setFrameRateOption(rendererSettings.frameRateOption)
-                    haveSurface = true
-                    if (appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
-                        loadingFinished()
-                    }
-                }
-
-                override fun surfaceDestroyed(holder: SurfaceHolder) {
-                    renderer.setSurface(null)
-                }
-            })
-            glView = celestiaView
         }
+        glView = composeView
 
         renderer.startConditionally(requireActivity(), rendererSettings.enableMultisample)
         container.addView(glView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
