@@ -212,28 +212,42 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
     private fun getValidSubscriptionAsync(handler: (() -> Unit)? = null) {
         val lifetimeQueryParams = QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build()
         requireNotNull(billingClient).queryPurchasesAsync(lifetimeQueryParams) { lifetimeResult, lifetimePurchases ->
-            if (lifetimeResult.responseCode == BillingResponseCode.OK) {
-                val lifetimePurchase = lifetimePurchases.firstOrNull { it.products.contains(lifetimeProductId) }
-                if (lifetimePurchase != null) {
-                    handlePurchase(lifetimePurchase, PurchaseType.Lifetime, handler)
-                    return@queryPurchasesAsync
-                }
-            }
-            val queryPurchasesParams = QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
-            requireNotNull(billingClient).queryPurchasesAsync(queryPurchasesParams) { result, purchasesList ->
-                if (result.responseCode != BillingResponseCode.OK) {
-                    changeSubscriptionStatus(SubscriptionStatus.Error.Billing(result.responseCode))
-                    if (handler != null)
-                        handler()
-                } else {
-                    val purchase = purchasesList.firstOrNull { it.products.contains(subscriptionId) }
-                    if (purchase != null) {
-                        handlePurchase(purchase, PurchaseType.Subscription, handler)
+            val lifetimePurchase = if (lifetimeResult.responseCode == BillingResponseCode.OK) {
+                lifetimePurchases.firstOrNull { it.products.contains(lifetimeProductId) }
+            } else null
+            if (lifetimePurchase != null) {
+                handlePurchase(lifetimePurchase, PurchaseType.Lifetime) {
+                    // After lifetime verification: Good.None means the server returned valid:false,
+                    // so a co-existing subscription should still be considered. NotVerified means
+                    // network/throw — trust on-device, no fallback.
+                    if (subscriptionStatus is SubscriptionStatus.Good.None) {
+                        querySubscriptionPurchasesAsync(handler)
                     } else {
-                        changeSubscriptionStatus(SubscriptionStatus.Good.None)
                         if (handler != null)
                             handler()
                     }
+                }
+            } else {
+                querySubscriptionPurchasesAsync(handler)
+            }
+        }
+    }
+
+    private fun querySubscriptionPurchasesAsync(handler: (() -> Unit)? = null) {
+        val queryPurchasesParams = QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
+        requireNotNull(billingClient).queryPurchasesAsync(queryPurchasesParams) { result, purchasesList ->
+            if (result.responseCode != BillingResponseCode.OK) {
+                changeSubscriptionStatus(SubscriptionStatus.Error.Billing(result.responseCode))
+                if (handler != null)
+                    handler()
+            } else {
+                val purchase = purchasesList.firstOrNull { it.products.contains(subscriptionId) }
+                if (purchase != null) {
+                    handlePurchase(purchase, PurchaseType.Subscription, handler)
+                } else {
+                    changeSubscriptionStatus(SubscriptionStatus.Good.None)
+                    if (handler != null)
+                        handler()
                 }
             }
         }
