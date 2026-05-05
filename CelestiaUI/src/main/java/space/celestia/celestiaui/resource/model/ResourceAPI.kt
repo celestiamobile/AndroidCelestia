@@ -45,7 +45,8 @@ object ResourceAPI {
 data class UpdateRequest(
     val lang: String,
     val items: List<String>,
-    @SerializedName("purchaseTokenAndroid") val purchaseToken: String
+    @SerializedName("purchaseTokenAndroid") val purchaseToken: String,
+    val productType: String,
 )
 
 interface ResourceAPIService {

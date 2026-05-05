@@ -60,9 +60,11 @@ fun AddonUpdatesScreen(paddingValues: PaddingValues, requestOpenAddon: (Resource
 
     suspend fun refreshAddonList(checkReason: AddonUpdateManager.CheckReason) {
         val purchaseToken = viewModel.purchaseManager.purchaseToken() ?: return
+        val productType = viewModel.purchaseManager.purchaseType() ?: return
         val success = viewModel.addonUpdateManager.refresh(
             reason = checkReason,
             purchaseToken = purchaseToken,
+            productType = productType,
             language = AppCore.getLanguage()
         )
         if (!success) {

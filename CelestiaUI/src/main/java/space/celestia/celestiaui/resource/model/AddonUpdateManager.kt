@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import space.celestia.celestiafoundation.resource.model.AddonUpdate
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
+import space.celestia.celestiaui.purchase.PurchaseType
 
 class AddonUpdateManager(val resourceManager: ResourceManager, val resourceAPI: ResourceAPIService) {
     data class PendingAddonUpdate(val update: AddonUpdate, val addon: ResourceItem)
@@ -17,7 +18,7 @@ class AddonUpdateManager(val resourceManager: ResourceManager, val resourceAPI: 
 
     var isCheckingUpdates = mutableStateOf(false)
 
-    suspend fun refresh(reason: CheckReason, purchaseToken: String, language: String): Boolean {
+    suspend fun refresh(reason: CheckReason, purchaseToken: String, productType: PurchaseType, language: String): Boolean {
         val installedAddons = resourceManager.installedResourcesAsync()
         var success = true
 
@@ -35,7 +36,7 @@ class AddonUpdateManager(val resourceManager: ResourceManager, val resourceAPI: 
             isCheckingUpdates.value = true
             val installedAddonIds = installedAddons.mapNotNull { if (it.checksum != null) it.id else null }
             try {
-                val result = resourceAPI.updates(UpdateRequest(lang = language, items = installedAddonIds, purchaseToken = purchaseToken))
+                val result = resourceAPI.updates(UpdateRequest(lang = language, items = installedAddonIds, purchaseToken = purchaseToken, productType = productType.rawValue))
                 addonUpdates = result
             } catch (ignored: Throwable) {
                 success = false

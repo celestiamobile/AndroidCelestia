@@ -22,8 +22,12 @@ class URLHelper {
                 builder = builder.appendQueryParameter("distribution", platform.flavor)
             if (shareable != null)
                 builder = builder.appendQueryParameter("share", if (shareable) "true" else "false")
-            if (purchaseManager.canUseInAppPurchase())
+            if (purchaseManager.canUseInAppPurchase()) {
                 builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
+                purchaseManager.purchaseType()?.let {
+                    builder = builder.appendQueryParameter("productType", it.rawValue)
+                }
+            }
             return builder.build()
         }
 
@@ -74,8 +78,12 @@ class URLHelper {
                 .appendQueryParameter("api", "2")
             if (platform.flavor != null)
                 builder = builder.appendQueryParameter("distribution", platform.flavor)
-            if (purchaseManager.canUseInAppPurchase())
+            if (purchaseManager.canUseInAppPurchase()) {
                 builder = builder.appendQueryParameter("purchaseTokenAndroid", purchaseManager.purchaseToken() ?: "")
+                purchaseManager.purchaseType()?.let {
+                    builder = builder.appendQueryParameter("productType", it.rawValue)
+                }
+            }
             return builder.build()
         }
     }

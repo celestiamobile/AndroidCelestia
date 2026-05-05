@@ -61,6 +61,7 @@ class PurchaseStatus(val valid: Boolean, val planId: String?): Serializable
 interface PurchaseAPIService {
     @GET("play")
     suspend fun subscriptionStatus(
-        @Query("purchaseToken") purchaseToken: String
+        @Query("purchaseToken") purchaseToken: String,
+        @Query("productType") productType: String
     ): PurchaseStatus
 }

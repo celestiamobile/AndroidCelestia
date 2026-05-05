@@ -87,6 +87,7 @@ import com.android.billingclient.api.ProductDetails
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.compose.EmptyHint
+import space.celestia.celestiaui.purchase.PurchaseType
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.purchase.viewmodel.SubscriptionManagerViewModel
@@ -136,6 +137,9 @@ private fun Content(preferredPlayOfferId: String?, modifier: Modifier = Modifier
     var subscription by remember {
         mutableStateOf<PurchaseManagerImpl.Subscription?>(null)
     }
+    var lifetimePlan by remember {
+        mutableStateOf<PurchaseManagerImpl.LifetimePlan?>(null)
+    }
     var errorText by remember {
         mutableStateOf<String?>(null)
     }
@@ -183,9 +187,11 @@ private fun Content(preferredPlayOfferId: String?, modifier: Modifier = Modifier
             if (subscriptionResult == null || subscriptionResult.billingResult.responseCode != BillingResponseCode.OK || subscriptionValue == null || purchaseManager.subscriptionStatus is PurchaseManagerImpl.SubscriptionStatus.Error) {
                 errorText = CelestiaString("We encountered an error.", "Error loading the subscription page")
                 subscription = null
+                lifetimePlan = null
             } else {
                 errorText = null
                 subscription = subscriptionValue
+                lifetimePlan = purchaseManager.getLifetimePlanDetails()?.lifetimePlan
             }
         }
         if (refreshState.needsRefreshSubscription) {
@@ -266,6 +272,7 @@ private fun Content(preferredPlayOfferId: String?, modifier: Modifier = Modifier
                         purchaseManager = purchaseManager,
                         productDetails = productDetails,
                         plans = plans,
+                        lifetimePlan = lifetimePlan,
                         status = status
                     )
                 }
@@ -501,7 +508,7 @@ private fun VideoItem(@RawRes videoResId: Int, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PlanList(purchaseManager: PurchaseManagerImpl, productDetails: ProductDetails, plans: List<PurchaseManagerImpl.Plan>, status: PurchaseManagerImpl.SubscriptionStatus.Good) {
+private fun PlanList(purchaseManager: PurchaseManagerImpl, productDetails: ProductDetails, plans: List<PurchaseManagerImpl.Plan>, lifetimePlan: PurchaseManagerImpl.LifetimePlan?, status: PurchaseManagerImpl.SubscriptionStatus.Good) {
     val activity = LocalActivity.current
     val text: String = when (status) {
         is PurchaseManagerImpl.SubscriptionStatus.Good.None -> {
@@ -523,6 +530,9 @@ private fun PlanList(purchaseManager: PurchaseManagerImpl, productDetails: Produ
     Text(text = text, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
     Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_large_gap_vertical)))
 
+    val isLifetimeOwner = status is PurchaseManagerImpl.SubscriptionStatus.Good.Verified && status.productType == PurchaseType.Lifetime
+    val hasActiveSubscription = status is PurchaseManagerImpl.SubscriptionStatus.Good.Verified && status.productType == PurchaseType.Subscription
+
     val preferredPlans: List<PurchaseManagerImpl.Plan>
     val lastPlan = plans.lastOrNull()
 
@@ -537,70 +547,91 @@ private fun PlanList(purchaseManager: PurchaseManagerImpl, productDetails: Produ
         preferredPlans = plans
     }
 
-    for (index in preferredPlans.indices) {
-        val plan = preferredPlans[index]
-        val token: String?
-        val canAction: Boolean
-        val actionTitle: String
-        val actionButtonHidden: Boolean
-        var currentPlan: PurchaseManagerImpl.PlanType? = null
-        when (status) {
-            is PurchaseManagerImpl.SubscriptionStatus.Good.None -> {
-                token = null
-                canAction = true
-                actionButtonHidden = false
-                actionTitle = if (plan.offersFreeTrial) CelestiaString("Try for Free", "Free trial on subscription service") else CelestiaString("Get", "Purchase subscription service")
-            }
-            is PurchaseManagerImpl.SubscriptionStatus.Good.Pending -> {
-                token = status.purchaseToken
-                canAction = false
-                actionButtonHidden = false
-                actionTitle = if (plan.offersFreeTrial) CelestiaString("Try for Free", "Free trial on subscription service") else CelestiaString("Get", "Purchase subscription service")
-            }
-            is PurchaseManagerImpl.SubscriptionStatus.Good.NotAcknowledged -> {
-                token = status.purchaseToken
-                canAction = false
-                actionButtonHidden = false
-                actionTitle = if (plan.offersFreeTrial) CelestiaString("Try for Free", "Free trial on subscription service") else CelestiaString("Get", "Purchase subscription service")
-            }
-            is PurchaseManagerImpl.SubscriptionStatus.Good.Acknowledged -> {
-                token = status.purchaseToken
-                canAction = false
-                actionButtonHidden = false
-                actionTitle = CelestiaString("Change", "Change subscription service")
-            }
-            is PurchaseManagerImpl.SubscriptionStatus.Good.NotVerified -> {
-                token = status.purchaseToken
-                canAction = true
-                actionButtonHidden = false
-                actionTitle = CelestiaString("Change", "Change subscription service")
-            }
-            is PurchaseManagerImpl.SubscriptionStatus.Good.Verified -> {
-                token = status.purchaseToken
-                currentPlan = status.plan
-                canAction = currentPlan != plan.type
-                actionButtonHidden = !canAction
-                actionTitle = if (currentPlan == null) {
-                    CelestiaString("Change", "Change subscription service")
-                } else if (currentPlan.level < plan.type.level) {
-                    CelestiaString("Upgrade", "Upgrade subscription service")
-                } else  if (currentPlan.level > plan.type.level) {
-                    CelestiaString("Downgrade", "Downgrade subscription service")
-                } else {
-                    ""
+    if (!isLifetimeOwner) {
+        for (index in preferredPlans.indices) {
+            val plan = preferredPlans[index]
+            val token: String?
+            val canAction: Boolean
+            val actionTitle: String
+            val actionButtonHidden: Boolean
+            var currentPlan: PurchaseManagerImpl.PlanType? = null
+            when (status) {
+                is PurchaseManagerImpl.SubscriptionStatus.Good.None -> {
+                    token = null
+                    canAction = true
+                    actionButtonHidden = false
+                    actionTitle = if (plan.offersFreeTrial) CelestiaString("Try for Free", "Free trial on subscription service") else CelestiaString("Get", "Purchase subscription service")
+                }
+                is PurchaseManagerImpl.SubscriptionStatus.Good.Pending -> {
+                    token = status.purchaseToken
+                    canAction = false
+                    actionButtonHidden = false
+                    actionTitle = if (plan.offersFreeTrial) CelestiaString("Try for Free", "Free trial on subscription service") else CelestiaString("Get", "Purchase subscription service")
+                }
+                is PurchaseManagerImpl.SubscriptionStatus.Good.NotAcknowledged -> {
+                    token = status.purchaseToken
+                    canAction = false
+                    actionButtonHidden = false
+                    actionTitle = if (plan.offersFreeTrial) CelestiaString("Try for Free", "Free trial on subscription service") else CelestiaString("Get", "Purchase subscription service")
+                }
+                is PurchaseManagerImpl.SubscriptionStatus.Good.Acknowledged -> {
+                    token = status.purchaseToken
+                    canAction = false
+                    actionButtonHidden = false
+                    actionTitle = CelestiaString("Change", "Change subscription service")
+                }
+                is PurchaseManagerImpl.SubscriptionStatus.Good.NotVerified -> {
+                    token = status.purchaseToken
+                    canAction = true
+                    actionButtonHidden = false
+                    actionTitle = CelestiaString("Change", "Change subscription service")
+                }
+                is PurchaseManagerImpl.SubscriptionStatus.Good.Verified -> {
+                    token = if (status.productType == PurchaseType.Subscription) status.purchaseToken else null
+                    currentPlan = status.plan
+                    canAction = currentPlan != plan.type
+                    actionButtonHidden = !canAction
+                    actionTitle = if (currentPlan == null) {
+                        CelestiaString("Change", "Change subscription service")
+                    } else if (currentPlan.level < plan.type.level) {
+                        CelestiaString("Upgrade", "Upgrade subscription service")
+                    } else  if (currentPlan.level > plan.type.level) {
+                        CelestiaString("Downgrade", "Downgrade subscription service")
+                    } else {
+                        ""
+                    }
                 }
             }
-        }
-        PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction, actionButtonHidden = actionButtonHidden, isCurrent = currentPlan == plan.type) {
-            activity?.let {
-                purchaseManager.createSubscription(plan, productDetails, token, it)
+            PlanCard(plan = plan, actionButtonText = actionTitle, actionButtonEnabled = canAction, actionButtonHidden = actionButtonHidden, isCurrent = currentPlan == plan.type) {
+                activity?.let {
+                    purchaseManager.createSubscription(plan, productDetails, token, it)
+                }
+            }
+            if (index != preferredPlans.size - 1) {
+                Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
             }
         }
-        if (index != preferredPlans.size - 1) {
+    }
+
+    if (!hasActiveSubscription && lifetimePlan != null) {
+        if (!isLifetimeOwner) {
             Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
         }
+        val canAction = !isLifetimeOwner && status is PurchaseManagerImpl.SubscriptionStatus.Good.None
+        LifetimePlanCard(
+            plan = lifetimePlan,
+            actionButtonText = CelestiaString("Get", "Purchase subscription service"),
+            actionButtonEnabled = canAction,
+            actionButtonHidden = isLifetimeOwner,
+            isCurrent = isLifetimeOwner,
+        ) {
+            activity?.let {
+                purchaseManager.createLifetimePurchase(lifetimePlan.productDetails, it)
+            }
+        }
     }
-    if (status is PurchaseManagerImpl.SubscriptionStatus.Good.NotVerified || status is PurchaseManagerImpl.SubscriptionStatus.Good.Verified || status is PurchaseManagerImpl.SubscriptionStatus.Good.Acknowledged) {
+
+    if (status is PurchaseManagerImpl.SubscriptionStatus.Good.Verified && status.productType == PurchaseType.Subscription) {
         Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
         FilledTonalButton(
             modifier = Modifier.fillMaxWidth(),
@@ -615,9 +646,61 @@ private fun PlanList(purchaseManager: PurchaseManagerImpl, productDetails: Produ
             }) {
             Text(text = CelestiaString("Manage Subscription", ""))
         }
-    } else {
+    } else if (status is PurchaseManagerImpl.SubscriptionStatus.Good.NotVerified || status is PurchaseManagerImpl.SubscriptionStatus.Good.Acknowledged) {
+        Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
+        FilledTonalButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                activity?.let {
+                    val url = purchaseManager.subscriptionManagementURL()
+                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                    val ai = intent.resolveActivityInfo(it.packageManager, PackageManager.MATCH_DEFAULT_ONLY)
+                    if (ai != null && ai.exported)
+                        it.startActivity(intent)
+                }
+            }) {
+            Text(text = CelestiaString("Manage Subscription", ""))
+        }
+    } else if (!isLifetimeOwner) {
         Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
         Text(text = CelestiaString("Purchase will be available immediately. Subscription will be automatically renewed and you will be charged the price listed here each year (for Yearly), each month (for Monthly), or each week (for Weekly). Cancel at anytime in Subscriptions on Google Play.", ""), color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun LifetimePlanCard(plan: PurchaseManagerImpl.LifetimePlan, actionButtonText: String, actionButtonEnabled: Boolean, actionButtonHidden: Boolean, isCurrent: Boolean, modifier: Modifier = Modifier, action: () -> Unit) {
+    Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = modifier
+        .defaultMinSize(minHeight = dimensionResource(space.celestia.celestiaui.R.dimen.list_item_one_line_min_height))
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(dimensionResource(id = R.dimen.purchase_box_corner_radius)))
+        .background(MaterialTheme.colorScheme.primaryContainer)
+        .padding(
+            horizontal = dimensionResource(
+                id = space.celestia.celestiaui.R.dimen.common_page_small_margin_horizontal
+            ),
+            vertical = dimensionResource(
+                id = if (isCurrent) space.celestia.celestiaui.R.dimen.common_page_medium_margin_vertical else space.celestia.celestiaui.R.dimen.common_page_small_margin_vertical
+            ),
+        )) {
+        Column {
+            val name = CelestiaString("Lifetime", "Lifetime purchase")
+            Text(text = if (isCurrent) CelestiaString("%s (Current)", "Subscription plan name when the plan is the current plan user owns").format(name) else name, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
+
+            if (!isCurrent) {
+                Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_small_gap_vertical)))
+                Text(
+                    text = plan.formattedPrice,
+                    color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+        if (!actionButtonHidden) {
+            Spacer(modifier = Modifier.width(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_small_gap_horizontal)))
+            Button(onClick = action, enabled = actionButtonEnabled) {
+                Text(text = actionButtonText)
+            }
+        }
     }
 }
 

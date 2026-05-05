@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.purchase.PurchaseManager
+import space.celestia.celestiaui.purchase.PurchaseType
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.BuildConfig
@@ -41,9 +42,13 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
 
     private var dataStore: PreferenceManager = PreferenceManager(context, "celestia_plus")
     private var cachedPurchaseToken: String?
+    private var cachedPurchaseType: PurchaseType?
 
     init {
         cachedPurchaseToken = dataStore[purchaseTokenCacheKey]
+        cachedPurchaseType = dataStore[purchaseTypeCacheKey]?.let { value ->
+            PurchaseType.entries.firstOrNull { it.rawValue == value }
+        } ?: cachedPurchaseToken?.let { PurchaseType.Subscription }
     }
 
     override fun canUseInAppPurchase(): Boolean {
@@ -56,6 +61,10 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
     }
     override fun purchaseToken(): String? {
         return cachedPurchaseToken
+    }
+
+    override fun purchaseType(): PurchaseType? {
+        return if (cachedPurchaseToken != null) cachedPurchaseType else null
     }
 
     var subscriptionStatus: SubscriptionStatus = SubscriptionStatus.Error.NotConnected
@@ -75,10 +84,10 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
             data object None: Good()
 
             class Pending(val purchaseToken: String) : Good()
-            class NotAcknowledged(val purchaseToken: String): Good()
-            class Acknowledged(val purchaseToken: String): Good()
-            class NotVerified(val purchaseToken: String): Good()
-            class Verified(val purchaseToken: String, val plan: PlanType?): Good()
+            class NotAcknowledged(val purchaseToken: String, val productType: PurchaseType): Good()
+            class Acknowledged(val purchaseToken: String, val productType: PurchaseType): Good()
+            class NotVerified(val purchaseToken: String, val productType: PurchaseType): Good()
+            class Verified(val purchaseToken: String, val productType: PurchaseType, val plan: PlanType?): Good()
         }
     }
 
@@ -113,6 +122,8 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
     class Plan(val type: PlanType, val offerToken: String, val formattedPriceLine1: String, val formattedPriceLine2: String?, val productId: String, val offersFreeTrial: Boolean)
     class Subscription(val productDetails: ProductDetails, val plans: List<Plan>)
     class PlanResult(val billingResult: BillingResult, val subscription: Subscription?)
+    class LifetimePlan(val productDetails: ProductDetails, val formattedPrice: String)
+    class LifetimePlanResult(val billingResult: BillingResult, val lifetimePlan: LifetimePlan?)
 
     internal fun connectToService() {
         val weakSelf = WeakReference(this)
@@ -138,11 +149,12 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
         if (result.responseCode != BillingResponseCode.OK) return
         if (purchases == null) return
         for (purchase in purchases) {
-            handlePurchase(purchase = purchase)
+            val productType = if (purchase.products.contains(lifetimeProductId)) PurchaseType.Lifetime else PurchaseType.Subscription
+            handlePurchase(purchase = purchase, productType = productType)
         }
     }
 
-    private fun handlePurchase(purchase: Purchase, handler: (() -> Unit)? = null) {
+    private fun handlePurchase(purchase: Purchase, productType: PurchaseType, handler: (() -> Unit)? = null) {
         if (purchase.purchaseState == PurchaseState.PENDING) {
             changeSubscriptionStatus(SubscriptionStatus.Good.Pending(purchase.purchaseToken))
             if (handler != null)
@@ -156,14 +168,14 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
             return
         }
         if (!purchase.isAcknowledged) {
-            changeSubscriptionStatus(SubscriptionStatus.Good.NotAcknowledged(purchase.purchaseToken))
+            changeSubscriptionStatus(SubscriptionStatus.Good.NotAcknowledged(purchase.purchaseToken, productType))
             val weakSelf = WeakReference(this)
             requireNotNull(billingClient).acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build(), object: AcknowledgePurchaseResponseListener {
                 override fun onAcknowledgePurchaseResponse(p0: BillingResult) {
                     val self = weakSelf.get() ?: return
                     if (p0.responseCode == BillingResponseCode.OK) {
-                        self.changeSubscriptionStatus(SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken))
-                        verifyStatus(purchase.purchaseToken, handler)
+                        self.changeSubscriptionStatus(SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken, productType))
+                        verifyStatus(purchase.purchaseToken, productType, handler)
                     } else {
                         self.changeSubscriptionStatus(SubscriptionStatus.Error.Billing(p0.responseCode))
                         if (handler != null)
@@ -172,8 +184,8 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
                 }
             })
         } else {
-            changeSubscriptionStatus(SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken))
-            verifyStatus(purchase.purchaseToken, handler)
+            changeSubscriptionStatus(SubscriptionStatus.Good.Acknowledged(purchase.purchaseToken, productType))
+            verifyStatus(purchase.purchaseToken, productType, handler)
         }
     }
 
@@ -190,38 +202,58 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
         requireNotNull(billingClient).launchBillingFlow(activity, billingFlowParams)
     }
 
+    fun createLifetimePurchase(productDetails: ProductDetails, activity: Activity) {
+        if (!connected) return
+        val productDetailsParamsBuilder = ProductDetailsParams.newBuilder().setProductDetails(productDetails)
+        val billingFlowParams = BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(productDetailsParamsBuilder.build())).build()
+        requireNotNull(billingClient).launchBillingFlow(activity, billingFlowParams)
+    }
+
     private fun getValidSubscriptionAsync(handler: (() -> Unit)? = null) {
-        val queryPurchasesParams = QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
-        requireNotNull(billingClient).queryPurchasesAsync(queryPurchasesParams) { result, purchasesList ->
-            if (result.responseCode != BillingResponseCode.OK) {
-                changeSubscriptionStatus(SubscriptionStatus.Error.Billing(result.responseCode))
-                if (handler != null)
-                    handler()
-            } else {
-                val purchase = purchasesList.firstOrNull { it.products.contains(subscriptionId) }
-                if (purchase != null) {
-                    handlePurchase(purchase, handler)
-                } else {
-                    changeSubscriptionStatus(SubscriptionStatus.Good.None)
+        val lifetimeQueryParams = QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build()
+        requireNotNull(billingClient).queryPurchasesAsync(lifetimeQueryParams) { lifetimeResult, lifetimePurchases ->
+            if (lifetimeResult.responseCode == BillingResponseCode.OK) {
+                val lifetimePurchase = lifetimePurchases.firstOrNull { it.products.contains(lifetimeProductId) }
+                if (lifetimePurchase != null) {
+                    handlePurchase(lifetimePurchase, PurchaseType.Lifetime, handler)
+                    return@queryPurchasesAsync
+                }
+            }
+            val queryPurchasesParams = QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
+            requireNotNull(billingClient).queryPurchasesAsync(queryPurchasesParams) { result, purchasesList ->
+                if (result.responseCode != BillingResponseCode.OK) {
+                    changeSubscriptionStatus(SubscriptionStatus.Error.Billing(result.responseCode))
                     if (handler != null)
                         handler()
+                } else {
+                    val purchase = purchasesList.firstOrNull { it.products.contains(subscriptionId) }
+                    if (purchase != null) {
+                        handlePurchase(purchase, PurchaseType.Subscription, handler)
+                    } else {
+                        changeSubscriptionStatus(SubscriptionStatus.Good.None)
+                        if (handler != null)
+                            handler()
+                    }
                 }
             }
         }
     }
 
-    private fun verifyStatus(purchaseToken: String, handler: (() -> Unit)? = null) {
+    private fun verifyStatus(purchaseToken: String, productType: PurchaseType, handler: (() -> Unit)? = null) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                val status = purchaseAPI.subscriptionStatus(purchaseToken)
+                val status = purchaseAPI.subscriptionStatus(purchaseToken, productType.rawValue)
                 if (status.valid) {
-                    val plan = when (status.planId) {
-                        yearlyPlanId -> PlanType.Yearly
-                        monthlyPlanId -> PlanType.Monthly
-                        weeklyPlanId -> PlanType.Weekly
-                        else -> null
+                    val plan = when (productType) {
+                        PurchaseType.Lifetime -> null
+                        PurchaseType.Subscription -> when (status.planId) {
+                            yearlyPlanId -> PlanType.Yearly
+                            monthlyPlanId -> PlanType.Monthly
+                            weeklyPlanId -> PlanType.Weekly
+                            else -> null
+                        }
                     }
-                    changeSubscriptionStatus(SubscriptionStatus.Good.Verified(purchaseToken, plan))
+                    changeSubscriptionStatus(SubscriptionStatus.Good.Verified(purchaseToken, productType, plan))
                     for (listener in listeners) {
                         listener.needsToFetchSubscriptionPlans()
                     }
@@ -231,13 +263,13 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
                 if (handler != null)
                     handler()
             } catch (ignored: Throwable) {
-                changeSubscriptionStatus(SubscriptionStatus.Good.NotVerified(purchaseToken))
+                changeSubscriptionStatus(SubscriptionStatus.Good.NotVerified(purchaseToken, productType))
                 if (handler != null)
                     handler()
             }
         }
     }
-    
+
     suspend fun getValidSubscription(): Unit = suspendCoroutine { cont ->
         if (!connected) {
             cont.resume(Unit)
@@ -246,6 +278,20 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
        getValidSubscriptionAsync {
            cont.resume(Unit)
        }
+    }
+
+    suspend fun getLifetimePlanDetails(): LifetimePlanResult? {
+        if (!connected) return null
+        val lifetimeProduct = QueryProductDetailsParams.Product.newBuilder().setProductId(lifetimeProductId).setProductType(ProductType.INAPP).build()
+        val queryDetailsParam = QueryProductDetailsParams.newBuilder().setProductList(listOf(lifetimeProduct)).build()
+        val result = requireNotNull(billingClient).queryProductDetails(queryDetailsParam)
+        val productLists = result.productDetailsList
+        if (result.billingResult.responseCode != BillingResponseCode.OK || productLists == null || productLists.size != 1) {
+            return LifetimePlanResult(result.billingResult, null)
+        }
+        val product = productLists[0]
+        val price = product.oneTimePurchaseOfferDetails?.formattedPrice ?: return LifetimePlanResult(result.billingResult, null)
+        return LifetimePlanResult(result.billingResult, LifetimePlan(product, price))
     }
 
     suspend fun getSubscriptionDetails(preferredPlayOfferId: String?, resources: Resources): PlanResult? {
@@ -292,25 +338,28 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
         val isDifferent = subscriptionStatus != newStatus
         subscriptionStatus = newStatus
         if (isDifferent) {
-            val (newPurchaseToken: String?, updateValue: Boolean) = when (newStatus) {
+            data class PendingUpdate(val token: String?, val productType: PurchaseType?)
+            val pending: PendingUpdate? = when (newStatus) {
                 is SubscriptionStatus.Error, SubscriptionStatus.Good.None -> {
-                    Pair(null, true)
+                    PendingUpdate(null, null)
                 }
                 is SubscriptionStatus.Good.Verified -> {
-                    Pair(newStatus.purchaseToken, true)
+                    PendingUpdate(newStatus.purchaseToken, newStatus.productType)
                 }
                 is SubscriptionStatus.Good.NotVerified -> {
-                    Pair(newStatus.purchaseToken, true)
+                    PendingUpdate(newStatus.purchaseToken, newStatus.productType)
                 }
                 else -> {
-                    Pair(null, false)
+                    null
                 }
             }
 
-            if (updateValue) {
-                if (newPurchaseToken != cachedPurchaseToken) {
-                    cachedPurchaseToken = newPurchaseToken
-                    dataStore[purchaseTokenCacheKey] = newPurchaseToken
+            if (pending != null) {
+                if (pending.token != cachedPurchaseToken || pending.productType != cachedPurchaseType) {
+                    cachedPurchaseToken = pending.token
+                    cachedPurchaseType = pending.productType
+                    dataStore[purchaseTokenCacheKey] = pending.token
+                    dataStore[purchaseTypeCacheKey] = pending.productType?.rawValue
                 }
             }
 
@@ -322,10 +371,12 @@ class PurchaseManagerImpl(context: Context, val purchaseAPI: PurchaseAPIService)
 
     private companion object {
         const val subscriptionId = "space.celestia.mobilecelestia.plus"
+        const val lifetimeProductId = "space.celestia.mobilecelestia.plus.lifetime"
         const val weeklyPlanId = "celestia-plus-weekly"
         const val monthlyPlanId = "celestia-plus-monthly"
         const val yearlyPlanId = "celestia-plus-yearly"
         val purchaseTokenCacheKey = PreferenceManager.CustomKey("purchase_token_cache")
+        val purchaseTypeCacheKey = PreferenceManager.CustomKey("purchase_type_cache")
     }
 }
 

@@ -35,8 +35,12 @@ private fun AddonDownloadMain(requestRunScript: (File) -> Unit, requestShareAddo
             .appendQueryParameter("api", "2")
         if (viewModel.platform.flavor != null)
             builder = builder.appendQueryParameter("distribution", viewModel.platform.flavor)
-        if (viewModel.purchaseManager.canUseInAppPurchase())
+        if (viewModel.purchaseManager.canUseInAppPurchase()) {
             builder = builder.appendQueryParameter("purchaseTokenAndroid", viewModel.purchaseManager.purchaseToken() ?: "")
+            viewModel.purchaseManager.purchaseType()?.let {
+                builder = builder.appendQueryParameter("productType", it.rawValue)
+            }
+        }
         return builder.build()
     }
 
@@ -63,8 +67,12 @@ private fun AddonDownloadCategory(isLeaf: Boolean, categoryId: String, requestRu
             builder.appendQueryParameter("category", categoryId)
         else
             builder.appendQueryParameter("parent", categoryId)
-        if (viewModel.purchaseManager.canUseInAppPurchase())
+        if (viewModel.purchaseManager.canUseInAppPurchase()) {
             builder = builder.appendQueryParameter("purchaseTokenAndroid", viewModel.purchaseManager.purchaseToken() ?: "")
+            viewModel.purchaseManager.purchaseType()?.let {
+                builder = builder.appendQueryParameter("productType", it.rawValue)
+            }
+        }
         return builder.build()
     }
 
