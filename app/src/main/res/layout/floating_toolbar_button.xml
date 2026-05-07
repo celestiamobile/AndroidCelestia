@@ -10,7 +10,7 @@
   ~ of the License, or (at your option) any later version.
   -->
 
-<Button xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.button.MaterialButton xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     style="?attr/materialIconButtonStyle"/>

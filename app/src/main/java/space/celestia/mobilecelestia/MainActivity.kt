@@ -22,6 +22,7 @@ import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
 import android.view.Display
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
@@ -1972,9 +1973,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         currentToolbarActions = actions
         val contentView = findViewById<LinearLayout>(R.id.bottom_toolbar_content)
         contentView.removeAllViews()
+        val inflater = LayoutInflater.from(contentView.context)
         val weakSelf = WeakReference(this)
         for (action in actions) {
-            val button = layoutInflater.inflate(R.layout.floating_toolbar_button, contentView, false) as MaterialButton
+            val button = inflater.inflate(R.layout.floating_toolbar_button, contentView, false) as MaterialButton
             contentView.addView(button)
             button.icon = ContextCompat.getDrawable(this, action.imageID ?: 0)
             button.contentDescription = action.contentDescription
@@ -2010,7 +2012,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
-        val overflowButton = layoutInflater.inflate(R.layout.floating_toolbar_button, contentView, false) as MaterialButton
+        val overflowButton = inflater.inflate(R.layout.floating_toolbar_button, contentView, false) as MaterialButton
         overflowButton.icon = ContextCompat.getDrawable(this, R.drawable.bottom_toolbar_overflow)
         overflowButton.contentDescription = CelestiaString("More actions", "Button to show more actions to in the bottom toolbar")
         overflowButton.setOnTouchListener(null)
