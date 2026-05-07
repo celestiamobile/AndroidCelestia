@@ -1,4 +1,4 @@
-# Mobile Celestia for Android
+# Celestia for Android
 
 **Celestia main repository: https://github.com/CelestiaProject/Celestia**<br>
 
