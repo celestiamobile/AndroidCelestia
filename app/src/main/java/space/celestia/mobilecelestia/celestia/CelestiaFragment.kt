@@ -666,10 +666,8 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         if (!isContextMenuEnabled)
             return
 
-        // Avoid showing context menu before Android 8, since it is fullscreen
-        if (selection.isEmpty || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        if (selection.isEmpty)
             return
-        }
 
         pendingTarget = selection
 

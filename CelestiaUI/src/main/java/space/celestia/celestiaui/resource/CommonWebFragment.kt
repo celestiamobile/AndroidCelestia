@@ -210,7 +210,6 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
         val queryKeys = matchingQueryKeys
         webView.addJavascriptInterface(CelestiaJavascriptInterface(this), "AndroidCelestia")
         webView.webViewClient = object: WebViewClient() {
-            @RequiresApi(Build.VERSION_CODES.N)
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
                 request: WebResourceRequest?
