@@ -34,7 +34,7 @@ sentry-android = "8.37.1"
 target_sdk = "36"
 webkit = "1.16.0"
 navigation3 = "1.1.1"
-firebase-bom = "34.12.0"
+firebase-bom = "34.13.0"
 google-services = "4.4.4"
 
 [libraries]
