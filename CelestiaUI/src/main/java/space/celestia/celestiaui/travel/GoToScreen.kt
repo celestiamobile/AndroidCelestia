@@ -32,6 +32,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestia.GoToLocation
@@ -137,13 +138,13 @@ fun GoToScreen(paddingValues: PaddingValues) {
                     end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
                     bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical)
                 ),
-            onClick = {
-                val longitude = currentLongitudeValue ?: return@FilledTonalButton
-                val latitude = currentLatitudeValue ?: return@FilledTonalButton
-                val distance = currentDistanceValue ?: return@FilledTonalButton
+            onClick = dropUnlessResumed {
+                val longitude = currentLongitudeValue ?: return@dropUnlessResumed
+                val latitude = currentLatitudeValue ?: return@dropUnlessResumed
+                val distance = currentDistanceValue ?: return@dropUnlessResumed
                 if (viewModel.selection.value.isEmpty) {
                     alert = GoToAlert.ObjectNotFound
-                    return@FilledTonalButton
+                    return@dropUnlessResumed
                 }
 
                 val location = GoToLocation(

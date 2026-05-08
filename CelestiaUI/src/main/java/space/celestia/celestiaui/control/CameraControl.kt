@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
@@ -84,11 +85,11 @@ fun CameraControl(paddingValues: PaddingValues, cameraControlObserverModeClicked
             })
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
         }
-        TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = {
+        TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = dropUnlessResumed {
             cameraControlObserverModeClicked()
         }))
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-        FilledTonalButton(modifier = internalViewModifier, onClick = {
+        FilledTonalButton(modifier = internalViewModifier, onClick = dropUnlessResumed {
             scope.launch(viewModel.executor.asCoroutineDispatcher()) {
                 viewModel.appCore.simulation.reverseObserverOrientation()
             }

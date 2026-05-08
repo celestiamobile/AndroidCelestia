@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.R
 
 @Composable
@@ -29,7 +30,7 @@ fun TeachingCard(title: String, actionButtonTitle: String, action: () -> Unit, m
             dimensionResource(id = R.dimen.card_content_padding)
         )) {
             Text(text = title, style = MaterialTheme.typography.bodyLarge)
-            FilledTonalButton(onClick = {
+            FilledTonalButton(onClick = dropUnlessResumed {
                 action()
             }) {
                 Text(text = actionButtonTitle)

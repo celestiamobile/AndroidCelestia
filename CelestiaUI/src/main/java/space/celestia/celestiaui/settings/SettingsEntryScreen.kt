@@ -30,6 +30,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
@@ -185,9 +186,9 @@ private fun SettingEntry(item: SettingsItem) {
             TextRow(
                 primaryText = item.name,
                 secondaryText = item.options.firstOrNull { it.first == selected }?.second,
-                modifier = Modifier.clickable {
+                modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     showOptions = true
-                }
+                })
             )
 
             if (showOptions) {
@@ -203,15 +204,15 @@ private fun SettingEntry(item: SettingsItem) {
         }
 
         is SettingsActionItem -> {
-            TextRow(primaryText = item.name, modifier = Modifier.clickable {
+            TextRow(primaryText = item.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                 scope.launch(viewModel.executor.asCoroutineDispatcher()) {
                     viewModel.appCore.charEnter(item.action)
                 }
-            })
+            }))
         }
 
         is SettingsUnknownTextItem -> {
-            TextRow(primaryText = item.name, modifier = Modifier.clickable {
+            TextRow(primaryText = item.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                 when (item.id) {
                     settingUnmarkAllID -> {
                         scope.launch(viewModel.executor.asCoroutineDispatcher()) {
@@ -219,7 +220,7 @@ private fun SettingEntry(item: SettingsItem) {
                         }
                     }
                 }
-            })
+            }))
         }
 
         is SettingsSliderItem -> {

@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.utils.CelestiaString
 
 @Composable
@@ -20,12 +21,12 @@ fun SimpleAlertDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TextButton(onClick = dropUnlessResumed { onConfirm() }) {
                 Text(text = confirmButtonText ?: CelestiaString("OK", ""))
             }
         },
         dismissButton = if (showCancel) {{
-            TextButton(onClick = onDismissRequest) {
+            TextButton(onClick = dropUnlessResumed { onDismissRequest() }) {
                 Text(text = CelestiaString("Cancel", ""))
             }
         }} else null,

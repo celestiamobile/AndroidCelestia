@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestia.Destination
@@ -79,7 +80,7 @@ fun DestinationDetailScreen(item: Destination, paddingValues: PaddingValues) {
             .padding(
                 top = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
                 bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),
-            ), onClick = {
+            ), onClick = dropUnlessResumed {
             scope.launch(viewModel.executor.asCoroutineDispatcher()) {
                 viewModel.appCore.simulation.goTo(item)
             }

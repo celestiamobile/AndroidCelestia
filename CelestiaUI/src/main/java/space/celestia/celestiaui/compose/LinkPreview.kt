@@ -19,6 +19,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -119,8 +120,8 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, onClick: (URL) -> Unit)
 
     val currentState = state
     if (currentState is FetchState.Successful) {
-        LinkPreviewInternal(metadata = currentState.metadata, modifier = modifier.clickable {
+        LinkPreviewInternal(metadata = currentState.metadata, modifier = modifier.clickable(onClick = dropUnlessResumed {
             onClick(currentState.metadata.url)
-        })
+        }))
     }
 }

@@ -46,6 +46,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.EmptyHint
@@ -173,7 +174,7 @@ private fun GrantedContent(paddingValues: PaddingValues, viewModel: SettingsView
         item { Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall))) }
         item {
             FilledTonalButton(
-                onClick = {
+                onClick = dropUnlessResumed {
                     viewModel.appSettings.startEditing()
                     viewModel.appSettings[PreferenceManager.PredefinedKey.PushWeeklyAddon] = if (weeklyAddon) "true" else "false"
                     viewModel.appSettings[PreferenceManager.PredefinedKey.PushLatestNews] = if (latestNews) "true" else "false"

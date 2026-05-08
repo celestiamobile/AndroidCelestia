@@ -33,6 +33,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.Footer
 import space.celestia.celestiaui.compose.OptionInputDialog
@@ -94,8 +95,8 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
         }
         item {
-            TextRow(primaryText = CelestiaString("Config File", "celestia.cfg"), secondaryText = if (customConfigFilePath == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable {
-                val packageManager = localActivity?.packageManager ?: return@clickable
+            TextRow(primaryText = CelestiaString("Config File", "celestia.cfg"), secondaryText = if (customConfigFilePath == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                val packageManager = localActivity?.packageManager ?: return@dropUnlessResumed
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                 intent.type = "*/*"
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
@@ -103,29 +104,29 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
                     fileChooserLauncher.launch(intent)
                 else
                     alert = AlertContent.UnsupportedAction
-            })
-            TextRow(primaryText = CelestiaString("Data Directory", "Directory to load data from"), secondaryText = if (customDataDirPath == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable {
-                val packageManager = localActivity?.packageManager ?: return@clickable
+            }))
+            TextRow(primaryText = CelestiaString("Data Directory", "Directory to load data from"), secondaryText = if (customDataDirPath == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                val packageManager = localActivity?.packageManager ?: return@dropUnlessResumed
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                 intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
                 if (intent.resolveActivity(packageManager) != null)
                     directoryChooserLauncher.launch(intent)
                 else
                     alert = AlertContent.UnsupportedAction
-            })
+            }))
         }
 
         item {
-            TextRow(primaryText = CelestiaString("Migrate Add-on Data", "Action to migrate data where the add-on is downloaded"), modifier = Modifier.clickable {
-                val activity = localActivity ?: return@clickable
+            TextRow(primaryText = CelestiaString("Migrate Add-on Data", "Action to migrate data where the add-on is downloaded"), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                val activity = localActivity ?: return@dropUnlessResumed
                 val dataDir = activity.getExternalFilesDir(null)
                 val mediaDir = activity.externalMediaDirs.firstOrNull()
                 if (dataDir == null || mediaDir == null) {
                     alert = AlertContent.UnsupportedAction
-                    return@clickable
+                    return@dropUnlessResumed
                 }
                 alert = AlertContent.MigrateSelection(dataDir = dataDir, mediaDir = mediaDir)
-            })
+            }))
         }
 
         item {
@@ -134,7 +135,7 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
         }
         item {
-            FilledTonalButton(modifier = internalViewModifier, onClick = {
+            FilledTonalButton(modifier = internalViewModifier, onClick = dropUnlessResumed {
                 viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.ConfigFilePath] = null
                 viewModel.appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath] = null
                 customConfigFilePath = null

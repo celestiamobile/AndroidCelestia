@@ -14,6 +14,7 @@ package space.celestia.celestiaui.compose
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +31,7 @@ import space.celestia.celestiaui.utils.CelestiaString
 fun TextInputDialog(onDismissRequest: () -> Unit, confirmHandler: () -> Unit, title: String, text: String?, placeholder: String? = null, textChange: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
     AlertDialog(onDismissRequest = onDismissRequest, confirmButton = {
-        TextButton(onClick = confirmHandler) {
+        TextButton(onClick = dropUnlessResumed { confirmHandler() }) {
             Text(text = CelestiaString("OK", ""))
         }
     }, title = {

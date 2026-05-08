@@ -123,7 +123,7 @@ fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBoo
             }, actions = {
                 val current = backStack.lastOrNull() ?: return@TopAppBar
                 if (current !is Page.Item || current.item !is MutableFavoriteBaseItem) return@TopAppBar
-                IconButton(onClick = {
+                IconButton(onClick = dropUnlessResumed {
                     when (current.item) {
                         is FavoriteBookmarkItem -> {
                             scope.launch {

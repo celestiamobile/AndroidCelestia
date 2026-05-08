@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.resource.model.ResourceItem
@@ -143,7 +144,7 @@ fun AddonUpdatesScreen(paddingValues: PaddingValues, requestOpenAddon: (Resource
             ) {
                 items(viewModel.addonUpdateManager.pendingUpdates) {
                     TextRow(
-                        modifier = Modifier.clickable(onClick = {
+                        modifier = Modifier.clickable(onClick = dropUnlessResumed {
                             requestOpenAddon(it.addon)
                         }),
                         primaryText = it.addon.name,

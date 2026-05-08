@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
@@ -86,7 +87,7 @@ fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, link
         }
 
         items(staticHelpURLItems) {
-            FilledTonalButton(modifier = buttonModifier, onClick = {
+            FilledTonalButton(modifier = buttonModifier, onClick = dropUnlessResumed {
                 linkClicked(it.url)
             }) {
                 Text(text = it.title)
@@ -94,7 +95,7 @@ fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, link
         }
 
         items(staticHelpActionItems) {
-            FilledTonalButton(modifier = buttonModifier, onClick = {
+            FilledTonalButton(modifier = buttonModifier, onClick = dropUnlessResumed {
                 when (it.action) {
                     HelpAction.RunDemo -> {
                         scope.launch(viewModel.executor.asCoroutineDispatcher()) {

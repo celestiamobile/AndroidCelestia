@@ -28,6 +28,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestia.EclipseFinder
 import space.celestia.celestia.Utils
 import space.celestia.celestiaui.R
@@ -59,9 +60,9 @@ fun EventFinderResultsScreen(results: List<EclipseFinder.Eclipse>, paddingValues
             modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
         ) {
             items(results) { eclipse ->
-                TextRow(primaryText = "${eclipse.occulter.name} -> ${eclipse.receiver.name}", secondaryText = formatter.format(Utils.createDateFromJulianDay(eclipse.startTimeJulian)), modifier = Modifier.clickable {
+                TextRow(primaryText = "${eclipse.occulter.name} -> ${eclipse.receiver.name}", secondaryText = formatter.format(Utils.createDateFromJulianDay(eclipse.startTimeJulian)), modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     handler(eclipse)
-                })
+                }))
             }
         }
     }

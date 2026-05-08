@@ -81,7 +81,7 @@ fun WebScreen(uri: Uri, requestRunScript: (File) -> Unit, requestShareAddon: (St
                 } else {
                     val lastEntry = backStack.lastOrNull() ?: return@TopAppBar
                     if (lastEntry is Page.Home && lastEntry.canGoBack.value) {
-                        IconButton(onClick = {
+                        IconButton(onClick = dropUnlessResumed {
                             lastEntry.goBackRequest?.invoke()
                         }) {
                             Icon(

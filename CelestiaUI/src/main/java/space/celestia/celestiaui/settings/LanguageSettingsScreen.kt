@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.core.os.LocaleListCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.Footer
@@ -135,7 +136,7 @@ fun LanguageSettingsScreen(paddingValues: PaddingValues) {
         }
 
         item {
-            FilledTonalButton(modifier = internalViewModifier, onClick = {
+            FilledTonalButton(modifier = internalViewModifier, onClick = dropUnlessResumed {
                 currentOverrideLanguage = null
                 setOverrideLanguage(null)
             }) {

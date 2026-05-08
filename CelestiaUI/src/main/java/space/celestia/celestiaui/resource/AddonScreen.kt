@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -219,7 +220,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                 if (objectName != null && addonType != "script") {
                     val selection = viewModel.appCore.simulation.findObject(objectName)
                     if (!selection.isEmpty) {
-                        FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                        FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = dropUnlessResumed {
                             scope.launch(viewModel.executor.asCoroutineDispatcher()) {
                                 viewModel.appCore.simulation.selection = selection
                                 viewModel.appCore.perform(CelestiaAction.GoTo)
@@ -234,7 +235,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                     val scriptFile =
                         File(viewModel.resourceManager.contextDirectory(info), scriptName)
                     if (scriptFile.exists()) {
-                        FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                        FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = dropUnlessResumed {
                             requestRunScript(scriptFile)
                         }) {
                             Text(CelestiaString("Run", "Run a script"))
@@ -243,7 +244,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                 }
 
                 if (installedAddonChecksum != null && info.checksum != installedAddonChecksum) {
-                    FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                    FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = dropUnlessResumed {
                         viewModel.resourceManager.reinstall(info, File(context.cacheDir, info.id))
                         updateAddonState()
                     }) {
@@ -251,7 +252,7 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
                     }
                 }
             }
-            FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = {
+            FilledTonalButton(modifier = Modifier.fillMaxWidth(), onClick = dropUnlessResumed {
                 when (state) {
                     is AddonState.None -> {
                         viewModel.resourceManager.download(info, File(context.cacheDir, info.id))

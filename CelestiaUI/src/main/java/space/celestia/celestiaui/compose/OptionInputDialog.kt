@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.dropUnlessResumed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,9 +56,9 @@ fun OptionInputDialog(onDismissRequest: () -> Unit, title: String? = null, items
                 }
                 LazyColumn(content = {
                     itemsIndexed(items) { index, item ->
-                        TextRow(primaryText = null, secondaryText = item, horizontalPadding = 24.dp, modifier = Modifier.clickable {
+                        TextRow(primaryText = null, secondaryText = item, horizontalPadding = 24.dp, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                             selectionHandler(index)
-                        })
+                        }))
                     }
                 })
             }

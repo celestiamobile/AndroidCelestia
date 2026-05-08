@@ -21,6 +21,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.Footer
 import space.celestia.celestiaui.compose.Header
@@ -46,9 +47,9 @@ fun SettingsHomeScreen(paddingValues: PaddingValues, itemSelected: (SettingsItem
                 }
             }
             items(section.items) { item ->
-                TextRow(primaryText = item.name, modifier = Modifier.clickable {
+                TextRow(primaryText = item.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     itemSelected(item)
-                }, accessoryResource = R.drawable.accessory_full_disclosure)
+                }), accessoryResource = R.drawable.accessory_full_disclosure)
             }
             item {
                 val footer = section.footer

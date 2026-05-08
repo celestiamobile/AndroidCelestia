@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.R
 
 @Composable
@@ -18,7 +19,7 @@ fun EmptyHint(text: String, modifier: Modifier = Modifier, actionText: String? =
     Column(modifier = modifier.padding(horizontal = dimensionResource(R.dimen.common_page_medium_margin_horizontal), vertical = dimensionResource(R.dimen.common_page_medium_margin_vertical)), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.common_page_medium_gap_vertical))) {
         Text(text = text, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)
         if (actionText != null) {
-            FilledTonalButton(onClick = {
+            FilledTonalButton(onClick = dropUnlessResumed {
                 if (actionHandler != null) {
                     actionHandler()
                 }

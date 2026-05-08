@@ -77,6 +77,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -635,7 +636,7 @@ private fun PlanList(purchaseManager: PurchaseManagerImpl, productDetails: Produ
         Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
         FilledTonalButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = {
+            onClick = dropUnlessResumed {
                 activity?.let {
                     val url = purchaseManager.subscriptionManagementURL()
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
@@ -650,7 +651,7 @@ private fun PlanList(purchaseManager: PurchaseManagerImpl, productDetails: Produ
         Spacer(modifier = Modifier.height(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_medium_gap_vertical)))
         FilledTonalButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = {
+            onClick = dropUnlessResumed {
                 activity?.let {
                     val url = purchaseManager.subscriptionManagementURL()
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
@@ -697,7 +698,7 @@ private fun LifetimePlanCard(plan: PurchaseManagerImpl.LifetimePlan, actionButto
         }
         if (!actionButtonHidden) {
             Spacer(modifier = Modifier.width(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_small_gap_horizontal)))
-            Button(onClick = action, enabled = actionButtonEnabled) {
+            Button(onClick = dropUnlessResumed { action() }, enabled = actionButtonEnabled) {
                 Text(text = actionButtonText)
             }
         }
@@ -741,7 +742,7 @@ private fun PlanCard(plan: PurchaseManagerImpl.Plan, actionButtonText: String, a
         }
         if (!actionButtonHidden) {
             Spacer(modifier = Modifier.width(dimensionResource(id = space.celestia.celestiaui.R.dimen.common_page_small_gap_horizontal)))
-            Button(onClick = action, enabled = actionButtonEnabled) {
+            Button(onClick = dropUnlessResumed { action() }, enabled = actionButtonEnabled) {
                 Text(text = actionButtonText)
             }
         }

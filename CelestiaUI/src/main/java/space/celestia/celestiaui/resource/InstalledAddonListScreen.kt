@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.launch
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiafoundation.resource.model.ResourceManager
@@ -122,9 +123,9 @@ fun InstalledAddonListScreen(paddingValues: PaddingValues, requestOpenAddonDownl
                 .background(color = MaterialTheme.colorScheme.background)
         ) {
             items(installedAddons) {
-                TextRow(primaryText = it.name, accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable {
+                TextRow(primaryText = it.name, accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     requestOpenInstalledAddon(it)
-                })
+                }))
             }
         }
     }

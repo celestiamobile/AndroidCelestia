@@ -44,6 +44,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -221,9 +222,9 @@ private fun SearchResult(key: String, results: List<Completion>, isSearching: Bo
                 .background(color = MaterialTheme.colorScheme.background)
         ) {
             items(results) {
-                TextRow(primaryText = it.name, modifier = Modifier.clickable {
+                TextRow(primaryText = it.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     selectionHandler(it.selection)
-                })
+                }))
             }
         }
     }

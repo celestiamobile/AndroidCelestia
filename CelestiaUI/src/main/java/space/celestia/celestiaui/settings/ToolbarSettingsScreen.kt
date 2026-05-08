@@ -48,6 +48,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.ContextMenuContainer
 import space.celestia.celestiaui.compose.DraggableItem
@@ -158,9 +159,9 @@ fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
             )
         if (isDraggable && item.deletable) {
             rowModifier = Modifier
-                .clickable {
+                .clickable(onClick = dropUnlessResumed {
                     showMenu = true
-                }
+                })
                 .then(rowModifier)
         }
         ContextMenuContainer(expanded = isDraggable && showMenu, onDismissRequest = { showMenu = false }, menu = {
@@ -185,14 +186,14 @@ fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
                 if (isDraggable) {
                     Icon(painter = painterResource(id = R.drawable.reorder_24px), contentDescription = CelestiaString("Drag Handle", "Accessibility description for the drag handle for reorder"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.dragContainerForDragHandle(dragDropState = dragDropState, key = item.id).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
                 } else {
-                    Icon(painter = painterResource(id = R.drawable.add_24px), contentDescription = CelestiaString("Add Button", "Accessibility description for an add button"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.clip(CircleShape).clickable {
+                    Icon(painter = painterResource(id = R.drawable.add_24px), contentDescription = CelestiaString("Add Button", "Accessibility description for an add button"), tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled), modifier = Modifier.clip(CircleShape).clickable(onClick = dropUnlessResumed {
                         if (!list.contains(item)) {
                             list = list.toMutableList().apply {
                                 add(item)
                             }
                             viewModel.appSettings.toolbarItems = list
                         }
-                    }.padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
+                    }).padding(dimensionResource(id = R.dimen.list_item_action_icon_padding)))
                 }
             }
         }
@@ -227,7 +228,7 @@ fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
                 .padding(
                     horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
                     vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
-                ), onClick = {
+                ), onClick = dropUnlessResumed {
                 list = ToolbarAction.defaultItems
                 viewModel.appSettings.toolbarItems = null
             }) {

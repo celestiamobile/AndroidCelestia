@@ -27,6 +27,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestia.BrowserItem
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
@@ -56,9 +57,9 @@ fun BrowserEntry(item: BrowserItem, paddingValues: PaddingValues, itemSelected: 
         var hasItems = false
         if (item.`object` != null) {
             item {
-                TextRow(primaryText = item.name, modifier = Modifier.clickable {
+                TextRow(primaryText = item.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     itemSelected(item, true)
-                })
+                }))
             }
             hasMainObject = true
             hasItems = true
@@ -72,9 +73,9 @@ fun BrowserEntry(item: BrowserItem, paddingValues: PaddingValues, itemSelected: 
             }
 
             items(item.children) { item ->
-                TextRow(primaryText = item.name, accessoryResource = if (item.children.isNotEmpty() || item.`object` == null) R.drawable.accessory_full_disclosure else 0, modifier = Modifier.clickable {
+                TextRow(primaryText = item.name, accessoryResource = if (item.children.isNotEmpty() || item.`object` == null) R.drawable.accessory_full_disclosure else 0, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     itemSelected(item, item.`object` != null && item.children.isEmpty())
-                })
+                }))
             }
 
             hasItems = true

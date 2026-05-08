@@ -31,6 +31,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.DateInputDialog
@@ -80,12 +81,12 @@ fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: S
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         item {
-            TextRow(primaryText = CelestiaString("Start Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(startTime), modifier = Modifier.clickable {
+            TextRow(primaryText = CelestiaString("Start Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(startTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
                 alert = EventFinderInputAlert.TimeInput(true)
-            })
-            TextRow(primaryText = CelestiaString("End Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(endTime), modifier = Modifier.clickable {
+            }))
+            TextRow(primaryText = CelestiaString("End Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(endTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
                 alert = EventFinderInputAlert.TimeInput(false)
-            })
+            }))
         }
 
         item {
@@ -95,9 +96,9 @@ fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: S
         }
 
         item {
-            TextRow(primaryText = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"), secondaryText = objectName, modifier = Modifier.clickable {
+            TextRow(primaryText = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"), secondaryText = objectName, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                 alert = EventFinderInputAlert.ObjectSelection
-            })
+            }))
         }
 
         item {
@@ -105,7 +106,7 @@ fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: S
             FilledTonalButton(modifier = Modifier.fillMaxWidth().padding(
                 horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
                 vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
-            ), onClick = {
+            ), onClick = dropUnlessResumed {
                 handler(objectPath, startTime, endTime)
             }) {
                 Text(text = CelestiaString("Find", "Find (eclipses)"))

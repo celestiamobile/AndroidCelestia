@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestia.Observer
@@ -111,7 +112,7 @@ fun ObserverModeScreen(paddingValues: PaddingValues, observerModeLearnMoreClicke
             bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
         ))
 
-        FilledTonalButton(modifier = internalViewModifier, onClick = {
+        FilledTonalButton(modifier = internalViewModifier, onClick = dropUnlessResumed {
             scope.launch(viewModel.executor.asCoroutineDispatcher()) {
                 viewModel.appCore.simulation.activeObserver.setFrame(selectedCoordinateSystem, referenceObject, targetObject)
             }

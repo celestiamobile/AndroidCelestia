@@ -55,6 +55,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.compose.ContextMenuContainer
 import space.celestia.celestiaui.compose.DragDropState
 import space.celestia.celestiaui.compose.DraggableItem
@@ -177,15 +178,15 @@ private fun Item(item: FavoriteBaseItem, index: Int, dragDropState: DragDropStat
             .combinedClickable(onLongClick = {
                 if (item.supportedItemActions.isNotEmpty())
                     showMenu = true
-            }, onClick = {
+            }, onClick = dropUnlessResumed {
                 selected()
             })
             .then(rowModifier)
     } else {
         rowModifier = Modifier
-            .clickable {
+            .clickable(onClick = dropUnlessResumed {
                 selected()
-            }
+            })
             .then(rowModifier)
     }
     BuildSwipeToDismissBox(item = item, index = index, renameRequested = renameRequested, deleteRequested = deleteRequested) {

@@ -29,6 +29,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -80,13 +81,13 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
         .verticalScroll(state = rememberScrollState(), enabled = true)
         .padding(paddingValues)) {
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-        TextRow(primaryText = CelestiaString("Select Time", "Select simulation time"), secondaryText = dateTimeDisplayFormatter.format(currentTime), modifier = Modifier.clickable(onClick = {
+        TextRow(primaryText = CelestiaString("Select Time", "Select simulation time"), secondaryText = dateTimeDisplayFormatter.format(currentTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
             alert = TimeSettingsAlert.TimeInput
         }))
-        TextRow(primaryText = CelestiaString("Julian Day", "Select time via entering Julian day"), secondaryText = displayNumberFormat.format(currentJulianDay), modifier = Modifier.clickable {
+        TextRow(primaryText = CelestiaString("Julian Day", "Select time via entering Julian day"), secondaryText = displayNumberFormat.format(currentJulianDay), modifier = Modifier.clickable(onClick = dropUnlessResumed {
             alert = TimeSettingsAlert.JulianDayInput
-        })
-        TextRow(primaryText = CelestiaString("Set to Current Time", "Set simulation time to device"), modifier = Modifier.clickable(onClick = {
+        }))
+        TextRow(primaryText = CelestiaString("Set to Current Time", "Set simulation time to device"), modifier = Modifier.clickable(onClick = dropUnlessResumed {
             scope.launch {
                 val julianDay = withContext(viewModel.executor.asCoroutineDispatcher()) {
                     viewModel.appCore.perform(CelestiaAction.CurrentTime)

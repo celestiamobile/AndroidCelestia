@@ -41,6 +41,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -199,7 +200,7 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
                     top = if (index / 2 == 0) 0.dp else dimensionResource(verticalButtonSpacing) / 2,
                     end =  if (index % 2 == 1) 0.dp else dimensionResource(horizontalButtonSpacing) / 2,
                     bottom = if (index / 2 == (count - 1) / 2) 0.dp else dimensionResource(verticalButtonSpacing) / 2,
-                ), onClick = {
+                ), onClick = dropUnlessResumed {
                     when (val action = item.second) {
                         is AlternateSurfacesItem -> {
                             val surfaces = ArrayList<String>()
