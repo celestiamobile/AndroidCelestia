@@ -10,6 +10,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -17,6 +18,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,7 +32,7 @@ import java.util.concurrent.Executor
 fun ObjectNameAutoComplete(executor: Executor, core: AppCore, name: String, modifier: Modifier = Modifier, selection: Selection, inputUpdated: (String) -> Unit, selectionUpdated: (Selection) -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     var text by rememberSaveable { mutableStateOf(name) }
-    var completions by remember { mutableStateOf(listOf<Completion>()) }
+    val completions = remember { mutableStateListOf<Completion>() }
     var expanded by remember { mutableStateOf(false) }
 
     fun fetchCompletions(currentText: String) {
@@ -45,11 +47,14 @@ fun ObjectNameAutoComplete(executor: Executor, core: AppCore, name: String, modi
                 )
             }
             if (currentText != text) return@launch
-            completions = newCompletions
+            completions.clear()
+            completions.addAll(newCompletions)
             selectionUpdated(fullMatch)
             expanded = newCompletions.isNotEmpty()
         }
     }
+
+    val focusManager = LocalFocusManager.current
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -80,6 +85,7 @@ fun ObjectNameAutoComplete(executor: Executor, core: AppCore, name: String, modi
                         inputUpdated(completion.name)
                         selectionUpdated(completion.selection)
                         expanded = false
+                        focusManager.clearFocus()
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                 )
