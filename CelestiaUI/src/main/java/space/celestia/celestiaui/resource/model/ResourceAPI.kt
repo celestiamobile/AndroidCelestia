@@ -10,8 +10,8 @@
 package space.celestia.celestiaui.resource.model
 
 import androidx.annotation.Keep
-import com.google.gson.*
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -19,33 +19,13 @@ import retrofit2.http.Query
 import space.celestia.celestiafoundation.resource.model.AddonUpdate
 import space.celestia.celestiafoundation.resource.model.GuideItem
 import space.celestia.celestiafoundation.resource.model.ResourceItem
-import java.lang.reflect.Type
-import java.util.*
-
-object ResourceAPI {
-    class DateAdapter : JsonDeserializer<Date> {
-        override fun deserialize(
-            json: JsonElement?,
-            typeOfT: Type?,
-            context: JsonDeserializationContext?
-        ): Date {
-            try {
-                val seconds = json?.asDouble ?: return Date()
-                return Date((seconds * 1000.0).toLong())
-            } catch(e: Throwable) {
-                throw JsonParseException(e)
-            }
-        }
-    }
-
-    val gson: Gson by lazy { GsonBuilder().registerTypeAdapter(Date::class.java, DateAdapter()).create() }
-}
 
 @Keep
+@Serializable
 data class UpdateRequest(
     val lang: String,
     val items: List<String>,
-    @SerializedName("purchaseTokenAndroid") val purchaseToken: String,
+    @SerialName("purchaseTokenAndroid") val purchaseToken: String,
     val productType: String,
 )
 

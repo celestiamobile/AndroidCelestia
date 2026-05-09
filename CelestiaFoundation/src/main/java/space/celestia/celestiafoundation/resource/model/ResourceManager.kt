@@ -11,9 +11,7 @@ package space.celestia.celestiafoundation.resource.model
 
 import android.icu.text.Collator
 import android.icu.text.RuleBasedCollator
-import android.os.Build
 import android.util.Log
-import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,13 +19,14 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import space.celestia.ziputils.ZipExceptionContext
 import space.celestia.ziputils.ZipUtils
 import java.io.File
-import java.io.FileReader
-import java.io.FileWriter
 import java.lang.ref.WeakReference
 import kotlin.math.max
 
@@ -111,12 +110,7 @@ class ResourceManager {
         if (!jsonDescriptionFile.exists() || jsonDescriptionFile.isDirectory)
             return null
         try {
-            val reader = FileReader(jsonDescriptionFile)
-            reader.use {
-                val gson = GsonBuilder().create()
-                val item = gson.fromJson(it, ResourceItem::class.java)
-                return item
-            }
+            return json.decodeFromString<ResourceItem>(jsonDescriptionFile.readText())
         } catch (ignored: Throwable) {
             return null
         }
@@ -136,13 +130,9 @@ class ResourceManager {
                     if (!jsonDescriptionFile.exists() || jsonDescriptionFile.isDirectory)
                         continue
                     try {
-                        val reader = FileReader(jsonDescriptionFile)
-                        reader.use {
-                            val gson = GsonBuilder().create()
-                            val item = gson.fromJson(it, ResourceItem::class.java)
-                            if (item.id == folder.name && item.type == "script") {
-                                items.add(item)
-                            }
+                        val item = json.decodeFromString<ResourceItem>(jsonDescriptionFile.readText())
+                        if (item.id == folder.name && item.type == "script") {
+                            items.add(item)
                         }
                     } catch (ignored: Throwable) {}
                 }
@@ -161,13 +151,9 @@ class ResourceManager {
                     if (!jsonDescriptionFile.exists() || jsonDescriptionFile.isDirectory)
                         continue
                     try {
-                        val reader = FileReader(jsonDescriptionFile)
-                        reader.use {
-                            val gson = GsonBuilder().create()
-                            val item = gson.fromJson(it, ResourceItem::class.java)
-                            if (item.id == folder.name && item.type != "script") {
-                                items.add(item)
-                            }
+                        val item = json.decodeFromString<ResourceItem>(jsonDescriptionFile.readText())
+                        if (item.id == folder.name && item.type != "script") {
+                            items.add(item)
                         }
                     } catch (ignored: Throwable) {}
                 }
@@ -274,11 +260,7 @@ class ResourceManager {
             }
             // We also save a `description.json` just in case for future use
             try {
-                val writer = FileWriter(File(unzipDestination, "description.json"))
-                writer.use {
-                    val gson = GsonBuilder().create()
-                    gson.toJson(item, it)
-                }
+                File(unzipDestination, "description.json").writeText(json.encodeToString(item))
             } catch (ignored: Throwable) {}
             return@executeAsyncTask Result.Success
         }, onPostExecute = { result: Result ->
@@ -343,5 +325,6 @@ class ResourceManager {
 
     companion object {
         private const val TAG = "ResourceManager"
+        private val json = Json { ignoreUnknownKeys = true }
     }
 }

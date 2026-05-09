@@ -1,7 +1,8 @@
 package space.celestia.celestiaui.favorite.viewmodel
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Script
 import space.celestia.celestiafoundation.favorite.BookmarkNode
@@ -17,9 +18,8 @@ class FavoriteManager(private val favoriteFilePath: String, private val appCore:
     fun read() {
         var favorites = arrayListOf<BookmarkNode>()
         try {
-            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
             val str = FileUtils.readFileToText(favoriteFilePath)
-            val decoded = Gson().fromJson<ArrayList<BookmarkNode>>(str, myType)
+            val decoded = json.decodeFromString<ArrayList<BookmarkNode>>(str)
             favorites = decoded
         } catch (ignored: Throwable) { }
         updateCurrentBookmarks(favorites)
@@ -34,9 +34,12 @@ class FavoriteManager(private val favoriteFilePath: String, private val appCore:
     fun save() {
         val favorites = getCurrentBookmarks()
         try {
-            val myType = object : TypeToken<List<BookmarkNode>>() {}.type
-            val str = Gson().toJson(favorites, myType)
+            val str = json.encodeToString<List<BookmarkNode>>(favorites)
             FileUtils.writeTextToFile(str, favoriteFilePath)
         } catch (_: Throwable) { }
+    }
+
+    private companion object {
+        val json = Json { ignoreUnknownKeys = true }
     }
 }

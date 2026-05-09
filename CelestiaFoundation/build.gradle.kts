@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.parcelize)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -50,7 +51,7 @@ kotlin {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.gson)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
 
     implementation(project(path = ":ZipUtils"))

@@ -12,15 +12,17 @@ package space.celestia.celestiafoundation.resource.model
 import android.os.Parcelable
 import androidx.annotation.Keep
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 @Parcelize
 @Keep
+@Serializable
 class ResourceItem(
     val id: String,
     val name: String,
-    val type: String?,
+    val type: String? = null,
     val item: String,
-    val checksum: String?,
-    val objectName: String?,
-    val mainScriptName: String?
+    val checksum: String? = null,
+    val objectName: String? = null,
+    val mainScriptName: String? = null
 ): Parcelable

@@ -10,6 +10,7 @@
 package space.celestia.celestiaui.pushnotification
 
 import androidx.annotation.Keep
+import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -22,6 +23,7 @@ enum class PushNotificationContentType(val rawValue: String) {
 }
 
 @Keep
+@Serializable
 data class RegisterRequest(
     val token: String,
     val tokenType: String,
@@ -30,8 +32,8 @@ data class RegisterRequest(
     val contentTypes: List<String>,
     val api: Int,
     val platform: String,
-    val distribution: String?,
-    val lastShownNewsID: String?
+    val distribution: String? = null,
+    val lastShownNewsID: String? = null
 )
 
 interface UserAPIService {

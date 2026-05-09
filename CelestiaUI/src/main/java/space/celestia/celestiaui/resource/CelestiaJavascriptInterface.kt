@@ -2,7 +2,10 @@ package space.celestia.celestiaui.resource
 
 import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
-import com.google.gson.Gson
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.lang.ref.WeakReference
 
 class CelestiaJavascriptInterface(handler: MessageHandler) {
@@ -16,6 +19,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     }
 
     @Keep
+    @Serializable
     class MessagePayload(val operation: String, val content: String, val minScriptVersion: Int)
     abstract class BaseJavascriptHandler {
         abstract val operation: String
@@ -23,30 +27,36 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     }
 
     @Keep
-    class RunScriptContext(val scriptContent: String, val scriptType: String, val scriptName: String?, val scriptLocation: String?)
+    @Serializable
+    class RunScriptContext(val scriptContent: String, val scriptType: String, val scriptName: String? = null, val scriptLocation: String? = null)
     @Keep
+    @Serializable
     class ShareURLContext(val title: String, val url: String)
     @Keep
+    @Serializable
     class SendACKContext(val id: String)
     @Keep
+    @Serializable
     class OpenAddonNextContext(val id: String)
     @Keep
+    @Serializable
     class RunDemoContext
     @Keep
-    class OpenSubscriptionPageContext(val preferredPlayOfferId: String?)
+    @Serializable
+    class OpenSubscriptionPageContext(val preferredPlayOfferId: String? = null)
 
-    abstract class JavascriptHandler<T>(private val clazz: Class<T>): BaseJavascriptHandler() {
+    abstract class JavascriptHandler<T>(private val serializer: KSerializer<T>): BaseJavascriptHandler() {
         abstract fun execute(context: T, handler: MessageHandler)
 
         override fun executeWithContent(content: String, handler: MessageHandler) {
             try {
-                val obj = Gson().fromJson(content, clazz)
+                val obj = json.decodeFromString(serializer, content)
                 execute(obj, handler)
             } catch(ignored: Throwable) {}
         }
     }
 
-    class RunScriptHandler: JavascriptHandler<RunScriptContext>(RunScriptContext::class.java) {
+    class RunScriptHandler: JavascriptHandler<RunScriptContext>(RunScriptContext.serializer()) {
         override val operation: String
             get() = "runScript"
 
@@ -55,7 +65,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
-    class ShareURLHandler: JavascriptHandler<ShareURLContext>(ShareURLContext::class.java) {
+    class ShareURLHandler: JavascriptHandler<ShareURLContext>(ShareURLContext.serializer()) {
         override val operation: String
             get() = "shareURL"
 
@@ -64,7 +74,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
-    class SendACKHandler: JavascriptHandler<SendACKContext>(SendACKContext::class.java) {
+    class SendACKHandler: JavascriptHandler<SendACKContext>(SendACKContext.serializer()) {
         override val operation: String
             get() = "sendACK"
 
@@ -73,7 +83,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
-    class OpenAddonNextHandler: JavascriptHandler<OpenAddonNextContext>(OpenAddonNextContext::class.java) {
+    class OpenAddonNextHandler: JavascriptHandler<OpenAddonNextContext>(OpenAddonNextContext.serializer()) {
         override val operation: String
             get() = "openAddonNext"
 
@@ -82,7 +92,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
-    class RunDemoHandler: JavascriptHandler<RunDemoContext>(RunDemoContext::class.java) {
+    class RunDemoHandler: JavascriptHandler<RunDemoContext>(RunDemoContext.serializer()) {
         override val operation: String
             get() = "runDemo"
 
@@ -91,7 +101,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
         }
     }
 
-    class OpenSubscriptionPageHandler: JavascriptHandler<OpenSubscriptionPageContext>(OpenSubscriptionPageContext::class.java) {
+    class OpenSubscriptionPageHandler: JavascriptHandler<OpenSubscriptionPageContext>(OpenSubscriptionPageContext.serializer()) {
         override val operation: String
             get() = "openSubscriptionPage"
 
@@ -106,7 +116,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     fun sendMessage(message: String) {
         val messageHandler = handler.get() ?: return
         try {
-            val payload = Gson().fromJson(message, MessagePayload::class.java)
+            val payload = json.decodeFromString<MessagePayload>(message)
             if (payload.minScriptVersion > supportedScriptVersion) return
             for (handler in contextHandlers) {
                 if (handler.operation == payload.operation) {
@@ -119,6 +129,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
 
     private companion object {
         val supportedScriptVersion = 5
+        val json = Json { ignoreUnknownKeys = true }
 
         val contextHandlers: List<BaseJavascriptHandler> = listOf(
             RunScriptHandler(),

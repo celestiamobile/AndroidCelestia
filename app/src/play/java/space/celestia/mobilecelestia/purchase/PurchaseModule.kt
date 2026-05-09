@@ -12,12 +12,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import space.celestia.celestiaui.purchase.PurchaseManager
-import java.io.Serializable
+import java.io.Serializable as JavaSerializable
 import java.lang.ref.WeakReference
 import javax.inject.Singleton
 
@@ -47,16 +50,18 @@ class PurchaseModule {
     @Singleton
     @Provides
     fun providePurchaseAPI(): PurchaseAPIService {
+        val json = Json { ignoreUnknownKeys = true }
         return Retrofit.Builder()
             .baseUrl("https://celestia.mobi/api/2/subscription/")
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(PurchaseAPIService::class.java)
     }
 }
 
 @Keep
-class PurchaseStatus(val valid: Boolean, val planId: String?): Serializable
+@Serializable
+class PurchaseStatus(val valid: Boolean, val planId: String? = null): JavaSerializable
 
 interface PurchaseAPIService {
     @GET("play")

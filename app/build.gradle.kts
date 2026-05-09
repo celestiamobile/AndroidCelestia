@@ -18,6 +18,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.parcelize)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.services)
 }
 
@@ -157,9 +158,9 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
 
     implementation(libs.material)
-    implementation(libs.gson)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
+    implementation(libs.converter.kotlinx.serialization)
     implementation(libs.okhttp)
 
     implementation(libs.androidx.webkit)
