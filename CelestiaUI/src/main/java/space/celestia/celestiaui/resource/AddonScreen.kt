@@ -70,7 +70,18 @@ sealed class AddonAlert {
 }
 
 @Composable
-fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, requestRunScript: (File) -> Unit, paddingValues: PaddingValues) {
+fun AddonScreen(
+    item: ResourceItem,
+    addonInfoUpdated: (ResourceItem) -> Unit,
+    requestRunScript: (File) -> Unit,
+    paddingValues: PaddingValues,
+    runScript: ((String, String, String?, String?, File?) -> Unit)? = null,
+    shareURL: ((String, String) -> Unit)? = null,
+    receivedACK: ((String) -> Unit)? = null,
+    runDemo: (() -> Unit)? = null,
+    openSubscriptionPage: ((String?) -> Unit)? = null,
+    externalLinkClicked: ((String) -> Unit)? = null,
+) {
     val viewModel: AddonViewModel = hiltViewModel()
     var info by rememberSaveable { mutableStateOf(item) }
     var installedAddonChecksum by rememberSaveable { mutableStateOf<String?>(null) }
@@ -202,7 +213,13 @@ fun AddonScreen(item: ResourceItem, addonInfoUpdated: (ResourceItem) -> Unit, re
             filterURL = true,
             matchingQueryKeys = listOf("item"),
             modifier = Modifier.weight(1.0f),
-            paddingValues = PaddingValues.Zero
+            paddingValues = PaddingValues.Zero,
+            runScript = runScript,
+            shareURL = shareURL,
+            receivedACK = receivedACK,
+            runDemo = runDemo,
+            openSubscriptionPage = openSubscriptionPage,
+            externalLinkClicked = externalLinkClicked,
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.common_page_button_gap_vertical)),

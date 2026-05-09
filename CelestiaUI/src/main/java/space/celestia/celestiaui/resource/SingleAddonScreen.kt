@@ -43,7 +43,17 @@ class SingleAddonViewModel(): ViewModel() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SingleAddonScreen(item: ResourceItem, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit) {
+fun SingleAddonScreen(
+    item: ResourceItem,
+    requestRunScript: (File) -> Unit,
+    requestShareAddon: (String, String) -> Unit,
+    runScript: ((String, String, String?, String?, File?) -> Unit)? = null,
+    shareURL: ((String, String) -> Unit)? = null,
+    receivedACK: ((String) -> Unit)? = null,
+    runDemo: (() -> Unit)? = null,
+    openSubscriptionPage: ((String?) -> Unit)? = null,
+    externalLinkClicked: ((String) -> Unit)? = null,
+) {
     val viewModel: SingleAddonViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val backStack = viewModel.backStack
@@ -110,9 +120,18 @@ fun SingleAddonScreen(item: ResourceItem, requestRunScript: (File) -> Unit, requ
             entryProvider = { route ->
                 when (route) {
                     is SingleAddonPage.Addon -> NavEntry(route) {
-                        AddonScreen(item = route.addon, paddingValues = paddingValues, addonInfoUpdated = { info ->
-                            route.title.value = info.name
-                        }, requestRunScript = requestRunScript)
+                        AddonScreen(
+                            item = route.addon,
+                            paddingValues = paddingValues,
+                            addonInfoUpdated = { info -> route.title.value = info.name },
+                            requestRunScript = requestRunScript,
+                            runScript = runScript,
+                            shareURL = shareURL,
+                            receivedACK = receivedACK,
+                            runDemo = runDemo,
+                            openSubscriptionPage = openSubscriptionPage,
+                            externalLinkClicked = externalLinkClicked,
+                        )
                     }
                 }
             }

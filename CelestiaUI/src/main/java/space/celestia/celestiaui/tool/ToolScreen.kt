@@ -54,7 +54,13 @@ fun ToolScreen(
     requestShareAddon: (String, String) -> Unit,
     shareRequested: (MutableFavoriteBaseItem) -> Unit,
     openBookmarkRequested: (FavoriteBookmarkItem) -> Unit,
-    openScriptRequested: (FavoriteScriptItem) -> Unit
+    openScriptRequested: (FavoriteScriptItem) -> Unit,
+    runScript: ((String, String, String?, String?, File?) -> Unit)? = null,
+    shareURL: ((String, String) -> Unit)? = null,
+    receivedACK: ((String) -> Unit)? = null,
+    runDemo: (() -> Unit)? = null,
+    openSubscriptionPage: ((String?) -> Unit)? = null,
+    externalLinkClicked: ((String) -> Unit)? = null,
 ) {
     if (backStack.isEmpty()) return
 
@@ -189,6 +195,12 @@ fun ToolScreen(
                     item = entry.item,
                     requestRunScript = requestRunScript,
                     requestShareAddon = requestShareAddon,
+                    runScript = runScript,
+                    shareURL = shareURL,
+                    receivedACK = receivedACK,
+                    runDemo = runDemo,
+                    openSubscriptionPage = openSubscriptionPage,
+                    externalLinkClicked = externalLinkClicked,
                 )
             }
             is ToolPage.Article -> NavEntry(entry) {
@@ -198,7 +210,13 @@ fun ToolScreen(
                         uri = uri,
                         filterURL = true,
                         matchingQueryKeys = listOf("guide"),
-                        paddingValues = paddingValues
+                        paddingValues = paddingValues,
+                        runScript = runScript,
+                        shareURL = shareURL,
+                        receivedACK = receivedACK,
+                        runDemo = runDemo,
+                        openSubscriptionPage = openSubscriptionPage,
+                        externalLinkClicked = externalLinkClicked,
                     )
                 }
             }
@@ -211,9 +229,15 @@ fun ToolScreen(
                 })
             }
             is ToolPage.Help -> NavEntry(entry) {
-                NewHelpScreen(linkClicked = {
-                    linkClicked(it, false)
-                })
+                NewHelpScreen(
+                    linkClicked = { linkClicked(it, false) },
+                    runScript = runScript,
+                    shareURL = shareURL,
+                    receivedACK = receivedACK,
+                    runDemo = runDemo,
+                    openSubscriptionPage = openSubscriptionPage,
+                    externalLinkClicked = externalLinkClicked,
+                )
             }
             is ToolPage.Favorites -> NavEntry(entry) {
                 FavoriteContainer(
@@ -246,7 +270,17 @@ fun ToolScreen(
             }
             is ToolPage.RelatedAddons -> NavEntry(entry) {
                 val uri by remember { mutableStateOf(URLHelper.buildInAppRelatedAddonsURI(objectPath = entry.objectPath, language = AppCore.getLanguage(), platform = viewModel.platform, purchaseManager = viewModel.purchaseManager)) }
-                WebScreen(uri, requestRunScript = requestRunScript, requestShareAddon = requestShareAddon)
+                WebScreen(
+                    uri,
+                    requestRunScript = requestRunScript,
+                    requestShareAddon = requestShareAddon,
+                    runScript = runScript,
+                    shareURL = shareURL,
+                    receivedACK = receivedACK,
+                    runDemo = runDemo,
+                    openSubscriptionPage = openSubscriptionPage,
+                    externalLinkClicked = externalLinkClicked,
+                )
             }
             is ToolPage.SubscriptionManager -> NavEntry(entry) {
                 viewModel.purchaseManager.ManagerScreen(entry.preferredPlayOfferId)

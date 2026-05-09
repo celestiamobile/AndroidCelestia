@@ -1940,7 +1940,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             },
             openScriptRequested = {
                 openFavoriteScript(it)
-            }
+            },
+            runScript = { type, content, name, location, contextDir ->
+                onRunScript(type, content, name, location, contextDir)
+            },
+            shareURL = { title, url ->
+                onShareURL(title, url)
+            },
+            receivedACK = { id ->
+                onReceivedACK(id)
+            },
+            runDemo = {
+                onRunDemo()
+            },
+            openSubscriptionPage = { preferredPlayOfferId ->
+                onOpenSubscriptionPage(preferredPlayOfferId)
+            },
+            externalLinkClicked = { url ->
+                onExternalWebLinkClicked(url)
+            },
         )
     }
 

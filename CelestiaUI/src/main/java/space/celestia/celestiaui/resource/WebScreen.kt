@@ -48,7 +48,17 @@ class WebViewModel(): ViewModel() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WebScreen(uri: Uri, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit) {
+fun WebScreen(
+    uri: Uri,
+    requestRunScript: (File) -> Unit,
+    requestShareAddon: (String, String) -> Unit,
+    runScript: ((String, String, String?, String?, File?) -> Unit)? = null,
+    shareURL: ((String, String) -> Unit)? = null,
+    receivedACK: ((String) -> Unit)? = null,
+    runDemo: (() -> Unit)? = null,
+    openSubscriptionPage: ((String?) -> Unit)? = null,
+    externalLinkClicked: ((String) -> Unit)? = null,
+) {
     val viewModel: WebViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val backStack = viewModel.backStack
@@ -125,20 +135,34 @@ fun WebScreen(uri: Uri, requestRunScript: (File) -> Unit, requestShareAddon: (St
             entryProvider = { route ->
                 when (route) {
                     is Page.Home -> NavEntry(route) {
-                        WebPage(uri = uri, paddingValues = paddingValues, titleChanged = {
-                            route.title.value = it
-                        }, canGoBackChanged = {
-                            route.canGoBack.value = it
-                        }, goBackRequest = { request ->
-                            route.goBackRequest = request
-                        }, openAddon = { addon ->
-                            backStack.add(Page.Addon(addon))
-                        })
+                        WebPage(
+                            uri = uri,
+                            paddingValues = paddingValues,
+                            titleChanged = { route.title.value = it },
+                            canGoBackChanged = { route.canGoBack.value = it },
+                            goBackRequest = { request -> route.goBackRequest = request },
+                            openAddon = { addon -> backStack.add(Page.Addon(addon)) },
+                            runScript = runScript,
+                            shareURL = shareURL,
+                            receivedACK = receivedACK,
+                            runDemo = runDemo,
+                            openSubscriptionPage = openSubscriptionPage,
+                            externalLinkClicked = externalLinkClicked,
+                        )
                     }
                     is Page.Addon -> NavEntry(route) {
-                        AddonScreen(item = route.addon, paddingValues = paddingValues, addonInfoUpdated = { info ->
-                            route.title.value = info.name
-                        }, requestRunScript = requestRunScript)
+                        AddonScreen(
+                            item = route.addon,
+                            paddingValues = paddingValues,
+                            addonInfoUpdated = { info -> route.title.value = info.name },
+                            requestRunScript = requestRunScript,
+                            runScript = runScript,
+                            shareURL = shareURL,
+                            receivedACK = receivedACK,
+                            runDemo = runDemo,
+                            openSubscriptionPage = openSubscriptionPage,
+                            externalLinkClicked = externalLinkClicked,
+                        )
                     }
                 }
             }

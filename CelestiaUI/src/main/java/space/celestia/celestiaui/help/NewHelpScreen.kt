@@ -10,9 +10,18 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.utils.URLHelper
 import space.celestia.celestiaui.help.viewmodel.HelpViewModel
 import space.celestia.celestiaui.resource.WebPage
+import java.io.File
 
 @Composable
-fun NewHelpScreen(linkClicked: (String) -> Unit) {
+fun NewHelpScreen(
+    linkClicked: (String) -> Unit,
+    runScript: ((String, String, String?, String?, File?) -> Unit)? = null,
+    shareURL: ((String, String) -> Unit)? = null,
+    receivedACK: ((String) -> Unit)? = null,
+    runDemo: (() -> Unit)? = null,
+    openSubscriptionPage: ((String?) -> Unit)? = null,
+    externalLinkClicked: ((String) -> Unit)? = null,
+) {
     val viewModel: HelpViewModel = hiltViewModel()
     Scaffold(
         contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)
@@ -26,7 +35,13 @@ fun NewHelpScreen(linkClicked: (String) -> Unit) {
                 HelpScreen(modifier = modifier, paddingValues = paddingValues, linkClicked = { link ->
                     linkClicked(link)
                 })
-            }
+            },
+            runScript = runScript,
+            shareURL = shareURL,
+            receivedACK = receivedACK,
+            runDemo = runDemo,
+            openSubscriptionPage = openSubscriptionPage,
+            externalLinkClicked = externalLinkClicked,
         )
     }
 }
