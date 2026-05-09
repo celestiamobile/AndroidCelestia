@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
@@ -99,7 +100,7 @@ fun GoToScreen(paddingValues: PaddingValues) {
             viewModel.selection.value = it
         })
         Header(text = CelestiaString("Coordinates", "Longitude and latitude (in Go to)"))
-        Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+        Row(modifier = textViewModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
             OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "Coordinates")) }, onValueChange = {
                 latitudeString = it
             }, isError = !isLatitudeValid, modifier = Modifier.weight(1.0f))
@@ -108,11 +109,11 @@ fun GoToScreen(paddingValues: PaddingValues) {
             }, isError = !isLongitudeValid, modifier = Modifier.weight(1.0f))
         }
         Header(text = CelestiaString("Distance", "Distance to the object (in Go to)"))
-        Row(modifier = textViewModifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+        Row(modifier = textViewModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
             OutlinedTextField(value = distanceString, onValueChange = {
                 distanceString = it
-            }, isError = !isDistanceValid, modifier = Modifier.weight(1.0f))
-            OptionSelect(options = GoToViewModel.distanceUnits.map {
+            }, isError = !isDistanceValid, modifier = Modifier.weight(2f))
+            OptionSelect(modifier = Modifier.weight(1f), options = GoToViewModel.distanceUnits.map {
                 when(it) {
                     GoToLocation.DistanceUnit.radii -> {
                         CelestiaString("radii", "In Go to, specify the distance based on the object radius")

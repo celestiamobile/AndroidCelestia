@@ -1,35 +1,50 @@
 package space.celestia.celestiaui.compose
 
-import android.annotation.SuppressLint
-import android.view.LayoutInflater
-import android.widget.ArrayAdapter
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.material.textfield.MaterialAutoCompleteTextView
-import space.celestia.celestiaui.R
 
-@SuppressLint("InflateParams")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OptionSelect(options: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, selectionChange: (Int) -> Unit) {
-    AndroidView(factory = { context ->
-        val view = LayoutInflater.from(context).inflate(R.layout.common_options_select, null, false)
-        val autoCompleteTextView = view.findViewById<MaterialAutoCompleteTextView>(R.id.text_view)
-        val adapter = object: ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line) {
-            override fun getCount(): Int {
-                return options.size
-            }
-
-            override fun getItem(position: Int): String {
-                return options[position]
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = options[selectedIndex],
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEachIndexed { index, option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        selectionChange(index)
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                )
             }
         }
-        autoCompleteTextView.setAdapter(adapter)
-        autoCompleteTextView.setText(options[selectedIndex])
-        autoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
-            selectionChange(position)
-        }
-        return@AndroidView view
-    }, modifier = modifier)
+    }
 }
