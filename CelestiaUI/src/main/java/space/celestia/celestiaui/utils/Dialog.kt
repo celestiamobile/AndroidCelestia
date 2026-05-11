@@ -53,9 +53,11 @@ fun Activity.showAlert(title: String, message: String? = null, handler: (() -> U
     if (message != null)
         builder.setMessage(message)
     builder.setPositiveButton(CelestiaString("OK", "")) { _, _ ->
-        handlerCalled = true
-        if (handler != null)
-            handler()
+        if (!handlerCalled) {
+            handlerCalled = true
+            if (handler != null)
+                handler()
+        }
     }
     if (handler != null || cancelHandler != null) {
         builder.setNegativeButton(CelestiaString("Cancel", "")) { dialog, _ ->
@@ -63,9 +65,11 @@ fun Activity.showAlert(title: String, message: String? = null, handler: (() -> U
         }
     }
     builder.setOnCancelListener {
-        handlerCalled = true
-        if (cancelHandler != null)
-            cancelHandler()
+        if (!handlerCalled) {
+            handlerCalled = true
+            if (cancelHandler != null)
+                cancelHandler()
+        }
     }
     builder.show()
 }
