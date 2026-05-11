@@ -11,6 +11,7 @@ package space.celestia.celestiafoundation.resource.model
 
 import android.icu.text.Collator
 import android.icu.text.RuleBasedCollator
+import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,8 +20,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -109,10 +108,10 @@ class ResourceManager {
         val jsonDescriptionFile = File(contextDir, "description.json")
         if (!jsonDescriptionFile.exists() || jsonDescriptionFile.isDirectory)
             return null
-        try {
-            return json.decodeFromString<ResourceItem>(jsonDescriptionFile.readText())
-        } catch (ignored: Throwable) {
-            return null
+        return try {
+            json.decodeFromString<ResourceItem>(jsonDescriptionFile.readText())
+        } catch (_: Throwable) {
+            null
         }
     }
 
@@ -134,7 +133,7 @@ class ResourceManager {
                         if (item.id == folder.name && item.type == "script") {
                             items.add(item)
                         }
-                    } catch (ignored: Throwable) {}
+                    } catch (_: Throwable) {}
                 }
             }
         }
@@ -155,7 +154,7 @@ class ResourceManager {
                         if (item.id == folder.name && item.type != "script") {
                             items.add(item)
                         }
-                    } catch (ignored: Throwable) {}
+                    } catch (_: Throwable) {}
                 }
             }
         }
@@ -206,7 +205,6 @@ class ResourceManager {
         class Failure(val errorContext: ErrorContext): Result()
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     fun download(item: ResourceItem, destination: File) {
         val unzipDestination = contextDirectory(item)
         val reference = WeakReference(this)
@@ -248,7 +246,7 @@ class ResourceManager {
                 if (!unzipDestination.exists() && !unzipDestination.mkdir()) {
                     return@executeAsyncTask Result.Failure(errorContext = ErrorContext.CreateDirectory(unzipDestination.path))
                 }
-            } catch (ignored: Throwable) {
+            } catch (_: Throwable) {
                 return@executeAsyncTask Result.Failure(errorContext = ErrorContext.CreateDirectory(unzipDestination.path))
             }
 
@@ -265,7 +263,7 @@ class ResourceManager {
             // We also save a `description.json` just in case for future use
             try {
                 File(unzipDestination, "description.json").writeText(json.encodeToString(item))
-            } catch (ignored: Throwable) {}
+            } catch (_: Throwable) {}
             return@executeAsyncTask Result.Success
         }, onPostExecute = { result: Result ->
             when (result) {
