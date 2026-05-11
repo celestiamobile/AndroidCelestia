@@ -25,6 +25,12 @@ for directory in 'data' 'extras' 'extras-standard' 'models' 'textures' 'warp';do
     fi
 done
 
+f=$CELESTIA_CONTENT_REPO_ROOT/models-extra
+if [ -d $f ];then
+    echo "rsync -rv --quiet --exclude='CMakeLists.txt' --exclude='well-known-dsonames.txt' --exclude='well-known-starnames.txt' $f/ $CELESTIA_ROOT/models"
+    rsync -rv --quiet --exclude='CMakeLists.txt' --exclude='well-known-dsonames.txt' --exclude='well-known-starnames.txt' $f/ $CELESTIA_ROOT/models
+fi
+
 for file in "controls.txt" "demo.cel" "guide.cel" "start.cel" "COPYING" "AUTHORS" "TRANSLATORS";do
     f=$CELESTIA_REPO_ROOT/$file
     if [ ! -f $CELESTIA_ROOT/$file ] || [ $f -nt $CELESTIA_ROOT/$file ];then
