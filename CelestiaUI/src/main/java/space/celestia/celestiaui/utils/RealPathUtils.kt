@@ -37,7 +37,7 @@ object RealPathUtils {
         applicationId: String
     ): String? {
         // DocumentProvider
-        val isTree = DocumentsContract.isTreeUri(uri)
+        val isTree = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && DocumentsContract.isTreeUri(uri)
         when {
             DocumentsContract.isDocumentUri(context, uri) || isTree -> {
                 // ExternalStorageProvider

@@ -159,13 +159,17 @@ class ResourceManager {
                 }
             }
         }
-        val collator = Collator.getInstance()
-        if (collator is RuleBasedCollator) {
-            collator.numericCollation = true
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val collator = Collator.getInstance()
+            if (collator is RuleBasedCollator) {
+                collator.numericCollation = true
+            }
+            items.sortedWith(compareBy(collator) {
+                it.name
+            })
+        } else {
+            items.sortedWith(compareBy { it.name })
         }
-        return items.sortedWith(compareBy(collator) {
-            it.name
-        })
     }
 
     fun contextDirectory(item: ResourceItem): File {
