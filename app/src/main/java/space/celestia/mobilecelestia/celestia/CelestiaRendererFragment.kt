@@ -294,7 +294,7 @@ class CelestiaRendererFragment : Fragment(), AppStatusReporter.Listener {
         }
 
         // Prepare renderer
-        if (!appCore.startRenderer()) {
+        if (!appCore.startRenderer(rendererSettings.enableSRGBRendering)) {
             appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }

@@ -93,8 +93,8 @@ public class AppCore {
         c_setSystemAccessHandler(pointer);
     }
 
-    public boolean startRenderer() {
-        return c_startRenderer(pointer);
+    public boolean startRenderer(boolean srgbRendering) {
+        return c_startRenderer(pointer, srgbRendering);
     }
 
     public boolean startSimulation(@Nullable String configFileName, @Nullable String[] extraDirectories, @Nullable ProgressWatcher watcher) {
@@ -296,7 +296,7 @@ public class AppCore {
     private native void c_setFatalErrorHandler(long ptr);
     private native void c_setSystemAccessHandler(long ptr);
     private static native long c_init();
-    private static native boolean c_startRenderer(long ptr);
+    private static native boolean c_startRenderer(long ptr, boolean srgbRendering);
     private static native boolean c_startSimulation(long ptr, String configFileName, String[] extraDirectories, ProgressWatcher watcher);
     private static native void c_start(long ptr);
     private static native void c_start(long ptr, double secondsSinceEpoch);
