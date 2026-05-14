@@ -21,7 +21,6 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -449,7 +448,6 @@ class CommonWebFragment: Fragment(), CelestiaJavascriptInterface.MessageHandler 
         val queryKeys = matchingQueryKeys
         webView.addJavascriptInterface(CelestiaJavascriptInterface(this), "AndroidCelestia")
         webView.webViewClient = object: WebViewClient() {
-            @RequiresApi(Build.VERSION_CODES.N)
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
                 request: WebResourceRequest?

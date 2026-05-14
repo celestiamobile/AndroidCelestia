@@ -13,7 +13,6 @@ import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -37,7 +36,7 @@ object RealPathUtils {
         applicationId: String
     ): String? {
         // DocumentProvider
-        val isTree = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && DocumentsContract.isTreeUri(uri)
+        val isTree = DocumentsContract.isTreeUri(uri)
         when {
             DocumentsContract.isDocumentUri(context, uri) || isTree -> {
                 // ExternalStorageProvider

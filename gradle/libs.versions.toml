@@ -8,7 +8,6 @@ build_tools = "36.0.0"
 cmake = "4.1.2"
 compile_sdk = "36"
 compose-bom = "2026.05.00"
-constraintlayout = "2.2.1"
 core-ktx = "1.18.0"
 drawerlayout = "1.2.0"
 espresso-core = "3.7.0"
@@ -24,15 +23,15 @@ kotlinx-coroutines-android = "1.11.0"
 kotlinx-serialization-json = "1.11.0"
 ksp = "2.3.7"
 lifecycle-runtime = "2.10.0"
-material = "1.13.0"
-media3 = "1.10.0"
-min_sdk = "23"
+material = "1.14.0"
+media3 = "1.10.1"
+min_sdk = "24"
 ndk = "29.0.14206865"
 okhttp = "5.3.2"
 retrofit = "3.0.0"
 sentry-android = "8.37.1"
 target_sdk = "36"
-webkit = "1.15.0"
+webkit = "1.16.0"
 navigation3 = "1.1.1"
 firebase-bom = "34.13.0"
 google-services = "4.4.4"
@@ -45,7 +44,6 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3-android" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
-androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 androidx-drawerlayout = { module = "androidx.drawerlayout:drawerlayout", version.ref = "drawerlayout" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
