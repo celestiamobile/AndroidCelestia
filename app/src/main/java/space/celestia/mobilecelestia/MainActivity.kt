@@ -116,7 +116,6 @@ import space.celestia.mobilecelestia.celestia.CelestiaPresentation
 import space.celestia.mobilecelestia.celestia.RendererSettings
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
-import space.celestia.mobilecelestia.common.LegacySheetLayout
 import space.celestia.mobilecelestia.common.SHEET_MAX_FULL_WIDTH_DP
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.control.BottomControlAction
@@ -236,9 +235,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val viewModel: MainViewModel by viewModels()
 
-    private val useComposeSheet: Boolean
-        get() = featureFlags.composeSheet
-
     private var mediaRouterCallback: MediaRouter.SimpleCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -305,28 +301,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
-        if (useComposeSheet) {
-            findViewById<View>(R.id.bottom_sheet_insets).visibility = View.VISIBLE
-            findViewById<ComposeView>(R.id.bottom_sheet_host).apply {
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-                setContent {
-                    Mdc3Theme {
-                        SheetLayout(
-                            visible = viewModel.bottomSheetVisible.value,
-                            onDismiss = {
-                                viewModel.bottomSheetVisible.value = false
-                            }
-                        ) {
-                            ToolScreenContent()
+        findViewById<View>(R.id.bottom_sheet_insets).visibility = View.VISIBLE
+        findViewById<ComposeView>(R.id.bottom_sheet_host).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+            setContent {
+                Mdc3Theme {
+                    SheetLayout(
+                        visible = viewModel.bottomSheetVisible.value,
+                        onDismiss = {
+                            viewModel.bottomSheetVisible.value = false
                         }
-                    }
-                }
-            }
-        } else {
-            findViewById<ComposeView>(R.id.legacy_bottom_sheet_content).apply {
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-                setContent {
-                    Mdc3Theme {
+                    ) {
                         ToolScreenContent()
                     }
                 }
@@ -337,14 +322,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         ViewCompat.setOnApplyWindowInsetsListener( findViewById<View>(android.R.id.content).rootView) { _, insets ->
             updateConfiguration(resources.configuration, insets)
             return@setOnApplyWindowInsetsListener insets
-        }
-
-        if (!useComposeSheet) {
-            findViewById<View>(R.id.close_button).setOnClickListener {
-                lifecycleScope.launch {
-                    hideOverlay(true)
-                }
-            }
         }
 
         @Suppress("ClickableViewAccessibility")
@@ -375,25 +352,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
-        if (useComposeSheet) {
-            val bottomSheetContainer = findViewById<View>(R.id.bottom_sheet_insets)
-            ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
-                val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
-                WindowInsetsCompat.Builder(insets)
-                    .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
-                    .build()
-            }
-            bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        } else {
-            val legacyBottomSheet = findViewById<View>(R.id.legacy_bottom_sheet)
-            ViewCompat.setOnApplyWindowInsetsListener(legacyBottomSheet) { _, insets ->
-                val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
-                WindowInsetsCompat.Builder(insets)
-                    .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
-                    .build()
-            }
-            legacyBottomSheet.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        val bottomSheetContainer = findViewById<View>(R.id.bottom_sheet_insets)
+        ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
+            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            WindowInsetsCompat.Builder(insets)
+                .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
+                .build()
         }
+        bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         findViewById<View>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         findViewById<View>(R.id.toolbar_overlay).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
@@ -412,11 +378,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
 
             findViewById<View>(R.id.bottom_toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
-
-            if (!useComposeSheet) {
-                findViewById<View>(R.id.legacy_bottom_sheet_overlay).visibility = if (viewModel.bottomSheetVisible.value) View.VISIBLE else View.GONE
-                findViewById<View>(R.id.legacy_bottom_sheet_card).visibility = if (viewModel.bottomSheetVisible.value) View.VISIBLE else View.GONE
-            }
 
             if (currentToolbarActions.isNotEmpty() && toolbarVisible) {
                 showToolbarActionsDirect(currentToolbarActions, currentToolbarOverflowActions)
@@ -630,13 +591,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val drawerParams = findViewById<View>(R.id.drawer).layoutParams
         drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
-
-        if (!useComposeSheet) {
-            val bottomSheetContainer = findViewById<LegacySheetLayout>(R.id.legacy_bottom_sheet_overlay)
-            bottomSheetContainer.edgeInsets = EdgeInsets(windowInsets?.systemWindowInsets)
-            bottomSheetContainer.useLandscapeLayout = hasRegularHorizontalSpace
-            bottomSheetContainer.requestLayout()
-        }
     }
 
     private fun loadExternalConfig() {
@@ -705,9 +659,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun celestiaLoadingFinished() {
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
-        if (!useComposeSheet) {
-            findViewById<AppCompatImageButton>(R.id.close_button).contentDescription = CelestiaString("Close", "")
-        }
         showCelestiaPlus.value = purchaseManager.canUseInAppPurchase()
         findViewById<View>(R.id.drawer).visibility = View.VISIBLE
 
@@ -1493,8 +1444,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (drawerLayout.isDrawerOpen(GravityCompat.END))
             return false
         // check bottom sheet
-        return if (useComposeSheet) !viewModel.bottomSheetVisible.value
-        else findViewById<View>(R.id.legacy_bottom_sheet_overlay).visibility != View.VISIBLE
+        return !viewModel.bottomSheetVisible.value
     }
 
     override fun celestiaFragmentLoadingFromFallback() {
@@ -1548,13 +1498,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private suspend fun hideBottomSheet(animated: Boolean = true) {
-        if (useComposeSheet) {
-            viewModel.bottomSheetVisible.value = false
-        } else {
-            hideView(animated, R.id.legacy_bottom_sheet_card, false)
-            findViewById<View>(R.id.legacy_bottom_sheet_overlay).visibility = View.INVISIBLE
-            viewModel.bottomSheetVisible.value = false
-        }
+        viewModel.bottomSheetVisible.value = false
     }
 
     private suspend fun showView(animated: Boolean, viewID: Int, horizontal: Boolean) {
@@ -1967,17 +1911,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetToolDirect(page)
     }
 
-    private suspend fun showBottomSheetToolDirect(page: ToolPage) {
+    private fun showBottomSheetToolDirect(page: ToolPage) {
         val wasVisible = viewModel.bottomSheetVisible.value
         if (!wasVisible) {
             viewModel.backStack.clear()
         }
         viewModel.backStack.add(page)
         viewModel.bottomSheetVisible.value = true
-        if (!useComposeSheet && !wasVisible) {
-            findViewById<View>(R.id.legacy_bottom_sheet_overlay).visibility = View.VISIBLE
-            showView(true, R.id.legacy_bottom_sheet_card, false)
-        }
     }
 
     private suspend fun showToolbarActions(actions: List<BottomControlAction>, overflowItems: List<OverflowItem> = listOf()) {

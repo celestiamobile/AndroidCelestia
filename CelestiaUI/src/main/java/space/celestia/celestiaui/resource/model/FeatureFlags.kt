@@ -11,7 +11,6 @@ package space.celestia.celestiaui.resource.model
 
 data class FeatureFlags(
     val dummy: Boolean = false,
-    val composeSheet: Boolean = false,
     val pushNotificationPlay: Boolean = false,
     val composeSurfaceV2: Boolean = false,
     val composeWebView: Boolean = false
