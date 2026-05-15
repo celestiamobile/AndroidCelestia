@@ -21,6 +21,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
+import android.view.ContextMenu
 import android.view.Display
 import android.view.LayoutInflater
 import android.view.Menu
@@ -49,6 +50,7 @@ import androidx.core.net.toUri
 import androidx.core.os.BundleCompat
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -72,8 +74,11 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
+import space.celestia.celestia.Body
+import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
+import space.celestia.celestia.Universe
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
@@ -91,6 +96,7 @@ import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
 import space.celestia.celestiaui.favorite.FavoriteScriptItem
 import space.celestia.celestiaui.favorite.MutableFavoriteBaseItem
 import space.celestia.celestiaui.favorite.viewmodel.FavoriteManager
+import space.celestia.celestiaui.info.getAvailableMarkers
 import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
@@ -144,7 +150,8 @@ import kotlin.system.exitProcess
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    CommonWebFragment.Listener {
+    CommonWebFragment.Listener,
+    AppCore.ContextMenuHandler {
 
     @AppSettings
     @Inject
@@ -236,6 +243,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val viewModel: MainViewModel by viewModels()
 
     private var mediaRouterCallback: MediaRouter.SimpleCallback? = null
+
+    // Context menu
+    private val isContextMenuEnabled by lazy { appSettings[PreferenceManager.PredefinedKey.ContextMenu] != "false" }
+    private var pendingTarget: Selection? = null
+    private val browserItems: ArrayList<BrowserItem> = arrayListOf()
+    private var contextMenuView: View? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Guard against Android backup restricted mode where the custom Application is not loaded,
@@ -1453,6 +1466,138 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun celestiaFragmentInteractionViewReady(view: View) {
+        if (isContextMenuEnabled) {
+            contextMenuView = view
+            registerForContextMenu(view)
+            view.isContextClickable = true
+            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                appCore.setContextMenuHandler(this@MainActivity)
+            }
+        }
+    }
+
+    override fun requestContextMenu(x: Float, y: Float, selection: Selection) {
+        if (selection.isEmpty) return
+        pendingTarget = selection
+        lifecycleScope.launch {
+            contextMenuView?.showContextMenu(x / rendererSettings.scaleFactor, y / rendererSettings.scaleFactor)
+        }
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+        if (v != contextMenuView) return
+        val selection = pendingTarget ?: return
+
+        browserItems.clear()
+
+        fun createSubMenu(menu: Menu, browserItem: BrowserItem) {
+            val obj = browserItem.`object`
+            if (obj != null) {
+                menu.add(GROUP_BROWSER_ITEM_GET_INFO, browserItems.size, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object")).setOnMenuItemClickListener { _ ->
+                    showInfo(Selection(obj))
+                    return@setOnMenuItemClickListener true
+                }
+                val actionCount = CelestiaAction.allActions.size + 1 // All actions + select
+                menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount, Menu.NONE, CelestiaString("Select", "Select an object")).setOnMenuItemClickListener { _ ->
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                        val newSelection = Selection(obj)
+                        appCore.simulation.selection = newSelection
+                    }
+                    return@setOnMenuItemClickListener true
+                }
+                for (action in CelestiaAction.allActions.withIndex()) {
+                    menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount + action.index + 1, Menu.NONE, action.value.title).setOnMenuItemClickListener { _ ->
+                        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                            val newSelection = Selection(obj)
+                            appCore.simulation.selection = newSelection
+                            appCore.perform(action.value)
+                        }
+                        return@setOnMenuItemClickListener true
+                    }
+                }
+                browserItems.add(browserItem)
+            }
+            browserItem.children.withIndex().forEach {
+                val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, browserItem.childNameAtIndex(it.index))
+                createSubMenu(subMenu, it.value)
+            }
+            MenuCompat.setGroupDividerEnabled(menu, true)
+        }
+
+        menu.add(GROUP_HEADER, 0, Menu.NONE, appCore.simulation.universe.getNameForSelection(selection)).isEnabled = false
+        // menu.setHeaderTitle(appCore.simulation.universe.getNameForSelection(selection)) // https://issuetracker.google.com/issues/213478160
+        menu.add(GROUP_GET_INFO, 0, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object")).setOnMenuItemClickListener { _ ->
+            showInfo(selection)
+            return@setOnMenuItemClickListener true
+        }
+        menu.add(GROUP_ACTION, 0, Menu.NONE, CelestiaString("Select", "Select an object")).setOnMenuItemClickListener { _ ->
+            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                appCore.simulation.selection = selection
+            }
+            return@setOnMenuItemClickListener true
+        }
+        for (action in CelestiaAction.allActions.withIndex()) {
+            menu.add(GROUP_ACTION, action.index + 1, Menu.NONE, action.value.title).setOnMenuItemClickListener { _ ->
+                lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                    appCore.simulation.selection = selection
+                    appCore.perform(action.value)
+                }
+                return@setOnMenuItemClickListener true
+            }
+        }
+
+        val obj = selection.`object`
+        if (obj != null) {
+            val browserItem = BrowserItem(
+                appCore.simulation.universe.getNameForSelection(selection),
+                null,
+                obj,
+                appCore.simulation.universe
+            )
+            for (child in browserItem.children) {
+                val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, child.name)
+                createSubMenu(subMenu, child)
+            }
+        }
+
+        if (obj is Body) {
+            val alternateSurfaces = obj.alternateSurfaceNames
+            if (alternateSurfaces.isNotEmpty()) {
+                val subMenu = menu.addSubMenu(GROUP_ALT_SURFACE_TOP, 0, Menu.NONE, CelestiaString("Alternate Surfaces", "Alternative textures to display"))
+                subMenu.add(GROUP_ALT_SURFACE, 0, Menu.NONE, CelestiaString("Default", "")).setOnMenuItemClickListener { _ ->
+                    lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                        appCore.simulation.activeObserver.displayedSurface = ""
+                    }
+                    return@setOnMenuItemClickListener true
+                }
+                for (alternateSurface in alternateSurfaces.withIndex()) {
+                    subMenu.add(GROUP_ALT_SURFACE, alternateSurface.index + 1, Menu.NONE, alternateSurface.value).setOnMenuItemClickListener { _ ->
+                        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                            appCore.simulation.activeObserver.displayedSurface = alternateSurface.value
+                        }
+                        return@setOnMenuItemClickListener true
+                    }
+                }
+            }
+        }
+
+        val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", "Mark an object"))
+        val availableMarkers = getAvailableMarkers()
+        for (marker in availableMarkers.withIndex()) {
+            markMenu.add(GROUP_MARK, marker.index, Menu.NONE, marker.value).setOnMenuItemClickListener { _ ->
+                if (marker.index >= Universe.MARKER_COUNT) {
+                    appCore.simulation.universe.unmark(selection)
+                } else {
+                    appCore.simulation.universe.mark(selection, marker.index)
+                    appCore.showMarkers = true
+                }
+                return@setOnMenuItemClickListener true
+            }
+        }
+        MenuCompat.setGroupDividerEnabled(menu, true)
+    }
+
     private fun openURI(uri: Uri) {
         val intent = Intent(Intent.ACTION_VIEW, uri)
         val ai = intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY)
@@ -2007,6 +2152,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     companion object {
+        private const val GROUP_ACTION = 0
+        private const val GROUP_ALT_SURFACE_TOP = 1
+        private const val GROUP_ALT_SURFACE = 2
+        private const val GROUP_MARK_TOP = 3
+        private const val GROUP_MARK = 4
+        private const val GROUP_BROWSER_ITEM_ACTIONS = 6
+        private const val GROUP_BROWSER_ITEM = 7
+        private const val GROUP_GET_INFO = 8
+        private const val GROUP_BROWSER_ITEM_GET_INFO = 9
+        private const val GROUP_HEADER = 10
+
         private const val CURRENT_DATA_VERSION = "143"
         // 143: 1.9.17 Localization update
         // 142: 1.9.16 Localization update data update (fcad6702ae267ba04fce023ee71038df5c02caf8)
