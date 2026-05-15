@@ -145,8 +145,8 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
         }
     }
 
-    var showInteractionOverlay by remember { mutableStateOf(false) } // TODO: should this be saveable?
-    var interactionMode by rememberSaveable(stateSaver = InteractionModeSaver) { mutableStateOf(CelestiaInteraction.InteractionMode.Object) } // TODO: sync with CelestiaInteraction, CelestiaControlView
+    var showInteractionOverlay by remember { mutableStateOf(false) }
+    var interactionMode by rememberSaveable(stateSaver = InteractionModeSaver) { mutableStateOf(CelestiaInteraction.InteractionMode.Object) }
     var alert by remember { mutableStateOf<CelestiaAlert?>(null) }
     var systemAccessDeferred by remember { mutableStateOf<CompletableDeferred<Int>?>(null) }
 
@@ -229,7 +229,13 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                     view.defaultFocusHighlightEnabled = false
                     view.isFocusable = true
                     view.isFocusableInTouchMode = true
-                    view.requestFocus() // TODO: fix, should only call when view is actually attached
+                    view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                        override fun onViewAttachedToWindow(v: View) {
+                            v.requestFocus()
+                            v.removeOnAttachStateChangeListener(this)
+                        }
+                        override fun onViewDetachedFromWindow(v: View) {}
+                    })
                 }
                 view.setOnKeyListener(interaction)
                 view.setOnGenericMotionListener(interaction)
