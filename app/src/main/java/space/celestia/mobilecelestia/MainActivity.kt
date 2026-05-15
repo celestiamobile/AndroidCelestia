@@ -336,7 +336,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
-        findViewById<View>(R.id.bottom_sheet_insets).visibility = View.VISIBLE
         findViewById<ComposeView>(R.id.bottom_sheet_host).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent {
