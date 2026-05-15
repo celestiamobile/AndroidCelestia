@@ -80,7 +80,6 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
     val viewModel: RendererViewModel = hiltViewModel()
     var currentState by rememberSaveable { mutableStateOf(viewModel.appStatusReporter.state) }
     if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
-        // TODO: test failed state
         return
     }
 
@@ -339,7 +338,6 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                 })
             }
 
-            // TODO: Test
             DisposableEffect(lifeCycleOwner) {
                 val fatalErrorHandler = AppCore.FatalErrorHandler { message ->
                     scope.launch {
@@ -374,6 +372,14 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                     }
                 }
             }
+
+            DisposableEffect(lifeCycleOwner) {
+                onDispose {
+                    controlViewState.zoomTimer?.cancel()
+                    controlViewState.zoomTimer = null
+                    viewInteraction?.zoomMode = null
+                }
+            }
         }
     }
 
@@ -387,27 +393,27 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                 systemAccessDeferred = null
                 deferred.complete(AppCore.SYSTEM_ACCESS_GRANTED)
             },
-            title = CelestiaString("Script System Access", "Alert title for scripts requesting system access")
+            title = CelestiaString("Script System Access", "Alert title for scripts requesting system access"),
+            text = CelestiaString("This script requests permission to read/write files and execute external programs. Allowing this can be dangerous.\nDo you trust the script and want to allow this?", "Alert message for scripts requesting system access"),
+            showCancel = true
         )
     }
 
     alert?.let { content ->
         when (content) {
-            // TODO: Have a short title
             CelestiaAlert.ErrorLoadingData -> {
                 SimpleAlertDialog(onDismissRequest = {
                     alert = null
                 }, onConfirm = {
                     alert = null
-                }, title = CelestiaString("Error loading data, fallback to original configuration.", ""))
+                }, title = CelestiaString("Error Loading Data", ""), text = CelestiaString("Error loading data, fallback to original configuration.", ""))
             }
-            // TODO: Have a short title
             is CelestiaAlert.FatalError -> {
                 SimpleAlertDialog(onDismissRequest = {
                     alert = null
                 }, onConfirm = {
                     alert = null
-                }, title = content.message)
+                }, title = CelestiaString("Fatal Error", "Error for fatal error alert title"), text = content.message)
             }
         }
     }
