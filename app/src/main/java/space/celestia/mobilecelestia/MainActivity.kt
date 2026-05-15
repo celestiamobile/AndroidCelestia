@@ -76,6 +76,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -145,6 +146,7 @@ import space.celestia.mobilecelestia.menu.MenuScreen
 import space.celestia.mobilecelestia.menu.ToolbarAction
 import space.celestia.celestiaui.tool.ToolScreen
 import space.celestia.celestiaui.tool.viewmodel.ToolPage
+import space.celestia.mobilecelestia.celestia.CelestiaScreen
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -269,6 +271,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val browserItems: ArrayList<BrowserItem> = arrayListOf()
     private var contextMenuView: View? = null
 
+    private val frameRateOptionEvents = MutableSharedFlow<Int>(extraBufferCapacity = 1)
+    private val reapplyContentScaleEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Guard against Android backup restricted mode where the custom Application is not loaded,
         // which would cause Hilt's EntryPointAccessors to throw IllegalStateException.
@@ -313,6 +318,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         appStatusReporter.register(this)
+
+        findViewById<View>(R.id.celestia_fragment_container).isVisible = !featureFlags.composeSurfaceV3
+        findViewById<View>(R.id.celestia_compose_container).isVisible = featureFlags.composeSurfaceV3
 
         findViewById<ComposeView>(R.id.loading_fragment_container).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
@@ -578,8 +586,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     // Reapply content scale to main surface when presentation is dismissed
                     Log.i(TAG, "Presentation was dismissed.")
                     activePresentation = null
-                    val celestiaFragment = supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
-                    celestiaFragment?.reapplyContentScale()
+                    if (featureFlags.composeSurfaceV3) {
+                        reapplyContentScaleEvents.tryEmit(Unit)
+                    } else {
+                        val celestiaFragment =
+                            supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment
+                        celestiaFragment?.reapplyContentScale()
+                    }
                 }
                 pendingDisplay = null
                 try {
@@ -775,8 +788,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun removeCelestiaFragment() {
-        supportFragmentManager.findFragmentById(R.id.celestia_fragment_container)?.let {
-            supportFragmentManager.beginTransaction().hide(it).remove(it).commitAllowingStateLoss()
+        if (!featureFlags.composeSurfaceV3) {
+            supportFragmentManager.findFragmentById(R.id.celestia_fragment_container)?.let {
+                supportFragmentManager.beginTransaction().hide(it).remove(it)
+                    .commitAllowingStateLoss()
+            }
         }
     }
 
@@ -1191,17 +1207,41 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun loadConfigSuccess() {
-        // Add gl fragment
-        val celestiaFragment = CelestiaFragment.newInstance(
-            celestiaDataDirPath,
-            celestiaConfigFilePath,
-            addonPaths,
-            language
-        )
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.celestia_fragment_container, celestiaFragment, TAG_CELESTIA_FRAGMENT)
-            .commitAllowingStateLoss()
+        if (featureFlags.composeSurfaceV3) {
+            findViewById<ComposeView>(R.id.celestia_compose_container).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+                setContent {
+                    Mdc3Theme {
+                        CelestiaScreen(
+                            pathToLoad = celestiaDataDirPath,
+                            cfgToLoad = celestiaConfigFilePath,
+                            addonDirsToLoad = addonPaths,
+                            languageOverride = language,
+                            frameRateOptionEvents = frameRateOptionEvents,
+                            reapplyContentScaleEvents = reapplyContentScaleEvents,
+                            canAcceptKeyEvents = {
+                                celestiaFragmentCanAcceptKeyEvents()
+                            },
+                            showMenu = {
+                                celestiaFragmentDidRequestActionMenu()
+                            }
+                        )
+                    }
+                }
+            }
+        } else {
+            // Add gl fragment
+            val celestiaFragment = CelestiaFragment.newInstance(
+                celestiaDataDirPath,
+                celestiaConfigFilePath,
+                addonPaths,
+                language
+            )
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.celestia_fragment_container, celestiaFragment, TAG_CELESTIA_FRAGMENT)
+                .commitAllowingStateLoss()
+        }
     }
 
     private fun loadConfigFailed(error: Throwable) {
@@ -1451,7 +1491,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun settingsRefreshRateChanged(frameRateOption: Int) {
-        (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(frameRateOption)
+        if (featureFlags.composeSurfaceV3) {
+            frameRateOptionEvents.tryEmit(frameRateOption)
+        } else {
+            (supportFragmentManager.findFragmentById(R.id.celestia_fragment_container) as? CelestiaFragment)?.updateFrameRateOption(
+                frameRateOption
+            )
+        }
+
     }
 
     private fun showUnsupportedAction() {
