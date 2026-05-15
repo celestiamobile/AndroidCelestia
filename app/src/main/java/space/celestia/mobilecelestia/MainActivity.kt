@@ -129,6 +129,7 @@ import space.celestia.celestiaui.utils.showAlert
 import space.celestia.celestiaui.utils.showError
 import space.celestia.celestiaui.utils.showOptions
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
+import space.celestia.mobilecelestia.celestia.CelestiaInteraction
 import space.celestia.mobilecelestia.celestia.CelestiaPresentation
 import space.celestia.mobilecelestia.celestia.RendererSettings
 import space.celestia.mobilecelestia.common.EdgeInsets
@@ -1224,6 +1225,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                             },
                             showMenu = {
                                 celestiaFragmentDidRequestActionMenu()
+                            },
+                            showInfo = {
+                                celestiaFragmentDidRequestObjectInfo()
+                            },
+                            showSearch = {
+                                celestiaFragmentDidRequestSearch()
+                            },
+                            goTo = {
+                                celestiaFragmentDidRequestGoTo()
+                            },
+                            onInteractionModeChanged = { mode ->
+                                val message = when (mode) {
+                                    CelestiaInteraction.InteractionMode.Camera -> CelestiaString("Switched to camera mode", "Move/zoom camera FOV")
+                                    CelestiaInteraction.InteractionMode.Object -> CelestiaString("Switched to object mode", "Move/zoom on an object")
+                                }
+                                showToast(message, Toast.LENGTH_SHORT)
+                            },
+                            onInteractionViewReady = { view ->
+                                celestiaFragmentInteractionViewReady(view)
                             }
                         )
                     }
