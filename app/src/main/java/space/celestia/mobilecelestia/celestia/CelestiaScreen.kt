@@ -356,8 +356,10 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
 
             // TODO: Test
             DisposableEffect(lifeCycleOwner) {
+                var pendingDeferred: CompletableDeferred<Int>? = null
                 val handler = AppCore.SystemAccessHandler {
                     val deferred = CompletableDeferred<Int>()
+                    pendingDeferred = deferred
                     lifeCycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                         systemAccessDeferred = deferred
                     }
@@ -367,6 +369,7 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                     viewModel.appCore.setSystemAccessHandler(handler)
                 }
                 onDispose {
+                    pendingDeferred?.complete(AppCore.SYSTEM_ACCESS_UNKNOWN)
                     lifeCycleOwner.lifecycleScope.launch(viewModel.executor.asCoroutineDispatcher()) {
                         viewModel.appCore.setSystemAccessHandler(null)
                     }
