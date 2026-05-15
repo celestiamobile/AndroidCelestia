@@ -1,12 +1,15 @@
 package space.celestia.mobilecelestia.celestia
 
-import android.animation.ObjectAnimator
 import android.os.Build
 import android.view.RoundedCorner
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -31,8 +34,6 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.animation.doOnEnd
-import androidx.core.view.isVisible
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -44,6 +45,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import space.celestia.celestia.AppCore
+import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.settings.ToolbarAction
 import space.celestia.celestiaui.settings.toolbarItems
@@ -81,48 +83,12 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
     var viewInteraction: CelestiaInteraction? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
 
-    val controlViewState = remember {
-        object {
-            var isVisible = false
-            var hideAnimator: ObjectAnimator? = null
-            var showAnimator: ObjectAnimator? = null
-            var floatingToolbar: FloatingToolbarLayout? = null
-            var zoomTimer: Timer? = null
-        }
-    }
+    val zoomTimerHolder = remember { object { var timer: Timer? = null } }
 
-    fun showControlView() {
-        val toolbar = controlViewState.floatingToolbar ?: return
-        if (controlViewState.showAnimator != null) return
-        controlViewState.hideAnimator?.let { it.cancel(); controlViewState.hideAnimator = null }
-        toolbar.isVisible = true
-        val animator = ObjectAnimator.ofFloat(toolbar, View.ALPHA, 0f, 1f)
-        animator.duration = 200
-        animator.doOnEnd {
-            controlViewState.showAnimator = null
-            controlViewState.isVisible = true
-        }
-        animator.start()
-        controlViewState.showAnimator = animator
-    }
+    var isControlViewVisible by remember { mutableStateOf(true) }
 
-    fun hideControlView() {
-        val toolbar = controlViewState.floatingToolbar ?: return
-        if (controlViewState.hideAnimator != null) return
-        controlViewState.showAnimator?.let { it.cancel(); controlViewState.showAnimator = null }
-        val animator = ObjectAnimator.ofFloat(toolbar, View.ALPHA, 1f, 0f)
-        animator.duration = 200
-        animator.doOnEnd {
-            controlViewState.hideAnimator = null
-            controlViewState.isVisible = false
-            toolbar.isVisible = false
-        }
-        animator.start()
-        controlViewState.hideAnimator = animator
-    }
-
-    fun showControlViewIfNeeded() { if (!controlViewState.isVisible) showControlView() }
-    fun hideControlViewIfNeeded() { if (controlViewState.isVisible) hideControlView() }
+    fun showControlViewIfNeeded() { isControlViewVisible = true }
+    fun hideControlViewIfNeeded() { isControlViewVisible = false }
 
     var showInteractionOverlay by remember { mutableStateOf(false) }
     var interactionMode by rememberSaveable(stateSaver = InteractionModeSaver) { mutableStateOf(CelestiaInteraction.InteractionMode.Object) }
@@ -232,90 +198,95 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                 return@AndroidView view
             }, modifier = Modifier.fillMaxSize(), update = {})
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = with(density) { safeAreaInsets.top.toDp() },
-                        end = with(density) { (if (layoutDirection == LayoutDirection.Rtl) safeAreaInsets.left else safeAreaInsets.right).toDp() } + 8.dp,
-                        bottom = with(density) { safeAreaInsets.bottom.toDp() }
-                    ),
-                contentAlignment = Alignment.CenterEnd
+            AnimatedVisibility(
+                visible = isControlViewVisible,
+                enter = fadeIn(tween(200)),
+                exit = fadeOut(tween(200)),
+                modifier = Modifier.fillMaxSize()
             ) {
-                AndroidView(factory = { ctx ->
-                    val floatingToolbar = FloatingToolbarLayout(ctx)
-                    val controlView = CelestiaControlView(ctx)
-                    floatingToolbar.addView(controlView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = with(density) { safeAreaInsets.top.toDp() },
+                            end = with(density) { (if (layoutDirection == LayoutDirection.Rtl) safeAreaInsets.left else safeAreaInsets.right).toDp() } + 8.dp,
+                            bottom = with(density) { safeAreaInsets.bottom.toDp() }
+                        ),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    AndroidView(factory = { ctx ->
+                        val floatingToolbar = FloatingToolbarLayout(ctx)
+                        val controlView = CelestiaControlView(ctx)
+                        floatingToolbar.addView(controlView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-                    val hasCelestiaPlus = viewModel.purchaseManager.canUseInAppPurchase() && viewModel.purchaseManager.purchaseToken() != null
-                    val actions = ArrayList(if (hasCelestiaPlus) viewModel.appSettings.toolbarItems ?: ToolbarAction.defaultItems else ToolbarAction.defaultItems)
-                    if (!actions.contains(ToolbarAction.Menu)) actions.add(ToolbarAction.Menu)
-                    val buttonMap = hashMapOf(
-                        ToolbarAction.Mode to CelestiaControlButton.Toggle(space.celestia.celestiaui.R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), currentState = interactionMode == CelestiaInteraction.InteractionMode.Camera),
-                        ToolbarAction.ZoomIn to CelestiaControlButton.Press(space.celestia.celestiaui.R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
-                        ToolbarAction.ZoomOut to CelestiaControlButton.Press(space.celestia.celestiaui.R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
-                        ToolbarAction.Info to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
-                        ToolbarAction.Search to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
-                        ToolbarAction.Menu to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "Menu button")),
-                        ToolbarAction.Hide to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_close, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
-                        ToolbarAction.Go to CelestiaControlButton.Tap(space.celestia.celestiaui.R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", "Go to an object"))
-                    )
-                    controlView.buttons = actions.mapNotNull { buttonMap[it] }
+                        val hasCelestiaPlus = viewModel.purchaseManager.canUseInAppPurchase() && viewModel.purchaseManager.purchaseToken() != null
+                        val actions = ArrayList(if (hasCelestiaPlus) viewModel.appSettings.toolbarItems ?: ToolbarAction.defaultItems else ToolbarAction.defaultItems)
+                        if (!actions.contains(ToolbarAction.Menu)) actions.add(ToolbarAction.Menu)
+                        val buttonMap = hashMapOf(
+                            ToolbarAction.Mode to CelestiaControlButton.Toggle(R.drawable.control_mode_combined, CelestiaControlAction.ToggleModeToObject, CelestiaControlAction.ToggleModeToCamera, contentDescription = CelestiaString("Toggle Interaction Mode", "Touch interaction mode"), currentState = interactionMode == CelestiaInteraction.InteractionMode.Camera),
+                            ToolbarAction.ZoomIn to CelestiaControlButton.Press(R.drawable.control_zoom_in, CelestiaControlAction.ZoomIn, CelestiaString("Zoom In", "")),
+                            ToolbarAction.ZoomOut to CelestiaControlButton.Press(R.drawable.control_zoom_out, CelestiaControlAction.ZoomOut, CelestiaString("Zoom Out", "")),
+                            ToolbarAction.Info to CelestiaControlButton.Tap(R.drawable.control_info, CelestiaControlAction.Info, CelestiaString("Get Info", "Action for getting info about current selected object")),
+                            ToolbarAction.Search to CelestiaControlButton.Tap(R.drawable.control_search, CelestiaControlAction.Search, CelestiaString("Search", "")),
+                            ToolbarAction.Menu to CelestiaControlButton.Tap(R.drawable.control_action_menu, CelestiaControlAction.ShowMenu, CelestiaString("Menu", "Menu button")),
+                            ToolbarAction.Hide to CelestiaControlButton.Tap(R.drawable.control_close, CelestiaControlAction.Hide, CelestiaString("Hide", "Action to hide the tool overlay")),
+                            ToolbarAction.Go to CelestiaControlButton.Tap(R.drawable.control_go, CelestiaControlAction.Go, CelestiaString("Go", "Go to an object"))
+                        )
+                        controlView.buttons = actions.mapNotNull { buttonMap[it] }
 
-                    controlView.listener = object : CelestiaControlView.Listener {
-                        override fun didTapAction(action: CelestiaControlAction) {
-                            if (!controlViewState.isVisible) return
-                            when (action) {
-                                CelestiaControlAction.ShowMenu -> showMenu()
-                                CelestiaControlAction.Info -> showInfo()
-                                CelestiaControlAction.Search -> showSearch()
-                                CelestiaControlAction.Hide -> hideControlViewIfNeeded()
-                                CelestiaControlAction.Show -> showControlViewIfNeeded()
-                                CelestiaControlAction.Go -> goTo()
-                                else -> {}
-                            }
-                        }
-                        override fun didToggleToMode(action: CelestiaControlAction) {
-                            if (!controlViewState.isVisible) return
-                            when (action) {
-                                CelestiaControlAction.ToggleModeToCamera -> {
-                                    interactionMode = CelestiaInteraction.InteractionMode.Camera
-                                    viewInteraction?.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
-                                    onInteractionModeChanged(CelestiaInteraction.InteractionMode.Camera)
+                        controlView.listener = object : CelestiaControlView.Listener {
+                            override fun didTapAction(action: CelestiaControlAction) {
+                                if (!isControlViewVisible) return
+                                when (action) {
+                                    CelestiaControlAction.ShowMenu -> showMenu()
+                                    CelestiaControlAction.Info -> showInfo()
+                                    CelestiaControlAction.Search -> showSearch()
+                                    CelestiaControlAction.Hide -> hideControlViewIfNeeded()
+                                    CelestiaControlAction.Show -> showControlViewIfNeeded()
+                                    CelestiaControlAction.Go -> goTo()
+                                    else -> {}
                                 }
-                                CelestiaControlAction.ToggleModeToObject -> {
-                                    interactionMode = CelestiaInteraction.InteractionMode.Object
-                                    viewInteraction?.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
-                                    onInteractionModeChanged(CelestiaInteraction.InteractionMode.Object)
+                            }
+                            override fun didToggleToMode(action: CelestiaControlAction) {
+                                if (!isControlViewVisible) return
+                                when (action) {
+                                    CelestiaControlAction.ToggleModeToCamera -> {
+                                        interactionMode = CelestiaInteraction.InteractionMode.Camera
+                                        viewInteraction?.setInteractionMode(CelestiaInteraction.InteractionMode.Camera)
+                                        onInteractionModeChanged(CelestiaInteraction.InteractionMode.Camera)
+                                    }
+                                    CelestiaControlAction.ToggleModeToObject -> {
+                                        interactionMode = CelestiaInteraction.InteractionMode.Object
+                                        viewInteraction?.setInteractionMode(CelestiaInteraction.InteractionMode.Object)
+                                        onInteractionModeChanged(CelestiaInteraction.InteractionMode.Object)
+                                    }
+                                    else -> {}
                                 }
-                                else -> {}
+                            }
+                            override fun didStartPressingAction(action: CelestiaControlAction) {
+                                if (!isControlViewVisible) return
+                                val interaction = viewInteraction ?: return
+                                when (action) {
+                                    CelestiaControlAction.ZoomIn -> { interaction.zoomMode = CelestiaInteraction.ZoomMode.In; interaction.callZoom() }
+                                    CelestiaControlAction.ZoomOut -> { interaction.zoomMode = CelestiaInteraction.ZoomMode.Out; interaction.callZoom() }
+                                    else -> {}
+                                }
+                                zoomTimerHolder.timer?.cancel()
+                                zoomTimerHolder.timer = fixedRateTimer("zoom", false, 0, 100) {
+                                    viewInteraction?.callZoom()
+                                }
+                            }
+                            override fun didEndPressingAction(action: CelestiaControlAction) {
+                                if (!isControlViewVisible) return
+                                zoomTimerHolder.timer?.cancel()
+                                zoomTimerHolder.timer = null
+                                viewInteraction?.zoomMode = null
                             }
                         }
-                        override fun didStartPressingAction(action: CelestiaControlAction) {
-                            if (!controlViewState.isVisible) return
-                            val interaction = viewInteraction ?: return
-                            when (action) {
-                                CelestiaControlAction.ZoomIn -> { interaction.zoomMode = CelestiaInteraction.ZoomMode.In; interaction.callZoom() }
-                                CelestiaControlAction.ZoomOut -> { interaction.zoomMode = CelestiaInteraction.ZoomMode.Out; interaction.callZoom() }
-                                else -> {}
-                            }
-                            controlViewState.zoomTimer?.cancel()
-                            controlViewState.zoomTimer = fixedRateTimer("zoom", false, 0, 100) {
-                                viewInteraction?.callZoom()
-                            }
-                        }
-                        override fun didEndPressingAction(action: CelestiaControlAction) {
-                            if (!controlViewState.isVisible) return
-                            controlViewState.zoomTimer?.cancel()
-                            controlViewState.zoomTimer = null
-                            viewInteraction?.zoomMode = null
-                        }
-                    }
 
-                    controlViewState.floatingToolbar = floatingToolbar
-                    controlViewState.isVisible = true
-                    floatingToolbar
-                })
+                        floatingToolbar
+                    })
+                }
             }
 
             DisposableEffect(lifeCycleOwner) {
@@ -359,8 +330,8 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
 
             DisposableEffect(lifeCycleOwner) {
                 onDispose {
-                    controlViewState.zoomTimer?.cancel()
-                    controlViewState.zoomTimer = null
+                    zoomTimerHolder.timer?.cancel()
+                    zoomTimerHolder.timer = null
                     viewInteraction?.zoomMode = null
                 }
             }
