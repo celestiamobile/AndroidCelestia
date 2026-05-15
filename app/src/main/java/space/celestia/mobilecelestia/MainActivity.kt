@@ -21,11 +21,16 @@ import android.os.Build
 import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.view.ContextMenu
 import android.view.Display
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MotionEvent
+import android.view.Surface
 import android.view.View
 import android.view.WindowManager
 import android.widget.LinearLayout
@@ -39,6 +44,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.animation.addListener
@@ -68,6 +74,8 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -79,6 +87,7 @@ import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
 import space.celestia.celestia.Universe
+import space.celestia.celestia.Utils
 import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.AssetUtils
 import space.celestia.celestiafoundation.utils.FilePaths
@@ -88,6 +97,7 @@ import space.celestia.celestiafoundation.utils.showToast
 import space.celestia.celestiafoundation.utils.versionCode
 import space.celestia.celestiafoundation.utils.versionName
 import space.celestia.celestiaui.compose.Mdc3Theme
+import space.celestia.celestiaui.control.viewmodel.SessionSettings
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.di.CoreSettings
@@ -151,7 +161,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
     CommonWebFragment.Listener,
-    AppCore.ContextMenuHandler {
+    AppCore.ContextMenuHandler,
+    SensorEventListener {
 
     @AppSettings
     @Inject
@@ -195,6 +206,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     @Inject
     lateinit var purchaseManager: PurchaseManager
+
+    @Inject
+    lateinit var sessionSettings: SessionSettings
+
+    private lateinit var sensorManager: SensorManager
+    private var gyroscope: Sensor? = null
+    private var isGyroscopeActive = false
+    private var lastRotationQuaternion: FloatArray? = null
 
     private lateinit var appStatusReporter: AppStatusReporter
 
@@ -268,6 +287,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val savedState = if (currentState == AppStatusReporter.State.NONE) null else savedInstanceState
 
         super.onCreate(savedState)
+
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
         mediaRouter = getSystemService(MEDIA_ROUTER_SERVICE) as MediaRouter
         drawerLayout = findViewById(R.id.drawer_container)
@@ -430,6 +452,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onResume()
 
         setUpDisplayListenerIfNeeded()
+        if (sessionSettings.isGyroscopeEnabled) {
+            updateGyroscope(true)
+        }
     }
 
     override fun onPause() {
@@ -437,6 +462,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             mediaRouter.removeCallback(it)
         }
         mediaRouterCallback = null
+
+        if (isGyroscopeActive) {
+            sensorManager.unregisterListener(this, gyroscope)
+            lastRotationQuaternion = null
+            isGyroscopeActive = false
+        }
 
         super.onPause()
     }
@@ -714,6 +745,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         resourceManager.scriptDirectory = extraScriptPaths.firstOrNull()
         favoriteManager.extraScriptPaths = extraScriptPaths
         readyForInteraction = true
+
+        snapshotFlow { sessionSettings.isGyroscopeEnabled }
+            .onEach { isEnabled -> updateGyroscope(isEnabled) }
+            .launchIn(lifecycleScope)
 
         if (!initialURLCheckPerformed) {
             initialURLCheckPerformed = true
@@ -2149,6 +2184,64 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             popup.show()
         }
         contentView.addView(overflowButton)
+    }
+
+    private fun updateGyroscope(isEnabled: Boolean) {
+        if (isEnabled) {
+            if (!isGyroscopeActive) {
+                sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_GAME)
+                isGyroscopeActive = true
+            }
+        } else {
+            if (isGyroscopeActive) {
+                sensorManager.unregisterListener(this, gyroscope)
+                lastRotationQuaternion = null
+                isGyroscopeActive = false
+            }
+        }
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type != Sensor.TYPE_ROTATION_VECTOR) return
+        if (!isGyroscopeActive) return
+
+        val rawQuat = FloatArray(4)
+        SensorManager.getQuaternionFromVector(rawQuat, event.values)
+
+        val display: Display? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display
+        } else {
+            @Suppress("DEPRECATION")
+            windowManager?.defaultDisplay
+        }
+        val screenRotation = display?.rotation ?: Surface.ROTATION_0
+        val angleZ: Float = when (screenRotation) {
+            Surface.ROTATION_0 -> 0f
+            Surface.ROTATION_90 -> (Math.PI / 2.0f).toFloat()
+            Surface.ROTATION_180 -> Math.PI.toFloat()
+            Surface.ROTATION_270 -> (-Math.PI / 2.0).toFloat()
+            else -> 0f
+        }
+
+        val currentQuat = Utils.transformQuaternion(floatArrayOf(
+            rawQuat[1],
+            rawQuat[2],
+            rawQuat[3],
+            -rawQuat[0]
+        ), angleZ)
+
+        val fromQuat = lastRotationQuaternion
+        lastRotationQuaternion = currentQuat.copyOf()
+
+        if (fromQuat != null) {
+            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+                appCore.simulation.activeObserver.applyQuaternion(currentQuat, fromQuat)
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        Log.d(TAG, "Gyroscope accuracy changed to: $accuracy")
     }
 
     companion object {

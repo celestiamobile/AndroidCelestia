@@ -11,16 +11,10 @@ package space.celestia.mobilecelestia.celestia
 
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.Display
 import android.view.LayoutInflater
-import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -28,7 +22,6 @@ import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.animation.doOnEnd
@@ -40,16 +33,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.celestia.Selection
-import space.celestia.celestia.Utils
 import space.celestia.celestiafoundation.utils.showToast
-import space.celestia.celestiaui.control.viewmodel.SessionSettings
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EdgeInsets
@@ -71,7 +60,7 @@ import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
 @AndroidEntryPoint
-class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRendererFragment.Listener, AppCore.FatalErrorHandler, AppCore.SystemAccessHandler, SensorEventListener {
+class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRendererFragment.Listener, AppCore.FatalErrorHandler, AppCore.SystemAccessHandler {
 
     @Inject
     lateinit var appCore: AppCore
@@ -85,16 +74,9 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     @Inject
     lateinit var purchaseManager: PurchaseManager
     @Inject
-    lateinit var sessionSettings: SessionSettings
-    @Inject
     lateinit var rendererSettings: RendererSettings
     @Inject
     lateinit var featureFlags: FeatureFlags
-
-    private lateinit var sensorManager: SensorManager
-    private var gyroscope: Sensor? = null
-    private var isGyroscopeActive = false
-    private var lastRotationQuaternion: FloatArray? = null
 
     // MARK: Interaction
     private lateinit var interactionView: FrameLayout
@@ -139,10 +121,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Initialize SensorManager and get the gyroscope sensor
-        sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
         arguments?.let {
             pathToLoad = it.getString(ARG_DATA_DIR)
@@ -226,24 +204,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         appCore.setFatalErrorHandler(null)
         appCore.setSystemAccessHandler(null)
         super.onDestroyView()
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        if (isGyroscopeActive) {
-            sensorManager.unregisterListener(this, gyroscope)
-            lastRotationQuaternion = null
-            isGyroscopeActive = false // Mark as inactive
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        if (sessionSettings.isGyroscopeEnabled) {
-            updateGyroscope(true)
-        }
     }
 
     override fun onAttach(context: Context) {
@@ -364,36 +324,11 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
             appCore.setSystemAccessHandler(this@CelestiaFragment)
         }
 
-        snapshotFlow { sessionSettings.isGyroscopeEnabled }
-            .onEach { isEnabled ->
-                updateGyroscope(isEnabled)
-            }
-            .launchIn(lifecycleScope)
-
         loadSuccess = true
 
         Log.d(TAG, "Ready to display")
 
         handleInsetsChanged(savedInsets)
-    }
-
-    private fun updateGyroscope(isEnabled: Boolean) {
-        if (isEnabled) {
-            if (!isGyroscopeActive) {
-                // Register the listener only if it's not already active
-                sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_GAME)
-                isGyroscopeActive = true
-                Log.d(TAG, "Gyroscope enabled and listener registered.")
-            }
-        } else {
-            if (isGyroscopeActive) {
-                // Unregister the listener only if it's active
-                sensorManager.unregisterListener(this, gyroscope)
-                lastRotationQuaternion = null
-                isGyroscopeActive = false
-                Log.d(TAG, "Gyroscope disabled and listener unregistered.")
-            }
-        }
     }
 
     // Actions
@@ -545,50 +480,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
                 AlertResult.Cancel -> AppCore.SYSTEM_ACCESS_DENIED
             }
         }
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type != Sensor.TYPE_ROTATION_VECTOR) return
-        if (!isGyroscopeActive) return // Extra check, though should be handled by registration logic
-
-        val rawQuat = FloatArray(4)
-        SensorManager.getQuaternionFromVector(rawQuat, event.values)
-
-        val display: Display?
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            display = requireActivity().display
-        } else {
-            @Suppress("DEPRECATION")
-            display = requireActivity().windowManager?.defaultDisplay
-        }
-        val screenRotation = display?.rotation ?: Surface.ROTATION_0
-        val angleZ: Float = when (screenRotation) {
-            Surface.ROTATION_0 -> 0f
-            Surface.ROTATION_90 -> (Math.PI / 2.0f).toFloat()
-            Surface.ROTATION_180 -> Math.PI.toFloat()
-            Surface.ROTATION_270 -> (-Math.PI / 2.0).toFloat()
-            else -> 0f
-        }
-
-        val currentQuat = Utils.transformQuaternion(floatArrayOf(
-            rawQuat[1], // x
-            rawQuat[2], // y
-            rawQuat[3], // z
-            -rawQuat[0]  // w
-        ), angleZ)
-
-        val fromQuat = lastRotationQuaternion
-        lastRotationQuaternion = currentQuat.copyOf() // Defensive copy
-
-        if (fromQuat != null) {
-            lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                appCore.simulation.activeObserver.applyQuaternion(currentQuat, fromQuat)
-            }
-        }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.d(TAG, "Gyroscope accuracy changed to: $accuracy")
     }
 
     companion object {
