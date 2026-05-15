@@ -60,7 +60,7 @@ class FeatureFlagsManager(
                 dummy = json.optBoolean("dummy", false),
                 pushNotificationPlay = json.optBoolean("pushNotificationPlay", false),
                 composeSurfaceV2 = json.optBoolean("composeSurfaceV2", false),
-                composeSurfaceV3 = true,//json.optBoolean("composeSurfaceV3", false),
+                composeSurfaceV3 = json.optBoolean("composeSurfaceV3", false),
                 composeWebView = json.optBoolean("composeWebView", false)
             )
         } catch (_: Throwable) {

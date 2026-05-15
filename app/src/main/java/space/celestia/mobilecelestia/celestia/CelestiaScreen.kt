@@ -27,8 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.animation.doOnEnd
@@ -47,7 +47,6 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.settings.ToolbarAction
 import space.celestia.celestiaui.settings.toolbarItems
-import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import space.celestia.mobilecelestia.common.EdgeInsets
@@ -78,10 +77,6 @@ private val InteractionModeSaver = Saver<CelestiaInteraction.InteractionMode, St
 fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, canAcceptKeyEvents: () -> Boolean, showMenu: () -> Unit, showInfo: () -> Unit, showSearch: () -> Unit, goTo: () -> Unit, onInteractionModeChanged: (CelestiaInteraction.InteractionMode) -> Unit, onInteractionViewReady: (View) -> Unit) {
     val lifeCycleOwner = LocalLifecycleOwner.current
     val viewModel: RendererViewModel = hiltViewModel()
-    var currentState by rememberSaveable { mutableStateOf(viewModel.appStatusReporter.state) }
-    if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
-        return
-    }
 
     var viewInteraction: CelestiaInteraction? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
@@ -128,21 +123,6 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
 
     fun showControlViewIfNeeded() { if (!controlViewState.isVisible) showControlView() }
     fun hideControlViewIfNeeded() { if (controlViewState.isVisible) hideControlView() }
-    DisposableEffect(lifeCycleOwner) {
-        val observer = object: AppStatusReporter.Listener {
-            override fun celestiaLoadingProgress(status: String) {}
-
-            override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
-                scope.launch {
-                    currentState = newState
-                }
-            }
-        }
-        viewModel.appStatusReporter.register(observer)
-        onDispose {
-            viewModel.appStatusReporter.unregister(observer)
-        }
-    }
 
     var showInteractionOverlay by remember { mutableStateOf(false) }
     var interactionMode by rememberSaveable(stateSaver = InteractionModeSaver) { mutableStateOf(CelestiaInteraction.InteractionMode.Object) }
@@ -354,7 +334,6 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                 }
             }
 
-            // TODO: Test
             DisposableEffect(lifeCycleOwner) {
                 var pendingDeferred: CompletableDeferred<Int>? = null
                 val handler = AppCore.SystemAccessHandler {
@@ -363,13 +342,15 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                     lifeCycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                         systemAccessDeferred = deferred
                     }
-                    runBlocking { deferred.await() }
+                    val result = runBlocking { deferred.await() }
+                    pendingDeferred = null
+                    result
                 }
                 lifeCycleOwner.lifecycleScope.launch(viewModel.executor.asCoroutineDispatcher()) {
                     viewModel.appCore.setSystemAccessHandler(handler)
                 }
                 onDispose {
-                    pendingDeferred?.complete(AppCore.SYSTEM_ACCESS_UNKNOWN)
+                    pendingDeferred?.complete(AppCore.SYSTEM_ACCESS_DENIED)
                     lifeCycleOwner.lifecycleScope.launch(viewModel.executor.asCoroutineDispatcher()) {
                         viewModel.appCore.setSystemAccessHandler(null)
                     }

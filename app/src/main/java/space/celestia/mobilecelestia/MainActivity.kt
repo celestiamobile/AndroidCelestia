@@ -43,7 +43,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -64,6 +69,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -148,6 +155,7 @@ import space.celestia.mobilecelestia.menu.ToolbarAction
 import space.celestia.celestiaui.tool.ToolScreen
 import space.celestia.celestiaui.tool.viewmodel.ToolPage
 import space.celestia.mobilecelestia.celestia.CelestiaScreen
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -321,7 +329,75 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         appStatusReporter.register(this)
 
         findViewById<View>(R.id.celestia_fragment_container).isVisible = !featureFlags.composeSurfaceV3
-        findViewById<View>(R.id.celestia_compose_container).isVisible = featureFlags.composeSurfaceV3
+        val celestiaComposeView = findViewById<ComposeView>(R.id.celestia_compose_container)
+        celestiaComposeView.isVisible = featureFlags.composeSurfaceV3
+
+        if (featureFlags.composeSurfaceV3) {
+            celestiaComposeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+            celestiaComposeView.setContent {
+                Mdc3Theme {
+                    val viewModel: RendererViewModel = hiltViewModel()
+                    var currentState by rememberSaveable { mutableStateOf(viewModel.appStatusReporter.state) }
+                    if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
+                        return@Mdc3Theme
+                    }
+
+                    val lifeCycleOwner = LocalLifecycleOwner.current
+                    val scope = rememberCoroutineScope()
+                    DisposableEffect(lifeCycleOwner) {
+                        val observer = object: AppStatusReporter.Listener {
+                            override fun celestiaLoadingProgress(status: String) {}
+
+                            override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
+                                scope.launch {
+                                    currentState = newState
+                                }
+                            }
+                        }
+                        viewModel.appStatusReporter.register(observer)
+                        onDispose {
+                            viewModel.appStatusReporter.unregister(observer)
+                        }
+                    }
+
+                    if (currentState.value >= AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS.value) {
+                        CelestiaScreen(
+                            pathToLoad = celestiaDataDirPath,
+                            cfgToLoad = celestiaConfigFilePath,
+                            addonDirsToLoad = addonPaths,
+                            languageOverride = Companion.language,
+                            frameRateOptionEvents = frameRateOptionEvents,
+                            reapplyContentScaleEvents = reapplyContentScaleEvents,
+                            canAcceptKeyEvents = {
+                                celestiaFragmentCanAcceptKeyEvents()
+                            },
+                            showMenu = {
+                                celestiaFragmentDidRequestActionMenu()
+                            },
+                            showInfo = {
+                                celestiaFragmentDidRequestObjectInfo()
+                            },
+                            showSearch = {
+                                celestiaFragmentDidRequestSearch()
+                            },
+                            goTo = {
+                                celestiaFragmentDidRequestGoTo()
+                            },
+                            onInteractionModeChanged = { mode ->
+                                val message = when (mode) {
+                                    CelestiaInteraction.InteractionMode.Camera -> CelestiaString("Switched to camera mode", "Move/zoom camera FOV")
+                                    CelestiaInteraction.InteractionMode.Object -> CelestiaString("Switched to object mode", "Move/zoom on an object")
+                                }
+                                showToast(message, Toast.LENGTH_SHORT)
+                            },
+                            onInteractionViewReady = { view ->
+                                celestiaFragmentInteractionViewReady(view)
+                            }
+                        )
+                    }
+                }
+            }
+        }
 
         findViewById<ComposeView>(R.id.loading_fragment_container).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
@@ -430,6 +506,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         when (currentState) {
             AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
                 loadExternalConfig()
+            }
+            AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS ->{
+                loadConfigSuccess()
             }
             AppStatusReporter.State.LOADING -> {
                 // Do nothing
@@ -665,10 +744,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 createAddonFolder()
                 if (!isActive) return@launch
                 loadConfig()
-                if (!isActive) return@launch
-                withContext(Dispatchers.Main) {
-                    loadConfigSuccess()
-                }
+                appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS)
             } catch (error: Throwable) {
                 withContext(Dispatchers.Main) {
                     appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING_FAILURE)
@@ -695,6 +771,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
             AppStatusReporter.State.LOADING_SUCCESS -> {
                 celestiaLoadingSucceeded()
+            }
+            AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS -> {
+                loadConfigSuccess()
             }
             AppStatusReporter.State.EXTERNAL_LOADING_FAILURE, AppStatusReporter.State.LOADING_FAILURE -> {
                 celestiaLoadingFailed()
@@ -1207,49 +1286,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         return availablePaths
     }
 
-    private fun loadConfigSuccess() {
-        if (featureFlags.composeSurfaceV3) {
-            findViewById<ComposeView>(R.id.celestia_compose_container).apply {
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-                setContent {
-                    Mdc3Theme {
-                        CelestiaScreen(
-                            pathToLoad = celestiaDataDirPath,
-                            cfgToLoad = celestiaConfigFilePath,
-                            addonDirsToLoad = addonPaths,
-                            languageOverride = language,
-                            frameRateOptionEvents = frameRateOptionEvents,
-                            reapplyContentScaleEvents = reapplyContentScaleEvents,
-                            canAcceptKeyEvents = {
-                                celestiaFragmentCanAcceptKeyEvents()
-                            },
-                            showMenu = {
-                                celestiaFragmentDidRequestActionMenu()
-                            },
-                            showInfo = {
-                                celestiaFragmentDidRequestObjectInfo()
-                            },
-                            showSearch = {
-                                celestiaFragmentDidRequestSearch()
-                            },
-                            goTo = {
-                                celestiaFragmentDidRequestGoTo()
-                            },
-                            onInteractionModeChanged = { mode ->
-                                val message = when (mode) {
-                                    CelestiaInteraction.InteractionMode.Camera -> CelestiaString("Switched to camera mode", "Move/zoom camera FOV")
-                                    CelestiaInteraction.InteractionMode.Object -> CelestiaString("Switched to object mode", "Move/zoom on an object")
-                                }
-                                showToast(message, Toast.LENGTH_SHORT)
-                            },
-                            onInteractionViewReady = { view ->
-                                celestiaFragmentInteractionViewReady(view)
-                            }
-                        )
-                    }
-                }
-            }
-        } else {
+    private fun loadConfigSuccess() = lifecycleScope.launch {
+        if (!featureFlags.composeSurfaceV3) {
             // Add gl fragment
             val celestiaFragment = CelestiaFragment.newInstance(
                 celestiaDataDirPath,
