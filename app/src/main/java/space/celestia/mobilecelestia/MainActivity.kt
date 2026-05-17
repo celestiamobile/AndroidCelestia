@@ -1496,7 +1496,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun celestiaFragmentLoadingFromFallback() {
         lifecycleScope.launch {
-            showAlert(CelestiaString("Error loading data, fallback to original configuration.", ""))
+            showAlert(title = CelestiaString("Error Loading Data", ""), message = CelestiaString("Error loading data, fallback to original configuration.", ""))
         }
     }
 

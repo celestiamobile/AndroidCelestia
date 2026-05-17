@@ -455,7 +455,7 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     override fun fatalError(message: String) {
         lifecycleScope.launch {
             val activity = this@CelestiaFragment.activity ?: return@launch
-            activity.showAlert(message)
+            activity.showAlert(title = CelestiaString("Fatal Error", "Error for fatal error alert title"), message = message)
         }
     }
 
