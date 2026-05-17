@@ -18,11 +18,14 @@ class AppStatusReporter : ProgressWatcher {
     private val lock = Any()
 
     enum class State(val value: Int) {
-        EXTERNAL_LOADING_FAILURE(-2), LOADING_FAILURE(-1), NONE(0), EXTERNAL_LOADING(1), LOADING(2), LOADING_SUCCESS(
-            3
-        ),
-        FINISHED(4);
-
+        EXTERNAL_LOADING_FAILURE(-2),
+        LOADING_FAILURE(-1),
+        NONE(0),
+        EXTERNAL_LOADING(1),
+        EXTERNAL_LOADING_SUCCESS(2),
+        LOADING(3),
+        LOADING_SUCCESS(4),
+        FINISHED(5);
     }
 
     val state: State

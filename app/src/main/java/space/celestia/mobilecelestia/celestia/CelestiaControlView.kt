@@ -45,7 +45,7 @@ sealed class CelestiaControlButton {
     ) : CelestiaControlButton()
 }
 
-class CelestiaControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs)  {
+class CelestiaControlView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : LinearLayout(context, attrs) {
     var buttons: List<CelestiaControlButton> = listOf()
     set(value) {
         field = value
