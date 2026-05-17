@@ -507,7 +507,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             AppStatusReporter.State.NONE, AppStatusReporter.State.EXTERNAL_LOADING -> {
                 loadExternalConfig()
             }
-            AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS ->{
+            AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS -> {
                 loadConfigSuccess()
             }
             AppStatusReporter.State.LOADING -> {
