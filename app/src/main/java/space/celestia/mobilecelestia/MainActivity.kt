@@ -46,8 +46,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ComposeView
@@ -337,7 +337,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             celestiaComposeView.setContent {
                 Mdc3Theme {
                     val viewModel: RendererViewModel = hiltViewModel()
-                    var currentState by rememberSaveable { mutableStateOf(viewModel.appStatusReporter.state) }
+                    var currentState by remember { mutableStateOf(viewModel.appStatusReporter.state) }
                     if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
                         return@Mdc3Theme
                     }
