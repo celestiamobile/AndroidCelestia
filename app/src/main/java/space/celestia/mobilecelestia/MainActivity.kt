@@ -1556,7 +1556,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 frameRateOption
             )
         }
-
     }
 
     private fun showUnsupportedAction() {
