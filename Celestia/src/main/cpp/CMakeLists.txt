@@ -31,6 +31,8 @@ set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/miniaudiosession.cpp
         ${CELESTIA_SRC_DIR}/celestia/miniaudiosession.h
         ${CELESTIA_SRC_DIR}/celestia/moviecapture.h
+        ${CELESTIA_SRC_DIR}/celestia/overlaymanager.cpp
+        ${CELESTIA_SRC_DIR}/celestia/overlaymanager.h
         ${CELESTIA_SRC_DIR}/celestia/progressnotifier.h
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.cpp
         ${CELESTIA_SRC_DIR}/celestia/scriptmenu.h
@@ -306,6 +308,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/globular.h
         ${CELESTIA_SRC_DIR}/celengine/glshader.cpp
         ${CELESTIA_SRC_DIR}/celengine/glshader.h
+        ${CELESTIA_SRC_DIR}/celengine/imageoverlay.cpp
+        ${CELESTIA_SRC_DIR}/celengine/imageoverlay.h
         ${CELESTIA_SRC_DIR}/celengine/lightenv.h
         ${CELESTIA_SRC_DIR}/celengine/location.cpp
         ${CELESTIA_SRC_DIR}/celengine/location.h
@@ -331,8 +335,6 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/orbitsampler.h
         ${CELESTIA_SRC_DIR}/celengine/overlay.cpp
         ${CELESTIA_SRC_DIR}/celengine/overlay.h
-        ${CELESTIA_SRC_DIR}/celengine/overlayimage.cpp
-        ${CELESTIA_SRC_DIR}/celengine/overlayimage.h
         ${CELESTIA_SRC_DIR}/celengine/parseobject.cpp
         ${CELESTIA_SRC_DIR}/celengine/parseobject.h
         ${CELESTIA_SRC_DIR}/celengine/perspectiveprojectionmode.cpp
