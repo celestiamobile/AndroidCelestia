@@ -18,6 +18,8 @@ set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/eclipsefinder.h
         ${CELESTIA_SRC_DIR}/celestia/favorites.cpp
         ${CELESTIA_SRC_DIR}/celestia/favorites.h
+        ${CELESTIA_SRC_DIR}/celestia/ffmpegcapture.cpp
+        ${CELESTIA_SRC_DIR}/celestia/ffmpegcapture.h
         ${CELESTIA_SRC_DIR}/celestia/helper.cpp
         ${CELESTIA_SRC_DIR}/celestia/helper.h
         ${CELESTIA_SRC_DIR}/celestia/hud.cpp
@@ -407,6 +409,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/univcoord.h
         ${CELESTIA_SRC_DIR}/celengine/universe.cpp
         ${CELESTIA_SRC_DIR}/celengine/universe.h
+        ${CELESTIA_SRC_DIR}/celengine/videooverlay.cpp
+        ${CELESTIA_SRC_DIR}/celengine/videooverlay.h
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.cpp
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.h
         ${CELESTIA_SRC_DIR}/celengine/virtualtex.cpp
@@ -498,6 +502,7 @@ add_definitions(-DENABLE_NLS)
 add_definitions(-DUSE_SPICE)
 add_definitions(-DGL_ES)
 add_definitions(-DUSE_MINIAUDIO)
+add_definitions(-DUSE_FFMPEG)
 add_definitions(-DCELX)
 add_definitions(-DUSE_ICU)
 add_definitions(-DBOOST_NO_EXCEPTIONS)
@@ -528,6 +533,7 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/meshoptimizer
         ${THIRD_PARTY_INCLUDE_DIR}/miniaudio
         ${THIRD_PARTY_INCLUDE_DIR}/icu
+        ${THIRD_PARTY_INCLUDE_DIR}/ffmpeg
 )
 
 add_link_options("LINKER:--build-id=none")
@@ -568,6 +574,12 @@ set_target_properties(icudata PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR
 add_library(icui18n STATIC IMPORTED)
 set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libicui18n.a)
 
+add_library(x264 STATIC IMPORTED)
+set_target_properties(x264 PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libx264.a)
+
+add_library(ffmpeg STATIC IMPORTED)
+set_target_properties(ffmpeg PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libffmpeg.a)
+
 add_library(
         celestia
         SHARED
@@ -592,6 +604,8 @@ target_link_libraries(
         icuuc
         icudata
         icui18n
+        x264
+        ffmpeg
         EGL
         android
         ${log-lib} )
