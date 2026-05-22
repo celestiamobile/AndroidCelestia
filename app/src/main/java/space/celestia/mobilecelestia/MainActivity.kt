@@ -137,7 +137,7 @@ import space.celestia.celestiaui.utils.showOptions
 import space.celestia.mobilecelestia.celestia.CelestiaFragment
 import space.celestia.mobilecelestia.celestia.CelestiaInteraction
 import space.celestia.mobilecelestia.celestia.CelestiaPresentation
-import space.celestia.mobilecelestia.celestia.RendererSettings
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SHEET_MAX_FULL_WIDTH_DP
@@ -155,6 +155,7 @@ import space.celestia.celestiaui.tool.ToolScreen
 import space.celestia.celestiaui.tool.viewmodel.ToolPage
 import space.celestia.mobilecelestia.celestia.CelestiaScreen
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
+import space.celestia.mobilecelestia.viewmodel.MainViewModel
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference

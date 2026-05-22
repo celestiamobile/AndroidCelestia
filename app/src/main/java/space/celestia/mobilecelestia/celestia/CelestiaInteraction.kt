@@ -29,6 +29,7 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
 import space.celestia.celestiaui.control.viewmodel.JoystickHandler
 import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executor
 

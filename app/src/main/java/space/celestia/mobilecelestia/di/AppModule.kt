@@ -16,7 +16,7 @@ import space.celestia.celestiafoundation.resource.model.ResourceManager
 import space.celestia.celestiafoundation.utils.FilePaths
 import space.celestia.celestiafoundation.utils.versionName
 import space.celestia.celestiaui.di.ApplicationId
-import space.celestia.mobilecelestia.celestia.RendererSettings
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import space.celestia.celestiaui.control.viewmodel.SessionSettings
 import space.celestia.celestiaui.di.AppSettings
 import space.celestia.celestiaui.di.AppSettingsNoBackup

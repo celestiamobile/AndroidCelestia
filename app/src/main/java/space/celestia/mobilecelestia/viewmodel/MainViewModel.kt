@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia
+package space.celestia.mobilecelestia.viewmodel
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf

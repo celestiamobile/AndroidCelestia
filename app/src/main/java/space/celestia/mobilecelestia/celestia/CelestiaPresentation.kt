@@ -13,6 +13,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import space.celestia.mobilecelestia.common.EdgeInsets
 import java.util.concurrent.Executor
 

@@ -10,7 +10,7 @@ import space.celestia.celestiaui.di.AppSettingsNoBackup
 import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
-import space.celestia.mobilecelestia.celestia.RendererSettings
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import java.util.concurrent.Executor
 import javax.inject.Inject
 

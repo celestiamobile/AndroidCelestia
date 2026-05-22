@@ -48,6 +48,7 @@ import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.MainActivity
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import space.celestia.mobilecelestia.common.EdgeInsets
 import java.util.Locale
 import java.util.concurrent.Executor

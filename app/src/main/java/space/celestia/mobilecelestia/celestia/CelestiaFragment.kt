@@ -53,6 +53,7 @@ import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.celestiaui.utils.showAlert
 import space.celestia.celestiaui.utils.showAlertAsync
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import java.lang.ref.WeakReference
 import java.util.Timer
 import java.util.concurrent.Executor

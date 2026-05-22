@@ -1,4 +1,4 @@
-package space.celestia.mobilecelestia.celestia
+package space.celestia.mobilecelestia.celestia.viewmodel
 
 import space.celestia.mobilecelestia.common.EdgeInsets
 
