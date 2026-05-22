@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Bundle
 import android.view.Display
 import android.view.SurfaceHolder
-import android.widget.FrameLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,7 +13,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
-import space.celestia.mobilecelestia.R
 import space.celestia.mobilecelestia.common.EdgeInsets
 import java.util.concurrent.Executor
 
@@ -36,13 +34,12 @@ class CelestiaPresentation(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.presentation_celestia)
-
         density = resources.displayMetrics.density
         fontScale = resources.configuration.fontScale
 
-        setUpGLView(findViewById(R.id.celestia_gl_view))
+        val view = CelestiaView(this.context, if (rendererSettings.enableFullResolution) 1.0f else (1.0f / density))
+        setContentView(view)
+        setUpGLView(view)
     }
 
     private fun applyRenderChanges(changes: RenderChanges): RenderChanges {
@@ -64,10 +61,8 @@ class CelestiaPresentation(
         appCore.updateContentScale(rendererSettings, changes)
     }
 
-    private fun setUpGLView(container: FrameLayout) {
+    private fun setUpGLView(view: CelestiaView) {
         // Cannot use rendererSettings.scaleFactor here because it is before any updateContentScale call
-        val view = CelestiaView(this.context, if (rendererSettings.enableFullResolution) 1.0f else (1.0f / density))
-        container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         view.holder?.addCallback(object: SurfaceHolder.Callback {
             override fun surfaceChanged(
                 holder: SurfaceHolder,

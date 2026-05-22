@@ -49,6 +49,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -161,8 +162,6 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.kotlinx.serialization)
     implementation(libs.okhttp)
-
-    implementation(libs.androidx.webkit)
 
     implementation(project(":LinkPreview"))
     implementation(project(":Celestia"))
