@@ -536,7 +536,9 @@ include_directories(
         ${THIRD_PARTY_INCLUDE_DIR}/ffmpeg
 )
 
-add_link_options("LINKER:--build-id=none")
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_link_options("LINKER:--build-id=none")
+endif()
 
 add_library(cspice STATIC IMPORTED)
 set_target_properties(cspice PROPERTIES IMPORTED_LOCATION ${THIRD_PARTY_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI}/cspice.a)
