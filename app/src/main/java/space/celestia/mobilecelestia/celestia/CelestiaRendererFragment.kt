@@ -305,14 +305,8 @@ class CelestiaRendererFragment : Fragment(), AppStatusReporter.Listener {
         val locale = AppCore.getLanguage()
         val hasCelestiaPlus =
             purchaseManager.canUseInAppPurchase() && purchaseManager.purchaseToken() != null
-        var normalFont = if (hasCelestiaPlus) appSettingsNoBackup.normalFont else null
-        var boldFont = if (hasCelestiaPlus) appSettingsNoBackup.boldFont else null
-        val preferredInstalledFont =
-            MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
-        if (preferredInstalledFont != null) {
-            normalFont = normalFont ?: preferredInstalledFont.first
-            boldFont = boldFont ?: preferredInstalledFont.second
-        }
+        val normalFont = if (hasCelestiaPlus) appSettingsNoBackup.normalFont else null
+        val boldFont = if (hasCelestiaPlus) appSettingsNoBackup.boldFont else null
         if (normalFont != null) {
             appCore.setFont(normalFont.path, normalFont.ttcIndex, 9)
             appCore.setRendererFont(

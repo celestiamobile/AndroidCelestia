@@ -120,14 +120,8 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
         val locale = AppCore.getLanguage()
         val hasCelestiaPlus =
             viewModel.purchaseManager.canUseInAppPurchase() && viewModel.purchaseManager.purchaseToken() != null
-        var normalFont = if (hasCelestiaPlus) viewModel.appSettingsNoBackup.normalFont else null
-        var boldFont = if (hasCelestiaPlus) viewModel.appSettingsNoBackup.boldFont else null
-        val preferredInstalledFont =
-            MainActivity.availableInstalledFonts[locale] ?: MainActivity.defaultInstalledFont
-        if (preferredInstalledFont != null) {
-            normalFont = normalFont ?: preferredInstalledFont.first
-            boldFont = boldFont ?: preferredInstalledFont.second
-        }
+        val normalFont = if (hasCelestiaPlus) viewModel.appSettingsNoBackup.normalFont else null
+        val boldFont = if (hasCelestiaPlus) viewModel.appSettingsNoBackup.boldFont else null
         if (normalFont != null) {
             viewModel.appCore.setFont(normalFont.path, normalFont.ttcIndex, 9)
             viewModel.appCore.setRendererFont(

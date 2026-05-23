@@ -251,9 +251,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val celestiaDataDirPath: String
         get() = appSettingsNoBackup[PreferenceManager.PredefinedKey.DataDirPath] ?: defaultFilePaths.dataDirectoryPath
 
-    private val fontDirPath: String
-        get() = defaultFilePaths.fontDirectoryPath
-
     private var latestNewsID: String? = null
 
     private var initialURLCheckPerformed = false
@@ -885,37 +882,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun loadConfig() {
-        availableInstalledFonts = mapOf(
-            "ja" to Pair(
-                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 0),
-                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 0)
-            ),
-            "ka" to Pair(
-                CustomFont("$fontDirPath/NotoSansGeorgian-Regular.ttf", 0),
-                CustomFont("$fontDirPath/NotoSansGeorgian-Bold.ttf", 0)
-            ),
-            "ko" to Pair(
-                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 1),
-                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 1)
-            ),
-            "zh_CN" to Pair(
-                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 2),
-                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 2)
-            ),
-            "zh_TW" to Pair(
-                CustomFont("$fontDirPath/NotoSansCJK-Regular.ttc", 3),
-                CustomFont("$fontDirPath/NotoSansCJK-Bold.ttc", 3)
-            ),
-            "ar" to Pair(
-                CustomFont("$fontDirPath/NotoSansArabic-Regular.ttf", 0),
-                CustomFont("$fontDirPath/NotoSansArabic-Bold.ttf", 0)
-            )
-        )
-        defaultInstalledFont = Pair(
-            CustomFont("$fontDirPath/NotoSans-Regular.ttf", 0),
-            CustomFont("$fontDirPath/NotoSans-Bold.ttf", 0)
-        )
-
         language = getString(R.string.celestia_language)
     }
 
@@ -1083,12 +1049,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         try {
             // Remove old ones, ignore any exception thrown
             File(legacyCelestiaParentPath, FilePaths.CELESTIA_DATA_FOLDER_NAME).deleteRecursively()
-            File(legacyCelestiaParentPath, FilePaths.CELESTIA_FONT_FOLDER_NAME).deleteRecursively()
+            File(legacyCelestiaParentPath, FilePaths.CELESTIA_LEGACY_FONTS_FOLDER_NAME).deleteRecursively()
             File(defaultFilePaths.dataDirectoryPath).deleteRecursively()
-            File(defaultFilePaths.fontDirectoryPath).deleteRecursively()
+            File(defaultFilePaths.legacyFontsDirectoryPath).deleteRecursively()
         } catch (_: Exception) {}
         AssetUtils.copyFileOrDir(this@MainActivity, FilePaths.CELESTIA_DATA_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
-        AssetUtils.copyFileOrDir(this@MainActivity, FilePaths.CELESTIA_FONT_FOLDER_NAME, defaultFilePaths.parentDirectoryPath)
         appSettingsNoBackup[PreferenceManager.PredefinedKey.DataVersion] = CURRENT_DATA_VERSION
     }
 
@@ -2359,8 +2324,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val GROUP_BROWSER_ITEM_GET_INFO = 9
         private const val GROUP_HEADER = 10
 
-        private const val CURRENT_DATA_VERSION = "146"
-        // 146: 1.9.17 Localization update data update (7926c3ccd126dae60e702b3b6b499cf2d07e3565)
+        private const val CURRENT_DATA_VERSION = "147"
+        // 147: 1.9.17 Localization update data update (7926c3ccd126dae60e702b3b6b499cf2d07e3565)
         // 142: 1.9.16 Localization update data update (fcad6702ae267ba04fce023ee71038df5c02caf8)
         // 138: 1.9.15 Localization update data update (67a542671ace4ed5c92e32519525716038498f11)
         // 136: 1.9.14 Data update (9f34ed77b4e7117458734affaefd5015bf38c6ff)
@@ -2449,9 +2414,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private var extraScriptPaths: List<String> = listOf()
         private var ignoredDisplayIds = hashSetOf<Int>()
         private var getDisplayTypeMethod: Method? = null
-
-        var availableInstalledFonts: Map<String, Pair<CustomFont, CustomFont>> = mapOf()
-        var defaultInstalledFont: Pair<CustomFont, CustomFont>? = null
 
         private val supportedScriptTypes = listOf("cel", "celx")
         private const val TAG_CELESTIA_FRAGMENT = "celestia_fragment"
