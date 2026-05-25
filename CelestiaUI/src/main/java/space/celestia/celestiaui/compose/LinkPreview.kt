@@ -6,19 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -35,8 +30,6 @@ private sealed class FetchState {
     data class Successful(val metadata: LPLinkViewData) : FetchState()
     data object Failed : FetchState()
     data object Fetching : FetchState()
-    data object None : FetchState()
-    data object NotInitialized : FetchState()
 }
 
 @SuppressLint("InflateParams")
@@ -61,43 +54,16 @@ private fun LinkPreviewInternal(metadata: LPLinkViewData, modifier: Modifier = M
 
 @Composable
 fun LinkPreview(url: URL, modifier: Modifier = Modifier, onClick: (URL) -> Unit) {
-    val coroutineScope = rememberCoroutineScope()
-    var state: FetchState by remember {
-        mutableStateOf(FetchState.NotInitialized)
-    }
-
-    fun updateState(newState: FetchState) {
-        val currentState = state
-        if (currentState is FetchState.Successful)
-            currentState.metadata.image?.recycle()
-        state = newState
-    }
-
-    val lifeCycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifeCycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_DESTROY)
-                updateState(FetchState.NotInitialized)
-        }
-        lifeCycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifeCycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
+    var state: FetchState by remember { mutableStateOf(FetchState.Fetching) }
 
     LaunchedEffect(url) {
-        updateState(FetchState.None)
-    }
-
-    if (state == FetchState.None) {
-        updateState(FetchState.Fetching)
+        state = FetchState.Fetching
         val fetcher = LPMetadataProvider()
-        fetcher.startFetchMetadataForURL(coroutineScope, url) { metaData, _ ->
+        fetcher.startFetchMetadataForURL(this, url) { metaData, _ ->
             if (metaData == null) {
-                updateState(FetchState.Failed)
+                state = FetchState.Failed
                 return@startFetchMetadataForURL
             }
-            var metadata = LPLinkViewData(metaData.url, metaData.title, null, true)
             val imageURL = metaData.imageURL ?: metaData.iconURL
             val usesIcon = metaData.imageURL == null
             val client = OkHttpClient()
@@ -107,14 +73,11 @@ fun LinkPreview(url: URL, modifier: Modifier = Modifier, onClick: (URL) -> Unit)
                     val res = client.newCall(req).execute()
                     val stream = res.body.byteStream()
                     return@withContext BitmapFactory.decodeStream(stream)
-                } catch(ignored: Throwable) {
+                } catch (_: Throwable) {
                     return@withContext null
                 }
             }
-            if (image != null) {
-                metadata = LPLinkViewData(metaData.url, metaData.title, image, usesIcon)
-            }
-            updateState(FetchState.Successful(metadata))
+            state = FetchState.Successful(LPLinkViewData(metaData.url, metaData.title, image, usesIcon))
         }
     }
 
