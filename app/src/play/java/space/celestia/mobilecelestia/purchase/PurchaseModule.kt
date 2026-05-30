@@ -41,6 +41,7 @@ class PurchaseModule {
                 }
             })
             .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+            .enableAutoServiceReconnection()
             .build()
         purchaseManager.billingClient = billingClient
         purchaseManager.connectToService()
