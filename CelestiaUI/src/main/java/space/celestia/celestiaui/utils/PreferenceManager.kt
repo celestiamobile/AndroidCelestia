@@ -68,7 +68,8 @@ class PreferenceManager(context: Context, name: String) {
         PushFeaturedAddon,
         FCMToken,
         SRGBRendering,
-        ResolutionMultiplier
+        ResolutionMultiplier,
+        MixedImmersion
         ;
 
         override val valueString: String

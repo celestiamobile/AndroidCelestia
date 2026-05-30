@@ -189,7 +189,7 @@ object AppModule {
         } else {
             1
         }
-        return RenderSettings(enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true", resolutionMultiplier = resolutionMultiplier, enableSRGBRendering = appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true")
+        return RenderSettings(enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true", resolutionMultiplier = resolutionMultiplier, enableSRGBRendering = appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true", enableMixedImmersion = appSettings[PreferenceManager.PredefinedKey.MixedImmersion] == "true")
     }
 
     @Singleton
