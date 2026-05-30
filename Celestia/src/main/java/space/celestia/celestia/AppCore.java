@@ -97,6 +97,10 @@ public class AppCore {
         return c_startRenderer(pointer, srgbRendering);
     }
 
+    public void setRendererMixedImmersion(boolean mixedImmersion) {
+        c_setRendererMixedImmersion(pointer, mixedImmersion);
+    }
+
     public boolean startSimulation(@Nullable String configFileName, @Nullable String[] extraDirectories, @Nullable ProgressWatcher watcher) {
         initialized = c_startSimulation(pointer, configFileName, extraDirectories, watcher);
         return initialized;
@@ -297,6 +301,7 @@ public class AppCore {
     private native void c_setSystemAccessHandler(long ptr);
     private static native long c_init();
     private static native boolean c_startRenderer(long ptr, boolean srgbRendering);
+    private static native void c_setRendererMixedImmersion(long ptr, boolean mixedImmersion);
     private static native boolean c_startSimulation(long ptr, String configFileName, String[] extraDirectories, ProgressWatcher watcher);
     private static native void c_start(long ptr);
     private static native void c_start(long ptr, double secondsSinceEpoch);
