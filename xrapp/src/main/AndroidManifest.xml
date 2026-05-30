@@ -15,6 +15,12 @@
         android:required="false"
         android:version="1" />
 
+    <!-- Optional passthrough support (Meta Quest). Required=false so the app still
+         runs on headsets without passthrough; the renderer probes at runtime. -->
+    <uses-feature
+        android:name="com.oculus.feature.PASSTHROUGH"
+        android:required="false" />
+
     <!-- Recommended for haptic feedback -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
