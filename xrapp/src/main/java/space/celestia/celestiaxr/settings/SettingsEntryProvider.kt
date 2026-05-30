@@ -168,6 +168,7 @@ private val staticRendererItems: List<SettingsItem> = listOf(
                         Pair(0, CelestiaString("Fuzzy Points", "Star style")),
                         Pair(1, CelestiaString("Points", "Star style")),
                         Pair(2, CelestiaString("Scaled Discs", "Star style")),
+                        Pair(3, CelestiaString("Point Spread Function", "Star style")),
                     ), displayName = SettingsKey.StarStyle.displayName, defaultSelection = 0),
                     SettingsSelectionSingleItem(key = SettingsKey.StarColors, options = listOf(
                         Pair(0, CelestiaString("Classic Colors", "Star colors option")),
@@ -177,6 +178,14 @@ private val staticRendererItems: List<SettingsItem> = listOf(
                     ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 1),
                     SettingsSliderItem(SettingsKey.TintSaturation, 0.0, 1.0),
                 ), footer = Footer.Text(CelestiaString("Tinted illumination saturation setting is only effective with Blackbody star colors.", ""))
+            ),
+            SettingsCommonItem.Section(
+                listOf(
+                    SettingsSliderItem(SettingsKey.StarPointRadius, 1.0, 10.0),
+                    SettingsSliderItem(SettingsKey.StarOptimization, 0.05, 1.0),
+                    SettingsSliderItem(SettingsKey.StarMaxIrradiance, 1.0, 1000000.0, isLogarithmic = true),
+                    SettingsSliderItem(SettingsKey.StarExposure, 0.01, 1000000.0, isLogarithmic = true),
+                ), header = CelestiaString("Point Spread Function", "Star style"), footer = Footer.Text(CelestiaString("Point spread function settings are only effective with the Point Spread Function star style.", ""))
             )
         )
     ),
@@ -198,6 +207,7 @@ private val staticRendererItems: List<SettingsItem> = listOf(
                 Pair(2, CelestiaString("2x", "")),
                 Pair(4, CelestiaString("4x", "")),
             ), defaultSelection = 1),
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MixedImmersion, CelestiaString("Passthrough", "Mixed immersion / passthrough toggle")),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", "")),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", ""))
         ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),

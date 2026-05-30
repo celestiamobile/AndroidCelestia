@@ -309,6 +309,15 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
 }
 
 extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setRendererMixedImmersion(JNIEnv * /*env*/, jclass /*clazz*/,
+                                                                  jlong ptr, jboolean mixed_immersion) {
+    auto core = (CelestiaCore *)ptr;
+    if (core->getRenderer() != nullptr)
+        core->getRenderer()->setMixedImmersion(mixed_immersion == JNI_TRUE);
+}
+
+extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_AppCore_c_1startSimulation(JNIEnv *env, jclass clazz,
                                                                    jlong ptr,

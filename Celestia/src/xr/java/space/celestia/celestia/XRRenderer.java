@@ -34,14 +34,14 @@ public class XRRenderer implements AutoCloseable {
         c_initialize(pointer);
     }
 
-    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier) {
+    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion) {
         if (started) return;
-        start(activity, enableMultisample, resolutionMultiplier);
+        start(activity, enableMultisample, resolutionMultiplier, enableMixedImmersion);
     }
 
-    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier) {
+    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion) {
         started = true;
-        c_start(pointer, activity, enableMultisample, resolutionMultiplier);
+        c_start(pointer, activity, enableMultisample, resolutionMultiplier, enableMixedImmersion);
     }
 
     public void resume() {
@@ -65,17 +65,17 @@ public class XRRenderer implements AutoCloseable {
         c_setCorePointer(pointer, appCore.pointer);
     }
     public interface EngineStartedListener {
-        boolean onEngineStarted(int sampleCount, float resolutionMultiplier);
+        boolean onEngineStarted(int sampleCount, float resolutionMultiplier, boolean mixedImmersion);
     }
 
     public void setEngineStartedListener(EngineStartedListener engineStartedListener) {
         this.engineStartedListener = engineStartedListener;
     }
 
-    private boolean engineStarted(int sampleCount, float resolutionMultiplier) {
+    private boolean engineStarted(int sampleCount, float resolutionMultiplier, boolean mixedImmersion) {
         boolean result = false;
         if (engineStartedListener != null)
-            result = engineStartedListener.onEngineStarted(sampleCount, resolutionMultiplier);
+            result = engineStartedListener.onEngineStarted(sampleCount, resolutionMultiplier, mixedImmersion);
         engineStartedListener = null;
         return result;
     }
@@ -140,7 +140,7 @@ public class XRRenderer implements AutoCloseable {
 
     private static native long c_createNativeXRObject();
     private native void c_initialize(long pointer);
-    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier);
+    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion);
     private native void c_resume(long pointer);
     private native void c_pause(long pointer);
     private native void c_destroy(long pointer);

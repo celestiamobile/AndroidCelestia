@@ -2,6 +2,7 @@
 #include <android/keycodes.h>
 #include <android/log.h>
 #include <array>
+#include <cstring>
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -22,6 +23,7 @@
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#include <epoxy/gl.h>
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
@@ -32,6 +34,50 @@ using namespace Eigen;
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  LOG_TAG, __VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN,  LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
+#ifndef NDEBUG
+static void KHRONOS_APIENTRY CelestiaXRKHRDebugCallback(GLenum source,
+                                                       GLenum type,
+                                                       GLuint id,
+                                                       GLenum severity,
+                                                       GLsizei length,
+                                                       const GLchar *message,
+                                                       const void *userParam) {
+    const char *sourceStr;
+    switch (source) {
+        case GL_DEBUG_SOURCE_API_KHR:             sourceStr = "API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM_KHR:   sourceStr = "WINDOW_SYSTEM"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER_KHR: sourceStr = "SHADER_COMPILER"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY_KHR:     sourceStr = "THIRD_PARTY"; break;
+        case GL_DEBUG_SOURCE_APPLICATION_KHR:     sourceStr = "APPLICATION"; break;
+        case GL_DEBUG_SOURCE_OTHER_KHR:           sourceStr = "OTHER"; break;
+        default:                                  sourceStr = "UNKNOWN"; break;
+    }
+    const char *typeStr;
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR_KHR:               typeStr = "ERROR"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR: typeStr = "DEPRECATED"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_KHR:  typeStr = "UNDEFINED"; break;
+        case GL_DEBUG_TYPE_PORTABILITY_KHR:         typeStr = "PORTABILITY"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE_KHR:         typeStr = "PERFORMANCE"; break;
+        case GL_DEBUG_TYPE_MARKER_KHR:              typeStr = "MARKER"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP_KHR:          typeStr = "PUSH_GROUP"; break;
+        case GL_DEBUG_TYPE_POP_GROUP_KHR:           typeStr = "POP_GROUP"; break;
+        case GL_DEBUG_TYPE_OTHER_KHR:               typeStr = "OTHER"; break;
+        default:                                    typeStr = "UNKNOWN"; break;
+    }
+    const char *severityStr;
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH_KHR:         severityStr = "HIGH"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM_KHR:       severityStr = "MEDIUM"; break;
+        case GL_DEBUG_SEVERITY_LOW_KHR:          severityStr = "LOW"; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION_KHR: severityStr = "NOTIFICATION"; break;
+        default:                                 severityStr = "UNKNOWN"; break;
+    }
+    LOGI("[GL_KHR_debug] source=%s type=%s id=%u severity=%s: %.*s",
+         sourceStr, typeStr, id, severityStr, (int)length, message);
+}
+#endif
 
 #define XR_CHECK(result, msg)                                              \
     do {                                                                   \
@@ -104,6 +150,17 @@ struct CelestiaOpenXR {
     bool exitRequested    = false;
     bool enableMultisample = false;
     int resolutionMultiplier = 1;
+    bool enableMixedImmersion = false;
+
+    // XR_FB_passthrough resources (created only if extension is supported and enabled)
+    bool passthroughSupported = false;
+    XrPassthroughFB passthrough = XR_NULL_HANDLE;
+    XrPassthroughLayerFB passthroughLayer = XR_NULL_HANDLE;
+    PFN_xrCreatePassthroughFB      pfnCreatePassthroughFB      = nullptr;
+    PFN_xrDestroyPassthroughFB     pfnDestroyPassthroughFB     = nullptr;
+    PFN_xrPassthroughStartFB       pfnPassthroughStartFB       = nullptr;
+    PFN_xrCreatePassthroughLayerFB pfnCreatePassthroughLayerFB = nullptr;
+    PFN_xrDestroyPassthroughLayerFB pfnDestroyPassthroughLayerFB = nullptr;
 
     int actualSampleCount = 1;
     float actualResolutionMultiplier = 1;
@@ -156,6 +213,8 @@ private:
     bool createSession();
     bool createSwapchains();
     void createActions();
+    void createPassthrough();
+    void destroyPassthrough();
 
     void handleSessionStateChange(XrSessionState newState);
     void renderEye(int eyeIndex,
@@ -371,10 +430,36 @@ void CelestiaOpenXR::renderLoop() {
 
 // ── createInstance ────────────────────────────────────────────────────────────
 bool CelestiaOpenXR::createInstance() {
-    const std::vector<const char*> extensions = {
+    std::vector<const char*> extensions = {
         XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME,
         XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME,
     };
+
+    // Probe for XR_FB_passthrough only when the user asked for mixed immersion.
+    if (enableMixedImmersion) {
+        uint32_t extCount = 0;
+        XrResult enumRes = xrEnumerateInstanceExtensionProperties(nullptr, 0, &extCount, nullptr);
+        if (XR_FAILED(enumRes)) {
+            LOGW("xrEnumerateInstanceExtensionProperties(count) failed: %d", (int)enumRes);
+        } else if (extCount > 0) {
+            std::vector<XrExtensionProperties> props(extCount, {XR_TYPE_EXTENSION_PROPERTIES});
+            enumRes = xrEnumerateInstanceExtensionProperties(nullptr, extCount, &extCount, props.data());
+            if (XR_FAILED(enumRes)) {
+                LOGW("xrEnumerateInstanceExtensionProperties(fill) failed: %d", (int)enumRes);
+            } else {
+                for (const auto& p : props) {
+                    if (std::string_view(p.extensionName) == XR_FB_PASSTHROUGH_EXTENSION_NAME) {
+                        passthroughSupported = true;
+                        extensions.push_back(XR_FB_PASSTHROUGH_EXTENSION_NAME);
+                        break;
+                    }
+                }
+            }
+        }
+        if (!passthroughSupported)
+            LOGW("Mixed immersion requested but %s is not available – falling back to opaque",
+                 XR_FB_PASSTHROUGH_EXTENSION_NAME);
+    }
 
     XrInstanceCreateInfoAndroidKHR androidInfo{XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR};
     androidInfo.applicationVM       = jvm;
@@ -458,6 +543,9 @@ bool CelestiaOpenXR::createEGLContext() {
 
     const EGLint contextAttribs[] = {
         EGL_CONTEXT_CLIENT_VERSION, 3,
+#ifndef NDEBUG
+        EGL_CONTEXT_FLAGS_KHR, EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR,
+#endif
         EGL_NONE,
     };
     eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, contextAttribs);
@@ -468,6 +556,18 @@ bool CelestiaOpenXR::createEGLContext() {
 
     // Make context current without a surface (Quest supports surfaceless contexts)
     eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, eglContext);
+
+#ifndef NDEBUG
+    {
+        const char *extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+        if (extensions != nullptr && strstr(extensions, "GL_KHR_debug") != nullptr) {
+            glEnable(GL_DEBUG_OUTPUT_KHR);
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR);
+            glDebugMessageCallbackKHR(CelestiaXRKHRDebugCallback, nullptr);
+            glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        }
+    }
+#endif
 
     return true;
 }
@@ -516,7 +616,83 @@ bool CelestiaOpenXR::createSession() {
 
     if (!createSwapchains()) return false;
     createActions();
+    createPassthrough();
     return true;
+}
+
+// ── createPassthrough ─────────────────────────────────────────────────────────
+void CelestiaOpenXR::createPassthrough() {
+    if (!enableMixedImmersion || !passthroughSupported) return;
+
+    // Check system support
+    XrSystemPassthroughProperties2FB ptSysProps2{XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES2_FB};
+    XrSystemProperties sysProps{XR_TYPE_SYSTEM_PROPERTIES};
+    sysProps.next = &ptSysProps2;
+    XrResult sysRes = xrGetSystemProperties(instance, systemId, &sysProps);
+    if (XR_FAILED(sysRes)) {
+        LOGW("xrGetSystemProperties for passthrough failed: %d", (int)sysRes);
+    } else if ((ptSysProps2.capabilities & XR_PASSTHROUGH_CAPABILITY_BIT_FB) == 0) {
+        LOGW("System does not advertise XR_PASSTHROUGH_CAPABILITY_BIT_FB (capabilities=0x%llx); disabling mixed immersion",
+             (unsigned long long)ptSysProps2.capabilities);
+        passthroughSupported = false;
+        return;
+    }
+
+    struct {
+        const char* name;
+        PFN_xrVoidFunction* out;
+    } procs[] = {
+        { "xrCreatePassthroughFB",       reinterpret_cast<PFN_xrVoidFunction*>(&pfnCreatePassthroughFB)       },
+        { "xrDestroyPassthroughFB",      reinterpret_cast<PFN_xrVoidFunction*>(&pfnDestroyPassthroughFB)      },
+        { "xrPassthroughStartFB",        reinterpret_cast<PFN_xrVoidFunction*>(&pfnPassthroughStartFB)        },
+        { "xrCreatePassthroughLayerFB",  reinterpret_cast<PFN_xrVoidFunction*>(&pfnCreatePassthroughLayerFB)  },
+        { "xrDestroyPassthroughLayerFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnDestroyPassthroughLayerFB) },
+    };
+    for (auto& p : procs) {
+        XrResult r = xrGetInstanceProcAddr(instance, p.name, p.out);
+        if (XR_FAILED(r) || *p.out == nullptr)
+            LOGE("xrGetInstanceProcAddr(%s) failed: result=%d", p.name, (int)r);
+    }
+
+    if (!pfnCreatePassthroughFB || !pfnCreatePassthroughLayerFB) {
+        LOGW("Required passthrough function pointers unavailable; disabling mixed immersion");
+        passthroughSupported = false;
+        return;
+    }
+
+    XrPassthroughCreateInfoFB ptInfo{XR_TYPE_PASSTHROUGH_CREATE_INFO_FB};
+    ptInfo.flags = XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB;
+    XrResult ptRes = pfnCreatePassthroughFB(session, &ptInfo, &passthrough);
+    if (XR_FAILED(ptRes)) {
+        LOGE("xrCreatePassthroughFB failed: %d; disabling mixed immersion", (int)ptRes);
+        passthroughSupported = false;
+        return;
+    }
+
+    XrPassthroughLayerCreateInfoFB layerInfo{XR_TYPE_PASSTHROUGH_LAYER_CREATE_INFO_FB};
+    layerInfo.passthrough = passthrough;
+    layerInfo.flags       = XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB;
+    layerInfo.purpose     = XR_PASSTHROUGH_LAYER_PURPOSE_RECONSTRUCTION_FB;
+    XrResult layerRes = pfnCreatePassthroughLayerFB(session, &layerInfo, &passthroughLayer);
+    if (XR_FAILED(layerRes)) {
+        LOGE("xrCreatePassthroughLayerFB failed: %d; disabling mixed immersion", (int)layerRes);
+        if (pfnDestroyPassthroughFB) pfnDestroyPassthroughFB(passthrough);
+        passthrough = XR_NULL_HANDLE;
+        passthroughSupported = false;
+        return;
+    }
+}
+
+// ── destroyPassthrough ────────────────────────────────────────────────────────
+void CelestiaOpenXR::destroyPassthrough() {
+    if (passthroughLayer != XR_NULL_HANDLE && pfnDestroyPassthroughLayerFB) {
+        pfnDestroyPassthroughLayerFB(passthroughLayer);
+        passthroughLayer = XR_NULL_HANDLE;
+    }
+    if (passthrough != XR_NULL_HANDLE && pfnDestroyPassthroughFB) {
+        pfnDestroyPassthroughFB(passthrough);
+        passthrough = XR_NULL_HANDLE;
+    }
 }
 
 // ── createSwapchains ──────────────────────────────────────────────────────────
@@ -691,6 +867,8 @@ void CelestiaOpenXR::destroy() {
         renderThread.join();
     }
 
+    destroyPassthrough();
+
     for (auto& eye : eyeSwapchains) {
         eye.destroyGLResources();
         if (eye.handle != XR_NULL_HANDLE) {
@@ -793,7 +971,8 @@ void CelestiaOpenXR::renderFrame(JNIEnv* env) {
     if (!sessionRunning) return;
 
     if (!engineStartedCalled) {
-        bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod, static_cast<jint>(actualSampleCount), static_cast<jfloat>(actualResolutionMultiplier)));
+        const bool mixedImmersionEffective = enableMixedImmersion && passthroughSupported && passthroughLayer != XR_NULL_HANDLE;
+        bool started = static_cast<bool>(env->CallBooleanMethod(javaObject, CelestiaOpenXR::engineStartedMethod, static_cast<jint>(actualSampleCount), static_cast<jfloat>(actualResolutionMultiplier), static_cast<jboolean>(mixedImmersionEffective)));
         if (!started) {
             exitRequested = true;
             return;
@@ -890,8 +1069,11 @@ void CelestiaOpenXR::renderFrame(JNIEnv* env) {
     }
 
     std::vector<XrCompositionLayerBaseHeader*> layers;
+    XrCompositionLayerPassthroughFB            layerPassthrough{XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB};
     XrCompositionLayerProjection               layerProj{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
     std::array<XrCompositionLayerProjectionView, 2> projViews{};
+
+    const bool useMixedImmersion = enableMixedImmersion && passthroughSupported && passthroughLayer != XR_NULL_HANDLE;
 
     if (frameState.shouldRender) {
         // Locate eye views
@@ -912,9 +1094,20 @@ void CelestiaOpenXR::renderFrame(JNIEnv* env) {
             renderEye(i, eyeSwapchains[i].images[0], views[i], projViews[i], env);
         }
 
+        if (useMixedImmersion) {
+            layerPassthrough.flags       = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
+            layerPassthrough.space       = XR_NULL_HANDLE;
+            layerPassthrough.layerHandle = passthroughLayer;
+            layers.push_back(reinterpret_cast<XrCompositionLayerBaseHeader*>(&layerPassthrough));
+        }
+
         layerProj.space     = appSpace;
         layerProj.viewCount = 2;
         layerProj.views     = projViews.data();
+        if (useMixedImmersion) {
+            layerProj.layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT
+                                 | XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT;
+        }
         layers.push_back(reinterpret_cast<XrCompositionLayerBaseHeader*>(&layerProj));
     }
 
@@ -1054,7 +1247,7 @@ Java_space_celestia_celestia_XRRenderer_c_1initialize(JNIEnv* env, jobject thiz,
 
     jclass clazz = env->GetObjectClass(thiz);
     CelestiaOpenXR::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
-    CelestiaOpenXR::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(IF)Z");
+    CelestiaOpenXR::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(IFZ)Z");
     CelestiaOpenXR::controllerButtonMethod = env->GetMethodID(clazz, "controllerButton", "(IZ)V");
     CelestiaOpenXR::joystickAxisMethod = env->GetMethodID(clazz, "joystickAxis", "(IF)V");
 }
@@ -1063,12 +1256,13 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv *env, jobject thiz, jlong pointer,
                                                  jobject activity, jboolean enable_multisample,
-                                                 jint resolution_multiplier) {
+                                                 jint resolution_multiplier, jboolean enable_mixed_immersion) {
 
     LOGI("JNI: start");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
     xr->enableMultisample = static_cast<bool>(enable_multisample);
     xr->resolutionMultiplier = static_cast<int>(resolution_multiplier);
+    xr->enableMixedImmersion = static_cast<bool>(enable_mixed_immersion);
     xr->init(env, activity);
 }
 
