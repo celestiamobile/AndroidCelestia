@@ -12,7 +12,7 @@ class SettingsEntryProviderImpl(private val featureFlags: FeatureFlags) : Settin
     override fun settings(purchaseManager: PurchaseManager): List<CommonSectionV2<SettingsItem>> {
         val sections = mutableListOf<CommonSectionV2<SettingsItem>>()
         sections.addAll(mainSettingSectionsBeforePlus)
-        if (featureFlags.pushNotificationPlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             pushNotificationSettingsSection()?.let { sections.add(it) }
         }
         if (purchaseManager.canUseInAppPurchase()) {

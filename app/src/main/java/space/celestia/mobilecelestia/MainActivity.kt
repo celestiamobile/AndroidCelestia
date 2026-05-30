@@ -1038,7 +1038,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             } catch (_: Throwable) {}
 
-            if (featureFlags.pushNotificationPlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 setUpPushNotifications(appSettings, appSettingsNoBackup, pushNotificationRegistrar)
             }
         }
@@ -1393,7 +1393,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override fun onReceivedACK(id: String) {
         if (id == latestNewsID) {
             appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
-            if (featureFlags.pushNotificationPlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 lifecycleScope.launch { pushNotificationRegistrar.register() }
             }
         }
