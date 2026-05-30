@@ -240,8 +240,8 @@ class XRActivity : ComponentActivity() {
     }
 
     private fun loadConfigSuccess() = lifecycleScope.launch {
-        xrRenderer.setEngineStartedListener { _, resolutionMultiplier ->
-            return@setEngineStartedListener initCelestia(resolutionMultiplier)
+        xrRenderer.setEngineStartedListener { _, resolutionMultiplier, mixedImmersion ->
+            return@setEngineStartedListener initCelestia(resolutionMultiplier, mixedImmersion)
         }
         xrRenderer.setControllerButtonListener { button, up ->
             when (val action = JoystickHandler.joystickButtonKeyAction(button, appSettings)) {
@@ -280,7 +280,7 @@ class XRActivity : ComponentActivity() {
                 }
             }
         }
-        xrRenderer.startConditionally(this@XRActivity, renderSettings.enableMultisample, renderSettings.resolutionMultiplier)
+        xrRenderer.startConditionally(this@XRActivity, renderSettings.enableMultisample, renderSettings.resolutionMultiplier, renderSettings.enableMixedImmersion)
     }
 
     private fun openHomePanelIfNeeded() {
@@ -487,7 +487,7 @@ class XRActivity : ComponentActivity() {
         return availablePaths
     }
 
-    private fun initCelestia(resolutionMultiplier: Float): Boolean {
+    private fun initCelestia(resolutionMultiplier: Float, mixedImmersion: Boolean): Boolean {
         appStatusReporter.updateState(AppStatusReporter.State.LOADING)
 
         val data = celestiaDataDirPath
@@ -524,6 +524,8 @@ class XRActivity : ComponentActivity() {
             appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }
+
+        appCore.setRendererMixedImmersion(mixedImmersion)
 
         appCore.screenDPI = (appCore.screenDPI * resolutionMultiplier).toInt()
 
