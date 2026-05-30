@@ -5,6 +5,7 @@ set(CELESTIA_SRC_DIR "${CELESTIA_DIR}/src")
 set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/audiosession.cpp
         ${CELESTIA_SRC_DIR}/celestia/audiosession.h
+        ${CELESTIA_SRC_DIR}/celestia/catalogloader.cpp
         ${CELESTIA_SRC_DIR}/celestia/catalogloader.h
         ${CELESTIA_SRC_DIR}/celestia/celestiacore.cpp
         ${CELESTIA_SRC_DIR}/celestia/celestiacore.h
