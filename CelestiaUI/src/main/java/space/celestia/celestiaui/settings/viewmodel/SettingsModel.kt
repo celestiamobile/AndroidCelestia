@@ -69,12 +69,65 @@ enum class SettingsKey : PreferenceManager.Key {
     ShowCityLabels,
     ShowObservatoryLabels,
     ShowLandingSiteLabels,
-    ShowMonsLabels,
-    ShowMareLabels,
     ShowCraterLabels,
     ShowVallisLabels,
+    ShowMonsLabels,
+    ShowPlanumLabels,
+    ShowChasmaLabels,
+    ShowPateraLabels,
+    ShowMareLabels,
+    ShowRupesLabels,
+    ShowTesseraLabels,
+    ShowRegioLabels,
+    ShowChaosLabels,
     ShowTerraLabels,
+    ShowAstrumLabels,
+    ShowCoronaLabels,
+    ShowDorsumLabels,
+    ShowFossaLabels,
+    ShowCatenaLabels,
+    ShowMensaLabels,
+    ShowRimaLabels,
+    ShowUndaeLabels,
+    ShowTholusLabels,
+    ShowReticulumLabels,
+    ShowPlanitiaLabels,
+    ShowLineaLabels,
+    ShowFluctusLabels,
+    ShowFarrumLabels,
     ShowEruptiveCenterLabels,
+    ShowInsulaLabels,
+    ShowAlbedoLabels,
+    ShowArcusLabels,
+    ShowCavusLabels,
+    ShowCollesLabels,
+    ShowFaculaLabels,
+    ShowFlexusLabels,
+    ShowFlumenLabels,
+    ShowFretumLabels,
+    ShowLabesLabels,
+    ShowLabyrinthusLabels,
+    ShowLacunaLabels,
+    ShowLacusLabels,
+    ShowLargeRingedLabels,
+    ShowLobusLabels,
+    ShowLingulaLabels,
+    ShowMaculaLabels,
+    ShowOceanusLabels,
+    ShowPalusLabels,
+    ShowPlumeLabels,
+    ShowPromontoriumLabels,
+    ShowSatelliteLabels,
+    ShowScopulusLabels,
+    ShowSerpensLabels,
+    ShowSinusLabels,
+    ShowSulcusLabels,
+    ShowVastitasLabels,
+    ShowVirgaLabels,
+    ShowSaxumLabels,
+    ShowCollumLabels,
+    ShowCosmodromeLabels,
+    ShowRingLabels,
     ShowOtherLabels,
     ShowMarkers,
     ShowEcliptic,
@@ -158,12 +211,65 @@ enum class SettingsKey : PreferenceManager.Key {
             ShowCityLabels -> CelestiaString("Cities", "")
             ShowObservatoryLabels -> CelestiaString("Observatories", "Location labels")
             ShowLandingSiteLabels -> CelestiaString("Landing Sites", "Location labels")
-            ShowMonsLabels -> CelestiaString("Montes (Mountains)", "Location labels")
-            ShowMareLabels -> CelestiaString("Maria (Seas)", "Location labels")
             ShowCraterLabels -> CelestiaString("Craters", "Location labels")
             ShowVallisLabels -> CelestiaString("Valles (Valleys)", "Location labels")
-            ShowTerraLabels -> CelestiaString("Terrae (Land masses)", "Location labels")
+            ShowMonsLabels -> CelestiaString("Montes (Mountains)", "Location labels")
+            ShowPlanumLabels -> CelestiaString("Plana (Plateaus)", "Location labels")
+            ShowChasmaLabels -> CelestiaString("Chasmata (Canyons)", "Location labels")
+            ShowPateraLabels -> CelestiaString("Paterae (Irregular Craters)", "Location labels")
+            ShowMareLabels -> CelestiaString("Maria (Seas)", "Location labels")
+            ShowRupesLabels -> CelestiaString("Rupes (Scarps)", "Location labels")
+            ShowTesseraLabels -> CelestiaString("Tesserae (Tile-like Terrain)", "Location labels")
+            ShowRegioLabels -> CelestiaString("Regiones (Regions)", "Location labels")
+            ShowChaosLabels -> CelestiaString("Chaos (Chaotic Terrain)", "Location labels")
+            ShowTerraLabels -> CelestiaString("Terrae (Land Masses)", "Location labels")
+            ShowAstrumLabels -> CelestiaString("Astra (Radial Features)", "Location labels")
+            ShowCoronaLabels -> CelestiaString("Coronae (Oval Features)", "Location labels")
+            ShowDorsumLabels -> CelestiaString("Dorsa (Ridges)", "Location labels")
+            ShowFossaLabels -> CelestiaString("Fossae (Long Depressions)", "Location labels")
+            ShowCatenaLabels -> CelestiaString("Catenae (Crater Chains)", "Location labels")
+            ShowMensaLabels -> CelestiaString("Mensae (Flat-Topped Hills)", "Location labels")
+            ShowRimaLabels -> CelestiaString("Rimae (Fissures)", "Location labels")
+            ShowUndaeLabels -> CelestiaString("Undae (Dunes)", "Location labels")
+            ShowTholusLabels -> CelestiaString("Tholi (Small Domes)", "Location labels")
+            ShowReticulumLabels -> CelestiaString("Reticula (Reticular Patterns)", "Location labels")
+            ShowPlanitiaLabels -> CelestiaString("Planitiae (Plains)", "Location labels")
+            ShowLineaLabels -> CelestiaString("Lineae (Elongate Markings)", "Location labels")
+            ShowFluctusLabels -> CelestiaString("Fluctus (Flow Terrain)", "Location labels")
+            ShowFarrumLabels -> CelestiaString("Farra (Pancake-like Structures)", "Location labels")
             ShowEruptiveCenterLabels -> CelestiaString("Volcanoes", "Location labels")
+            ShowInsulaLabels -> CelestiaString("Insulae (Islands)", "Location labels")
+            ShowAlbedoLabels -> CelestiaString("Albedo Features", "Location labels")
+            ShowArcusLabels -> CelestiaString("Arcus (Arc-Shaped Features)", "Location labels")
+            ShowCavusLabels -> CelestiaString("Cavi (Hollows)", "Location labels")
+            ShowCollesLabels -> CelestiaString("Colles (Small Hills)", "Location labels")
+            ShowFaculaLabels -> CelestiaString("Faculae (Bright Spots)", "Location labels")
+            ShowFlexusLabels -> CelestiaString("Flexus (Cuspate Features)", "Location labels")
+            ShowFlumenLabels -> CelestiaString("Flumina (Channels)", "Location labels")
+            ShowFretumLabels -> CelestiaString("Freta (Straits)", "Location labels")
+            ShowLabesLabels -> CelestiaString("Labes (Landslides)", "Location labels")
+            ShowLabyrinthusLabels -> CelestiaString("Labyrinthi (Valley Complexes)", "Location labels")
+            ShowLacunaLabels -> CelestiaString("Lacunae (Irregular Depressions)", "Location labels")
+            ShowLacusLabels -> CelestiaString("Lacus (Lakes)", "Location labels")
+            ShowLargeRingedLabels -> CelestiaString("Large Ringed Features", "Location labels")
+            ShowLobusLabels -> CelestiaString("Lobi (Lobate Features)", "Location labels")
+            ShowLingulaLabels -> CelestiaString("Lingulae (Tongue-Shaped Features)", "Location labels")
+            ShowMaculaLabels -> CelestiaString("Maculae (Dark Spots)", "Location labels")
+            ShowOceanusLabels -> CelestiaString("Oceani (Oceans)", "Location labels")
+            ShowPalusLabels -> CelestiaString("Paludes (Swamps)", "Location labels")
+            ShowPlumeLabels -> CelestiaString("Plumes", "Location labels")
+            ShowPromontoriumLabels -> CelestiaString("Promontoria (Capes)", "Location labels")
+            ShowSatelliteLabels -> CelestiaString("Satellite Features", "Location labels")
+            ShowScopulusLabels -> CelestiaString("Scopuli (Irregular Scarps)", "Location labels")
+            ShowSerpensLabels -> CelestiaString("Serpentes (Serpentine Features)", "Location labels")
+            ShowSinusLabels -> CelestiaString("Sinus (Bays)", "Location labels")
+            ShowSulcusLabels -> CelestiaString("Sulci (Parallel Grooves)", "Location labels")
+            ShowVastitasLabels -> CelestiaString("Vastitates (Widespread Lowlands)", "Location labels")
+            ShowVirgaLabels -> CelestiaString("Virgae (Streaks)", "Location labels")
+            ShowSaxumLabels -> CelestiaString("Saxa (Boulders)", "Location labels")
+            ShowCollumLabels -> CelestiaString("Colla (Necks)", "Location labels")
+            ShowCosmodromeLabels -> CelestiaString("Cosmodromes", "Location labels")
+            ShowRingLabels -> CelestiaString("Rings", "Location labels")
             ShowOtherLabels -> CelestiaString("Other", "Other location labels; Android/iOS, Other objects to choose from in Eclipse Finder")
             ShowMarkers -> CelestiaString("Show Markers", "")
             ShowEcliptic -> CelestiaString("Ecliptic Line", "")
@@ -251,12 +357,65 @@ enum class SettingsKey : PreferenceManager.Key {
                 ShowCityLabels,
                 ShowObservatoryLabels,
                 ShowLandingSiteLabels,
-                ShowMonsLabels,
-                ShowMareLabels,
                 ShowCraterLabels,
                 ShowVallisLabels,
+                ShowMonsLabels,
+                ShowPlanumLabels,
+                ShowChasmaLabels,
+                ShowPateraLabels,
+                ShowMareLabels,
+                ShowRupesLabels,
+                ShowTesseraLabels,
+                ShowRegioLabels,
+                ShowChaosLabels,
                 ShowTerraLabels,
+                ShowAstrumLabels,
+                ShowCoronaLabels,
+                ShowDorsumLabels,
+                ShowFossaLabels,
+                ShowCatenaLabels,
+                ShowMensaLabels,
+                ShowRimaLabels,
+                ShowUndaeLabels,
+                ShowTholusLabels,
+                ShowReticulumLabels,
+                ShowPlanitiaLabels,
+                ShowLineaLabels,
+                ShowFluctusLabels,
+                ShowFarrumLabels,
                 ShowEruptiveCenterLabels,
+                ShowInsulaLabels,
+                ShowAlbedoLabels,
+                ShowArcusLabels,
+                ShowCavusLabels,
+                ShowCollesLabels,
+                ShowFaculaLabels,
+                ShowFlexusLabels,
+                ShowFlumenLabels,
+                ShowFretumLabels,
+                ShowLabesLabels,
+                ShowLabyrinthusLabels,
+                ShowLacunaLabels,
+                ShowLacusLabels,
+                ShowLargeRingedLabels,
+                ShowLobusLabels,
+                ShowLingulaLabels,
+                ShowMaculaLabels,
+                ShowOceanusLabels,
+                ShowPalusLabels,
+                ShowPlumeLabels,
+                ShowPromontoriumLabels,
+                ShowSatelliteLabels,
+                ShowScopulusLabels,
+                ShowSerpensLabels,
+                ShowSinusLabels,
+                ShowSulcusLabels,
+                ShowVastitasLabels,
+                ShowVirgaLabels,
+                ShowSaxumLabels,
+                ShowCollumLabels,
+                ShowCosmodromeLabels,
+                ShowRingLabels,
                 ShowOtherLabels,
                 ShowMarkers,
                 EnableReverseWheel,

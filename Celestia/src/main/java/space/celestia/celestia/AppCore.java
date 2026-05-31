@@ -683,7 +683,7 @@ public class AppCore {
     private native boolean c_getShowChasmaLabels(long pointer);
     public boolean getShowCollumLabels() { return c_getShowCollumLabels(pointer); }
     public void setShowCollumLabels(boolean showCollumLabels) { c_setShowCollumLabels(pointer, showCollumLabels); }
-    private static native void c_setShowCollumLabels(long pointer, boolean showChasmaLabels);
+    private static native void c_setShowCollumLabels(long pointer, boolean showCollumLabels);
     private native boolean c_getShowCollumLabels(long pointer);
     public boolean getShowPateraLabels() { return c_getShowPateraLabels(pointer); }
     public void setShowPateraLabels(boolean showPateraLabels) { c_setShowPateraLabels(pointer, showPateraLabels); }
@@ -769,6 +769,134 @@ public class AppCore {
     public void setShowEruptiveCenterLabels(boolean showEruptiveCenterLabels) { c_setShowEruptiveCenterLabels(pointer, showEruptiveCenterLabels); }
     private static native void c_setShowEruptiveCenterLabels(long pointer, boolean showEruptiveCenterLabels);
     private native boolean c_getShowEruptiveCenterLabels(long pointer);
+    public boolean getShowTholusLabels() { return c_getShowTholusLabels(pointer); }
+    public void setShowTholusLabels(boolean showTholusLabels) { c_setShowTholusLabels(pointer, showTholusLabels); }
+    private static native void c_setShowTholusLabels(long pointer, boolean showTholusLabels);
+    private native boolean c_getShowTholusLabels(long pointer);
+    public boolean getShowInsulaLabels() { return c_getShowInsulaLabels(pointer); }
+    public void setShowInsulaLabels(boolean showInsulaLabels) { c_setShowInsulaLabels(pointer, showInsulaLabels); }
+    private static native void c_setShowInsulaLabels(long pointer, boolean showInsulaLabels);
+    private native boolean c_getShowInsulaLabels(long pointer);
+    public boolean getShowAlbedoLabels() { return c_getShowAlbedoLabels(pointer); }
+    public void setShowAlbedoLabels(boolean showAlbedoLabels) { c_setShowAlbedoLabels(pointer, showAlbedoLabels); }
+    private static native void c_setShowAlbedoLabels(long pointer, boolean showAlbedoLabels);
+    private native boolean c_getShowAlbedoLabels(long pointer);
+    public boolean getShowArcusLabels() { return c_getShowArcusLabels(pointer); }
+    public void setShowArcusLabels(boolean showArcusLabels) { c_setShowArcusLabels(pointer, showArcusLabels); }
+    private static native void c_setShowArcusLabels(long pointer, boolean showArcusLabels);
+    private native boolean c_getShowArcusLabels(long pointer);
+    public boolean getShowCavusLabels() { return c_getShowCavusLabels(pointer); }
+    public void setShowCavusLabels(boolean showCavusLabels) { c_setShowCavusLabels(pointer, showCavusLabels); }
+    private static native void c_setShowCavusLabels(long pointer, boolean showCavusLabels);
+    private native boolean c_getShowCavusLabels(long pointer);
+    public boolean getShowCollesLabels() { return c_getShowCollesLabels(pointer); }
+    public void setShowCollesLabels(boolean showCollesLabels) { c_setShowCollesLabels(pointer, showCollesLabels); }
+    private static native void c_setShowCollesLabels(long pointer, boolean showCollesLabels);
+    private native boolean c_getShowCollesLabels(long pointer);
+    public boolean getShowFaculaLabels() { return c_getShowFaculaLabels(pointer); }
+    public void setShowFaculaLabels(boolean showFaculaLabels) { c_setShowFaculaLabels(pointer, showFaculaLabels); }
+    private static native void c_setShowFaculaLabels(long pointer, boolean showFaculaLabels);
+    private native boolean c_getShowFaculaLabels(long pointer);
+    public boolean getShowFlexusLabels() { return c_getShowFlexusLabels(pointer); }
+    public void setShowFlexusLabels(boolean showFlexusLabels) { c_setShowFlexusLabels(pointer, showFlexusLabels); }
+    private static native void c_setShowFlexusLabels(long pointer, boolean showFlexusLabels);
+    private native boolean c_getShowFlexusLabels(long pointer);
+    public boolean getShowFlumenLabels() { return c_getShowFlumenLabels(pointer); }
+    public void setShowFlumenLabels(boolean showFlumenLabels) { c_setShowFlumenLabels(pointer, showFlumenLabels); }
+    private static native void c_setShowFlumenLabels(long pointer, boolean showFlumenLabels);
+    private native boolean c_getShowFlumenLabels(long pointer);
+    public boolean getShowFretumLabels() { return c_getShowFretumLabels(pointer); }
+    public void setShowFretumLabels(boolean showFretumLabels) { c_setShowFretumLabels(pointer, showFretumLabels); }
+    private static native void c_setShowFretumLabels(long pointer, boolean showFretumLabels);
+    private native boolean c_getShowFretumLabels(long pointer);
+    public boolean getShowLabesLabels() { return c_getShowLabesLabels(pointer); }
+    public void setShowLabesLabels(boolean showLabesLabels) { c_setShowLabesLabels(pointer, showLabesLabels); }
+    private static native void c_setShowLabesLabels(long pointer, boolean showLabesLabels);
+    private native boolean c_getShowLabesLabels(long pointer);
+    public boolean getShowLabyrinthusLabels() { return c_getShowLabyrinthusLabels(pointer); }
+    public void setShowLabyrinthusLabels(boolean showLabyrinthusLabels) { c_setShowLabyrinthusLabels(pointer, showLabyrinthusLabels); }
+    private static native void c_setShowLabyrinthusLabels(long pointer, boolean showLabyrinthusLabels);
+    private native boolean c_getShowLabyrinthusLabels(long pointer);
+    public boolean getShowLacunaLabels() { return c_getShowLacunaLabels(pointer); }
+    public void setShowLacunaLabels(boolean showLacunaLabels) { c_setShowLacunaLabels(pointer, showLacunaLabels); }
+    private static native void c_setShowLacunaLabels(long pointer, boolean showLacunaLabels);
+    private native boolean c_getShowLacunaLabels(long pointer);
+    public boolean getShowLacusLabels() { return c_getShowLacusLabels(pointer); }
+    public void setShowLacusLabels(boolean showLacusLabels) { c_setShowLacusLabels(pointer, showLacusLabels); }
+    private static native void c_setShowLacusLabels(long pointer, boolean showLacusLabels);
+    private native boolean c_getShowLacusLabels(long pointer);
+    public boolean getShowLargeRingedLabels() { return c_getShowLargeRingedLabels(pointer); }
+    public void setShowLargeRingedLabels(boolean showLargeRingedLabels) { c_setShowLargeRingedLabels(pointer, showLargeRingedLabels); }
+    private static native void c_setShowLargeRingedLabels(long pointer, boolean showLargeRingedLabels);
+    private native boolean c_getShowLargeRingedLabels(long pointer);
+    public boolean getShowLobusLabels() { return c_getShowLobusLabels(pointer); }
+    public void setShowLobusLabels(boolean showLobusLabels) { c_setShowLobusLabels(pointer, showLobusLabels); }
+    private static native void c_setShowLobusLabels(long pointer, boolean showLobusLabels);
+    private native boolean c_getShowLobusLabels(long pointer);
+    public boolean getShowLingulaLabels() { return c_getShowLingulaLabels(pointer); }
+    public void setShowLingulaLabels(boolean showLingulaLabels) { c_setShowLingulaLabels(pointer, showLingulaLabels); }
+    private static native void c_setShowLingulaLabels(long pointer, boolean showLingulaLabels);
+    private native boolean c_getShowLingulaLabels(long pointer);
+    public boolean getShowMaculaLabels() { return c_getShowMaculaLabels(pointer); }
+    public void setShowMaculaLabels(boolean showMaculaLabels) { c_setShowMaculaLabels(pointer, showMaculaLabels); }
+    private static native void c_setShowMaculaLabels(long pointer, boolean showMaculaLabels);
+    private native boolean c_getShowMaculaLabels(long pointer);
+    public boolean getShowOceanusLabels() { return c_getShowOceanusLabels(pointer); }
+    public void setShowOceanusLabels(boolean showOceanusLabels) { c_setShowOceanusLabels(pointer, showOceanusLabels); }
+    private static native void c_setShowOceanusLabels(long pointer, boolean showOceanusLabels);
+    private native boolean c_getShowOceanusLabels(long pointer);
+    public boolean getShowPalusLabels() { return c_getShowPalusLabels(pointer); }
+    public void setShowPalusLabels(boolean showPalusLabels) { c_setShowPalusLabels(pointer, showPalusLabels); }
+    private static native void c_setShowPalusLabels(long pointer, boolean showPalusLabels);
+    private native boolean c_getShowPalusLabels(long pointer);
+    public boolean getShowPlumeLabels() { return c_getShowPlumeLabels(pointer); }
+    public void setShowPlumeLabels(boolean showPlumeLabels) { c_setShowPlumeLabels(pointer, showPlumeLabels); }
+    private static native void c_setShowPlumeLabels(long pointer, boolean showPlumeLabels);
+    private native boolean c_getShowPlumeLabels(long pointer);
+    public boolean getShowPromontoriumLabels() { return c_getShowPromontoriumLabels(pointer); }
+    public void setShowPromontoriumLabels(boolean showPromontoriumLabels) { c_setShowPromontoriumLabels(pointer, showPromontoriumLabels); }
+    private static native void c_setShowPromontoriumLabels(long pointer, boolean showPromontoriumLabels);
+    private native boolean c_getShowPromontoriumLabels(long pointer);
+    public boolean getShowSatelliteLabels() { return c_getShowSatelliteLabels(pointer); }
+    public void setShowSatelliteLabels(boolean showSatelliteLabels) { c_setShowSatelliteLabels(pointer, showSatelliteLabels); }
+    private static native void c_setShowSatelliteLabels(long pointer, boolean showSatelliteLabels);
+    private native boolean c_getShowSatelliteLabels(long pointer);
+    public boolean getShowScopulusLabels() { return c_getShowScopulusLabels(pointer); }
+    public void setShowScopulusLabels(boolean showScopulusLabels) { c_setShowScopulusLabels(pointer, showScopulusLabels); }
+    private static native void c_setShowScopulusLabels(long pointer, boolean showScopulusLabels);
+    private native boolean c_getShowScopulusLabels(long pointer);
+    public boolean getShowSerpensLabels() { return c_getShowSerpensLabels(pointer); }
+    public void setShowSerpensLabels(boolean showSerpensLabels) { c_setShowSerpensLabels(pointer, showSerpensLabels); }
+    private static native void c_setShowSerpensLabels(long pointer, boolean showSerpensLabels);
+    private native boolean c_getShowSerpensLabels(long pointer);
+    public boolean getShowSinusLabels() { return c_getShowSinusLabels(pointer); }
+    public void setShowSinusLabels(boolean showSinusLabels) { c_setShowSinusLabels(pointer, showSinusLabels); }
+    private static native void c_setShowSinusLabels(long pointer, boolean showSinusLabels);
+    private native boolean c_getShowSinusLabels(long pointer);
+    public boolean getShowSulcusLabels() { return c_getShowSulcusLabels(pointer); }
+    public void setShowSulcusLabels(boolean showSulcusLabels) { c_setShowSulcusLabels(pointer, showSulcusLabels); }
+    private static native void c_setShowSulcusLabels(long pointer, boolean showSulcusLabels);
+    private native boolean c_getShowSulcusLabels(long pointer);
+    public boolean getShowVastitasLabels() { return c_getShowVastitasLabels(pointer); }
+    public void setShowVastitasLabels(boolean showVastitasLabels) { c_setShowVastitasLabels(pointer, showVastitasLabels); }
+    private static native void c_setShowVastitasLabels(long pointer, boolean showVastitasLabels);
+    private native boolean c_getShowVastitasLabels(long pointer);
+    public boolean getShowVirgaLabels() { return c_getShowVirgaLabels(pointer); }
+    public void setShowVirgaLabels(boolean showVirgaLabels) { c_setShowVirgaLabels(pointer, showVirgaLabels); }
+    private static native void c_setShowVirgaLabels(long pointer, boolean showVirgaLabels);
+    private native boolean c_getShowVirgaLabels(long pointer);
+    public boolean getShowSaxumLabels() { return c_getShowSaxumLabels(pointer); }
+    public void setShowSaxumLabels(boolean showSaxumLabels) { c_setShowSaxumLabels(pointer, showSaxumLabels); }
+    private static native void c_setShowSaxumLabels(long pointer, boolean showSaxumLabels);
+    private native boolean c_getShowSaxumLabels(long pointer);
+    public boolean getShowCosmodromeLabels() { return c_getShowCosmodromeLabels(pointer); }
+    public void setShowCosmodromeLabels(boolean showCosmodromeLabels) { c_setShowCosmodromeLabels(pointer, showCosmodromeLabels); }
+    private static native void c_setShowCosmodromeLabels(long pointer, boolean showCosmodromeLabels);
+    private native boolean c_getShowCosmodromeLabels(long pointer);
+    public boolean getShowRingLabels() { return c_getShowRingLabels(pointer); }
+    public void setShowRingLabels(boolean showRingLabels) { c_setShowRingLabels(pointer, showRingLabels); }
+    private static native void c_setShowRingLabels(long pointer, boolean showRingLabels);
+    private native boolean c_getShowRingLabels(long pointer);
     public boolean getShowOtherLabels() { return c_getShowOtherLabels(pointer); }
     public void setShowOtherLabels(boolean showOtherLabels) { c_setShowOtherLabels(pointer, showOtherLabels); }
     private static native void c_setShowOtherLabels(long pointer, boolean showOtherLabels);
