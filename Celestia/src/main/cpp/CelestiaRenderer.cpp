@@ -80,7 +80,6 @@ public:
     enum RenderThreadMessage msg = MSG_NONE;
 
     bool enableMultisample = false;
-    bool hasOpenGLES3 = false;
     bool engineStartedCalled = false;
 
     EGLDisplay display = EGL_NO_DISPLAY;
@@ -120,10 +119,9 @@ private:
 
     // Quad shader members
     unsigned int quadProgram{ 0 };
-    int avPosition{ -1 };
-    int avTexCoord{ -1 };
     int usTexture{ -1 };
     unsigned int quadVbo{ 0 };
+    unsigned int quadVao{ 0 };
 
     static void *threadCallback(void *self);
 };
@@ -137,7 +135,7 @@ bool CelestiaRenderer::initialize()
     if (context == EGL_NO_CONTEXT)
     {
         const EGLint multisampleAttribs[] = {
-                EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+                EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
                 EGL_BLUE_SIZE, 8,
                 EGL_GREEN_SIZE, 8,
                 EGL_RED_SIZE, 8,
@@ -147,7 +145,7 @@ bool CelestiaRenderer::initialize()
                 EGL_NONE
         };
         const EGLint attribs[] = {
-                EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+                EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
                 EGL_BLUE_SIZE, 8,
                 EGL_GREEN_SIZE, 8,
                 EGL_RED_SIZE, 8,
@@ -217,9 +215,9 @@ bool CelestiaRenderer::initialize()
             return false;
         }
 
-        // Request ES 2.0 context - EGL will upgrade to ES 3.0 if available
+        // Request ES 3.0 context
         const EGLint contextAttributes[] = {
-                EGL_CONTEXT_CLIENT_VERSION, 2,
+                EGL_CONTEXT_CLIENT_VERSION, 3,
                 EGL_NONE
         };
 
@@ -254,19 +252,6 @@ bool CelestiaRenderer::initialize()
             LOG_ERROR("eglMakeCurrent() returned error %d", eglGetError());
             destroy();
             return false;
-        }
-
-        // Detect actual OpenGL ES version
-        const char* versionStr = (const char*)glGetString(GL_VERSION);
-        if (versionStr) {
-            LOG_INFO("OpenGL Version: %s", versionStr);
-            // Check if version string contains "OpenGL ES 3" or higher
-            hasOpenGLES3 = celestia::gl::checkVersion(celestia::gl::Version::GLES_3_0);
-            if (hasOpenGLES3) {
-                LOG_INFO("OpenGL ES 3.0+ detected, MSAA will be available");
-            } else {
-                LOG_INFO("OpenGL ES 2.0 detected, MSAA will be disabled");
-            }
         }
     } else {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -464,20 +449,23 @@ void CelestiaRenderer::setFrameRateOption(int frameRateOption)
 }
 
 static const char* QUAD_VS =
-    "attribute vec2 a_Position;\n"
-    "attribute vec2 a_TexCoord;\n"
-    "varying vec2 v_TexCoord;\n"
+    "#version 300 es\n"
+    "layout(location = 0) in vec2 a_Position;\n"
+    "layout(location = 1) in vec2 a_TexCoord;\n"
+    "out vec2 v_TexCoord;\n"
     "void main() {\n"
     "    gl_Position = vec4(a_Position, 0.0, 1.0);\n"
     "    v_TexCoord = a_TexCoord;\n"
     "}\n";
 
 static const char* QUAD_FS =
+    "#version 300 es\n"
     "precision mediump float;\n"
-    "varying vec2 v_TexCoord;\n"
+    "in vec2 v_TexCoord;\n"
+    "layout(location = 0) out vec4 fragColor;\n"
     "uniform sampler2D u_Texture;\n"
     "void main() {\n"
-    "    gl_FragColor = texture2D(u_Texture, v_TexCoord);\n"
+    "    fragColor = texture(u_Texture, v_TexCoord);\n"
     "}\n";
 
 void CelestiaRenderer::initQuadShader() {
@@ -499,8 +487,6 @@ void CelestiaRenderer::initQuadShader() {
     glDeleteShader(vs);
     glDeleteShader(fs);
 
-    avPosition = glGetAttribLocation(quadProgram, "a_Position");
-    avTexCoord = glGetAttribLocation(quadProgram, "a_TexCoord");
     usTexture = glGetUniformLocation(quadProgram, "u_Texture");
 
     // Quad covering full screen
@@ -513,6 +499,14 @@ void CelestiaRenderer::initQuadShader() {
     glGenBuffers(1, &quadVbo);
     glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &quadVao);
+    glBindVertexArray(quadVao);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -537,14 +531,14 @@ void CelestiaRenderer::setupOffscreenBuffers() {
         glGenRenderbuffers(1, &offscreenDepthRb);
 
         glBindTexture(GL_TEXTURE_2D, offscreenTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, hasOpenGLES3 ? GL_RGBA8 : GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         glBindRenderbuffer(GL_RENDERBUFFER, offscreenDepthRb);
-        glRenderbufferStorage(GL_RENDERBUFFER, hasOpenGLES3 ? GL_DEPTH_COMPONENT24 : (celestia::gl::OES_depth24 ? GL_DEPTH_COMPONENT24_OES : GL_DEPTH_COMPONENT16), width, height);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 
         glBindFramebuffer(GL_FRAMEBUFFER, offscreenFbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, offscreenTexture, 0);
@@ -555,7 +549,7 @@ void CelestiaRenderer::setupOffscreenBuffers() {
         }
 
         // Create MSAA framebuffer if ES 3.0+ and multisample enabled
-        if (hasOpenGLES3 && enableMultisample) {
+        if (enableMultisample) {
             glGenFramebuffers(1, &msaaFbo);
             glGenRenderbuffers(1, &msaaColorRb);
             glGenRenderbuffers(1, &msaaDepthRb);
@@ -617,6 +611,10 @@ void CelestiaRenderer::cleanupOffscreenBuffers() {
         glDeleteBuffers(1, &quadVbo);
         quadVbo = 0;
     }
+    if (quadVao != 0) {
+        glDeleteVertexArrays(1, &quadVao);
+        quadVao = 0;
+    }
     offscreenWidth = 0;
     offscreenHeight = 0;
 }
@@ -624,14 +622,10 @@ void CelestiaRenderer::cleanupOffscreenBuffers() {
 void CelestiaRenderer::drawTextureToScreen(unsigned int texture) {
     if (quadProgram == 0) initQuadShader();
 
-    glDisable(GL_DEPTH_TEST);
+    GLboolean depthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+    if (depthTestEnabled) glDisable(GL_DEPTH_TEST);
     glUseProgram(quadProgram);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
-
-    glEnableVertexAttribArray(avPosition);
-    glVertexAttribPointer(avPosition, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(avTexCoord);
-    glVertexAttribPointer(avTexCoord, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glBindVertexArray(quadVao);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -639,11 +633,9 @@ void CelestiaRenderer::drawTextureToScreen(unsigned int texture) {
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    glDisableVertexAttribArray(avPosition);
-    glDisableVertexAttribArray(avTexCoord);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
     glUseProgram(0);
-    glEnable(GL_DEPTH_TEST);
+    if (depthTestEnabled) glEnable(GL_DEPTH_TEST);
 }
 
 void *CelestiaRenderer::threadCallback(void *self)
@@ -717,7 +709,7 @@ void *CelestiaRenderer::threadCallback(void *self)
                 
                 // Determine which FBO to render to
                 unsigned int renderFbo = renderer->offscreenFbo;
-                if (renderer->hasOpenGLES3 && renderer->enableMultisample && renderer->msaaFbo != 0) {
+                if (renderer->enableMultisample && renderer->msaaFbo != 0) {
                     renderFbo = renderer->msaaFbo;
                 }
 
@@ -728,7 +720,7 @@ void *CelestiaRenderer::threadCallback(void *self)
                 renderer->tickAndDraw();
                 
                 // Resolve MSAA to texture if using MSAA
-                if (renderer->hasOpenGLES3 && renderer->enableMultisample && renderer->msaaFbo != 0) {
+                if (renderer->enableMultisample && renderer->msaaFbo != 0) {
                     glBindFramebuffer(GL_READ_FRAMEBUFFER, renderer->msaaFbo);
                     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderer->offscreenFbo);
                     glBlitFramebuffer(
