@@ -243,6 +243,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celrender/nebularenderer.h
         ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/psfglowlargerenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/psfglowlargerenderer.h
         ${CELESTIA_SRC_DIR}/celrender/referencemarkrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/referencemarkrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/rendererfwd.h
@@ -350,6 +352,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/pointstarvertexbuffer.h
         ${CELESTIA_SRC_DIR}/celengine/projectionmode.cpp
         ${CELESTIA_SRC_DIR}/celengine/projectionmode.h
+        ${CELESTIA_SRC_DIR}/celengine/psfstarvertexbuffer.cpp
+        ${CELESTIA_SRC_DIR}/celengine/psfstarvertexbuffer.h
         ${CELESTIA_SRC_DIR}/celengine/rectangle.h
         ${CELESTIA_SRC_DIR}/celengine/referencemark.h
         ${CELESTIA_SRC_DIR}/celengine/rendcontext.cpp
