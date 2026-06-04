@@ -911,6 +911,26 @@ public class AppCore {
     private static native void c_setStarStyle(long pointer, int starStyle);
     private static native int c_getStarStyle(long pointer);
 
+    public void setStarPointRadius(double starPointRadius) { c_setStarPointRadius(pointer, (float)starPointRadius); }
+    public double getStarPointRadius() { return c_getStarPointRadius(pointer); }
+    private static native void c_setStarPointRadius(long pointer, float starPointRadius);
+    private static native float c_getStarPointRadius(long pointer);
+
+    public void setStarOptimization(double starOptimization) { c_setStarOptimization(pointer, (float)starOptimization); }
+    public double getStarOptimization() { return c_getStarOptimization(pointer); }
+    private static native void c_setStarOptimization(long pointer, float starOptimization);
+    private static native float c_getStarOptimization(long pointer);
+
+    public void setStarMaxIrradiance(double starMaxIrradiance) { c_setStarMaxIrradiance(pointer, (float)starMaxIrradiance); }
+    public double getStarMaxIrradiance() { return c_getStarMaxIrradiance(pointer); }
+    private static native void c_setStarMaxIrradiance(long pointer, float starMaxIrradiance);
+    private static native float c_getStarMaxIrradiance(long pointer);
+
+    public void setStarExposure(double starExposure) { c_setStarExposure(pointer, (float)starExposure); }
+    public double getStarExposure() { return c_getStarExposure(pointer); }
+    private static native void c_setStarExposure(long pointer, float starExposure);
+    private static native float c_getStarExposure(long pointer);
+
     public void setStarColors(int starColors) { c_setStarColors(pointer, starColors);}
     public int getStarColors() { return c_getStarColors(pointer); }
     private static native void c_setStarColors(long pointer, int starColors);

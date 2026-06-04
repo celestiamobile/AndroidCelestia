@@ -1165,6 +1165,54 @@ Java_space_celestia_celestia_AppCore_c_1getStarStyle(JNIEnv *env, jclass clazz, 
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setStarPointRadius(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setStarPointRadius(value);
+}
+
+extern "C" JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_AppCore_c_1getStarPointRadius(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getRenderer()->getStarPointRadius();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setStarOptimization(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setStarOptimization(value);
+}
+
+extern "C" JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_AppCore_c_1getStarOptimization(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getRenderer()->getStarOptimization();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setStarMaxIrradiance(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setStarMaxIrradiance(value);
+}
+
+extern "C" JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_AppCore_c_1getStarMaxIrradiance(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getRenderer()->getStarMaxIrradiance();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setStarExposure(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setStarExposure(value);
+}
+
+extern "C" JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_AppCore_c_1getStarExposure(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getRenderer()->getStarExposure();
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarColors(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = reinterpret_cast<CelestiaCore *>(pointer);
     core->getRenderer()->setStarColorTable(static_cast<ColorTableType>(value));

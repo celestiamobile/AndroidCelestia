@@ -152,7 +152,11 @@ enum class SettingsKey : PreferenceManager.Key {
     AmbientLightLevel,
     GalaxyBrightness,
     MinimumFeatureSize,
-    TintSaturation;
+    TintSaturation,
+    StarPointRadius,
+    StarOptimization,
+    StarMaxIrradiance,
+    StarExposure;
 
     val displayName: String
         get() = when(this) {
@@ -293,6 +297,10 @@ enum class SettingsKey : PreferenceManager.Key {
             GalaxyBrightness -> CelestiaString("Galaxy Brightness", "Render parameter")
             MinimumFeatureSize -> CelestiaString("Minimum Labeled Feature Size", "Minimum feature size that we should display a label for")
             TintSaturation -> CelestiaString("Tinted Illumination Saturation", "")
+            StarPointRadius -> CelestiaString("Point Radius", "PSF star setting")
+            StarOptimization -> CelestiaString("Bloom Compactness", "PSF star setting")
+            StarMaxIrradiance -> CelestiaString("Max Irradiance", "PSF star setting")
+            StarExposure -> CelestiaString("Exposure", "PSF star setting")
         }
 
     companion object {
@@ -444,6 +452,10 @@ enum class SettingsKey : PreferenceManager.Key {
                 GalaxyBrightness,
                 MinimumFeatureSize,
                 TintSaturation,
+                StarPointRadius,
+                StarOptimization,
+                StarMaxIrradiance,
+                StarExposure,
             )
     }
 
