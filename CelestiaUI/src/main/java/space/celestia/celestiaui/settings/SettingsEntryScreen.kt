@@ -224,14 +224,36 @@ private fun SettingEntry(item: SettingsItem) {
         }
 
         is SettingsSliderItem -> {
-            var value by remember {
-                mutableFloatStateOf(viewModel.appCore.getDoubleValueForField(item.key).toFloat())
+            val isLog = item.isLogarithmic
+            val minValue = item.minValue
+            val maxValue = item.maxValue
+            val logMin = if (isLog) kotlin.math.ln(minValue) else 0.0
+            val logMax = if (isLog) kotlin.math.ln(maxValue) else 0.0
+            fun actualToSlider(actual: Double): Float {
+                return if (isLog) {
+                    val clamped = actual.coerceIn(minValue, maxValue)
+                    ((kotlin.math.ln(clamped) - logMin) / (logMax - logMin)).toFloat()
+                } else {
+                    actual.toFloat()
+                }
             }
-            SliderRow(primaryText = item.name, value = value, valueRange = item.minValue.toFloat()..item.maxValue.toFloat(), onValueChange = { newValue ->
+            fun sliderToActual(slider: Float): Double {
+                return if (isLog) {
+                    kotlin.math.exp(logMin + slider.toDouble() * (logMax - logMin))
+                } else {
+                    slider.toDouble()
+                }
+            }
+            val valueRange = if (isLog) 0f..1f else item.minValue.toFloat()..item.maxValue.toFloat()
+            var value by remember {
+                mutableFloatStateOf(actualToSlider(viewModel.appCore.getDoubleValueForField(item.key)))
+            }
+            SliderRow(primaryText = item.name, value = value, valueRange = valueRange, onValueChange = { newValue ->
                 value = newValue
-                viewModel.coreSettings[PreferenceManager.CustomKey(item.key)] = newValue.toString()
+                val actual = sliderToActual(newValue)
+                viewModel.coreSettings[PreferenceManager.CustomKey(item.key)] = actual.toString()
                 scope.launch(viewModel.executor.asCoroutineDispatcher()) {
-                    viewModel.appCore.setDoubleValueForField(item.key, newValue.toDouble())
+                    viewModel.appCore.setDoubleValueForField(item.key, actual)
                 }
             })
         }
