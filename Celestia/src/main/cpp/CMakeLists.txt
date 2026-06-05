@@ -237,6 +237,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celrender/globularrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/largestarrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/largestarrenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/legacylargestarrenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/legacylargestarrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/linerenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/linerenderer.h
         ${CELESTIA_SRC_DIR}/celrender/nebularenderer.cpp
