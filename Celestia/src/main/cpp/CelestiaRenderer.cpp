@@ -10,7 +10,9 @@
 #include <jni.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
+#include <cstring>
 #include <epoxy/egl.h>
+#include <epoxy/gl.h>
 #include <swappy/swappyGL.h>
 #include <swappy/swappyGL_extra.h>
 #include <celestia/celestiacore.h>
@@ -23,6 +25,50 @@
 #define LOG_TAG "Renderer"
 
 #include "CelestiaJNI.h"
+
+#ifndef NDEBUG
+static void KHRONOS_APIENTRY CelestiaKHRDebugCallback(GLenum source,
+                                                 GLenum type,
+                                                 GLuint id,
+                                                 GLenum severity,
+                                                 GLsizei length,
+                                                 const GLchar *message,
+                                                 const void *userParam) {
+    const char *sourceStr;
+    switch (source) {
+        case GL_DEBUG_SOURCE_API_KHR:             sourceStr = "API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM_KHR:   sourceStr = "WINDOW_SYSTEM"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER_KHR: sourceStr = "SHADER_COMPILER"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY_KHR:     sourceStr = "THIRD_PARTY"; break;
+        case GL_DEBUG_SOURCE_APPLICATION_KHR:     sourceStr = "APPLICATION"; break;
+        case GL_DEBUG_SOURCE_OTHER_KHR:           sourceStr = "OTHER"; break;
+        default:                                  sourceStr = "UNKNOWN"; break;
+    }
+    const char *typeStr;
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR_KHR:               typeStr = "ERROR"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR: typeStr = "DEPRECATED"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_KHR:  typeStr = "UNDEFINED"; break;
+        case GL_DEBUG_TYPE_PORTABILITY_KHR:         typeStr = "PORTABILITY"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE_KHR:         typeStr = "PERFORMANCE"; break;
+        case GL_DEBUG_TYPE_MARKER_KHR:              typeStr = "MARKER"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP_KHR:          typeStr = "PUSH_GROUP"; break;
+        case GL_DEBUG_TYPE_POP_GROUP_KHR:           typeStr = "POP_GROUP"; break;
+        case GL_DEBUG_TYPE_OTHER_KHR:               typeStr = "OTHER"; break;
+        default:                                    typeStr = "UNKNOWN"; break;
+    }
+    const char *severityStr;
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH_KHR:         severityStr = "HIGH"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM_KHR:       severityStr = "MEDIUM"; break;
+        case GL_DEBUG_SEVERITY_LOW_KHR:          severityStr = "LOW"; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION_KHR: severityStr = "NOTIFICATION"; break;
+        default:                                 severityStr = "UNKNOWN"; break;
+    }
+    LOG_INFO("[GL_KHR_debug] source=%s type=%s id=%u severity=%s: %.*s",
+             sourceStr, typeStr, id, severityStr, (int)length, message);
+}
+#endif
 
 #define CELESTIA_RENDERER_FRAME_MAX             0
 #define CELESTIA_RENDERER_FRAME_60FPS           1
@@ -218,6 +264,9 @@ bool CelestiaRenderer::initialize()
         // Request ES 3.0 context
         const EGLint contextAttributes[] = {
                 EGL_CONTEXT_CLIENT_VERSION, 3,
+#ifndef NDEBUG
+                EGL_CONTEXT_FLAGS_KHR, EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR,
+#endif
                 EGL_NONE
         };
 
@@ -253,6 +302,18 @@ bool CelestiaRenderer::initialize()
             destroy();
             return false;
         }
+
+#ifndef NDEBUG
+        {
+            const char *extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+            if (extensions != nullptr && strstr(extensions, "GL_KHR_debug") != nullptr) {
+                glEnable(GL_DEBUG_OUTPUT_KHR);
+                glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR);
+                glDebugMessageCallbackKHR(CelestiaKHRDebugCallback, nullptr);
+                glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+            }
+        }
+#endif
     } else {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     }
