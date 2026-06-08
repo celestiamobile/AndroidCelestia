@@ -133,7 +133,7 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_Body_c_1canBeUsedAsCockpit(JNIEnv *env, jclass clazz, jlong pointer) {
     auto body = reinterpret_cast<Body *>(pointer);
-    return GetBodyFeaturesManager()->canBeUsedAsCockpit(body) ? JNI_TRUE : JNI_FALSE;
+    return 0;//GetBodyFeaturesManager()->canBeUsedAsCockpit(body) ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C"
