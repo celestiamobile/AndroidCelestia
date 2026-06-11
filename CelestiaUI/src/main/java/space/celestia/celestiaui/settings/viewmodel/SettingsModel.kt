@@ -156,6 +156,7 @@ enum class SettingsKey : PreferenceManager.Key {
     StarPointRadius,
     StarOptimization,
     StarMaxIrradiance,
+    StarDimClipFactor,
     StarExposure;
 
     val displayName: String
@@ -300,6 +301,7 @@ enum class SettingsKey : PreferenceManager.Key {
             StarPointRadius -> CelestiaString("Point Radius", "PSF star setting")
             StarOptimization -> CelestiaString("Bloom Compactness", "PSF star setting")
             StarMaxIrradiance -> CelestiaString("Max Irradiance", "PSF star setting")
+            StarDimClipFactor -> CelestiaString("Dim Clip Factor", "PSF star setting")
             StarExposure -> CelestiaString("Exposure", "PSF star setting")
         }
 
@@ -455,6 +457,7 @@ enum class SettingsKey : PreferenceManager.Key {
                 StarPointRadius,
                 StarOptimization,
                 StarMaxIrradiance,
+                StarDimClipFactor,
                 StarExposure,
             )
     }

@@ -286,6 +286,7 @@ private val staticRendererItems: List<SettingsItem> = listOf(
                     SettingsSliderItem(SettingsKey.StarPointRadius, 1.0, 10.0),
                     SettingsSliderItem(SettingsKey.StarOptimization, 0.05, 1.0),
                     SettingsSliderItem(SettingsKey.StarMaxIrradiance, 1.0, 1000000.0, isLogarithmic = true),
+                    SettingsSliderItem(SettingsKey.StarDimClipFactor, 1.0, 100.0),
                     SettingsSliderItem(SettingsKey.StarExposure, 0.01, 1000000.0, isLogarithmic = true),
                 ), header = CelestiaString("Point Spread Function", "Star style"), footer = Footer.Text(CelestiaString("Point spread function settings are only effective with the Point Spread Function star style.", ""))
             )

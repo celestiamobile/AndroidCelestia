@@ -931,6 +931,11 @@ public class AppCore {
     private static native void c_setStarExposure(long pointer, float starExposure);
     private static native float c_getStarExposure(long pointer);
 
+    public void setStarDimClipFactor(double starDimClipFactor) { c_setStarDimClipFactor(pointer, (float)starDimClipFactor); }
+    public double getStarDimClipFactor() { return c_getStarDimClipFactor(pointer); }
+    private static native void c_setStarDimClipFactor(long pointer, float starDimClipFactor);
+    private static native float c_getStarDimClipFactor(long pointer);
+
     public void setStarColors(int starColors) { c_setStarColors(pointer, starColors);}
     public int getStarColors() { return c_getStarColors(pointer); }
     private static native void c_setStarColors(long pointer, int starColors);

@@ -1213,6 +1213,18 @@ Java_space_celestia_celestia_AppCore_c_1getStarExposure(JNIEnv *env, jclass claz
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setStarDimClipFactor(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setStarDimClipFactor(value);
+}
+
+extern "C" JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_AppCore_c_1getStarDimClipFactor(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getRenderer()->getStarDimClipFactor();
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarColors(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
     auto core = reinterpret_cast<CelestiaCore *>(pointer);
     core->getRenderer()->setStarColorTable(static_cast<ColorTableType>(value));
