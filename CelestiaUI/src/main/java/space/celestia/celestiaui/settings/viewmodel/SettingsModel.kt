@@ -474,7 +474,8 @@ class SettingsSliderItem(
     private val internalKey: SettingsKey,
     val minValue: Double = 0.0,
     val maxValue: Double = 1.0,
-    val isLogarithmic: Boolean = false
+    val isLogarithmic: Boolean = false,
+    val subtitle: String? = null
 ) : SettingsItem {
     val key: String = internalKey.valueString
 

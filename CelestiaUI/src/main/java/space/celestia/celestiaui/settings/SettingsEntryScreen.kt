@@ -248,7 +248,7 @@ private fun SettingEntry(item: SettingsItem) {
             var value by remember {
                 mutableFloatStateOf(actualToSlider(viewModel.appCore.getDoubleValueForField(item.key)))
             }
-            SliderRow(primaryText = item.name, value = value, valueRange = valueRange, onValueChange = { newValue ->
+            SliderRow(primaryText = item.name, secondaryText = item.subtitle, value = value, valueRange = valueRange, onValueChange = { newValue ->
                 value = newValue
                 val actual = sliderToActual(newValue)
                 viewModel.coreSettings[PreferenceManager.CustomKey(item.key)] = actual.toString()
