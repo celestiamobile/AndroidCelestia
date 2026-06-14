@@ -212,6 +212,7 @@ private:
     bool createEGLContext();
     bool createSession();
     bool createSwapchains();
+    void ensureEyeFramebuffers(EyeSwapchain& eye);
     void createActions();
     void createPassthrough();
     void destroyPassthrough();
@@ -735,24 +736,37 @@ bool CelestiaOpenXR::createSwapchains() {
         xrEnumerateSwapchainImages(eye.handle, imgCount, &imgCount,
             reinterpret_cast<XrSwapchainImageBaseHeader*>(eye.images.data()));
 
-        // Create a shared depth renderbuffer for this eye
+        // Framebuffers + depth renderbuffer are created lazily on first render
+        // (see ensureEyeFramebuffers) so we don't pay the GL cost until a scene
+        // is actually being rendered.
+    }
+    return true;
+}
+
+// ── ensureEyeFramebuffers ─────────────────────────────────────────────────────
+// Lazily create the depth renderbuffer and per-image FBOs the first time an
+// eye is rendered. This defers GL resource allocation away from session setup.
+void CelestiaOpenXR::ensureEyeFramebuffers(EyeSwapchain& eye) {
+    if (!eye.framebuffers.empty())
+        return;
+
+    if (eye.depthRenderbuffer == 0) {
         glGenRenderbuffers(1, &eye.depthRenderbuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, eye.depthRenderbuffer);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, eye.width, eye.height);
-
-        // Create one FBO per swapchain image, each with color + depth attached
-        eye.framebuffers.resize(imgCount);
-        glGenFramebuffers((GLsizei)imgCount, eye.framebuffers.data());
-        for (uint32_t j = 0; j < imgCount; ++j) {
-            glBindFramebuffer(GL_FRAMEBUFFER, eye.framebuffers[j]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                                   eye.images[j].image, 0);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                      GL_RENDERBUFFER, eye.depthRenderbuffer);
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    return true;
+
+    const uint32_t imgCount = static_cast<uint32_t>(eye.images.size());
+    eye.framebuffers.resize(imgCount);
+    glGenFramebuffers((GLsizei)imgCount, eye.framebuffers.data());
+    for (uint32_t j = 0; j < imgCount; ++j) {
+        glBindFramebuffer(GL_FRAMEBUFFER, eye.framebuffers[j]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                               eye.images[j].image, 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                  GL_RENDERBUFFER, eye.depthRenderbuffer);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // ── createActions ─────────────────────────────────────────────────────────────
@@ -1126,7 +1140,8 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
                                const XrView& view,
                                XrCompositionLayerProjectionView& projView,
                                JNIEnv* env) {
-    const EyeSwapchain& eye = eyeSwapchains[eyeIndex];
+    EyeSwapchain& eye = eyeSwapchains[eyeIndex];
+    ensureEyeFramebuffers(eye);
 
     // Acquire swapchain image
     XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
