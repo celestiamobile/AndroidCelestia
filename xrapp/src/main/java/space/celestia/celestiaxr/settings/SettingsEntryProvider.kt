@@ -208,6 +208,7 @@ private val staticRendererItems: List<SettingsItem> = listOf(
                 Pair(4, CelestiaString("4x", "")),
             ), defaultSelection = 1),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MixedImmersion, CelestiaString("Passthrough", "Mixed immersion / passthrough toggle")),
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.Foveation, CelestiaString("Foveated Rendering", "Toggle for foveated rendering"), defaultOn = true),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", "")),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", ""))
         ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),

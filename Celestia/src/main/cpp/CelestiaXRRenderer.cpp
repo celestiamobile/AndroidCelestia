@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include <celestia/celestiacore.h>
+#include <celengine/framebuffer.h>
 #include <celengine/overlay.h>
 #include <celengine/perspectiveprojectionmode.h>
 #include <celengine/textlayout.h>
@@ -151,6 +152,7 @@ struct CelestiaOpenXR {
     bool enableMultisample = false;
     int resolutionMultiplier = 1;
     bool enableMixedImmersion = false;
+    bool enableFoveation = true;
 
     // XR_FB_passthrough resources (created only if extension is supported and enabled)
     bool passthroughSupported = false;
@@ -224,6 +226,17 @@ private:
                    XrCompositionLayerProjectionView& projView,
                    JNIEnv* env);
 
+    // Foveation state, decided once after the CelestiaCore pointer is bound
+    // (viewport-effect list is stable for the life of the session).
+    enum class FoveationTarget {
+        Unknown,    // hasn't been resolved yet (corePtr not set)
+        Swapchain,  // no viewport effect; foveate the XR swapchain textures
+        ViewportFx, // viewport effect chain owns the first FBO; forward params
+    };
+    FoveationTarget foveationTarget = FoveationTarget::Unknown;
+    bool swapchainFoveationEnabled[2] = { false, false }; // per eye, set-once latch
+    FoveationTarget resolveFoveationTarget();
+
 
     std::unique_ptr<Overlay> overlay{ nullptr };
     bool hasTriedCreatingOverlayFont{ false };
@@ -232,6 +245,22 @@ private:
 #ifndef GL_FRAMEBUFFER_SRGB
 #define GL_FRAMEBUFFER_SRGB 0x8DB9
 #endif
+
+// QCOM_texture_foveated query tokens — provide fallbacks in case the NDK
+// headers we link against don't expose them.
+#ifndef GL_TEXTURE_FOVEATED_MIN_PIXEL_DENSITY_QCOM
+#define GL_TEXTURE_FOVEATED_MIN_PIXEL_DENSITY_QCOM   0x8BFD
+#endif
+
+// ── Foveation tuning ──────────────────────────────────────────────────────────
+// Medium-quality preset; balances detail loss in the periphery against GPU
+// savings. Tweak per-app if needed.
+static constexpr float kFoveationGainX     = 2.0f;
+static constexpr float kFoveationGainY     = 2.0f;
+static constexpr float kFoveationFoveaArea = 2.0f;
+// Floor on peripheral pixel density (linear-area ratio). Lower = more
+// aggressive downscale at the edges. 0.25 ⇒ up to 4× linear / 16× area.
+static constexpr float kFoveationMinPixelDensity = 0.25f;
 
 jmethodID CelestiaOpenXR::flushTasksMethod = nullptr;
 jmethodID CelestiaOpenXR::engineStartedMethod = nullptr;
@@ -436,30 +465,39 @@ bool CelestiaOpenXR::createInstance() {
         XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME,
     };
 
-    // Probe for XR_FB_passthrough only when the user asked for mixed immersion.
-    if (enableMixedImmersion) {
+    // Enumerate available extensions once so we can opt in to the optional ones
+    // we care about (passthrough, eye tracking) without paying for additional
+    // round trips per feature.
+    std::vector<XrExtensionProperties> availableExtensions;
+    {
         uint32_t extCount = 0;
         XrResult enumRes = xrEnumerateInstanceExtensionProperties(nullptr, 0, &extCount, nullptr);
         if (XR_FAILED(enumRes)) {
             LOGW("xrEnumerateInstanceExtensionProperties(count) failed: %d", (int)enumRes);
         } else if (extCount > 0) {
-            std::vector<XrExtensionProperties> props(extCount, {XR_TYPE_EXTENSION_PROPERTIES});
-            enumRes = xrEnumerateInstanceExtensionProperties(nullptr, extCount, &extCount, props.data());
+            availableExtensions.assign(extCount, {XR_TYPE_EXTENSION_PROPERTIES});
+            enumRes = xrEnumerateInstanceExtensionProperties(nullptr, extCount, &extCount, availableExtensions.data());
             if (XR_FAILED(enumRes)) {
                 LOGW("xrEnumerateInstanceExtensionProperties(fill) failed: %d", (int)enumRes);
-            } else {
-                for (const auto& p : props) {
-                    if (std::string_view(p.extensionName) == XR_FB_PASSTHROUGH_EXTENSION_NAME) {
-                        passthroughSupported = true;
-                        extensions.push_back(XR_FB_PASSTHROUGH_EXTENSION_NAME);
-                        break;
-                    }
-                }
+                availableExtensions.clear();
             }
         }
-        if (!passthroughSupported)
+    }
+    auto hasExt = [&](const char* name) {
+        for (const auto& p : availableExtensions)
+            if (std::string_view(p.extensionName) == name) return true;
+        return false;
+    };
+
+    // Probe for XR_FB_passthrough only when the user asked for mixed immersion.
+    if (enableMixedImmersion) {
+        if (hasExt(XR_FB_PASSTHROUGH_EXTENSION_NAME)) {
+            passthroughSupported = true;
+            extensions.push_back(XR_FB_PASSTHROUGH_EXTENSION_NAME);
+        } else {
             LOGW("Mixed immersion requested but %s is not available – falling back to opaque",
                  XR_FB_PASSTHROUGH_EXTENSION_NAME);
+        }
     }
 
     XrInstanceCreateInfoAndroidKHR androidInfo{XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR};
@@ -743,6 +781,28 @@ bool CelestiaOpenXR::createSwapchains() {
     return true;
 }
 
+// ── resolveFoveationTarget ────────────────────────────────────────────────────
+// Decide once where foveated rendering should be applied for this session.
+// The viewport-effect list is stable for the life of a CelestiaCore, so this
+// is cached the first time corePtr is available.
+CelestiaOpenXR::FoveationTarget CelestiaOpenXR::resolveFoveationTarget() {
+    if (foveationTarget != FoveationTarget::Unknown)
+        return foveationTarget;
+    if (corePtr == nullptr)
+        return FoveationTarget::Unknown;
+    if (!FramebufferObject::isFoveationSupported()) {
+        // Driver doesn't expose GL_QCOM_texture_foveated; fall back to no
+        // foveation by routing through the (no-op) viewport-effect path so we
+        // don't keep re-querying.
+        foveationTarget = corePtr->hasViewportEffects() ? FoveationTarget::ViewportFx
+                                                        : FoveationTarget::Swapchain;
+        return foveationTarget;
+    }
+    foveationTarget = corePtr->hasViewportEffects() ? FoveationTarget::ViewportFx
+                                                    : FoveationTarget::Swapchain;
+    return foveationTarget;
+}
+
 // ── ensureEyeFramebuffers ─────────────────────────────────────────────────────
 // Lazily create the depth renderbuffer and per-image FBOs the first time an
 // eye is rendered. This defers GL resource allocation away from session setup.
@@ -756,10 +816,22 @@ void CelestiaOpenXR::ensureEyeFramebuffers(EyeSwapchain& eye) {
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, eye.width, eye.height);
     }
 
+    // If foveation will be applied directly to the swapchain (no Celestia
+    // viewport effect in front), mark each swapchain color texture as
+    // foveated BEFORE it gets attached to its FBO. The actual focal/gain
+    // parameters are pushed per frame from renderEye().
+    const bool foveateSwapchain =
+        enableFoveation &&
+        resolveFoveationTarget() == FoveationTarget::Swapchain;
+
     const uint32_t imgCount = static_cast<uint32_t>(eye.images.size());
     eye.framebuffers.resize(imgCount);
     glGenFramebuffers((GLsizei)imgCount, eye.framebuffers.data());
     for (uint32_t j = 0; j < imgCount; ++j) {
+        if (foveateSwapchain)
+            FramebufferObject::enableTextureFoveation(eye.images[j].image,
+                                                     kFoveationMinPixelDensity);
+
         glBindFramebuffer(GL_FRAMEBUFFER, eye.framebuffers[j]);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                                eye.images[j].image, 0);
@@ -1168,6 +1240,43 @@ void CelestiaOpenXR::renderEye(int eyeIndex,
         float bottom = nearZ * tanf(view.fov.angleDown);
         float top    = nearZ * tanf(view.fov.angleUp);
 
+        // ── Fixed foveated rendering ─────────────────────────────────────────
+        // Image-centre focal point — adequate for fixed foveation with the
+        // QCOM_texture_foveated extension. (Eye-tracked foveation would
+        // override this with a per-frame NDC focal derived from gaze.)
+        if (enableFoveation) {
+            switch (resolveFoveationTarget()) {
+                case FoveationTarget::Swapchain:
+                    FramebufferObject::setTextureFoveationParameters(
+                        eye.images[imageIndex].image,
+                        /*layer*/ 0,
+                        /*focalPoint*/ 0,
+                        /*focalX*/ 0.0f, /*focalY*/ 0.0f,
+                        kFoveationGainX, kFoveationGainY,
+                        kFoveationFoveaArea);
+                    // Make sure the core does NOT also try to foveate (no-op
+                    // when there are no viewport effects, but explicit is
+                    // safer).
+                    core->setFoveationParameters({});
+                    break;
+                case FoveationTarget::ViewportFx: {
+                    CelestiaCore::FoveationParameters fp;
+                    fp.enabled   = true;
+                    fp.focalX    = 0.0f;
+                    fp.focalY    = 0.0f;
+                    fp.gainX     = kFoveationGainX;
+                    fp.gainY     = kFoveationGainY;
+                    fp.foveaArea = kFoveationFoveaArea;
+                    core->setFoveationParameters(fp);
+                    break;
+                }
+                case FoveationTarget::Unknown:
+                    break;
+            }
+        } else {
+            core->setFoveationParameters({});
+        }
+
         Matrix4f viewMatrix = buildViewMatrix(view.pose);
 
         if (eyeIndex == 0) {
@@ -1271,13 +1380,15 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_XRRenderer_c_1start(JNIEnv *env, jobject thiz, jlong pointer,
                                                  jobject activity, jboolean enable_multisample,
-                                                 jint resolution_multiplier, jboolean enable_mixed_immersion) {
+                                                 jint resolution_multiplier, jboolean enable_mixed_immersion,
+                                                 jboolean enable_foveation) {
 
     LOGI("JNI: start");
     auto* xr = reinterpret_cast<CelestiaOpenXR*>(pointer);
     xr->enableMultisample = static_cast<bool>(enable_multisample);
     xr->resolutionMultiplier = static_cast<int>(resolution_multiplier);
     xr->enableMixedImmersion = static_cast<bool>(enable_mixed_immersion);
+    xr->enableFoveation = static_cast<bool>(enable_foveation);
     xr->init(env, activity);
 }
 

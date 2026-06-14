@@ -1,3 +1,3 @@
 package space.celestia.celestiaxr.settings
 
-class RenderSettings(val enableMultisample: Boolean, val resolutionMultiplier: Int, val enableSRGBRendering: Boolean, val enableMixedImmersion: Boolean)
+class RenderSettings(val enableMultisample: Boolean, val resolutionMultiplier: Int, val enableSRGBRendering: Boolean, val enableMixedImmersion: Boolean, val enableFoveation: Boolean)

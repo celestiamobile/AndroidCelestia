@@ -280,7 +280,7 @@ class XRActivity : ComponentActivity() {
                 }
             }
         }
-        xrRenderer.startConditionally(this@XRActivity, renderSettings.enableMultisample, renderSettings.resolutionMultiplier, renderSettings.enableMixedImmersion)
+        xrRenderer.startConditionally(this@XRActivity, renderSettings.enableMultisample, renderSettings.resolutionMultiplier, renderSettings.enableMixedImmersion, renderSettings.enableFoveation)
     }
 
     private fun openHomePanelIfNeeded() {

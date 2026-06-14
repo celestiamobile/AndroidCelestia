@@ -34,14 +34,14 @@ public class XRRenderer implements AutoCloseable {
         c_initialize(pointer);
     }
 
-    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion) {
+    public void startConditionally(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion, boolean enableFoveation) {
         if (started) return;
-        start(activity, enableMultisample, resolutionMultiplier, enableMixedImmersion);
+        start(activity, enableMultisample, resolutionMultiplier, enableMixedImmersion, enableFoveation);
     }
 
-    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion) {
+    public void start(@NonNull Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion, boolean enableFoveation) {
         started = true;
-        c_start(pointer, activity, enableMultisample, resolutionMultiplier, enableMixedImmersion);
+        c_start(pointer, activity, enableMultisample, resolutionMultiplier, enableMixedImmersion, enableFoveation);
     }
 
     public void resume() {
@@ -140,7 +140,7 @@ public class XRRenderer implements AutoCloseable {
 
     private static native long c_createNativeXRObject();
     private native void c_initialize(long pointer);
-    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion);
+    private native void c_start(long pointer, Activity activity, boolean enableMultisample, int resolutionMultiplier, boolean enableMixedImmersion, boolean enableFoveation);
     private native void c_resume(long pointer);
     private native void c_pause(long pointer);
     private native void c_destroy(long pointer);

@@ -69,7 +69,8 @@ class PreferenceManager(context: Context, name: String) {
         FCMToken,
         SRGBRendering,
         ResolutionMultiplier,
-        MixedImmersion
+        MixedImmersion,
+        Foveation
         ;
 
         override val valueString: String
