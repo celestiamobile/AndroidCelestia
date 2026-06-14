@@ -195,6 +195,10 @@ class XRActivity : ComponentActivity() {
         super.onDestroy()
 
         panelStateObservation?.cancel()
+        // Explicitly finish any panel (HomeActivity) instances; their host task
+        // would otherwise keep the last surface buffer on-screen after we kill
+        // the process below, showing an empty / stale overlay.
+        HomeActivity.finishAll()
         exitProcess(0)
     }
 
@@ -536,7 +540,8 @@ class XRActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "147"
+        private const val CURRENT_DATA_VERSION = "157"
+        // 157: 1.9.18 Localization update data update (3d666210190e2e2dfc60550f7f719afc856306d3)
         // 147: 1.9.17 Localization update data update (7926c3ccd126dae60e702b3b6b499cf2d07e3565)
         // 142: 1.9.16 Localization update data update (fcad6702ae267ba04fce023ee71038df5c02caf8)
         // 138: 1.9.15 Localization update data update (67a542671ace4ed5c92e32519525716038498f11)

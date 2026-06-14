@@ -30,6 +30,7 @@ class HomeActivity: AppCompatActivity() {
             }
         }
         openedActivityCount += 1
+        openInstances.add(this)
         if (openedActivityCount == 1) {
             panelState.value = true
         }
@@ -37,6 +38,7 @@ class HomeActivity: AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        openInstances.remove(this)
         openedActivityCount -= 1
         if (openedActivityCount == 0) {
             panelState.value = false
@@ -45,5 +47,15 @@ class HomeActivity: AppCompatActivity() {
 
     companion object {
         private var openedActivityCount = 0
+        private val openInstances = mutableListOf<HomeActivity>()
+
+        // Called by XRActivity right before it kills the process so the Quest
+        // panel host doesn't keep the last (about-to-be-stale) surface buffer
+        // visible after the JVM exits.
+        fun finishAll() {
+            for (activity in openInstances.toList()) {
+                activity.finish()
+            }
+        }
     }
 }
