@@ -73,12 +73,12 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Observer_c_1setCockpit(JNIEnv *env, jclass clazz, jlong ptr,
                                                     jobject selection) {
     auto observer = reinterpret_cast<Observer *>(ptr);
-    //observer->setCockpit(javaSelectionAsSelection(env, selection));
+    observer->setCockpit(javaSelectionAsSelection(env, selection));
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Observer_c_1getCockpit(JNIEnv *env, jclass clazz, jlong ptr) {
     auto observer = reinterpret_cast<Observer *>(ptr);
-    return selectionAsJavaSelection(env, Selection());
+    return selectionAsJavaSelection(env, observer->getCockpit());
 }
