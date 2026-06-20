@@ -38,6 +38,6 @@ allprojects {
 }
 
 tasks.register<Delete>("clean") {
-    delete("${rootProject.projectDir}/app/src/main/assets/CelestiaResources")
+    delete("${rootProject.projectDir}/app/src/sideload/assets/CelestiaResources")
     delete(rootProject.layout.buildDirectory)
 }

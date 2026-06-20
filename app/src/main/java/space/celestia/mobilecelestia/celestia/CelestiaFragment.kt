@@ -45,7 +45,6 @@ import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SHEET_MAX_FULL_WIDTH_DP
 import space.celestia.celestiaui.purchase.PurchaseManager
-import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.settings.ToolbarAction
 import space.celestia.celestiaui.settings.toolbarItems
 import space.celestia.celestiaui.utils.AlertResult
@@ -61,7 +60,7 @@ import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
 @AndroidEntryPoint
-class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRendererFragment.Listener, AppCore.FatalErrorHandler, AppCore.SystemAccessHandler {
+class CelestiaFragment: Fragment(), CelestiaControlView.Listener, AppCore.FatalErrorHandler, AppCore.SystemAccessHandler {
 
     @Inject
     lateinit var appCore: AppCore
@@ -76,8 +75,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     lateinit var purchaseManager: PurchaseManager
     @Inject
     lateinit var rendererSettings: RendererSettings
-    @Inject
-    lateinit var featureFlags: FeatureFlags
 
     // MARK: Interaction
     private lateinit var interactionView: FrameLayout
@@ -155,33 +152,24 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         val data = pathToLoad
         val cfg = cfgToLoad
         if (data != null && cfg != null) {
-            if (featureFlags.composeSurfaceV2) {
-                val container = view.findViewById<FrameLayout>(R.id.celestia_renderer_container)
-                val composeView = ComposeView(requireActivity()).apply {
-                    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-                    setContent {
-                        RendererScreen(
-                            pathToLoad = data,
-                            cfgToLoad = cfg,
-                            addonDirsToLoad = addonDirsToLoad,
-                            languageOverride = languageOverride,
-                            safeAreaInsets = safeAreaInsetsState,
-                            frameRateOptionEvents = frameRateOptionEvents,
-                            reapplyContentScaleEvents = reapplyContentScaleEvents,
-                            celestiaRendererReady = { celestiaRendererReady() },
-                            celestiaRendererLoadingFromFallback = { celestiaRendererLoadingFromFallback() },
-                        )
-                    }
+            val container = view.findViewById<FrameLayout>(R.id.celestia_renderer_container)
+            val composeView = ComposeView(requireActivity()).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    RendererScreen(
+                        pathToLoad = data,
+                        cfgToLoad = cfg,
+                        addonDirsToLoad = addonDirsToLoad,
+                        languageOverride = languageOverride,
+                        safeAreaInsets = safeAreaInsetsState,
+                        frameRateOptionEvents = frameRateOptionEvents,
+                        reapplyContentScaleEvents = reapplyContentScaleEvents,
+                        celestiaRendererReady = { celestiaRendererReady() },
+                        celestiaRendererLoadingFromFallback = { celestiaRendererLoadingFromFallback() },
+                    )
                 }
-                container.addView(composeView)
-            } else if (savedInstanceState == null) {
-                val rendererFragment = CelestiaRendererFragment.newInstance(
-                    data, cfg, addonDirsToLoad, languageOverride
-                )
-                childFragmentManager.beginTransaction()
-                    .replace(R.id.celestia_renderer_container, rendererFragment, TAG_RENDERER_FRAGMENT)
-                    .commitAllowingStateLoss()
             }
+            container.addView(composeView)
         }
 
         interactionView = view.findViewById(R.id.interaction_view)
@@ -226,39 +214,24 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
     }
 
     fun updateFrameRateOption(newFrameRateOption: Int) {
-        if (featureFlags.composeSurfaceV2) {
-            frameRateOptionEvents.tryEmit(newFrameRateOption)
-        } else {
-            val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
-            rendererFragment?.updateFrameRateOption(newFrameRateOption)
-        }
+        frameRateOptionEvents.tryEmit(newFrameRateOption)
     }
 
     fun reapplyContentScale() {
-        if (featureFlags.composeSurfaceV2) {
-            reapplyContentScaleEvents.tryEmit(Unit)
-        } else {
-            val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
-            rendererFragment?.reapplyContentScale()
-        }
+        reapplyContentScaleEvents.tryEmit(Unit)
     }
 
     private fun handleInsetsChanged(newInsets: EdgeInsets) {
         savedInsets = newInsets
-        if (featureFlags.composeSurfaceV2) {
-            safeAreaInsetsState = newInsets
-        } else {
-            val rendererFragment = childFragmentManager.findFragmentByTag(TAG_RENDERER_FRAGMENT) as? CelestiaRendererFragment
-            rendererFragment?.handleInsetsChanged(newInsets)
-        }
+        safeAreaInsetsState = newInsets
     }
 
     // Callback from CelestiaRendererFragment when rendering is ready
-    override fun celestiaRendererLoadingFromFallback() {
+    private fun celestiaRendererLoadingFromFallback() {
         listener?.celestiaFragmentLoadingFromFallback()
     }
 
-    override fun celestiaRendererReady() {
+    private fun celestiaRendererReady() {
         setUpInteractions()
     }
 
@@ -489,7 +462,6 @@ class CelestiaFragment: Fragment(), CelestiaControlView.Listener, CelestiaRender
         private const val ARG_ADDON_DIR = "addon"
         private const val ARG_INTERACTION_MODE = "interaction-mode"
         private const val ARG_LANG_OVERRIDE = "lang"
-        private const val TAG_RENDERER_FRAGMENT = "renderer_fragment"
         private const val TAG = "CelestiaFragment"
 
         fun newInstance(data: String, cfg: String, addons: List<String>, languageOverride: String) =
@@ -515,4 +487,18 @@ fun EdgeInsets.scaleBy(factor: Float): EdgeInsets {
 
 fun AppCore.setSafeAreaInsets(insets: EdgeInsets) {
     setSafeAreaInsets(insets.left, insets.top, insets.right, insets.bottom)
+}
+
+data class RenderChanges(val scaling: Boolean = false, val safeArea: Boolean = false)
+
+fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges) {
+    if (changes.scaling) {
+        screenDPI = (96 * rendererSettings.density * rendererSettings.scaleFactor).toInt()
+        setPickTolerance(rendererSettings.pickSensitivity * rendererSettings.density * rendererSettings.scaleFactor)
+        textScaleFactor = rendererSettings.fontScale
+    }
+
+    if (changes.scaling || changes.safeArea) {
+        setSafeAreaInsets(rendererSettings.safeAreaInsets.scaleBy(rendererSettings.scaleFactor))
+    }
 }

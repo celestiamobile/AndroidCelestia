@@ -118,13 +118,11 @@ import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
-import space.celestia.celestiaui.resource.CommonWebFragment
 import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.resource.model.FeatureFlagsManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
 import space.celestia.mobilecelestia.pushnotification.setUpPushNotifications
-import space.celestia.celestiaui.settings.viewmodel.CustomFont
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.AppURL
@@ -171,7 +169,6 @@ import kotlin.system.exitProcess
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     AppStatusReporter.Listener,
     CelestiaFragment.Listener,
-    CommonWebFragment.Listener,
     AppCore.ContextMenuHandler,
     SensorEventListener {
 
@@ -1366,7 +1363,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         openCelestiaURL(script.absolutePath)
     }
 
-    override fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
+    private fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
         if (!supportedScriptTypes.contains(type)) return
         val supportedScriptLocations = listOf("temp", "context")
         if (location != null && !supportedScriptLocations.contains(location)) return
@@ -1390,7 +1387,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onReceivedACK(id: String) {
+    private fun onReceivedACK(id: String) {
         if (id == latestNewsID) {
             appSettings[PreferenceManager.PredefinedKey.LastNewsID] = id
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -1413,21 +1410,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    override fun onExternalWebLinkClicked(url: String) {
+    private fun onExternalWebLinkClicked(url: String) {
         openLink(url, false)
     }
 
-    override fun onShareURL(title: String, url: String) {
+    private fun onShareURL(title: String, url: String) {
         shareURLDirect(title, url)
     }
 
-    override fun onRunDemo() {
+    private fun onRunDemo() {
         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
             appCore.runDemo()
         }
     }
 
-    override fun onOpenSubscriptionPage(preferredPlayOfferId: String?) {
+    private fun onOpenSubscriptionPage(preferredPlayOfferId: String?) {
         showInAppPurchase(preferredPlayOfferId)
     }
 
