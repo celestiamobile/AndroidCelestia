@@ -12,13 +12,6 @@
 #include <celengine/univcoord.h>
 
 extern "C"
-JNIEXPORT jstring JNICALL
-Java_space_celestia_celestia_Star_c_1getWebInfoURL(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto star = (Star *)pointer;
-    return env->NewStringUTF(star->getInfoURL().c_str());
-}
-
-extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Star_c_1getPositionAtTime(JNIEnv *env, jclass clazz, jlong pointer,
                                                                           jdouble julian_day) {

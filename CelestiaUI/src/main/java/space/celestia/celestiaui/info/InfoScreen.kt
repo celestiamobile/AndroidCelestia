@@ -111,13 +111,13 @@ fun InfoScreen(selection: Selection, showTitle: Boolean, linkClicked: (String) -
             }
 
             val alternativeSurfaceNames = selection.body?.alternateSurfaceNames
-            val url = selection.webInfoURL
+            val url = viewModel.appCore.simulation.universe.getWebInfoURLForSelection(selection)
             var connectionURL: URL? = null
             if (!url.isNullOrEmpty()) {
                 actions.add(InfoWebActionItem(url))
                 try {
                     connectionURL = URL(url)
-                } catch (ignored: Throwable) {}
+                } catch (_: Throwable) {}
             }
             if (!alternativeSurfaceNames.isNullOrEmpty())
                 actions.add(AlternateSurfacesItem(alternativeSurfaceNames))

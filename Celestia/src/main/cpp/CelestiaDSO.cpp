@@ -13,13 +13,6 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_space_celestia_celestia_DSO_c_1getWebInfoURL(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto dso = (DeepSkyObject *)pointer;
-    return env->NewStringUTF(dso->getInfoURL().c_str());
-}
-
-extern "C"
-JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_DSO_c_1getType(JNIEnv *env, jclass clazz, jlong pointer) {
     auto dso = (DeepSkyObject *)pointer;
     return env->NewStringUTF(dso->getType());

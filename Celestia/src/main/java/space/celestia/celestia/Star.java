@@ -17,14 +17,6 @@ public class Star extends AstroObject {
         super(ptr);
     }
 
-    @Nullable
-    String getWebInfoURL() {
-        String web = c_getWebInfoURL(pointer);
-        if (web.isEmpty())
-            return null;
-        return c_getWebInfoURL(pointer);
-    }
-
     @NonNull
     public UniversalCoord getPositionAtTime(double julianDay) {
         return new UniversalCoord(c_getPositionAtTime(pointer, julianDay));
@@ -35,7 +27,6 @@ public class Star extends AstroObject {
     }
 
     // C functions
-    private static native String c_getWebInfoURL(long pointer);
     private static native long c_getPositionAtTime(long pointer, double julianDay);
     private static native String c_getSpectralType(long pointer);
 }

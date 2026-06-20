@@ -79,13 +79,13 @@ public class Universe implements BrowserItem.ChildrenProvider {
     public Map<String, BrowserItem> childrenForItem(@NonNull BrowserItem item) {
         AstroObject obj = item.getObject();
 
-        if (obj == null) { return null; }
-        if (obj instanceof Star)
-            return BrowserItem.fromJsonString(c_getChildrenForStar(pointer, obj.pointer), this);
-        if (obj instanceof Body)
-            return BrowserItem.fromJsonString(c_getChildrenForBody(pointer, obj.pointer), this);
-
-        return null;
+        return switch (obj) {
+            case Star ignored ->
+                    BrowserItem.fromJsonString(c_getChildrenForStar(pointer, obj.pointer), this);
+            case Body ignored ->
+                    BrowserItem.fromJsonString(c_getChildrenForBody(pointer, obj.pointer), this);
+            case null, default -> null;
+        };
     }
 
     public void mark(@NonNull Selection selection, int marker) {
@@ -100,6 +100,10 @@ public class Universe implements BrowserItem.ChildrenProvider {
         c_unmarkAll(pointer);
     }
 
+    public @Nullable String getWebInfoURLForSelection(@NonNull Selection selection) {
+        return c_getWebInfoURLForSelection(pointer, selection);
+    }
+
     // C functions
     private static native long c_getStarCatalog(long ptr);
     private static native long c_getDSOCatalog(long ptr);
@@ -110,4 +114,5 @@ public class Universe implements BrowserItem.ChildrenProvider {
     private static native void c_mark(long ptr, Selection selection, int marker);
     private static native void c_unmark(long ptr, Selection selection);
     private static native void c_unmarkAll(long ptr);
+    private static native String c_getWebInfoURLForSelection(long pointer, Selection selection);
 }

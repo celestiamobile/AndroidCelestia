@@ -415,6 +415,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/univcoord.h
         ${CELESTIA_SRC_DIR}/celengine/universe.cpp
         ${CELESTIA_SRC_DIR}/celengine/universe.h
+        ${CELESTIA_SRC_DIR}/celengine/urlmanager.cpp
+        ${CELESTIA_SRC_DIR}/celengine/urlmanager.h
         ${CELESTIA_SRC_DIR}/celengine/videooverlay.cpp
         ${CELESTIA_SRC_DIR}/celengine/videooverlay.h
         ${CELESTIA_SRC_DIR}/celengine/viewporteffect.cpp

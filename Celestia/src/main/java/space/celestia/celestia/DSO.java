@@ -22,14 +22,6 @@ public class DSO extends AstroObject {
         super(ptr);
     }
 
-    @Nullable
-    String getWebInfoURL() {
-        String web = c_getWebInfoURL(pointer);
-        if (web.isEmpty())
-            return null;
-        return c_getWebInfoURL(pointer);
-    }
-
     public int getObjectType() {
         return c_getObjectType(pointer);
     }
@@ -46,7 +38,6 @@ public class DSO extends AstroObject {
     public String getDescription() { return c_getDescription(pointer); }
 
     // C functions
-    private static native String c_getWebInfoURL(long pointer);
     private static native String c_getType(long pointer);
     private static native int c_getObjectType(long pointer);
     private static native Vector c_getPosition(long pointer);

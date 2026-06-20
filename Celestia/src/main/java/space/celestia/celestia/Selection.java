@@ -14,8 +14,6 @@ import android.os.Parcelable;
 
 import androidx.annotation.Nullable;
 
-import java.util.Objects;
-
 public class Selection implements Parcelable {
     private final static int SELECTION_TYPE_NIL             = 0;
     private final static int SELECTION_TYPE_STAR            = 1;
@@ -99,19 +97,13 @@ public class Selection implements Parcelable {
     }
 
     private static int typeForObject(AstroObject object) {
-        if (object == null) {
-            return SELECTION_TYPE_NIL;
-        } else if (object instanceof Star) {
-            return SELECTION_TYPE_STAR;
-        } else if (object instanceof Body) {
-            return SELECTION_TYPE_BODY;
-        } else if (object instanceof Location) {
-            return SELECTION_TYPE_LOCATION;
-        } else if (object instanceof DSO) {
-            return SELECTION_TYPE_DEEP_SKY;
-        } else {
-            return SELECTION_TYPE_NIL;
-        }
+        return switch (object) {
+            case Star ignored -> SELECTION_TYPE_STAR;
+            case Body ignored -> SELECTION_TYPE_BODY;
+            case Location ignored -> SELECTION_TYPE_LOCATION;
+            case DSO ignored -> SELECTION_TYPE_DEEP_SKY;
+            case null, default -> SELECTION_TYPE_NIL;
+        };
     }
 
     public boolean isEmpty() {
@@ -143,17 +135,6 @@ public class Selection implements Parcelable {
     public Body getBody() {
         if (object instanceof Body)
             return (Body) object;
-        return null;
-    }
-
-    @Nullable
-    public String getWebInfoURL() {
-        if (object instanceof Body)
-            return ((Body) object).getWebInfoURL();
-        if (object instanceof Star)
-            return ((Star) object).getWebInfoURL();
-        if (object instanceof DSO)
-            return ((DSO) object).getWebInfoURL();
         return null;
     }
 

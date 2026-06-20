@@ -56,13 +56,6 @@ Java_space_celestia_celestia_Body_c_1getRadius(JNIEnv *env, jclass clazz, jlong 
 }
 
 extern "C"
-JNIEXPORT jstring JNICALL
-Java_space_celestia_celestia_Body_c_1getWebInfoURL(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto body = reinterpret_cast<Body *>(pointer);
-    return env->NewStringUTF(body->getInfoURL().c_str());
-}
-
-extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Body_c_1getOrbitAtTime(JNIEnv *env, jclass clazz, jlong pointer,
                                                                        jdouble julian_day) {

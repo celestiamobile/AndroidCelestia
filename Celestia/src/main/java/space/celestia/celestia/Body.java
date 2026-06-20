@@ -47,15 +47,6 @@ public class Body extends AstroObject {
     public boolean hasAtmosphere() { return  c_hasAtmosphere(pointer); }
     public boolean isEllipsoid() { return c_isEllipsoid(pointer); }
     public float getRadius() { return c_getRadius(pointer); }
-
-    @Nullable
-    String getWebInfoURL() {
-        String web = c_getWebInfoURL(pointer);
-        if (web.isEmpty())
-            return null;
-        return c_getWebInfoURL(pointer);
-    }
-
     @NonNull
     public Orbit getOrbitAtTime(double julianDay) {
         return new Orbit(c_getOrbitAtTime(pointer, julianDay));
@@ -102,9 +93,6 @@ public class Body extends AstroObject {
     private static native boolean c_hasAtmosphere(long pointer);
     private static native boolean c_isEllipsoid(long pointer);
     private static native float c_getRadius(long pointer);
-
-    private static native String c_getWebInfoURL(long pointer);
-
     private static native long c_getOrbitAtTime(long pointer, double julianDay);
     private static native long c_getRotationModelAtTime(long pointer, double julianDay);
     private static native long c_getPlanetarySystem(long pointer);

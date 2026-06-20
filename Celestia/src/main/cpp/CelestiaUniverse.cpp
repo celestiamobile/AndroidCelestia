@@ -315,3 +315,13 @@ Java_space_celestia_celestia_Universe_c_1unmarkAll(JNIEnv *env, jclass clazz,
     auto u = reinterpret_cast<Universe *>(ptr);
     u->unmarkAll();
 }
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_celestia_Universe_c_1getWebInfoURLForSelection(JNIEnv *env, jclass clazz,
+                                                                   jlong pointer,
+                                                                   jobject selection) {
+    auto u = reinterpret_cast<Universe *>(pointer);
+    auto url = u->getInfoURL(javaSelectionAsSelection(env, selection));
+    return url.empty() ? nullptr : env->NewStringUTF(url.data());
+}
