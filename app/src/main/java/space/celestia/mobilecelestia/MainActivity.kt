@@ -2321,8 +2321,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         private const val GROUP_BROWSER_ITEM_GET_INFO = 9
         private const val GROUP_HEADER = 10
 
-        private const val CURRENT_DATA_VERSION = "158"
-        // 158: 1.9.19 Localization update data update (8db6e8d2fe30938d096bba6dada1d838475a5a1b)
+        private const val CURRENT_DATA_VERSION = "159"
+        // 159: 1.9.19 Localization update data update (8db6e8d2fe30938d096bba6dada1d838475a5a1b)
         // 157: 1.9.18 Localization update data update (3d666210190e2e2dfc60550f7f719afc856306d3)
         // 147: 1.9.17 Localization update data update (7926c3ccd126dae60e702b3b6b499cf2d07e3565)
         // 142: 1.9.16 Localization update data update (fcad6702ae267ba04fce023ee71038df5c02caf8)
