@@ -266,6 +266,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/asterism.cpp
         ${CELESTIA_SRC_DIR}/celengine/asterism.h
         ${CELESTIA_SRC_DIR}/celengine/astroobj.h
+        ${CELESTIA_SRC_DIR}/celengine/asyncresourcecache.h
         ${CELESTIA_SRC_DIR}/celengine/atmosphere.cpp
         ${CELESTIA_SRC_DIR}/celengine/atmosphere.h
         ${CELESTIA_SRC_DIR}/celengine/axisarrow.cpp
@@ -308,6 +309,7 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/galaxyform.h
         ${CELESTIA_SRC_DIR}/celengine/geometry.cpp
         ${CELESTIA_SRC_DIR}/celengine/geometry.h
+        ${CELESTIA_SRC_DIR}/celengine/geometrytraits.h
         ${CELESTIA_SRC_DIR}/celengine/glsupport.cpp
         ${CELESTIA_SRC_DIR}/celengine/glsupport.h
         ${CELESTIA_SRC_DIR}/celengine/glmarker.cpp
@@ -369,6 +371,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/renderglsl.h
         ${CELESTIA_SRC_DIR}/celengine/renderinfo.h
         ${CELESTIA_SRC_DIR}/celengine/renderlistentry.h
+        ${CELESTIA_SRC_DIR}/celengine/resourcesystem.cpp
+        ${CELESTIA_SRC_DIR}/celengine/resourcesystem.h
         ${CELESTIA_SRC_DIR}/celengine/rotationmanager.cpp
         ${CELESTIA_SRC_DIR}/celengine/rotationmanager.h
         ${CELESTIA_SRC_DIR}/celengine/selection.cpp
@@ -406,6 +410,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/textlayout.h
         ${CELESTIA_SRC_DIR}/celengine/texture.cpp
         ${CELESTIA_SRC_DIR}/celengine/texture.h
+        ${CELESTIA_SRC_DIR}/celengine/texturetraits.cpp
+        ${CELESTIA_SRC_DIR}/celengine/texturetraits.h
         ${CELESTIA_SRC_DIR}/celengine/timeline.cpp
         ${CELESTIA_SRC_DIR}/celengine/timeline.h
         ${CELESTIA_SRC_DIR}/celengine/timelinephase.cpp
