@@ -78,7 +78,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit)
-    implementation(libs.converter.kotlinx.serialization)
     implementation(libs.okhttp)
 
     implementation(libs.androidx.webkit)
