@@ -71,7 +71,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -82,7 +81,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
+import androidx.media3.ui.compose.PlayerSurface
+import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.ProductDetails
 import kotlinx.coroutines.delay
@@ -495,17 +495,7 @@ private fun VideoItem(@RawRes videoResId: Int, modifier: Modifier = Modifier) {
         }
     }
 
-    AndroidView(
-        factory = { ctx ->
-            val view = android.view.LayoutInflater.from(ctx).inflate(R.layout.view_carousel_video, null, false) as PlayerView
-            view.apply {
-                player = exoPlayer
-                useController = false
-                setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-            }
-        },
-        modifier = modifier
-    )
+    PlayerSurface(player = exoPlayer, surfaceType = SURFACE_TYPE_TEXTURE_VIEW, modifier = modifier)
 }
 
 @Composable

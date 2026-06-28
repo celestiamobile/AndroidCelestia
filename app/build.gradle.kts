@@ -186,6 +186,7 @@ dependencies {
     playImplementation(libs.billing.ktx)
     playImplementation(libs.androidx.media3.exoplayer)
     playImplementation(libs.androidx.media3.ui)
+    playImplementation(libs.androidx.media3.ui.compose.material3)
     playImplementation(platform(libs.firebase.bom))
     playImplementation(libs.firebase.messaging)
 
