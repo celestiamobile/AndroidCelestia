@@ -93,33 +93,26 @@ kotlin {
 }
 
 // Custom tasks
-val copyLocalizedFiles by tasks.registering(Exec::class) {
+val copyLocalizedFiles = tasks.register<Exec>("copyLocalizedFiles") {
     println("Copying localized files")
     workingDir = projectDir
     executable = "/bin/sh"
     args = listOf("copy_localized_files.sh", File(File(File(projectDir, "src"), "main"), "res").absolutePath)
 }
 
-val copyGeneralData by tasks.registering(Exec::class) {
+val copyGeneralData = tasks.register<Exec>("copyGeneralData") {
+    mustRunAfter(copyLocalizedFiles)
     workingDir = projectDir
     executable = "/bin/sh"
     args = listOf("copy_general_data.sh", File(File(File(projectDir, "src"), "sideload"), "assets").absolutePath) // Assets of other flavors are symlink
 }
 
-val convertPO by tasks.registering(Exec::class) {
+val convertPO = tasks.register<Exec>("convertPO") {
+    mustRunAfter(copyGeneralData)
     println("Converting PO")
     workingDir = projectDir
     executable = "/bin/sh"
     args = listOf("convert_po.sh", File(File(File(projectDir, "src"), "sideload"), "assets").absolutePath)
-}
-
-// Task ordering
-copyGeneralData {
-    mustRunAfter(copyLocalizedFiles)
-}
-
-convertPO {
-    mustRunAfter(copyGeneralData)
 }
 
 tasks.preBuild {
@@ -140,9 +133,6 @@ androidComponents {
         }
     }
 }
-
-val playImplementation by configurations
-val sideloadImplementation by configurations
 
 dependencies {
     implementation(libs.kotlin.stdlib)
@@ -168,8 +158,8 @@ dependencies {
     implementation(project(":CelestiaFoundation"))
     implementation(project(":CelestiaUI"))
 
-    playImplementation(libs.sentry.android)
-    sideloadImplementation(libs.sentry.android)
+    "playImplementation"(libs.sentry.android)
+    "sideloadImplementation"(libs.sentry.android)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -183,12 +173,12 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material3)
 
-    playImplementation(libs.billing.ktx)
-    playImplementation(libs.androidx.media3.exoplayer)
-    playImplementation(libs.androidx.media3.ui)
-    playImplementation(libs.androidx.media3.ui.compose.material3)
-    playImplementation(platform(libs.firebase.bom))
-    playImplementation(libs.firebase.messaging)
+    "playImplementation"(libs.billing.ktx)
+    "playImplementation"(libs.androidx.media3.exoplayer)
+    "playImplementation"(libs.androidx.media3.ui)
+    "playImplementation"(libs.androidx.media3.ui.compose.material3)
+    "playImplementation"(platform(libs.firebase.bom))
+    "playImplementation"(libs.firebase.messaging)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

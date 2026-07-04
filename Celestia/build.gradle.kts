@@ -84,9 +84,7 @@ kotlin {
     }
 }
 
-val mobileImplementation by configurations
-
 dependencies {
     implementation(libs.androidx.annotation)
-    mobileImplementation(libs.androidx.games.frame.pacing)
+    "mobileImplementation"(libs.androidx.games.frame.pacing)
 }
