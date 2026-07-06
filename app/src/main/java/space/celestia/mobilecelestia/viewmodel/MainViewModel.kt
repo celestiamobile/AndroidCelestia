@@ -8,4 +8,5 @@ import space.celestia.celestiaui.tool.viewmodel.ToolPage
 class MainViewModel: ViewModel() {
     val backStack = mutableStateListOf<ToolPage>()
     var bottomSheetVisible = mutableStateOf(false)
+    var loadingVisible = mutableStateOf(true)
 }

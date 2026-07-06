@@ -72,6 +72,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clickable="true"/>
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/main_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            style="@style/Background"/>
     </FrameLayout>
 
     <FrameLayout
