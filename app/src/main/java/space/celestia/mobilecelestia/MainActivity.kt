@@ -368,6 +368,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 setContent {
                     Mdc3Theme {
                         SheetLayout(
+                            safeAreaInsets = rememberSafeAreaInsets(),
                             visible = viewModel.bottomSheetVisible.value,
                             onDismiss = {
                                 viewModel.bottomSheetVisible.value = false
@@ -2024,9 +2025,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     @Composable
     private fun MainContent() {
+        val safeAreaInsets = rememberSafeAreaInsets()
         Box(modifier = Modifier.fillMaxSize()) {
-            RenderContent(safeAreaInsets = rememberSafeAreaInsets())
+            RenderContent(safeAreaInsets = safeAreaInsets)
             SheetLayout(
+                safeAreaInsets = safeAreaInsets,
                 visible = viewModel.bottomSheetVisible.value,
                 onDismiss = {
                     viewModel.bottomSheetVisible.value = false
