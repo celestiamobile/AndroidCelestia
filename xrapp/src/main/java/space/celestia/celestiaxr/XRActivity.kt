@@ -540,7 +540,8 @@ class XRActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "157"
+        private const val CURRENT_DATA_VERSION = "160"
+        // 160: 1.9.20 Data update (d156a8b5ed3f03add56c706880cc879b99ba26f9)
         // 157: 1.9.18 Localization update data update (3d666210190e2e2dfc60550f7f719afc856306d3)
         // 147: 1.9.17 Localization update data update (7926c3ccd126dae60e702b3b6b499cf2d07e3565)
         // 142: 1.9.16 Localization update data update (fcad6702ae267ba04fce023ee71038df5c02caf8)

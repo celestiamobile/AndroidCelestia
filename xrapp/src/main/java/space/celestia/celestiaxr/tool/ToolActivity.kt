@@ -13,7 +13,6 @@ import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,7 +20,6 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.compose.Mdc3Theme
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
 import space.celestia.celestiaui.info.model.perform
-import space.celestia.celestiaui.resource.CommonWebFragment
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.tool.ToolScreen
 import space.celestia.celestiaui.utils.AppURL
@@ -35,7 +33,7 @@ import java.util.concurrent.Executor
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
+class ToolActivity : AppCompatActivity() {
     @Inject
     lateinit var executor: Executor
 
@@ -49,6 +47,7 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
 
     companion object {
         const val EXTRA_TOOL = "extra_tool"
+        private val supportedScriptTypes = listOf("cel", "celx")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,61 +85,27 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
                         }
                     },
                     providePreferredDisplay = { null },
-                    refreshRateChanged = { _  -> }
+                    refreshRateChanged = { _  -> },
+                    runScript = { type, content, name, location, contextDirectory ->
+                        onRunScript(type, content, name, location, contextDirectory)
+                    },
+                    shareURL = { title, url ->
+                        shareURLDirect(title, url)
+                    },
+                    receivedACK = { },
+                    runDemo = {
+                        scope.launch(executor.asCoroutineDispatcher()) {
+                            appCore.runDemo()
+                        }
+                    },
+                    openSubscriptionPage = { },
+                    externalLinkClicked = { url ->
+                        openLink(url, false)
+                    },
                 )
             }
         }
     }
-
-    override fun onExternalWebLinkClicked(url: String) {
-        openURL(url)
-    }
-
-    override fun onRunScript(
-        type: String,
-        content: String,
-        name: String?,
-        location: String?,
-        contextDirectory: File?
-    ) {
-        if (!listOf("cel", "celx").contains(type)) return
-        val supportedScriptLocations = listOf("temp", "context")
-        if (location != null && !supportedScriptLocations.contains(location)) return
-        if (location == "context" && contextDirectory == null) return
-
-        val scriptFile: File
-        val scriptFileName = "${name ?: UUID.randomUUID()}.${type}"
-        scriptFile = if (location == "context") {
-            File(contextDirectory, scriptFileName)
-        } else {
-            File(cacheDir, scriptFileName)
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                scriptFile.writeText(content)
-                withContext(Dispatchers.Main) {
-                    openAppURL(AppURL.Script(scriptFile.absolutePath))
-                }
-            } catch (_: Throwable) {}
-        }
-    }
-
-    override fun onShareURL(title: String, url: String) {
-        shareURLDirect(title, url)
-    }
-
-    override fun onReceivedACK(id: String) {
-        // TODO: impl
-    }
-
-    override fun onRunDemo() {
-        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-            appCore.runDemo()
-        }
-    }
-
-    override fun onOpenSubscriptionPage(preferredPlayOfferId: String?) {}
 
     private fun shareAddon(name: String, id: String) {
         val baseURL = "https://celestia.mobi/resources/item"
@@ -162,6 +127,27 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
             showUnsupportedAction()
     }
 
+    private fun onRunScript(type: String, content: String, name: String?, location: String?, contextDirectory: File?) {
+        if (!supportedScriptTypes.contains(type)) return
+        val supportedScriptLocations = listOf("temp", "context")
+        if (location != null && !supportedScriptLocations.contains(location)) return
+        if (location == "context" && contextDirectory == null) return
+
+        val scriptFileName = "${name ?: UUID.randomUUID()}.${type}"
+        val scriptFile = if (location == "context") {
+            File(contextDirectory, scriptFileName)
+        } else {
+            File(cacheDir, scriptFileName)
+        }
+
+        lifecycleScope.launch(executor.asCoroutineDispatcher()) {
+            try {
+                scriptFile.writeText(content)
+                appCore.runScript(scriptFile.absolutePath)
+            } catch (_: Throwable) {}
+        }
+    }
+
     private fun showUnsupportedAction() {
         showAlert(CelestiaString("Unsupported action.", ""))
     }
@@ -171,10 +157,6 @@ class ToolActivity : AppCompatActivity(), CommonWebFragment.Listener {
         if (localizable)
             uri = uri.buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
         openURI(uri)
-    }
-
-    private fun openURL(url: String) {
-        openURI(url.toUri())
     }
 
     private fun openURI(uri: Uri) = lifecycleScope.launch {

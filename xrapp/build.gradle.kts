@@ -59,22 +59,18 @@ kotlin {
         jvmTarget = JvmTarget.JVM_21
     }
 }
-val copyGeneralData by tasks.registering(Exec::class) {
+val copyGeneralData = tasks.register<Exec>("copyGeneralData") {
     workingDir = projectDir
     executable = "/bin/sh"
     args = listOf("copy_general_data.sh", File(File(File(projectDir, "src"), "main"), "assets").absolutePath)
 }
 
-val convertPO by tasks.registering(Exec::class) {
+val convertPO = tasks.register<Exec>("convertPO") {
+    mustRunAfter(copyGeneralData)
     println("Converting PO")
     workingDir = projectDir
     executable = "/bin/sh"
     args = listOf("convert_po.sh", File(File(File(projectDir, "src"), "main"), "assets").absolutePath)
-}
-
-// Task ordering
-convertPO {
-    mustRunAfter(copyGeneralData)
 }
 
 tasks.preBuild {
