@@ -34,6 +34,7 @@ import space.celestia.celestiaui.settings.viewmodel.boldFont
 import space.celestia.celestiaui.settings.viewmodel.normalFont
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.mobilecelestia.MainActivity
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import space.celestia.mobilecelestia.common.EdgeInsets
 import java.util.Locale
@@ -269,5 +270,32 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                 }
             }
         }
+    }
+}
+
+fun EdgeInsets.scaleBy(factor: Float): EdgeInsets {
+    return EdgeInsets(
+        (left * factor).toInt(),
+        (top * factor).toInt(),
+        (right * factor).toInt(),
+        (bottom * factor).toInt()
+    )
+}
+
+fun AppCore.setSafeAreaInsets(insets: EdgeInsets) {
+    setSafeAreaInsets(insets.left, insets.top, insets.right, insets.bottom)
+}
+
+data class RenderChanges(val scaling: Boolean = false, val safeArea: Boolean = false)
+
+fun AppCore.updateContentScale(rendererSettings: RendererSettings, changes: RenderChanges) {
+    if (changes.scaling) {
+        screenDPI = (96 * rendererSettings.density * rendererSettings.scaleFactor).toInt()
+        setPickTolerance(rendererSettings.pickSensitivity * rendererSettings.density * rendererSettings.scaleFactor)
+        textScaleFactor = rendererSettings.fontScale
+    }
+
+    if (changes.scaling || changes.safeArea) {
+        setSafeAreaInsets(rendererSettings.safeAreaInsets.scaleBy(rendererSettings.scaleFactor))
     }
 }
