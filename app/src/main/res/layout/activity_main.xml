@@ -24,12 +24,6 @@
         android:id="@+id/main_container"
         style="@style/Background">
 
-        <FrameLayout
-            android:id="@+id/celestia_fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            style="@style/Container"/>
-
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/celestia_compose_container"
             android:layout_width="match_parent"
