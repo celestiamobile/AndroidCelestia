@@ -39,6 +39,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.SimpleAlertDialog
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.purchase.SubscriptionBackingScreen
 import space.celestia.celestiaui.resource.viewmodel.AddonManagerPage
 import space.celestia.celestiaui.resource.viewmodel.AddonManagerViewModel
@@ -125,7 +126,7 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
                 }
             }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
         },
-        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         NavDisplay(

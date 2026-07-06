@@ -88,6 +88,7 @@ import com.android.billingclient.api.ProductDetails
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.compose.EmptyHint
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.purchase.PurchaseType
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.mobilecelestia.R
@@ -201,7 +202,7 @@ private fun Content(preferredPlayOfferId: String?, modifier: Modifier = Modifier
         refreshState = RefreshState(needsRefreshSubscription = false, needsRefreshPlans = false)
     }
 
-    Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+    Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)) { paddingValues ->
         if (refreshState.needsRefreshSubscription || refreshState.needsRefreshPlans) {
             Box(
                 modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center

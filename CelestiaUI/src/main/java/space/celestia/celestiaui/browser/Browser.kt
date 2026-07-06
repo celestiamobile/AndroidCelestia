@@ -51,6 +51,8 @@ import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.celestiaui.browser.viewmodel.BrowserViewModel
 import space.celestia.celestiaui.browser.viewmodel.Page
 import space.celestia.celestiaui.compose.SimpleAlertDialog
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
+import space.celestia.celestiaui.compose.windowInsetsIgnoringVisibility
 import space.celestia.celestiaui.info.InfoScreen
 import space.celestia.celestiaui.utils.CelestiaString
 
@@ -71,7 +73,7 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
     }
 
     if (viewModel.tabs.isEmpty() || viewModel.selectedTabIndex.intValue >= viewModel.tabs.size || viewModel.selectedTabIndex.intValue >= viewModel.backStacks.size) {
-        Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+        Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)) { paddingValues ->
             Box(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 contentAlignment = Alignment.Center
@@ -111,7 +113,7 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
             },
             bottomBar = {
                 NavigationBar(
-                    windowInsets = NavigationBarDefaults.windowInsets.only(
+                    windowInsets = NavigationBarDefaults.windowInsetsIgnoringVisibility.only(
                         WindowInsetsSides.Bottom
                     )
                 ) {
@@ -134,7 +136,7 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
                     }
                 }
             },
-            contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+            contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) { paddingValues ->
             NavDisplay(

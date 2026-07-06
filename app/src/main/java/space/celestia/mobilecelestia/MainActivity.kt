@@ -327,14 +327,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         appStatusReporter.register(this)
 
-        val mainContentView = findViewById<ComposeView>(R.id.main_content)
-        val containerView = findViewById<FrameLayout>(R.id.main_container)
+        val mainContainer = findViewById<FrameLayout>(R.id.main_content_container)
+        val legacyContainer = findViewById<FrameLayout>(R.id.main_container)
 
         if (featureFlags.composeSurfaceV4) {
-            containerView.forEach { view ->
-                view.isVisible = view == mainContentView
-            }
+            legacyContainer.isVisible = false
+            mainContainer.isVisible = true
 
+            val mainContentView = findViewById<ComposeView>(R.id.main_content)
             mainContentView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             mainContentView.setContent {
                 Mdc3Theme {
@@ -342,9 +342,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             }
         } else {
-            containerView.forEach { view ->
-                view.isVisible = view != mainContentView
-            }
+            mainContainer.isVisible = false
+            legacyContainer.isVisible = true
 
             val celestiaComposeView = findViewById<ComposeView>(R.id.celestia_compose_container)
             celestiaComposeView.isVisible = true
@@ -428,6 +427,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
+        ViewCompat.setOnApplyWindowInsetsListener(mainContainer) { _, insets ->
+            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), systemBarInsets)
+            return@setOnApplyWindowInsetsListener builder.build()
+        }
+
         val bottomSheetContainer = findViewById<View>(R.id.bottom_sheet_insets)
         ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
             val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
@@ -435,6 +440,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
                 .build()
         }
+        mainContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         findViewById<View>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         findViewById<View>(R.id.toolbar_overlay).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -707,7 +713,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun hideSystemUI() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window, findViewById(R.id.main_container)).let { controller ->
+        WindowInsetsControllerCompat(window, findViewById(if (featureFlags.composeSurfaceV4) R.id.main_content_container else R.id.main_container)).let { controller ->
             controller.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
@@ -2020,6 +2026,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private fun MainContent() {
         Box(modifier = Modifier.fillMaxSize()) {
             RenderContent(safeAreaInsets = rememberSafeAreaInsets())
+            SheetLayout(
+                visible = viewModel.bottomSheetVisible.value,
+                onDismiss = {
+                    viewModel.bottomSheetVisible.value = false
+                }
+            ) {
+                ToolScreenContent()
+            }
             if (viewModel.loadingVisible.value) {
                 LoadingScreen()
             }

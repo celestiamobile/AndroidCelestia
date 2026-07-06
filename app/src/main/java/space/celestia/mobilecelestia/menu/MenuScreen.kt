@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import space.celestia.celestiaui.compose.Separator
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.mobilecelestia.R
 import java.io.Serializable
@@ -106,7 +107,7 @@ enum class ToolbarAction : Serializable {
 fun MenuScreen(actions: List<List<ToolbarAction>>, actionSelected: (ToolbarAction) -> Unit) {
     val allSections = ArrayList(actions)
     allSections.addAll(ToolbarAction.persistentAction)
-    Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.End)) { paddingValues ->
+    Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.End)) { paddingValues ->
         Surface(
             color = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface

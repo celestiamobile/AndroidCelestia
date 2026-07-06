@@ -22,6 +22,7 @@ import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.browser.Browser
 import space.celestia.celestiaui.browser.SubsystemBrowser
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.control.CameraControlContainer
 import space.celestia.celestiaui.eventfinder.EventFinder
 import space.celestia.celestiaui.favorite.FavoriteBookmarkItem
@@ -135,7 +136,7 @@ fun ToolScreen(
                 )
             }
             is ToolPage.Info -> NavEntry(entry) {
-                Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+                Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)) { paddingValues ->
                     InfoScreen(
                         selection = entry.selection,
                         linkClicked = {
@@ -205,7 +206,7 @@ fun ToolScreen(
             }
             is ToolPage.Article -> NavEntry(entry) {
                 val uri by remember { mutableStateOf(URLHelper.buildInAppGuideURI(id = entry.id, language = AppCore.getLanguage(), platform = viewModel.platform, purchaseManager = viewModel.purchaseManager)) }
-                Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+                Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)) { paddingValues ->
                     WebPage(
                         uri = uri,
                         filterURL = true,

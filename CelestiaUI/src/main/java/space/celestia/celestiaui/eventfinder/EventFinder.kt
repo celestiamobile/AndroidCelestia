@@ -45,6 +45,7 @@ import space.celestia.celestia.Body
 import space.celestia.celestia.EclipseFinder
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.SimpleAlertDialog
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.eventfinder.viewmodel.EventFinderViewModel
 import space.celestia.celestiaui.eventfinder.viewmodel.Page
 import space.celestia.celestiaui.utils.CelestiaString
@@ -85,7 +86,7 @@ fun EventFinder() {
                 }
             }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
         },
-        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         NavDisplay(

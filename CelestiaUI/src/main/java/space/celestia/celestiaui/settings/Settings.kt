@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.purchase.SubscriptionBackingScreen
 import space.celestia.celestiaui.settings.viewmodel.Page
 import space.celestia.celestiaui.settings.viewmodel.SettingsAboutItem
@@ -114,7 +115,7 @@ fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: ()
                 }
             }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
         },
-        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         NavDisplay(
