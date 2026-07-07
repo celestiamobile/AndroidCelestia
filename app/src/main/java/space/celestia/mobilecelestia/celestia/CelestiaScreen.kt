@@ -1,21 +1,16 @@
 package space.celestia.mobilecelestia.celestia
 
 import android.os.Build
-import android.view.RoundedCorner
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -27,10 +22,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -52,11 +45,8 @@ import space.celestia.celestiaui.settings.toolbarItems
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.common.RoundedCorners
-import space.celestia.mobilecelestia.common.SHEET_MAX_FULL_WIDTH_DP
 import java.util.Timer
 import kotlin.concurrent.fixedRateTimer
-import kotlin.math.max
 
 sealed class CelestiaAlert {
     data object ErrorLoadingData: CelestiaAlert()
@@ -76,7 +66,7 @@ private val InteractionModeSaver = Saver<CelestiaInteraction.InteractionMode, St
 )
 
 @Composable
-fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, canAcceptKeyEvents: () -> Boolean, showMenu: () -> Unit, showInfo: () -> Unit, showSearch: () -> Unit, goTo: () -> Unit, onInteractionModeChanged: (CelestiaInteraction.InteractionMode) -> Unit, onInteractionViewReady: (View) -> Unit) {
+fun CelestiaScreen(safeAreaInsets: EdgeInsets, pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, canAcceptKeyEvents: () -> Boolean, showMenu: () -> Unit, showInfo: () -> Unit, showSearch: () -> Unit, goTo: () -> Unit, onInteractionModeChanged: (CelestiaInteraction.InteractionMode) -> Unit, onInteractionViewReady: (View) -> Unit) {
     val lifeCycleOwner = LocalLifecycleOwner.current
     val viewModel: RendererViewModel = hiltViewModel()
 
@@ -97,36 +87,6 @@ fun CelestiaScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
 
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
-    val context = LocalContext.current
-
-    val hasRegularHorizontalSpace = with(density) { LocalWindowInfo.current.containerSize.width.toDp() } > SHEET_MAX_FULL_WIDTH_DP.dp
-
-    val systemBars = WindowInsets.systemBars
-    val displayCutout = WindowInsets.displayCutout
-
-    val left = max(systemBars.getLeft(density, layoutDirection), displayCutout.getLeft(density, layoutDirection))
-    val top = max(systemBars.getTop(density), displayCutout.getTop(density))
-    val right = max(systemBars.getRight(density, layoutDirection), displayCutout.getRight(density, layoutDirection))
-    val bottom = max(systemBars.getBottom(density), displayCutout.getBottom(density))
-
-    val roundedCorners = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val windowInsets = context.getSystemService(WindowManager::class.java).currentWindowMetrics.windowInsets
-        RoundedCorners(
-            windowInsets.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)?.radius ?: 0,
-            windowInsets.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT)?.radius ?: 0,
-            windowInsets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_LEFT)?.radius ?: 0,
-            windowInsets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_RIGHT)?.radius ?: 0
-        )
-    } else {
-        RoundedCorners(0, 0, 0, 0)
-    }
-
-    val safeAreaInsets = EdgeInsets(
-        left = if (!hasRegularHorizontalSpace) left else max(left, max(roundedCorners.topLeft, roundedCorners.bottomLeft)),
-        top = if (hasRegularHorizontalSpace) top else max(top, max(roundedCorners.topLeft, roundedCorners.topRight)),
-        right = if (!hasRegularHorizontalSpace) right else max(right, max(roundedCorners.topRight, roundedCorners.bottomRight)),
-        bottom = if (hasRegularHorizontalSpace) bottom else max(bottom, max(roundedCorners.bottomLeft, roundedCorners.bottomRight))
-    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         RendererScreen(

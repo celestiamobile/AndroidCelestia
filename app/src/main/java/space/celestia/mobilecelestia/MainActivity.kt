@@ -33,6 +33,7 @@ import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -41,6 +42,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -49,8 +57,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.animation.addListener
 import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
@@ -65,6 +79,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.allViews
+import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
@@ -73,6 +89,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingtoolbar.FloatingToolbarLayout
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -152,6 +169,7 @@ import space.celestia.celestiaui.tool.ToolScreen
 import space.celestia.celestiaui.tool.viewmodel.ToolPage
 import space.celestia.mobilecelestia.celestia.CelestiaScreen
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
+import space.celestia.mobilecelestia.common.rememberSafeAreaInsets
 import space.celestia.mobilecelestia.viewmodel.MainViewModel
 import java.io.File
 import java.io.IOException
@@ -320,78 +338,56 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         appStatusReporter.register(this)
 
-        val celestiaComposeView = findViewById<ComposeView>(R.id.celestia_compose_container)
-        celestiaComposeView.isVisible = true
-        celestiaComposeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-        celestiaComposeView.setContent {
-            Mdc3Theme {
-                val viewModel: RendererViewModel = hiltViewModel()
-                var currentState by remember { mutableStateOf(viewModel.appStatusReporter.state) }
-                if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
-                    return@Mdc3Theme
-                }
+        val mainContainer = findViewById<FrameLayout>(R.id.main_content_container)
+        val legacyContainer = findViewById<FrameLayout>(R.id.main_container)
 
-                val lifeCycleOwner = LocalLifecycleOwner.current
-                val scope = rememberCoroutineScope()
-                DisposableEffect(lifeCycleOwner) {
-                    val observer = object: AppStatusReporter.Listener {
-                        override fun celestiaLoadingProgress(status: String) {}
+        if (featureFlags.composeSurfaceV4) {
+            legacyContainer.isVisible = false
+            mainContainer.isVisible = true
 
-                        override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
-                            scope.launch {
-                                currentState = newState
-                            }
-                        }
-                    }
-                    viewModel.appStatusReporter.register(observer)
-                    onDispose {
-                        viewModel.appStatusReporter.unregister(observer)
-                    }
-                }
-
-                if (currentState.value >= AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS.value) {
-                    CelestiaScreen(
-                        pathToLoad = celestiaDataDirPath,
-                        cfgToLoad = celestiaConfigFilePath,
-                        addonDirsToLoad = addonPaths,
-                        languageOverride = Companion.language,
-                        frameRateOptionEvents = frameRateOptionEvents,
-                        reapplyContentScaleEvents = reapplyContentScaleEvents,
-                        canAcceptKeyEvents = {
-                            celestiaFragmentCanAcceptKeyEvents()
-                        },
-                        showMenu = {
-                            celestiaFragmentDidRequestActionMenu()
-                        },
-                        showInfo = {
-                            celestiaFragmentDidRequestObjectInfo()
-                        },
-                        showSearch = {
-                            celestiaFragmentDidRequestSearch()
-                        },
-                        goTo = {
-                            celestiaFragmentDidRequestGoTo()
-                        },
-                        onInteractionModeChanged = { mode ->
-                            val message = when (mode) {
-                                CelestiaInteraction.InteractionMode.Camera -> CelestiaString("Switched to camera mode", "Move/zoom camera FOV")
-                                CelestiaInteraction.InteractionMode.Object -> CelestiaString("Switched to object mode", "Move/zoom on an object")
-                            }
-                            showToast(message, Toast.LENGTH_SHORT)
-                        },
-                        onInteractionViewReady = { view ->
-                            celestiaFragmentInteractionViewReady(view)
-                        }
-                    )
+            val mainContentView = findViewById<ComposeView>(R.id.main_content)
+            mainContentView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+            mainContentView.setContent {
+                Mdc3Theme {
+                    MainContent()
                 }
             }
-        }
+        } else {
+            mainContainer.isVisible = false
+            legacyContainer.isVisible = true
 
-        findViewById<ComposeView>(R.id.loading_fragment_container).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-            setContent {
+            val celestiaComposeView = findViewById<ComposeView>(R.id.celestia_compose_container)
+            celestiaComposeView.isVisible = true
+            celestiaComposeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+            celestiaComposeView.setContent {
                 Mdc3Theme {
-                    LoadingScreen()
+                    RenderContent(safeAreaInsets = rememberSafeAreaInsets())
+                }
+            }
+
+            findViewById<ComposeView>(R.id.loading_fragment_container).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+                setContent {
+                    Mdc3Theme {
+                        LoadingScreen(safeAreaInsets = rememberSafeAreaInsets())
+                    }
+                }
+            }
+
+            findViewById<ComposeView>(R.id.bottom_sheet_host).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+                setContent {
+                    Mdc3Theme {
+                        SheetLayout(
+                            safeAreaInsets = rememberSafeAreaInsets(),
+                            visible = viewModel.bottomSheetVisible.value,
+                            onDismiss = {
+                                viewModel.bottomSheetVisible.value = false
+                            }
+                        ) {
+                            ToolScreenContent()
+                        }
+                    }
                 }
             }
         }
@@ -404,22 +400,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                         MenuScreen(if (show) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()) { action ->
                             toolbarActionSelected(action)
                         }
-                    }
-                }
-            }
-        }
-
-        findViewById<ComposeView>(R.id.bottom_sheet_host).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-            setContent {
-                Mdc3Theme {
-                    SheetLayout(
-                        visible = viewModel.bottomSheetVisible.value,
-                        onDismiss = {
-                            viewModel.bottomSheetVisible.value = false
-                        }
-                    ) {
-                        ToolScreenContent()
                     }
                 }
             }
@@ -459,6 +439,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             return@setOnApplyWindowInsetsListener builder.build()
         }
 
+        ViewCompat.setOnApplyWindowInsetsListener(mainContainer) { _, insets ->
+            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), systemBarInsets)
+            return@setOnApplyWindowInsetsListener builder.build()
+        }
+
         val bottomSheetContainer = findViewById<View>(R.id.bottom_sheet_insets)
         ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
             val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
@@ -466,6 +452,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
                 .build()
         }
+        mainContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         findViewById<View>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         findViewById<View>(R.id.toolbar_overlay).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -476,18 +463,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
 
         if (savedState != null) {
-            val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
-            @Suppress("UNCHECKED_CAST")
-            currentToolbarActions = BundleCompat.getSerializable(savedState, TOOLBAR_ACTIONS_TAG, ArrayList::class.java) as? List<BottomControlAction> ?: listOf()
-            @Suppress("UNCHECKED_CAST")
-            currentToolbarOverflowActions = BundleCompat.getSerializable(savedState, TOOLBAR_OVERFLOW_ACTIONS_TAG, ArrayList::class.java) as? List<OverflowItem> ?: listOf()
-
             initialURLCheckPerformed = savedState.getBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, false)
 
-            findViewById<View>(R.id.bottom_toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+            if (!featureFlags.composeSurfaceV4) {
+                val toolbarVisible = savedState.getBoolean(TOOLBAR_VISIBLE_TAG, false)
+                @Suppress("UNCHECKED_CAST")
+                currentToolbarActions = BundleCompat.getSerializable(savedState, TOOLBAR_ACTIONS_TAG, ArrayList::class.java) as? List<BottomControlAction> ?: listOf()
+                @Suppress("UNCHECKED_CAST")
+                currentToolbarOverflowActions = BundleCompat.getSerializable(savedState, TOOLBAR_OVERFLOW_ACTIONS_TAG, ArrayList::class.java) as? List<OverflowItem> ?: listOf()
 
-            if (currentToolbarActions.isNotEmpty() && toolbarVisible) {
-                showToolbarActionsDirect(currentToolbarActions, currentToolbarOverflowActions)
+                findViewById<View>(R.id.bottom_toolbar_container).visibility = if (toolbarVisible) View.VISIBLE else View.GONE
+
+                if (currentToolbarActions.isNotEmpty() && toolbarVisible) {
+                    showToolbarActionsDirect(currentToolbarActions, currentToolbarOverflowActions)
+                }
             }
         }
 
@@ -516,9 +505,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.bottom_toolbar_container).isVisible)
-        outState.putSerializable(TOOLBAR_ACTIONS_TAG, ArrayList<BottomControlAction>(currentToolbarActions))
-        outState.putSerializable(TOOLBAR_OVERFLOW_ACTIONS_TAG, ArrayList<OverflowItem>(currentToolbarOverflowActions))
+        if (!featureFlags.composeSurfaceV4) {
+            outState.putBoolean(TOOLBAR_VISIBLE_TAG, findViewById<View>(R.id.bottom_toolbar_container).isVisible)
+            outState.putSerializable(TOOLBAR_ACTIONS_TAG, ArrayList<BottomControlAction>(currentToolbarActions))
+            outState.putSerializable(TOOLBAR_OVERFLOW_ACTIONS_TAG, ArrayList<OverflowItem>(currentToolbarOverflowActions))
+        }
         outState.putBoolean(ARG_INITIAL_URL_CHECK_PERFORMED, initialURLCheckPerformed)
         super.onSaveInstanceState(outState)
     }
@@ -738,7 +729,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun hideSystemUI() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window, findViewById(R.id.main_container)).let { controller ->
+        WindowInsetsControllerCompat(window, findViewById(if (featureFlags.composeSurfaceV4) R.id.main_content_container else R.id.main_container)).let { controller ->
             controller.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
@@ -777,6 +768,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun celestiaLoadingFinished() {
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
+        viewModel.loadingVisible.value = false
         showCelestiaPlus.value = purchaseManager.canUseInAppPurchase()
         findViewById<View>(R.id.drawer).visibility = View.VISIBLE
 
@@ -1684,6 +1676,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private suspend fun hideToolbar(animated: Boolean) {
+        if (featureFlags.composeSurfaceV4) {
+            viewModel.toolbarVisible.value = false
+            return
+        }
         hideViewAlpha(animated, R.id.bottom_toolbar_container)
         currentToolbarActions = listOf()
     }
@@ -2046,7 +2042,127 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         showBottomSheetTool(ToolPage.GoTo)
     }
 
-    // Utilities
+    @Composable
+    private fun MainContent() {
+        val safeAreaInsets = rememberSafeAreaInsets()
+        Box(modifier = Modifier.fillMaxSize()) {
+            RenderContent(safeAreaInsets = safeAreaInsets)
+            PlaybackToolbar(safeAreaInsets = safeAreaInsets)
+            SheetLayout(
+                safeAreaInsets = safeAreaInsets,
+                visible = viewModel.bottomSheetVisible.value,
+                onDismiss = {
+                    viewModel.bottomSheetVisible.value = false
+                }
+            ) {
+                ToolScreenContent()
+            }
+            if (viewModel.loadingVisible.value) {
+                LoadingScreen(safeAreaInsets = safeAreaInsets)
+            }
+        }
+    }
+
+    @Composable
+    private fun PlaybackToolbar(safeAreaInsets: EdgeInsets) {
+        val density = LocalDensity.current
+        val layoutDirection = LocalLayoutDirection.current
+        val startInset = if (layoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl) safeAreaInsets.right else safeAreaInsets.left
+        val actions = viewModel.toolbarActions.value
+        val overflowItems = viewModel.toolbarOverflowActions.value
+        AnimatedVisibility(
+            visible = viewModel.toolbarVisible.value,
+            enter = fadeIn(tween(200)),
+            exit = fadeOut(tween(200)),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        start = with(density) { startInset.toDp() } + dimensionResource(space.celestia.celestiaui.R.dimen.common_page_medium_margin_horizontal),
+                        bottom = with(density) { safeAreaInsets.bottom.toDp() } + dimensionResource(space.celestia.celestiaui.R.dimen.common_page_medium_margin_vertical)
+                    ),
+                contentAlignment = Alignment.BottomStart
+            ) {
+                AndroidView(factory = { ctx ->
+                    val toolbar = LayoutInflater.from(ctx).inflate(R.layout.playback_toolbar, null) as FloatingToolbarLayout
+                    toolbar
+                }, update = { toolbar ->
+                    val content = toolbar.findViewById<LinearLayout>(R.id.playback_toolbar_content)
+                    val signature = actions to overflowItems
+                    if (content.tag != signature) {
+                        content.tag = signature
+                        populateToolbarContent(content, actions, overflowItems)
+                    }
+                })
+            }
+        }
+    }
+
+    @Composable
+    private fun RenderContent(safeAreaInsets: EdgeInsets) {
+        val viewModel: RendererViewModel = hiltViewModel()
+        var currentState by remember { mutableStateOf(viewModel.appStatusReporter.state) }
+        if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
+            return
+        }
+
+        val lifeCycleOwner = LocalLifecycleOwner.current
+        val scope = rememberCoroutineScope()
+        DisposableEffect(lifeCycleOwner) {
+            val observer = object: AppStatusReporter.Listener {
+                override fun celestiaLoadingProgress(status: String) {}
+
+                override fun celestiaLoadingStateChanged(newState: AppStatusReporter.State) {
+                    scope.launch {
+                        currentState = newState
+                    }
+                }
+            }
+            viewModel.appStatusReporter.register(observer)
+            onDispose {
+                viewModel.appStatusReporter.unregister(observer)
+            }
+        }
+
+        if (currentState.value >= AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS.value) {
+            CelestiaScreen(
+                safeAreaInsets = safeAreaInsets,
+                pathToLoad = celestiaDataDirPath,
+                cfgToLoad = celestiaConfigFilePath,
+                addonDirsToLoad = addonPaths,
+                languageOverride = language,
+                frameRateOptionEvents = frameRateOptionEvents,
+                reapplyContentScaleEvents = reapplyContentScaleEvents,
+                canAcceptKeyEvents = {
+                    celestiaFragmentCanAcceptKeyEvents()
+                },
+                showMenu = {
+                    celestiaFragmentDidRequestActionMenu()
+                },
+                showInfo = {
+                    celestiaFragmentDidRequestObjectInfo()
+                },
+                showSearch = {
+                    celestiaFragmentDidRequestSearch()
+                },
+                goTo = {
+                    celestiaFragmentDidRequestGoTo()
+                },
+                onInteractionModeChanged = { mode ->
+                    val message = when (mode) {
+                        CelestiaInteraction.InteractionMode.Camera -> CelestiaString("Switched to camera mode", "Move/zoom camera FOV")
+                        CelestiaInteraction.InteractionMode.Object -> CelestiaString("Switched to object mode", "Move/zoom on an object")
+                    }
+                    showToast(message, Toast.LENGTH_SHORT)
+                },
+                onInteractionViewReady = { view ->
+                    celestiaFragmentInteractionViewReady(view)
+                }
+            )
+        }
+    }
 
     @Composable
     private fun ToolScreenContent() {
@@ -2113,6 +2229,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private suspend fun showToolbarActions(actions: List<BottomControlAction>, overflowItems: List<OverflowItem> = listOf()) {
         hideOverlay(true)
+        if (featureFlags.composeSurfaceV4) {
+            viewModel.toolbarOverflowActions.value = overflowItems
+            viewModel.toolbarActions.value = actions
+            viewModel.toolbarVisible.value = true
+            return
+        }
         hideToolbar(true)
         showToolbarActionsDirect(actions, overflowItems)
         showViewAlpha(true, R.id.bottom_toolbar_container)
@@ -2120,7 +2242,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun showToolbarActionsDirect(actions: List<BottomControlAction>, overflowItems: List<OverflowItem>) {
         currentToolbarActions = actions
-        val contentView = findViewById<LinearLayout>(R.id.bottom_toolbar_content)
+        populateToolbarContent(findViewById(R.id.bottom_toolbar_content), actions, overflowItems)
+    }
+
+    private fun populateToolbarContent(contentView: LinearLayout, actions: List<BottomControlAction>, overflowItems: List<OverflowItem>) {
         contentView.removeAllViews()
         val inflater = LayoutInflater.from(contentView.context)
         val weakSelf = WeakReference(this)

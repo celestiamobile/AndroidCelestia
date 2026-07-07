@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.SimpleAlertDialog
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.favorite.viewmodel.FavoriteViewModel
 import space.celestia.celestiaui.favorite.viewmodel.Page
 import space.celestia.celestiaui.utils.CelestiaString
@@ -72,7 +73,7 @@ fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBoo
 
     if (!loaded) {
         Scaffold(
-            contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)
+            contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -144,7 +145,7 @@ fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBoo
                 }
             }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
         },
-        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         NavDisplay(

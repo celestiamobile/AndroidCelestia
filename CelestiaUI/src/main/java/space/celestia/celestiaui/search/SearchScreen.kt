@@ -54,6 +54,7 @@ import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.EmptyHint
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.TextRow
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.info.InfoScreen
 import space.celestia.celestiaui.search.viewmodel.SearchViewModel
 import space.celestia.celestiaui.utils.CelestiaString
@@ -161,7 +162,7 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
                 }
             },
         )
-    }, contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom)) { paddingValues ->
+    }, contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)) { paddingValues ->
         SearchContent(selection = currentSelection, isLoadingPage = isLoadingPage, linkClicked = linkClicked, openSubsystem = openSubsystem, openRelatedAddons = openRelatedAddons, openSubscriptionManagement = openSubscriptionManagement, paddingValues = paddingValues)
     }
 

@@ -28,18 +28,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.mobilecelestia.R
+import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.loading.viewmodel.LoadingViewModel
 
 @Composable
-fun LoadingScreen() {
+fun LoadingScreen(safeAreaInsets: EdgeInsets) {
     val viewModel: LoadingViewModel = hiltViewModel()
     val lifeCycleOwner = LocalLifecycleOwner.current
 
@@ -62,7 +67,20 @@ fun LoadingScreen() {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).padding(horizontal = dimensionResource(space.celestia.celestiaui.R.dimen.common_page_medium_margin_horizontal)), contentAlignment = Alignment.Center) {
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).pointerInput(Unit) {
+        awaitPointerEventScope {
+            while (true) {
+                awaitPointerEvent().changes.forEach { it.consume() }
+            }
+        }
+    }.padding(
+        top = with(density) { safeAreaInsets.top.toDp() },
+        start = with(density) { (if (layoutDirection == LayoutDirection.Rtl) safeAreaInsets.right else safeAreaInsets.left).toDp() + dimensionResource(space.celestia.celestiaui.R.dimen.common_page_medium_margin_horizontal) },
+        end = with(density) { (if (layoutDirection == LayoutDirection.Rtl) safeAreaInsets.left else safeAreaInsets.right).toDp() + dimensionResource(space.celestia.celestiaui.R.dimen.common_page_medium_margin_horizontal) },
+        bottom = with(density) { safeAreaInsets.bottom.toDp() }
+    ), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.loading_gap_vertical))) {
             Image(painter = painterResource(space.celestia.celestiaui.R.drawable.loading_icon), contentDescription = null, modifier = Modifier.size(dimensionResource(space.celestia.celestiaui.R.dimen.app_icon_dimension)))
             Text(text = statusText, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)

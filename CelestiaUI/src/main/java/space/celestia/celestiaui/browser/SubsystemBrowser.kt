@@ -44,6 +44,7 @@ import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.celestiaui.browser.viewmodel.SubsystemPage
 import space.celestia.celestiaui.browser.viewmodel.SubsystemViewModel
 import space.celestia.celestiaui.compose.SimpleAlertDialog
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.info.InfoScreen
 import space.celestia.celestiaui.utils.CelestiaString
 
@@ -91,7 +92,7 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSu
                 }
             }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
         },
-        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         NavDisplay(

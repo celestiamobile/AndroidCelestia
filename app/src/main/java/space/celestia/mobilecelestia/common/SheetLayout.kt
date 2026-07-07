@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -57,6 +56,7 @@ enum class SheetDetent { Hidden, QuarterExpanded, PartiallyExpanded, Expanded }
 
 @Composable
 fun SheetLayout(
+    safeAreaInsets: EdgeInsets,
     visible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -77,7 +77,6 @@ fun SheetLayout(
         val expandedOffsetPx = fullHeightPx - sheetHeightPx
         val partialOffsetPx = fullHeightPx * 0.5f
         val quarterOffsetPx = fullHeightPx * 0.75f
-        val hiddenOffsetPx = fullHeightPx
 
         val state = remember {
             AnchoredDraggableState(initialValue = if (visible) SheetDetent.Expanded else SheetDetent.Hidden)
@@ -87,7 +86,7 @@ fun SheetLayout(
             if (fullHeightPx > 0) {
                 state.updateAnchors(
                     newAnchors = DraggableAnchors {
-                        SheetDetent.Hidden at hiddenOffsetPx
+                        SheetDetent.Hidden at fullHeightPx
                         SheetDetent.QuarterExpanded at quarterOffsetPx
                         SheetDetent.PartiallyExpanded at partialOffsetPx
                         SheetDetent.Expanded at expandedOffsetPx
@@ -131,9 +130,7 @@ fun SheetLayout(
             }
 
             val safeStart = with(density) {
-                val insets = WindowInsets.safeDrawing
-                if (layoutDirection == LayoutDirection.Rtl) insets.getRight(this, layoutDirection).toDp()
-                else insets.getLeft(this, layoutDirection).toDp()
+                if (layoutDirection == LayoutDirection.Rtl) safeAreaInsets.right.toDp() else safeAreaInsets.left.toDp()
             }
 
             val sheetWidthModifier = if (isWideScreen) {

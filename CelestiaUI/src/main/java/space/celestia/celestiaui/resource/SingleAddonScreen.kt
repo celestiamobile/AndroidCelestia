@@ -29,6 +29,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import java.io.File
 
 sealed class SingleAddonPage {
@@ -100,7 +101,7 @@ fun SingleAddonScreen(
                 }
             }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
         },
-        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(WindowInsetsSides.Bottom),
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         NavDisplay(
