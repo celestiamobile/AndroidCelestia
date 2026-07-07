@@ -270,7 +270,7 @@ Java_space_celestia_celestia_AppCore_c_1setFatalErrorHandler(JNIEnv *env, jobjec
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
-                                                                 jlong ptr, jboolean srgb_rendering) {
+                                                                 jlong ptr, jboolean srgb_rendering, jint shadow_map_size) {
     auto core = (CelestiaCore *)ptr;
 
     if (!core->initRenderer(celestia::engine::TextureResolution::medres, srgb_rendering == JNI_TRUE))
@@ -296,7 +296,7 @@ Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
     core->getSimulation()->setFaintestVisible(DEFAULT_VISUAL_MAGNITUDE);
 
     core->getRenderer()->setSolarSystemMaxDistance((core->getConfig()->renderDetails.SolarSystemMaxDistance));
-    core->getRenderer()->setShadowMapSize(core->getConfig()->renderDetails.ShadowMapSize);
+    core->getRenderer()->setShadowMapSize(static_cast<unsigned>(shadow_map_size));
 
     return JNI_TRUE;
 }

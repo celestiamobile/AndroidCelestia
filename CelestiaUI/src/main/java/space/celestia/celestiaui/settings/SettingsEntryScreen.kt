@@ -185,6 +185,7 @@ private fun SettingEntry(item: SettingsItem) {
             var showOptions by remember {  mutableStateOf(false) }
             TextRow(
                 primaryText = item.name,
+                subtitle = item.subtitle,
                 secondaryText = item.options.firstOrNull { it.first == selected }?.second,
                 modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     showOptions = true

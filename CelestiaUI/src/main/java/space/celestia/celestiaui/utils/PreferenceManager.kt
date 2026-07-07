@@ -67,7 +67,8 @@ class PreferenceManager(context: Context, name: String) {
         PushLatestNews,
         PushFeaturedAddon,
         FCMToken,
-        SRGBRendering
+        SRGBRendering,
+        ShadowMapSize
         ;
 
         override val valueString: String

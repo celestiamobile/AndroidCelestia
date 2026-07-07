@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.Dp
 import space.celestia.celestiaui.R
 
 @Composable
-fun TextRow(primaryText: String?, modifier: Modifier = Modifier, primaryTextColor: Color? = null, secondaryText: String? = null, @DrawableRes accessoryResource: Int = 0, accessoryContentDescription: String = "", horizontalPadding: Dp = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.defaultMinSize(minHeight = dimensionResource(id = if (secondaryText != null && primaryText != null) R.dimen.list_item_two_line_min_height else R.dimen.list_item_one_line_min_height)).padding(
+fun TextRow(primaryText: String?, modifier: Modifier = Modifier, primaryTextColor: Color? = null, subtitle: String? = null, secondaryText: String? = null, @DrawableRes accessoryResource: Int = 0, accessoryContentDescription: String = "", horizontalPadding: Dp = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.defaultMinSize(minHeight = dimensionResource(id = if ((secondaryText != null || subtitle != null) && primaryText != null) R.dimen.list_item_two_line_min_height else R.dimen.list_item_one_line_min_height)).padding(
         horizontal = horizontalPadding,
         vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical)
     )) {
@@ -28,6 +28,13 @@ fun TextRow(primaryText: String?, modifier: Modifier = Modifier, primaryTextColo
                     text = primaryText,
                     color = primaryTextColor ?: MaterialTheme.colorScheme.onBackground,
                     style = MaterialTheme.typography.bodyLarge
+                )
+            }
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
             if (secondaryText != null) {

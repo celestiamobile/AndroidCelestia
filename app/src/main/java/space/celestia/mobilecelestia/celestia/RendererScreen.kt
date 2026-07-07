@@ -112,7 +112,7 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
         }
 
         // Prepare renderer
-        if (!viewModel.appCore.startRenderer(viewModel.rendererSettings.enableSRGBRendering)) {
+        if (!viewModel.appCore.startRenderer(viewModel.rendererSettings.enableSRGBRendering, viewModel.rendererSettings.shadowMapSize)) {
             viewModel.appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }

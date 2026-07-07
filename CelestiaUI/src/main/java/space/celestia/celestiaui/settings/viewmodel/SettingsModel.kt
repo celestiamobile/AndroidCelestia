@@ -536,7 +536,8 @@ class SettingsPreferenceSelectionItem(
     val key: PreferenceManager.PredefinedKey,
     private val displayName: String,
     val options: List<Pair<Int, String>>,
-    val defaultSelection: Int
+    val defaultSelection: Int,
+    val subtitle: String? = null
 ) : SettingsItem {
     override val name: String
         get() = displayName

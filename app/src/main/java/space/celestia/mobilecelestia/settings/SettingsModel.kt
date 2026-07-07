@@ -35,6 +35,12 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsUnknownTextItem
 import space.celestia.celestiaui.settings.viewmodel.settingUnmarkAllID
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
+import java.text.NumberFormat
+
+private val shadowMapSizeOptions: List<Pair<Int, String>> = run {
+    val numberFormat = NumberFormat.getIntegerInstance()
+    listOf(0, 1024, 2048, 4096, 8192).map { Pair(it, numberFormat.format(it)) }
+}
 
 private val staticDisplayItems: List<SettingsItem> = listOf(
     SettingsCommonItem.create(CelestiaString("Objects", ""), listOf(
@@ -308,7 +314,8 @@ private val staticRendererItems: List<SettingsItem> = listOf(
         SettingsCommonItem.Section(listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, CelestiaString("HiDPI", "HiDPI support in display"), true),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", "")),
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", ""))
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", "")),
+            SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ShadowMapSize, displayName = CelestiaString("Shadow Resolution", "Resolution of shadow maps"), options = shadowMapSizeOptions, defaultSelection = 0, subtitle = CelestiaString("A value of 0 disables self-shadowing. Higher values produce sharper shadows at a greater performance cost.", "Shadow resolution setting footnote"))
         ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
         SettingsCommonItem.Section(
             header = CelestiaString("External Display", "Section header text for settings"),
