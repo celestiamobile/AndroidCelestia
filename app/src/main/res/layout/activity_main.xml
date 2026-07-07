@@ -74,29 +74,17 @@
             android:clickable="true"/>
     </FrameLayout>
 
-    <FrameLayout
-        android:id="@+id/main_content_container"
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        style="@style/Background">
+        style="@style/Background"/>
 
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/main_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/drawer"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/drawer_content"
         android:layout_width="@dimen/toolbar_default_width"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        android:visibility="gone"
-        style="@style/Container">
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/drawer_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            style="@style/Container"/>
-    </FrameLayout>
+        style="@style/Container"/>
 </androidx.drawerlayout.widget.DrawerLayout>

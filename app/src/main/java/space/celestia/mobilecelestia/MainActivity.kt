@@ -15,16 +15,16 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.media.MediaRouter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.view.ContextMenu
 import android.view.Display
 import android.view.LayoutInflater
@@ -42,11 +42,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.foundation.layout.Box
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -57,8 +57,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -79,8 +79,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.core.view.allViews
-import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
@@ -97,9 +95,9 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -135,12 +133,13 @@ import space.celestia.celestiaui.info.model.CelestiaAction
 import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
+import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
 import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.resource.model.FeatureFlagsManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
-import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
-import space.celestia.mobilecelestia.pushnotification.setUpPushNotifications
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
+import space.celestia.celestiaui.tool.ToolScreen
+import space.celestia.celestiaui.tool.viewmodel.ToolPage
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.AppURL
 import space.celestia.celestiaui.utils.AppURLResult
@@ -151,11 +150,14 @@ import space.celestia.celestiaui.utils.showError
 import space.celestia.celestiaui.utils.showOptions
 import space.celestia.mobilecelestia.celestia.CelestiaInteraction
 import space.celestia.mobilecelestia.celestia.CelestiaPresentation
+import space.celestia.mobilecelestia.celestia.CelestiaScreen
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
+import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.RoundedCorners
 import space.celestia.mobilecelestia.common.SHEET_MAX_FULL_WIDTH_DP
 import space.celestia.mobilecelestia.common.SheetLayout
+import space.celestia.mobilecelestia.common.rememberSafeAreaInsets
 import space.celestia.mobilecelestia.control.BottomControlAction
 import space.celestia.mobilecelestia.control.ContinuousAction
 import space.celestia.mobilecelestia.control.CustomAction
@@ -165,11 +167,7 @@ import space.celestia.mobilecelestia.control.OverflowItem
 import space.celestia.mobilecelestia.loading.LoadingScreen
 import space.celestia.mobilecelestia.menu.MenuScreen
 import space.celestia.mobilecelestia.menu.ToolbarAction
-import space.celestia.celestiaui.tool.ToolScreen
-import space.celestia.celestiaui.tool.viewmodel.ToolPage
-import space.celestia.mobilecelestia.celestia.CelestiaScreen
-import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
-import space.celestia.mobilecelestia.common.rememberSafeAreaInsets
+import space.celestia.mobilecelestia.pushnotification.setUpPushNotifications
 import space.celestia.mobilecelestia.viewmodel.MainViewModel
 import java.io.File
 import java.io.IOException
@@ -338,14 +336,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         appStatusReporter.register(this)
 
-        val mainContainer = findViewById<FrameLayout>(R.id.main_content_container)
+        val mainContentView = findViewById<ComposeView>(R.id.main_content)
         val legacyContainer = findViewById<FrameLayout>(R.id.main_container)
 
         if (featureFlags.composeSurfaceV4) {
             legacyContainer.isVisible = false
-            mainContainer.isVisible = true
+            mainContentView.isVisible = true
 
-            val mainContentView = findViewById<ComposeView>(R.id.main_content)
             mainContentView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             mainContentView.setContent {
                 Mdc3Theme {
@@ -353,7 +350,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 }
             }
         } else {
-            mainContainer.isVisible = false
+            mainContentView.isVisible = false
             legacyContainer.isVisible = true
 
             val celestiaComposeView = findViewById<ComposeView>(R.id.celestia_compose_container)
@@ -432,19 +429,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             override fun onDrawerStateChanged(newState: Int) {}
         })
 
-        val isRTL = resources.configuration.layoutDirection == LayoutDirection.RTL
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawer)) { _, insets ->
-            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
-            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(if (isRTL) systemBarInsets.left else 0 , systemBarInsets.top, if (isRTL) 0 else systemBarInsets.right, systemBarInsets.bottom))
-            return@setOnApplyWindowInsetsListener builder.build()
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(mainContainer) { _, insets ->
-            val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
-            val builder = WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.systemBars(), systemBarInsets)
-            return@setOnApplyWindowInsetsListener builder.build()
-        }
-
         val bottomSheetContainer = findViewById<View>(R.id.bottom_sheet_insets)
         ViewCompat.setOnApplyWindowInsetsListener(bottomSheetContainer) { _, insets ->
             val systemBarInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
@@ -452,9 +436,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(0, 0, 0, systemBarInsets.bottom))
                 .build()
         }
-        mainContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         bottomSheetContainer.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        findViewById<View>(R.id.drawer).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         findViewById<View>(R.id.toolbar_overlay).systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
@@ -698,7 +680,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
 
-        val drawerParams = findViewById<View>(R.id.drawer).layoutParams
+        val drawerParams = findViewById<View>(R.id.drawer_content).layoutParams
         drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
     }
 
@@ -729,7 +711,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun hideSystemUI() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window, findViewById(if (featureFlags.composeSurfaceV4) R.id.main_content_container else R.id.main_container)).let { controller ->
+        WindowInsetsControllerCompat(window, findViewById(if (featureFlags.composeSurfaceV4) R.id.main_content else R.id.main_container)).let { controller ->
             controller.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
@@ -770,7 +752,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         findViewById<View>(R.id.loading_fragment_container).visibility = View.GONE
         viewModel.loadingVisible.value = false
         showCelestiaPlus.value = purchaseManager.canUseInAppPurchase()
-        findViewById<View>(R.id.drawer).visibility = View.VISIBLE
+        findViewById<View>(R.id.drawer_content).visibility = View.VISIBLE
 
         if (onBackPressedCallback == null) {
             val weakSelf = WeakReference(this)
