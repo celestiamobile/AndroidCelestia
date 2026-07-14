@@ -12,16 +12,16 @@ import space.celestia.celestiaui.resource.viewmodel.AddonManagerViewModel
 import java.io.File
 
 @Composable
-fun AddonDownload(isLeaf: Boolean?, categoryId: String?, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit) {
+fun AddonDownload(isLeaf: Boolean?, categoryId: String?, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, runScript: (String, String, String?, String?, File?) -> Unit, shareURL: (String, String) -> Unit, receivedACK: (String) -> Unit, runDemo: () -> Unit, openSubscriptionPage: (String?) -> Unit, externalLinkClicked: (String) -> Unit) {
     if (categoryId != null && isLeaf != null) {
-        AddonDownloadCategory(isLeaf = isLeaf, categoryId = categoryId, requestRunScript = requestRunScript, requestShareAddon = requestShareAddon)
+        AddonDownloadCategory(isLeaf = isLeaf, categoryId = categoryId, requestRunScript = requestRunScript, requestShareAddon = requestShareAddon, runScript = runScript, shareURL = shareURL, receivedACK = receivedACK, runDemo = runDemo, openSubscriptionPage = openSubscriptionPage, externalLinkClicked = externalLinkClicked)
     } else {
-        AddonDownloadMain(requestRunScript = requestRunScript, requestShareAddon = requestShareAddon)
+        AddonDownloadMain(requestRunScript = requestRunScript, requestShareAddon = requestShareAddon, runScript = runScript, shareURL = shareURL, receivedACK = receivedACK, runDemo = runDemo, openSubscriptionPage = openSubscriptionPage, externalLinkClicked = externalLinkClicked)
     }
 }
 
 @Composable
-private fun AddonDownloadMain(requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit) {
+private fun AddonDownloadMain(requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, runScript: (String, String, String?, String?, File?) -> Unit, shareURL: (String, String) -> Unit, receivedACK: (String) -> Unit, runDemo: () -> Unit, openSubscriptionPage: (String?) -> Unit, externalLinkClicked: (String) -> Unit) {
     val viewModel: AddonManagerViewModel = hiltViewModel()
     fun getUri(): Uri {
         val baseURL = "https://celestia.mobi/resources/categories"
@@ -45,11 +45,11 @@ private fun AddonDownloadMain(requestRunScript: (File) -> Unit, requestShareAddo
     }
 
     val uri by remember { mutableStateOf(getUri()) }
-    WebScreen(uri, requestRunScript = requestRunScript, requestShareAddon = requestShareAddon)
+    WebScreen(uri, requestRunScript = requestRunScript, requestShareAddon = requestShareAddon, runScript = runScript, shareURL = shareURL, receivedACK = receivedACK, runDemo = runDemo, openSubscriptionPage = openSubscriptionPage, externalLinkClicked = externalLinkClicked)
 }
 
 @Composable
-private fun AddonDownloadCategory(isLeaf: Boolean, categoryId: String, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit) {
+private fun AddonDownloadCategory(isLeaf: Boolean, categoryId: String, requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, runScript: (String, String, String?, String?, File?) -> Unit, shareURL: (String, String) -> Unit, receivedACK: (String) -> Unit, runDemo: () -> Unit, openSubscriptionPage: (String?) -> Unit, externalLinkClicked: (String) -> Unit) {
     val viewModel: AddonManagerViewModel = hiltViewModel()
     fun getUri(): Uri {
         val baseURL = if (isLeaf) "https://celestia.mobi/resources/category" else "https://celestia.mobi/resources/categories"
@@ -77,5 +77,5 @@ private fun AddonDownloadCategory(isLeaf: Boolean, categoryId: String, requestRu
     }
 
     val uri by remember { mutableStateOf(getUri()) }
-    WebScreen(uri, requestRunScript = requestRunScript, requestShareAddon = requestShareAddon)
+    WebScreen(uri, requestRunScript = requestRunScript, requestShareAddon = requestShareAddon, runScript = runScript, shareURL = shareURL, receivedACK = receivedACK, runDemo = runDemo, openSubscriptionPage = openSubscriptionPage, externalLinkClicked = externalLinkClicked)
 }

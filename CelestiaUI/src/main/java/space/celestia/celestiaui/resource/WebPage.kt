@@ -67,12 +67,12 @@ fun WebPage(
     canGoBackChanged: ((Boolean) -> Unit)? = null,
     goBackRequest: ((() -> Unit) -> Unit)? = null,
     openAddon: ((ResourceItem) -> Unit)? = null,
-    runScript: ((type: String, content: String, name: String?, location: String?, contextDirectory: File?) -> Unit)? = null,
-    shareURL: ((title: String, url: String) -> Unit)? = null,
-    receivedACK: ((id: String) -> Unit)? = null,
-    runDemo: (() -> Unit)? = null,
-    openSubscriptionPage: ((preferredPlayOfferId: String?) -> Unit)? = null,
-    externalLinkClicked: ((url: String) -> Unit)? = null,
+    runScript: ((type: String, content: String, name: String?, location: String?, contextDirectory: File?) -> Unit),
+    shareURL: ((title: String, url: String) -> Unit),
+    receivedACK: ((id: String) -> Unit),
+    runDemo: (() -> Unit),
+    openSubscriptionPage: ((preferredPlayOfferId: String?) -> Unit),
+    externalLinkClicked: ((url: String) -> Unit),
 ) {
     val viewModel: WebPageViewModel = hiltViewModel()
     var error by rememberSaveable { mutableStateOf<WebError?>(null) }
@@ -136,12 +136,12 @@ private fun ComposeWebView(
     canGoBackChanged: ((Boolean) -> Unit)?,
     goBackRequest: ((() -> Unit) -> Unit)?,
     openAddon: ((ResourceItem) -> Unit)?,
-    runScript: ((String, String, String?, String?, File?) -> Unit)?,
-    shareURL: ((String, String) -> Unit)?,
-    receivedACK: ((String) -> Unit)?,
-    runDemo: (() -> Unit)?,
-    openSubscriptionPage: ((String?) -> Unit)?,
-    externalLinkClicked: ((String) -> Unit)?,
+    runScript: ((String, String, String?, String?, File?) -> Unit),
+    shareURL: ((String, String) -> Unit),
+    receivedACK: ((String) -> Unit),
+    runDemo: (() -> Unit),
+    openSubscriptionPage: ((String?) -> Unit),
+    externalLinkClicked: ((String) -> Unit),
     viewModel: WebPageViewModel,
     onError: (WebError) -> Unit,
     onInitialLoadingFinished: () -> Unit
@@ -172,13 +172,13 @@ private fun ComposeWebView(
     val messageHandler = remember {
         object : CelestiaJavascriptInterface.MessageHandler {
             override fun runScript(type: String, content: String, scriptName: String?, scriptLocation: String?) {
-                currentRunScript.value?.invoke(type, content, scriptName, scriptLocation, contextDirectory)
+                currentRunScript.value.invoke(type, content, scriptName, scriptLocation, contextDirectory)
             }
             override fun shareURL(title: String, url: String) {
-                currentShareURL.value?.invoke(title, url)
+                currentShareURL.value.invoke(title, url)
             }
             override fun receivedACK(id: String) {
-                currentReceivedACK.value?.invoke(id)
+                currentReceivedACK.value.invoke(id)
             }
             override fun openAddonNext(id: String) {
                 val lang = AppCore.getLanguage()
@@ -190,10 +190,10 @@ private fun ComposeWebView(
                 }
             }
             override fun runDemo() {
-                currentRunDemo.value?.invoke()
+                currentRunDemo.value.invoke()
             }
             override fun openSubscriptionPage(preferredPlayOfferId: String?) {
-                currentOpenSubscriptionPage.value?.invoke(preferredPlayOfferId)
+                currentOpenSubscriptionPage.value.invoke(preferredPlayOfferId)
             }
         }
     }
@@ -246,7 +246,7 @@ private fun ComposeWebView(
                         if (url == null) return true
                         val navUri = url.toUri()
                         if (isURLAllowed(navUri)) return false
-                        currentExternalLinkClicked.value?.invoke(url)
+                        currentExternalLinkClicked.value.invoke(url)
                         return true
                     }
 

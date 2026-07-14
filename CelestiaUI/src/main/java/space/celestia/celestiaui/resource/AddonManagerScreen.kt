@@ -51,7 +51,7 @@ sealed class AddonManagerAlert {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, openSubscriptionManagement: () -> Unit, requestOpenAddonDownload: () -> Unit) {
+fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, openSubscriptionManagement: () -> Unit, requestOpenAddonDownload: () -> Unit, runScript: (String, String, String?, String?, File?) -> Unit, shareURL: (String, String) -> Unit, receivedACK: (String) -> Unit, runDemo: () -> Unit, openSubscriptionPage: (String?) -> Unit, externalLinkClicked: (String) -> Unit) {
     val viewModel: AddonManagerViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val backStack = viewModel.backStack
@@ -148,7 +148,7 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
                     is AddonManagerPage.Addon -> NavEntry(route) {
                         AddonScreen(item = route.addon, paddingValues = paddingValues, addonInfoUpdated = { info ->
                             route.title.value = info.name
-                        }, requestRunScript = requestRunScript)
+                        }, requestRunScript = requestRunScript, runScript = runScript, shareURL = shareURL, receivedACK = receivedACK, runDemo = runDemo, openSubscriptionPage = openSubscriptionPage, externalLinkClicked = externalLinkClicked)
                     }
                     is AddonManagerPage.Home -> NavEntry(route) {
                         InstalledAddonListScreen(paddingValues = paddingValues, requestOpenAddonDownload = requestOpenAddonDownload, requestOpenInstalledAddon = {

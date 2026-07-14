@@ -55,12 +55,12 @@ fun ToolScreen(
     shareRequested: (MutableFavoriteBaseItem) -> Unit,
     openBookmarkRequested: (FavoriteBookmarkItem) -> Unit,
     openScriptRequested: (FavoriteScriptItem) -> Unit,
-    runScript: ((String, String, String?, String?, File?) -> Unit)? = null,
-    shareURL: ((String, String) -> Unit)? = null,
-    receivedACK: ((String) -> Unit)? = null,
-    runDemo: (() -> Unit)? = null,
-    openSubscriptionPage: ((String?) -> Unit)? = null,
-    externalLinkClicked: ((String) -> Unit)? = null,
+    runScript: ((String, String, String?, String?, File?) -> Unit),
+    shareURL: ((String, String) -> Unit),
+    receivedACK: ((String) -> Unit),
+    runDemo: (() -> Unit),
+    openSubscriptionPage: ((String?) -> Unit),
+    externalLinkClicked: (String) -> Unit,
 ) {
     if (backStack.isEmpty()) return
 
@@ -165,7 +165,13 @@ fun ToolScreen(
                 AddonDownload(
                     isLeaf = entry.isLeaf, categoryId = entry.categoryId,
                     requestRunScript = requestRunScript,
-                    requestShareAddon = requestShareAddon
+                    requestShareAddon = requestShareAddon,
+                    runScript = runScript,
+                    shareURL = shareURL,
+                    receivedACK = receivedACK,
+                    runDemo = runDemo,
+                    openSubscriptionPage = openSubscriptionPage,
+                    externalLinkClicked = externalLinkClicked
                 )
             }
             is ToolPage.Search -> NavEntry(entry) {
@@ -265,7 +271,13 @@ fun ToolScreen(
                         if (backStack is MutableList) {
                             backStack.add(ToolPage.AddonDownload(null, null))
                         }
-                    }
+                    },
+                    runScript = runScript,
+                    shareURL = shareURL,
+                    receivedACK = receivedACK,
+                    runDemo = runDemo,
+                    openSubscriptionPage = openSubscriptionPage,
+                    externalLinkClicked = externalLinkClicked,
                 )
             }
             is ToolPage.RelatedAddons -> NavEntry(entry) {

@@ -47,12 +47,12 @@ fun SingleAddonScreen(
     item: ResourceItem,
     requestRunScript: (File) -> Unit,
     requestShareAddon: (String, String) -> Unit,
-    runScript: ((String, String, String?, String?, File?) -> Unit)? = null,
-    shareURL: ((String, String) -> Unit)? = null,
-    receivedACK: ((String) -> Unit)? = null,
-    runDemo: (() -> Unit)? = null,
-    openSubscriptionPage: ((String?) -> Unit)? = null,
-    externalLinkClicked: ((String) -> Unit)? = null,
+    runScript: ((String, String, String?, String?, File?) -> Unit),
+    shareURL: ((String, String) -> Unit),
+    receivedACK: ((String) -> Unit),
+    runDemo: (() -> Unit),
+    openSubscriptionPage: ((String?) -> Unit),
+    externalLinkClicked: (String) -> Unit,
 ) {
     val viewModel: SingleAddonViewModel = hiltViewModel()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
