@@ -931,6 +931,16 @@ public class AppCore {
     private static native void c_setStarExposure(long pointer, float starExposure);
     private static native float c_getStarExposure(long pointer);
 
+    public void setToneMapping(boolean toneMapping) { c_setToneMapping(pointer, toneMapping); }
+    public boolean getToneMapping() { return c_getToneMapping(pointer); }
+    private static native void c_setToneMapping(long pointer, boolean toneMapping);
+    private static native boolean c_getToneMapping(long pointer);
+
+    public void setExposure(double exposure) { c_setExposure(pointer, (float)exposure); }
+    public double getExposure() { return c_getExposure(pointer); }
+    private static native void c_setExposure(long pointer, float exposure);
+    private static native float c_getExposure(long pointer);
+
     public void setStarDimClipFactor(double starDimClipFactor) { c_setStarDimClipFactor(pointer, (float)starDimClipFactor); }
     public double getStarDimClipFactor() { return c_getStarDimClipFactor(pointer); }
     private static native void c_setStarDimClipFactor(long pointer, float starDimClipFactor);

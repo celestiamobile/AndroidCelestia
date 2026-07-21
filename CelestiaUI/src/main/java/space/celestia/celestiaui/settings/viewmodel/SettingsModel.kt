@@ -133,6 +133,7 @@ enum class SettingsKey : PreferenceManager.Key {
     ShowEcliptic,
     ShowAutoMag,
     ShowSmoothLines,
+    ToneMapping,
     EnableReverseWheel,
     EnableRayBasedDragging,
     EnableFocusZooming,
@@ -157,7 +158,8 @@ enum class SettingsKey : PreferenceManager.Key {
     StarOptimization,
     StarMaxIrradiance,
     StarDimClipFactor,
-    StarExposure;
+    StarExposure,
+    Exposure;
 
     val displayName: String
         get() = when(this) {
@@ -280,6 +282,7 @@ enum class SettingsKey : PreferenceManager.Key {
             ShowEcliptic -> CelestiaString("Ecliptic Line", "")
             ShowAutoMag -> CelestiaString("Auto Mag", "Auto mag for star display")
             ShowSmoothLines -> CelestiaString("Smooth Lines", "Smooth lines for rendering")
+            ToneMapping -> CelestiaString("Tone Mapping", "")
             EnableReverseWheel -> CelestiaString("Reverse Mouse Wheel", "")
             EnableRayBasedDragging -> CelestiaString("Ray-Based Dragging", "")
             EnableFocusZooming -> CelestiaString("Focus Zooming", "")
@@ -303,6 +306,7 @@ enum class SettingsKey : PreferenceManager.Key {
             StarMaxIrradiance -> CelestiaString("Max Irradiance", "PSF star setting")
             StarDimClipFactor -> CelestiaString("Dim Clip Factor", "PSF star setting")
             StarExposure -> CelestiaString("Exposure", "PSF star setting")
+            Exposure -> CelestiaString("Exposure", "Output rendering setting")
         }
 
     companion object {
@@ -347,6 +351,7 @@ enum class SettingsKey : PreferenceManager.Key {
                 ShowEcliptic,
                 ShowAutoMag,
                 ShowSmoothLines,
+                ToneMapping,
                 ShowDiagrams,
                 ShowConstellationLabels,
                 ShowLatinConstellationLabels,
@@ -459,6 +464,7 @@ enum class SettingsKey : PreferenceManager.Key {
                 StarMaxIrradiance,
                 StarDimClipFactor,
                 StarExposure,
+                Exposure,
             )
     }
 

@@ -314,9 +314,17 @@ private val staticRendererItems: List<SettingsItem> = listOf(
         SettingsCommonItem.Section(listOf(
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, CelestiaString("HiDPI", "HiDPI support in display"), true),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", "")),
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", "")),
             SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ShadowMapSize, displayName = CelestiaString("Shadow Resolution", "Resolution of shadow maps"), options = shadowMapSizeOptions, defaultSelection = 0, subtitle = CelestiaString("A value of 0 disables self-shadowing. Higher values produce sharper shadows at a greater performance cost.", "Shadow resolution setting footnote"))
         ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
+        SettingsCommonItem.Section(
+            header = CelestiaString("Output Rendering", ""),
+            rows = listOf(
+                SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", "")),
+                SettingsSwitchItem(SettingsKey.ToneMapping, SettingsSwitchItem.Representation.Switch),
+                SettingsSliderItem(SettingsKey.Exposure, 0.01, 100.0, isLogarithmic = true),
+            ),
+            footer = Footer.Text(CelestiaString("Tone mapping and exposure only affect sRGB rendering. Changes to sRGB rendering take effect after a restart.", "Output rendering settings footnote"))
+        ),
         SettingsCommonItem.Section(
             header = CelestiaString("External Display", "Section header text for settings"),
             rows = listOf(SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.DetectVirtualDisplay, CelestiaString("Detect Virtual Display (Casting)", "Settings to support virtual display in external display"), false)),

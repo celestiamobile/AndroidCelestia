@@ -90,6 +90,8 @@
     "StarMaxIrradiance": 500.0,
     "StarDimClipFactor": 10.0,
     "StarExposure": 20.0,
+    "ToneMapping": 0,
+    "Exposure": 1.0,
     "EnableReverseWheel": 0,
     "EnableRayBasedDragging": 1,
     "EnableFocusZooming": 1,

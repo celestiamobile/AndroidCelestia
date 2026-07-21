@@ -1213,6 +1213,30 @@ Java_space_celestia_celestia_AppCore_c_1getStarExposure(JNIEnv *env, jclass claz
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setToneMapping(JNIEnv *env, jclass clazz, jlong pointer, jboolean value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setToneMapping(value);
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_AppCore_c_1getToneMapping(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getRenderer()->getToneMapping();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setExposure(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    core->getRenderer()->setExposure(value);
+}
+
+extern "C" JNIEXPORT jfloat JNICALL
+Java_space_celestia_celestia_AppCore_c_1getExposure(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    return core->getRenderer()->getExposure();
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarDimClipFactor(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
     auto core = reinterpret_cast<CelestiaCore *>(pointer);
     core->getRenderer()->setStarDimClipFactor(value);
