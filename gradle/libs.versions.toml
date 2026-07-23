@@ -1,6 +1,6 @@
 [versions]
 activity-ktx = "1.13.0"
-android-build-gradle = "9.3.0"
+android-build-gradle = "9.3.1"
 annotation = "1.10.0"
 appcompat = "1.7.1"
 billing-ktx = "9.1.0"
