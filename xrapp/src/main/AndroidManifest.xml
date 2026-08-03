@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    android:versionCode="12"
-    android:versionName="1.0.10">
+    android:versionCode="13"
+    android:versionName="1.0.11">
 
     <!-- Tell the system this app requires OpenGL ES 3.0. -->
     <uses-feature

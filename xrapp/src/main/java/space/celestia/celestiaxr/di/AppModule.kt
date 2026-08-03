@@ -189,7 +189,13 @@ object AppModule {
         } else {
             1
         }
-        return RenderSettings(enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true", resolutionMultiplier = resolutionMultiplier, enableSRGBRendering = appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true", enableMixedImmersion = appSettings[PreferenceManager.PredefinedKey.MixedImmersion] == "true")
+        return RenderSettings(
+            enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true",
+            resolutionMultiplier = resolutionMultiplier,
+            enableSRGBRendering = appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true",
+            shadowMapSize = appSettings[PreferenceManager.PredefinedKey.ShadowMapSize]?.toIntOrNull() ?: 0,
+            enableMixedImmersion = appSettings[PreferenceManager.PredefinedKey.MixedImmersion] == "true"
+        )
     }
 
     @Singleton

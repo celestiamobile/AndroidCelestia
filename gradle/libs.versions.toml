@@ -34,7 +34,7 @@ webkit = "1.17.0"
 navigation3 = "1.1.7"
 firebase-bom = "34.18.0"
 google-services = "4.5.0"
-openxr = "1.1.57"
+openxr = "1.1.61"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }

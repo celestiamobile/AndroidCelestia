@@ -24,6 +24,7 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsUnknownTextItem
 import space.celestia.celestiaui.settings.viewmodel.settingUnmarkAllID
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
+import java.text.NumberFormat
 
 class SettingsEntryProviderImpl: SettingsEntryProvider {
     override fun settings(purchaseManager: PurchaseManager): List<CommonSectionV2<SettingsItem>> {
@@ -144,6 +145,11 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
     )
 )
 
+private val shadowMapSizeOptions: List<Pair<Int, String>> = run {
+    val numberFormat = NumberFormat.getIntegerInstance()
+    listOf(0, 1024, 2048, 4096, 8192).map { Pair(it, numberFormat.format(it)) }
+}
+
 private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     SettingsLanguageItem(),
 )
@@ -207,10 +213,22 @@ private val staticRendererItems: List<SettingsItem> = listOf(
                 Pair(2, CelestiaString("2x", "")),
                 Pair(4, CelestiaString("4x", "")),
             ), defaultSelection = 1),
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MixedImmersion, CelestiaString("Passthrough", "Mixed immersion / passthrough toggle")),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", "")),
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", ""))
-        ),  footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
+            SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ShadowMapSize, displayName = CelestiaString("Shadow Resolution", "Resolution of shadow maps"), options = shadowMapSizeOptions, defaultSelection = 0, subtitle = CelestiaString("A value of 0 disables self-shadowing. Higher values produce sharper shadows at a greater performance cost.", "Shadow resolution setting footnote")),
+            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MixedImmersion, CelestiaString("Passthrough", "Mixed immersion / passthrough toggle")),
+        ), footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
+        SettingsCommonItem.Section(
+            header = CelestiaString("Output Rendering", ""),
+            rows = listOf(
+                SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", "")),
+                SettingsSelectionSingleItem(key = SettingsKey.ToneMapping, options = listOf(
+                    Pair(0, CelestiaString("Off", "Tone mapping mode")),
+                    Pair(1, CelestiaString("Manual", "Tone mapping mode")),
+                ), displayName = SettingsKey.ToneMapping.displayName, defaultSelection = 0),
+                SettingsSliderItem(SettingsKey.Exposure, 0.01, 100.0, isLogarithmic = true),
+            ),
+            footer = Footer.Text(CelestiaString("Tone mapping and exposure only affect sRGB rendering. Changes to sRGB rendering take effect after a restart.", "Output rendering settings footnote"))
+        ),
     )),
     SettingsRenderInfoItem()
 )
