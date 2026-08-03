@@ -524,7 +524,7 @@ class XRActivity : ComponentActivity() {
             }
         }
 
-        if (!appCore.startRenderer(renderSettings.enableSRGBRendering)) {
+        if (!appCore.startRenderer(renderSettings.enableSRGBRendering, renderSettings.shadowMapSize)) {
             appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }
@@ -540,7 +540,8 @@ class XRActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val CURRENT_DATA_VERSION = "160"
+        private const val CURRENT_DATA_VERSION = "170"
+        // 170: 1.9.22 Localization update data update (06a9edde21ea0af1f016255ed1cdc8b73f9cad79)
         // 160: 1.9.20 Data update (d156a8b5ed3f03add56c706880cc879b99ba26f9)
         // 157: 1.9.18 Localization update data update (3d666210190e2e2dfc60550f7f719afc856306d3)
         // 147: 1.9.17 Localization update data update (7926c3ccd126dae60e702b3b6b499cf2d07e3565)
