@@ -21,10 +21,12 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsSliderItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsSwitchItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsToolbarItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsUnknownTextItem
+import space.celestia.celestiaui.settings.viewmodel.commonRendererItems
+import space.celestia.celestiaui.settings.viewmodel.outputRenderingItem
+import space.celestia.celestiaui.settings.viewmodel.rendererQualityItem
 import space.celestia.celestiaui.settings.viewmodel.settingUnmarkAllID
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
-import java.text.NumberFormat
 
 class SettingsEntryProviderImpl: SettingsEntryProvider {
     override fun settings(purchaseManager: PurchaseManager): List<CommonSectionV2<SettingsItem>> {
@@ -145,90 +147,23 @@ private val staticDisplayItems: List<SettingsItem> = listOf(
     )
 )
 
-private val shadowMapSizeOptions: List<Pair<Int, String>> = run {
-    val numberFormat = NumberFormat.getIntegerInstance()
-    listOf(0, 1024, 2048, 4096, 8192).map { Pair(it, numberFormat.format(it)) }
-}
-
 private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     SettingsLanguageItem(),
 )
 
-private val staticRendererItems: List<SettingsItem> = listOf(
-    SettingsCommonItem.create(
-        SettingsKey.Resolution.displayName,
-        listOf(
-            SettingsSelectionSingleItem(key = SettingsKey.Resolution, options = listOf(
-                Pair(0, CelestiaString("Low", "Low resolution")),
-                Pair(1, CelestiaString("Medium", "Medium resolution")),
-                Pair(2, CelestiaString("High", "High resolution")),
-            ), displayName = SettingsKey.Resolution.displayName, defaultSelection = 1, showTitle = false)
-        )
-    ),
-    SettingsCommonItem(
-        SettingsKey.StarStyle.displayName,
-        listOf(
-            SettingsCommonItem.Section(
-                listOf(
-                    SettingsSelectionSingleItem(key = SettingsKey.StarStyle, options = listOf(
-                        Pair(0, CelestiaString("Fuzzy Points", "Star style")),
-                        Pair(1, CelestiaString("Points", "Star style")),
-                        Pair(2, CelestiaString("Scaled Discs", "Star style")),
-                        Pair(3, CelestiaString("Point Spread Function", "Star style")),
-                    ), displayName = SettingsKey.StarStyle.displayName, defaultSelection = 0),
-                    SettingsSelectionSingleItem(key = SettingsKey.StarColors, options = listOf(
-                        Pair(0, CelestiaString("Classic Colors", "Star colors option")),
-                        Pair(1, CelestiaString("Blackbody D65", "Star colors option")),
-                        Pair(2, CelestiaString("Blackbody (Solar Whitepoint)", "Star colors option")),
-                        Pair(3, CelestiaString("Blackbody (Vega Whitepoint)", "Star colors option")),
-                    ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 1),
-                    SettingsSliderItem(SettingsKey.TintSaturation, 0.0, 1.0),
-                ), footer = Footer.Text(CelestiaString("Tinted illumination saturation setting is only effective with Blackbody star colors.", ""))
-            ),
-            SettingsCommonItem.Section(
-                listOf(
-                    SettingsSliderItem(SettingsKey.StarPointRadius, 1.0, 10.0),
-                    SettingsSliderItem(SettingsKey.StarOptimization, 0.05, 1.0),
-                    SettingsSliderItem(SettingsKey.StarMaxIrradiance, 1.0, 1000000.0, isLogarithmic = true),
-                    SettingsSliderItem(SettingsKey.StarExposure, 0.01, 1000000.0, isLogarithmic = true),
-                ), header = CelestiaString("Point Spread Function", "Star style"), footer = Footer.Text(CelestiaString("Point spread function settings are only effective with the Point Spread Function star style.", ""))
-            )
-        )
-    ),
-    SettingsCommonItem(CelestiaString("Render Parameters", "Render parameters in setting"), listOf(
-        SettingsCommonItem.Section(listOf(
-            SettingsSwitchItem(SettingsKey.ShowSmoothLines, SettingsSwitchItem.Representation.Switch),
-        )),
-        SettingsCommonItem.Section(listOf(
-            SettingsSwitchItem(SettingsKey.ShowAutoMag, SettingsSwitchItem.Representation.Switch),
-            SettingsSliderItem(SettingsKey.AmbientLightLevel, 0.0, 1.0),
-            SettingsSliderItem(SettingsKey.FaintestVisible, 3.0, 12.0),
-            SettingsSliderItem(SettingsKey.GalaxyBrightness, 0.0, 1.0)
-        )),
-    )),
-    SettingsCommonItem(CelestiaString("Advanced", "Advanced setting items"), listOf(
+private val staticRendererItems: List<SettingsItem> = commonRendererItems +
+    rendererQualityItem(listOf(
+        SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", "")),
+    )) + listOf(
+    outputRenderingItem(listOf(
         SettingsCommonItem.Section(listOf(
             SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ResolutionMultiplier, displayName = CelestiaString("Render Resolution", ""), options = listOf(
                 Pair(1, CelestiaString("1x", "")),
                 Pair(2, CelestiaString("2x", "")),
                 Pair(4, CelestiaString("4x", "")),
             ), defaultSelection = 1),
-            SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", "")),
-            SettingsPreferenceSelectionItem(PreferenceManager.PredefinedKey.ShadowMapSize, displayName = CelestiaString("Shadow Resolution", "Resolution of shadow maps"), options = shadowMapSizeOptions, defaultSelection = 0, subtitle = CelestiaString("A value of 0 disables self-shadowing. Higher values produce sharper shadows at a greater performance cost.", "Shadow resolution setting footnote")),
             SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MixedImmersion, CelestiaString("Passthrough", "Mixed immersion / passthrough toggle")),
-        ), footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
-        SettingsCommonItem.Section(
-            header = CelestiaString("Output Rendering", ""),
-            rows = listOf(
-                SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", "")),
-                SettingsSelectionSingleItem(key = SettingsKey.ToneMapping, options = listOf(
-                    Pair(0, CelestiaString("Off", "Tone mapping mode")),
-                    Pair(1, CelestiaString("Manual", "Tone mapping mode")),
-                ), displayName = SettingsKey.ToneMapping.displayName, defaultSelection = 0),
-                SettingsSliderItem(SettingsKey.Exposure, 0.01, 100.0, isLogarithmic = true),
-            ),
-            footer = Footer.Text(CelestiaString("Tone mapping and exposure only affect sRGB rendering. Changes to sRGB rendering take effect after a restart.", "Output rendering settings footnote"))
-        ),
+        ), header = CelestiaString("XR", "XR output rendering settings"), footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))),
     )),
     SettingsRenderInfoItem()
 )
