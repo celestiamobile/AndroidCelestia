@@ -21,7 +21,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NoOpPushNotificationRegistrar @Inject constructor() : PushNotificationRegistrar {
-    override suspend fun register() {}
+    override suspend fun register(installationId: String?) {}
 }
 
 @Module

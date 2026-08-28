@@ -28,12 +28,12 @@ ndk = "30.0.16248370"
 okhttp = "5.5.0"
 retrofit = "3.0.0"
 sentry-android = "8.56.0"
-target_sdk = "37"
+target_sdk = "34"
 webkit = "1.17.1"
 navigation3 = "1.2.0"
 firebase-bom = "35.0.2"
 google-services = "4.5.0"
-openxr = "1.1.61"
+openxr = "1.1.65"
 
 [libraries]
 android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
