@@ -249,6 +249,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celrender/openclusterrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/psfglowlargerenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/psfglowlargerenderer.h
+        ${CELESTIA_SRC_DIR}/celrender/psfpointlargerenderer.cpp
+        ${CELESTIA_SRC_DIR}/celrender/psfpointlargerenderer.h
         ${CELESTIA_SRC_DIR}/celrender/referencemarkrenderer.cpp
         ${CELESTIA_SRC_DIR}/celrender/referencemarkrenderer.h
         ${CELESTIA_SRC_DIR}/celrender/rendererfwd.h
