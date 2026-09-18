@@ -2367,8 +2367,8 @@ class MainActivity : AppCompatActivity(),
         private const val GROUP_REFERENCE_VECTOR_TOP = 11
         private const val GROUP_REFERENCE_VECTOR = 12
 
-        private const val CURRENT_DATA_VERSION = "180"
-        // 180: 26.9.0 Localization update data update (51ceb06be30a4eeb91de691b4230aa9cdeac2b7a)
+        private const val CURRENT_DATA_VERSION = "181"
+        // 181: 26.9.0 Localization update data update (62de0d22bae6428d06a900fd3e045fa8d2b969ad)
         // 177: 26.8.1 Localization update data update (94ae7673d7dd615acc3dbc483f2a7304099b2ad8)
         // 172: 26.8.0 Localization update data update (2e3b0b9d543c703fe75ad908625b968e39c2fb05)
         // 170: 1.9.22 Localization update data update (06a9edde21ea0af1f016255ed1cdc8b73f9cad79)
