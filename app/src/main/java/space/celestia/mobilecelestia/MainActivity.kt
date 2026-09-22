@@ -79,6 +79,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
@@ -303,9 +304,6 @@ class MainActivity : AppCompatActivity(),
 
         super.onCreate(savedState)
 
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-
         mediaRouter = getSystemService(MEDIA_ROUTER_SERVICE) as MediaRouter
 
         Log.d(TAG, "Creating MainActivity")
@@ -322,7 +320,7 @@ class MainActivity : AppCompatActivity(),
             )
         }
 
-        showPrivacyAlertIfNeeded()
+        requestPrivacyConsentIfNeeded()
 
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -373,7 +371,7 @@ class MainActivity : AppCompatActivity(),
         super.onResume()
 
         setUpDisplayListenerIfNeeded()
-        if (sessionSettings.isGyroscopeEnabled) {
+        if (::sensorManager.isInitialized && sessionSettings.isGyroscopeEnabled) {
             updateGyroscope(true)
         }
     }
@@ -384,7 +382,7 @@ class MainActivity : AppCompatActivity(),
         }
         mediaRouterCallback = null
 
-        if (isGyroscopeActive) {
+        if (::sensorManager.isInitialized && isGyroscopeActive) {
             sensorManager.unregisterListener(this, gyroscope)
             lastRotationQuaternion = null
             isGyroscopeActive = false
@@ -509,7 +507,7 @@ class MainActivity : AppCompatActivity(),
         )
     }
 
-    private fun showPrivacyAlertIfNeeded() {
+    private fun requestPrivacyConsentIfNeeded() {
         if (appSettings[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] != "true" && Locale.getDefault().country == Locale.CHINA.country) {
             val builder = MaterialAlertDialogBuilder(this)
             builder.setCancelable(false)
@@ -519,10 +517,14 @@ class MainActivity : AppCompatActivity(),
                 val baseURL = "https://celestia.mobi/privacy"
                 val uri = baseURL.toUri().buildUpon().appendQueryParameter("lang", "zh_CN").build()
                 openURI(uri)
-                showPrivacyAlertIfNeeded()
+                requestPrivacyConsentIfNeeded()
             }
             builder.setPositiveButton(R.string.privacy_policy_alert_accept_button_title) { _, _ ->
                 appSettings[PreferenceManager.PredefinedKey.PrivacyPolicyAccepted] = "true"
+                initializeConsentDependentServices()
+                if (readyForInteraction) {
+                    initialSetUpComplete()
+                }
             }
             builder.setNegativeButton(R.string.privacy_policy_alert_decline_button_title) { dialog, _ ->
                 dialog.cancel()
@@ -530,6 +532,22 @@ class MainActivity : AppCompatActivity(),
                 exitProcess(0)
             }
             builder.show()
+        } else {
+            initializeConsentDependentServices()
+        }
+    }
+
+    private fun initializeConsentDependentServices() {
+        (application as CelestiaApplication).setUpSentryIfNeeded()
+        initializeSensors()
+    }
+
+    private fun initializeSensors() {
+        if (::sensorManager.isInitialized) return
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && sessionSettings.isGyroscopeEnabled) {
+            updateGyroscope(true)
         }
     }
 
@@ -2155,6 +2173,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun updateGyroscope(isEnabled: Boolean) {
+        if (!::sensorManager.isInitialized) return
         if (isEnabled) {
             if (!isGyroscopeActive) {
                 sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_GAME)

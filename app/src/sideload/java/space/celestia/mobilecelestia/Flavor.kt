@@ -25,7 +25,9 @@ private const val featureFlagsFileName = "feature-flags.txt"
 
 private fun proguardSeedPROGUARD_METHOD_SEED() { }
 
-fun CelestiaApplication.setUpFlavor() {
+fun CelestiaApplication.setUpFlavor() {}
+
+fun CelestiaApplication.setUpSentry() {
     SentryAndroid.init(this) { options ->
         options.dsn = "SENTRY-DSN"
         options.isDebug = BuildConfig.DEBUG

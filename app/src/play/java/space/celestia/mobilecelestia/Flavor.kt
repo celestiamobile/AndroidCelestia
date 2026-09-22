@@ -31,7 +31,9 @@ fun CelestiaApplication.setUpFlavor() {
     // FCM-displayed notifications (which Android won't route through our service)
     // land in our channel — at IMPORTANCE_HIGH — instead of FCM's fallback.
     ensurePushNotificationChannel(this)
+}
 
+fun CelestiaApplication.setUpSentry() {
     SentryAndroid.init(this) { options ->
         options.dsn = "SENTRY-DSN"
         options.isDebug = BuildConfig.DEBUG

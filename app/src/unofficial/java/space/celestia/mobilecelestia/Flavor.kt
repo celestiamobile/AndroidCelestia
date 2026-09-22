@@ -11,4 +11,6 @@ package space.celestia.mobilecelestia
 
 fun CelestiaApplication.setUpFlavor() {}
 
+fun CelestiaApplication.setUpSentry() {}
+
 fun MainActivity.initialSetUpComplete() {}
