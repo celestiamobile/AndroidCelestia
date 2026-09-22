@@ -13,7 +13,6 @@ import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -66,10 +65,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ShareCompat
@@ -77,14 +74,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
-import androidx.core.view.GravityCompat
 import androidx.core.view.MenuCompat
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -105,7 +98,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import space.celestia.celestia.AppCore
@@ -139,7 +131,6 @@ import space.celestia.celestiaui.info.model.CelestiaContinuousAction
 import space.celestia.celestiaui.info.model.perform
 import space.celestia.celestiaui.purchase.PurchaseManager
 import space.celestia.celestiaui.pushnotification.PushNotificationRegistrar
-import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.resource.model.FeatureFlagsManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.settings.viewmodel.SettingsKey
@@ -159,8 +150,6 @@ import space.celestia.mobilecelestia.celestia.CelestiaScreen
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import space.celestia.mobilecelestia.common.EdgeInsets
-import space.celestia.mobilecelestia.common.RoundedCorners
-import space.celestia.mobilecelestia.common.SHEET_MAX_FULL_WIDTH_DP
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.common.rememberSafeAreaInsets
 import space.celestia.mobilecelestia.compose.DrawerAlignment
@@ -184,7 +173,6 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.Executor
 import javax.inject.Inject
-import kotlin.coroutines.resume
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
@@ -231,9 +219,6 @@ class MainActivity : AppCompatActivity(),
     lateinit var featureFlagsManager: FeatureFlagsManager
 
     @Inject
-    lateinit var featureFlags: FeatureFlags
-
-    @Inject
     lateinit var purchaseManager: PurchaseManager
 
     @Inject
@@ -246,7 +231,6 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var appStatusReporter: AppStatusReporter
 
-    private lateinit var drawerLayout: DrawerLayout
     private var composeDrawer: ComposeDrawer? = null
 
     private data class ComposeDrawer(
@@ -344,58 +328,10 @@ class MainActivity : AppCompatActivity(),
 
         appStatusReporter.register(this)
 
-        if (featureFlags.composeSurfaceV5) {
-            setContent {
-                Mdc3Theme {
-                    MainContentWithDrawer()
-                }
+        setContent {
+            Mdc3Theme {
+                MainContentWithDrawer()
             }
-        } else {
-            setContentView(R.layout.activity_main)
-            drawerLayout = findViewById(R.id.drawer_container)
-
-            val mainContentView = findViewById<ComposeView>(R.id.main_content)
-            mainContentView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-            mainContentView.setContent {
-                Mdc3Theme {
-                    MainContent()
-                }
-            }
-
-            findViewById<ComposeView>(R.id.drawer_content).apply {
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-                setContent {
-                    Mdc3Theme {
-                        showCelestiaPlus.value?.let { show ->
-                            MenuScreen(if (show) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()) { action ->
-                                toolbarActionSelected(action)
-                            }
-                        }
-                    }
-                }
-            }
-
-            val weakSelf = WeakReference(this)
-            drawerLayout.setDrawerLockMode(if (drawerLayout.isDrawerOpen(GravityCompat.END)) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-            drawerLayout.addDrawerListener(object: DrawerListener {
-                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
-
-                override fun onDrawerOpened(drawerView: View) {
-                    weakSelf.get()?.drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-                }
-
-                override fun onDrawerClosed(drawerView: View) {
-                    weakSelf.get()?.drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-                }
-
-                override fun onDrawerStateChanged(newState: Int) {}
-            })
-        }
-
-        // Handle notch
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById<View>(android.R.id.content).rootView) { _, insets ->
-            updateConfiguration(resources.configuration, insets)
-            return@setOnApplyWindowInsetsListener insets
         }
 
         if (currentState == AppStatusReporter.State.LOADING_FAILURE || currentState == AppStatusReporter.State.EXTERNAL_LOADING_FAILURE) {
@@ -424,9 +360,6 @@ class MainActivity : AppCompatActivity(),
                 celestiaLoadingFinished()
             }
         }
-
-        val rootView = findViewById<View>(android.R.id.content).rootView
-        updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView))
 
         handleIntent(intent)
     }
@@ -468,13 +401,6 @@ class MainActivity : AppCompatActivity(),
         Log.d(TAG, "Destroying MainActivity")
 
         super.onDestroy()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        val rootView = findViewById<View>(android.R.id.content).rootView
-        updateConfiguration(newConfig, ViewCompat.getRootWindowInsets(rootView))
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -607,25 +533,6 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun updateConfiguration(configuration: Configuration, windowInsets: WindowInsetsCompat?) {
-        val isRTL = configuration.layoutDirection == LayoutDirection.RTL
-
-        val hasRegularHorizontalSpace =  configuration.screenWidthDp > SHEET_MAX_FULL_WIDTH_DP
-
-        val safeInsets = EdgeInsets(
-            windowInsets,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RoundedCorners(windowInsets) else RoundedCorners(0, 0, 0, 0),
-            hasRegularHorizontalSpace
-        )
-
-        val safeInsetEnd = if (isRTL) safeInsets.left else safeInsets.right
-
-        if (!featureFlags.composeSurfaceV5) {
-            val drawerParams = findViewById<View>(R.id.drawer_content).layoutParams
-            drawerParams.width = resources.getDimensionPixelSize(R.dimen.toolbar_default_width) + safeInsetEnd
-        }
-    }
-
     private fun loadExternalConfig() {
         appStatusReporter.updateState(AppStatusReporter.State.EXTERNAL_LOADING)
         lifecycleScope.launch(Dispatchers.IO) {
@@ -693,10 +600,6 @@ class MainActivity : AppCompatActivity(),
     private fun celestiaLoadingFinished() {
         viewModel.loadingVisible.value = false
         showCelestiaPlus.value = purchaseManager.canUseInAppPurchase()
-        if (!featureFlags.composeSurfaceV5) {
-            findViewById<View>(R.id.drawer_content).visibility = View.VISIBLE
-        }
-
         if (onBackPressedCallback == null) {
             val weakSelf = WeakReference(this)
             val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -758,13 +661,6 @@ class MainActivity : AppCompatActivity(),
 
     private fun celestiaLoadingFailed() {
         appStatusReporter.updateStatus(CelestiaString("Loading Celestia failed…", "Celestia loading failed"))
-    }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-
-        val rootView = findViewById<View>(android.R.id.content).rootView
-        updateConfiguration(resources.configuration, ViewCompat.getRootWindowInsets(rootView))
     }
 
     private fun copyAssetIfNeeded() {
@@ -1154,11 +1050,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun showToolbar() = lifecycleScope.launch {
         hideOverlay(true)
-        if (featureFlags.composeSurfaceV5) {
-            performComposeDrawerOperation { open() }
-        } else {
-            drawerLayout.openDrawer(GravityCompat.END, true)
-        }
+        performComposeDrawerOperation { open() }
     }
 
     private fun toolbarActionSelected(action: ToolbarAction) {
@@ -1609,38 +1501,10 @@ class MainActivity : AppCompatActivity(),
     }
 
     private suspend fun hideMenu(animated: Boolean) {
-        if (featureFlags.composeSurfaceV5) {
-            if (composeDrawer?.state?.isOpen == true) {
-                performComposeDrawerOperation {
-                    if (animated) close() else snapTo(DrawerValue.Closed)
-                }
+        if (composeDrawer?.state?.isOpen == true) {
+            performComposeDrawerOperation {
+                if (animated) close() else snapTo(DrawerValue.Closed)
             }
-            return
-        }
-
-        suspendCancellableCoroutine { cont ->
-            if (!drawerLayout.isDrawerOpen(GravityCompat.END)) {
-                cont.resume(Unit)
-                return@suspendCancellableCoroutine
-            }
-
-            val weakSelf = WeakReference(this)
-
-            val listener = object: DrawerListener {
-                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
-                override fun onDrawerOpened(drawerView: View) {}
-
-                override fun onDrawerClosed(drawerView: View) {
-                    cont.resume(Unit)
-                    val self = weakSelf.get() ?: return
-                    self.drawerLayout.removeDrawerListener(this)
-                }
-
-                override fun onDrawerStateChanged(newState: Int) {}
-            }
-
-            drawerLayout.addDrawerListener(listener)
-            drawerLayout.closeDrawer(GravityCompat.END, animated)
         }
     }
 
@@ -1969,11 +1833,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun isMenuOpen(): Boolean {
-        return if (featureFlags.composeSurfaceV5) {
-            composeDrawer?.state?.isOpen == true
-        } else {
-            drawerLayout.isDrawerOpen(GravityCompat.END)
-        }
+        return composeDrawer?.state?.isOpen == true
     }
 
     private suspend fun performComposeDrawerOperation(operation: suspend DrawerState.() -> Unit) {

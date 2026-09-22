@@ -20,18 +20,6 @@
 
     <style name="DefaultTheme" parent="DefaultThemeBase"/>
 
-    <style name="Container">
-        <item name="android:background">@android:color/transparent</item>
-    </style>
-
-    <style name="ListItem" parent="Container">
-        <item name="android:background">@drawable/ripple_background</item>
-    </style>
-
-    <style name="Background">
-        <item name="android:background">?android:attr/colorBackground</item>
-    </style>
-
     <style name="Image">
         <item name="tint">?attr/colorOnBackground</item>
     </style>

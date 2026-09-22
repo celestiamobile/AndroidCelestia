@@ -140,12 +140,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.drawerlayout)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
     implementation(libs.material)
     implementation(libs.kotlinx.serialization.json)
@@ -164,7 +162,6 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
 
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
