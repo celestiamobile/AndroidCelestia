@@ -522,7 +522,6 @@ add_definitions(-DGL_ES)
 add_definitions(-DUSE_MINIAUDIO)
 add_definitions(-DUSE_FFMPEG)
 add_definitions(-DCELX)
-add_definitions(-DUSE_ICU)
 add_definitions(-DBOOST_NO_EXCEPTIONS)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
