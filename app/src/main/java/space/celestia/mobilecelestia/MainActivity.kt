@@ -2248,7 +2248,6 @@ class MainActivity : AppCompatActivity(),
 
         private const val CURRENT_DATA_VERSION = "183"
         // 183: 26.10.0 Data update (60316cf1c7df289b44b3c99711913bdbf1daea2e)
-        // 182: 26.10.0 Data update (f9bdd99d95fe043f87a7fc9d984711cd50743937)
         // 181: 26.9.0 Localization update data update (62de0d22bae6428d06a900fd3e045fa8d2b969ad)
         // 177: 26.8.1 Localization update data update (94ae7673d7dd615acc3dbc483f2a7304099b2ad8)
         // 172: 26.8.0 Localization update data update (2e3b0b9d543c703fe75ad908625b968e39c2fb05)
