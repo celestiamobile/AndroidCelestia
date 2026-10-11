@@ -7,6 +7,8 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 
+#include <numbers>
+
 #include "CelestiaVector.h"
 #include <celastro/date.h>
 #include <celengine/observer.h>
@@ -53,7 +55,7 @@ Java_space_celestia_celestia_Utils_rectToSpherical(JNIEnv *env, jclass clazz,
     double r = v.norm();
     double theta = atan2(v.y(), v.x());
     if (theta < 0)
-        theta = theta + 2 * celestia::numbers::pi;
+        theta = theta + 2 * std::numbers::pi;
     double phi = asin(v.z() / r);
 
     return createVectorForVector3d(env, Eigen::Vector3d(theta, phi, r));
