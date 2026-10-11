@@ -9,6 +9,7 @@
 
 #include "CelestiaSelection.h"
 #include <string>
+#include <string_view>
 
 #include <unistd.h>
 
@@ -174,15 +175,15 @@ public:
 
     ~AppCoreContextMenuHandler() override
     {
-        auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+        auto env = static_cast<JNIEnv *>(pthread_getspecific(javaEnvKey));
         if (env && object) env->DeleteGlobalRef(object);
     }
 
     void requestContextMenu(float x, float y, Selection sel) override
     {
-        auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+        auto env = static_cast<JNIEnv *>(pthread_getspecific(javaEnvKey));
         if (!env) return;
-        env->CallVoidMethod(object, method, (jfloat)x, (jfloat)y, selectionAsJavaSelection(env, sel));
+        env->CallVoidMethod(object, method, static_cast<jfloat>(x), static_cast<jfloat>(y), selectionAsJavaSelection(env, sel));
     }
 
 private:
@@ -197,13 +198,13 @@ public:
 
     ~AppCoreFatalErrorHandler() override
     {
-        auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+        auto env = static_cast<JNIEnv *>(pthread_getspecific(javaEnvKey));
         if (env && object) env->DeleteGlobalRef(object);
     }
 
     void fatalError(const std::string &message) override
     {
-        auto env = (JNIEnv *)pthread_getspecific(javaEnvKey);
+        auto env = static_cast<JNIEnv *>(pthread_getspecific(javaEnvKey));
         if (!env) return;
         jstring str = env->NewStringUTF(message.c_str());
         env->CallVoidMethod(object, method, str);
@@ -226,13 +227,13 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_AppCore_c_1init(JNIEnv *env, jclass clazz) {
     auto core = new CelestiaCore;
-    return (jlong)core;
+    return toHandle(core);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setContextMenuHandler(JNIEnv *env, jobject thiz, jlong ptr) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     static jmethodID contextMenuCallback = nullptr;
     if (!contextMenuCallback)
         contextMenuCallback = env->GetMethodID(env->GetObjectClass(thiz), "onRequestContextMenu",
@@ -243,13 +244,13 @@ Java_space_celestia_celestia_AppCore_c_1setContextMenuHandler(JNIEnv *env, jobje
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setSystemAccessHandler(JNIEnv *env, jobject thiz, jlong ptr) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     static jmethodID systemAccessCallback = nullptr;
     if (!systemAccessCallback)
         systemAccessCallback = env->GetMethodID(env->GetObjectClass(thiz), "onSystemAccessRequested", "()I");
     jobject globalRef = env->NewGlobalRef(thiz);
     core->setScriptSystemAccessHandler([globalRef]{
-        auto env = reinterpret_cast<JNIEnv *>(pthread_getspecific(javaEnvKey));
+        auto env = static_cast<JNIEnv *>(pthread_getspecific(javaEnvKey));
         if (!env) return CelestiaCore::ScriptSystemAccessPolicy::Ask;
         return static_cast<CelestiaCore::ScriptSystemAccessPolicy>(env->CallIntMethod(globalRef, systemAccessCallback));
     });
@@ -258,7 +259,7 @@ Java_space_celestia_celestia_AppCore_c_1setSystemAccessHandler(JNIEnv *env, jobj
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setFatalErrorHandler(JNIEnv *env, jobject thiz, jlong ptr) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     static jmethodID fatalErrorCallback = nullptr;
     if (!fatalErrorCallback)
         fatalErrorCallback = env->GetMethodID(env->GetObjectClass(thiz), "onFatalError",
@@ -270,7 +271,7 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
                                                                  jlong ptr, jboolean srgb_rendering, jint shadow_map_size) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
 
     if (!core->initRenderer(celestia::engine::TextureResolution::medres, srgb_rendering == JNI_TRUE))
         return JNI_FALSE;
@@ -307,7 +308,7 @@ Java_space_celestia_celestia_AppCore_c_1startSimulation(JNIEnv *env, jclass claz
                                                                    jstring config_file_name,
                                                                    jobjectArray extra_directories,
                                                                    jobject wc) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
 
     jmethodID jWcMethod = nullptr;
     if (wc)
@@ -323,7 +324,7 @@ Java_space_celestia_celestia_AppCore_c_1startSimulation(JNIEnv *env, jclass claz
         jsize number = env->GetArrayLength(extra_directories);
         for (jsize i = 0; i < number; i++)
         {
-            auto str = (jstring)env->GetObjectArrayElement(extra_directories, i);
+            auto str = static_cast<jstring>(env->GetObjectArrayElement(extra_directories, i));
             const char *c_str = env->GetStringUTFChars(str, nullptr);
             extras.emplace_back(c_str);
             env->ReleaseStringUTFChars(str, c_str);
@@ -348,7 +349,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1start__J(JNIEnv *env, jclass clazz,
                                                             jlong ptr) {
-    auto *core = (CelestiaCore *)ptr;
+    auto *core = fromHandle<CelestiaCore>(ptr);
 
     core->start();
 }
@@ -358,7 +359,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1start__JD(JNIEnv *env, jclass clazz,
                                                              jlong ptr,
                                                              jdouble seconds_since_epoch) {
-    auto *core = (CelestiaCore *)ptr;
+    auto *core = fromHandle<CelestiaCore>(ptr);
 
     core->start(seconds_since_epoch);
 }
@@ -367,14 +368,14 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1draw(JNIEnv *env, jclass clazz,
                                                         jlong ptr) {
-    ((CelestiaCore *)ptr)->draw();
+    fromHandle<CelestiaCore>(ptr)->draw();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1tick(JNIEnv *env, jclass clazz,
                                                         jlong ptr) {
-    ((CelestiaCore *)ptr)->tick();
+    fromHandle<CelestiaCore>(ptr)->tick();
 }
 
 extern "C"
@@ -382,7 +383,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1resize(JNIEnv *env, jclass clazz,
                                                           jlong ptr, jint w,
                                                           jint h) {
-    auto *core = (CelestiaCore *)ptr;
+    auto *core = fromHandle<CelestiaCore>(ptr);
 
     core->resize(w, h);
 }
@@ -394,7 +395,7 @@ Java_space_celestia_celestia_AppCore_c_1setSafeAreaInsets(JNIEnv *env, jclass cl
                                                                      jint left, jint top,
                                                                      jint right,
                                                                      jint bottom) {
-    auto *core = (CelestiaCore *)ptr;
+    auto *core = fromHandle<CelestiaCore>(ptr);
 
     core->setSafeAreaInsets(left, top, right, bottom);
 }
@@ -404,7 +405,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setScreenDPI(JNIEnv *env, jclass clazz,
                                                      jlong ptr,
                                                      jint dpi) {
-    auto *core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto *core = fromHandle<CelestiaCore>(ptr);
     core->setScreenDpi(static_cast<int>(dpi));
 }
 
@@ -412,7 +413,7 @@ extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getScreenDPI(JNIEnv *env, jclass clazz,
                                                      jlong ptr) {
-    auto *core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto *core = fromHandle<CelestiaCore>(ptr);
     return static_cast<jint>(core->getScreenDpi());
 }
 
@@ -422,7 +423,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setTextScaleFactor(JNIEnv *env, jclass clazz,
                                                            jlong ptr,
                                                            jfloat textScaleFactor) {
-    auto *core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto *core = fromHandle<CelestiaCore>(ptr);
     core->setTextScaleFactor(static_cast<float>(textScaleFactor));
 }
 
@@ -430,7 +431,7 @@ extern "C"
 JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_AppCore_c_1getTextScaleFactor(JNIEnv *env, jclass clazz,
                                                            jlong ptr) {
-    auto *core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto *core = fromHandle<CelestiaCore>(ptr);
     return static_cast<jfloat>(core->getTextScaleFactor());
 }
 
@@ -438,9 +439,9 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_AppCore_c_1getSimulation(JNIEnv *env, jclass clazz,
                                                                  jlong ptr) {
-    auto *core = (CelestiaCore *)ptr;
+    auto *core = fromHandle<CelestiaCore>(ptr);
 
-    return (jlong)core->getSimulation();
+    return toHandle(core->getSimulation());
 }
 
 extern "C"
@@ -511,7 +512,7 @@ static int convert_key_code_to_celestia_key(int input, int key)
             default:
                 if ((input < 128) && (input > 33))
                 {
-                    celestiaKey = (int) (input & 0x00FF);
+                    celestiaKey = static_cast<int>(input & 0x00FF);
                 }
                 break;
         }
@@ -542,7 +543,7 @@ Java_space_celestia_celestia_AppCore_c_1mouseButtonUp(JNIEnv *env, jclass clazz,
                                                                  jlong ptr,
                                                                  jint buttons, jfloat x,
                                                                  jfloat y, jint modifiers) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->mouseButtonUp(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
 }
 
@@ -553,7 +554,7 @@ Java_space_celestia_celestia_AppCore_c_1mouseButtonDown(JNIEnv *env, jclass claz
                                                                    jint buttons, jfloat x,
                                                                    jfloat y,
                                                                    jint modifiers) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->mouseButtonDown(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
 }
 
@@ -563,7 +564,7 @@ Java_space_celestia_celestia_AppCore_c_1mouseMove(JNIEnv *env, jclass clazz,
                                                              jlong ptr,
                                                              jint buttons, jfloat x,
                                                              jfloat y, jint modifiers) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->mouseMove(x, y, convert_modifier_to_celestia_modifier(buttons, modifiers));
 }
 
@@ -573,7 +574,7 @@ Java_space_celestia_celestia_AppCore_c_1mouseWheel(JNIEnv *env, jclass clazz,
                                                               jlong ptr,
                                                               jfloat motion,
                                                               jint modifiers) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->mouseWheel(motion, convert_modifier_to_celestia_modifier(0, modifiers));
 }
 
@@ -583,7 +584,7 @@ Java_space_celestia_celestia_AppCore_c_1keyUpWithModifiers(JNIEnv *env,
                                                                       jclass clazz,
                                                                       jlong ptr, jint input,
                                                                       jint key, jint modifiers) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->keyUp(convert_key_code_to_celestia_key(input, key), convert_modifier_to_celestia_modifier(0, modifiers));
 }
 
@@ -593,7 +594,7 @@ Java_space_celestia_celestia_AppCore_c_1keyDownWithModifers(JNIEnv *env,
                                                                        jclass clazz,
                                                                        jlong ptr, jint input,
                                                                        jint key, jint modifiers) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     int cModifiers = convert_modifier_to_celestia_modifier(0, modifiers);
     if (input < CelestiaCore::KeyCount)
         core->charEntered(static_cast<char>(input), cModifiers);
@@ -606,7 +607,7 @@ Java_space_celestia_celestia_AppCore_c_1keyUp(JNIEnv *env, jclass clazz,
                                                          jlong ptr,
                                                          jint input) {
 
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->keyUp(input, 0);
 }
 
@@ -615,7 +616,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1keyDown(JNIEnv *env, jclass clazz,
                                                            jlong ptr,
                                                            jint input) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->keyDown(input, 0);
 }
 
@@ -624,8 +625,8 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1charEnter(JNIEnv *env, jclass clazz,
                                                              jlong ptr,
                                                              jint input) {
-    auto core = (CelestiaCore *)ptr;
-    core->charEntered((char)input, 0);
+    auto core = fromHandle<CelestiaCore>(ptr);
+    core->charEntered(static_cast<char>(input), 0);
 }
 
 
@@ -634,7 +635,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1joystickButtonDown(JNIEnv *env, jclass clazz,
                                                                       jlong ptr,
                                                                       jint button) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     int converted = convert_joystick_button(button);
     if (converted < 0) return;
     core->joystickButton(converted, true);
@@ -645,7 +646,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1joystickButtonUp(JNIEnv *env, jclass clazz,
                                                                     jlong ptr,
                                                                     jint button) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     int converted = convert_joystick_button(button);
     if (converted < 0) return;
     core->joystickButton(converted, false);
@@ -657,14 +658,14 @@ Java_space_celestia_celestia_AppCore_c_1joystickAxis(JNIEnv *env, jclass clazz,
                                                                 jlong ptr,
                                                                 jint axis,
                                                                 jfloat amount) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->joystickAxis(static_cast<CelestiaCore::JoyAxis>(axis), amount);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1pinchUpdate(JNIEnv *env, jclass clazz, jlong ptr, jfloat x, jfloat y, jfloat scale, jboolean zoom_fov) {
-    auto core = reinterpret_cast<CelestiaCore*>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->pinchUpdate(static_cast<float>(x), static_cast<float>(y), static_cast<float>(scale), static_cast<bool>(zoom_fov));
 }
 
@@ -673,7 +674,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1runScript(JNIEnv *env, jclass clazz,
                                                              jlong ptr,
                                                              jstring path) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *str = env->GetStringUTFChars(path, nullptr);
     core->runScript(str, false);
     env->ReleaseStringUTFChars(path, str);
@@ -682,7 +683,7 @@ Java_space_celestia_celestia_AppCore_c_1runScript(JNIEnv *env, jclass clazz,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1runDemo(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     const auto& demoScriptFile = core->getConfig()->paths.demoScriptFile;
     if (!demoScriptFile.empty()) {
         core->cancelScript();
@@ -694,7 +695,7 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_AppCore_c_1getCurrentURL(JNIEnv *env, jclass clazz,
                                                                  jlong ptr) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     CelestiaState appState(core);
     appState.captureState();
 
@@ -707,7 +708,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1goToURL(JNIEnv *env, jclass clazz,
                                                            jlong ptr,
                                                            jstring url) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *str = env->GetStringUTFChars(url, nullptr);
     core->goToUrl(str);
     env->ReleaseStringUTFChars(url, str);
@@ -794,7 +795,7 @@ Java_space_celestia_celestia_AppCore_c_1getLocalizedString(JNIEnv *env,
     const char *c_str = env->GetStringUTFChars(string, nullptr);
     const char *c_dom = env->GetStringUTFChars(domain, nullptr);
     jstring localized;
-    if (strlen(c_str) == 0)
+    if (c_str[0] == '\0')
         localized = env->NewStringUTF("");
     else
         localized = env->NewStringUTF(dgettext(c_dom, c_str));
@@ -814,7 +815,7 @@ Java_space_celestia_celestia_AppCore_c_1getLocalizedStringContext(JNIEnv *env,
     const char *c_dom = env->GetStringUTFChars(domain, nullptr);
     const char *c_con = env->GetStringUTFChars(context, nullptr);
     jstring localized;
-    if (strlen(c_str) == 0)
+    if (c_str[0] == '\0')
     {
         localized = env->NewStringUTF("");
     }
@@ -853,14 +854,14 @@ static uint64_t bit_mask_value_update(jboolean value, uint64_t bit, uint64_t set
 
 #define RENDERMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = (CelestiaCore *)pointer; \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     return static_cast<jboolean>(celestia::util::is_set(core->getRenderer()->getRenderFlags(), RenderFlags::Show##flag) ? JNI_TRUE : JNI_FALSE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setShow##flag (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = (CelestiaCore *)pointer;                          \
+    auto core = fromHandle<CelestiaCore>(pointer);                          \
     auto flags = core->getRenderer()->getRenderFlags();           \
     celestia::util::set_or_unset(flags, RenderFlags::Show##flag, static_cast<bool>(value)); \
     core->getRenderer()->setRenderFlags(flags); \
@@ -902,14 +903,14 @@ RENDERMETHODS(Ecliptic)
 
 #define LABELMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);        \
+    auto core = fromHandle<CelestiaCore>(pointer);        \
     return static_cast<jboolean>(celestia::util::is_set(core->getRenderer()->getLabelMode(), RenderLabels::flag##Labels) ? JNI_TRUE : JNI_FALSE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);        \
+    auto core = fromHandle<CelestiaCore>(pointer);        \
     auto flags = core->getRenderer()->getLabelMode();            \
     celestia::util::set_or_unset(flags, RenderLabels::flag##Labels, static_cast<bool>(value)); \
     core->getRenderer()->setLabelMode(flags); \
@@ -934,14 +935,14 @@ LABELMETHODS(I18nConstellation)
 
 #define ORBITMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag##Orbits (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = reinterpret_cast<CelestiaCore *>(pointer); \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     return celestia::util::is_set(core->getRenderer()->getOrbitMask(), BodyClassification::flag) ? JNI_TRUE : JNI_FALSE; \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setShow##flag##Orbits (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = reinterpret_cast<CelestiaCore *>(pointer); \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     auto flags = core->getRenderer()->getOrbitMask();            \
     celestia::util::set_or_unset(flags, BodyClassification::flag, static_cast<bool>(value)); \
     core->getRenderer()->setOrbitMask(flags); \
@@ -958,14 +959,14 @@ ORBITMETHODS(MinorMoon)
 
 #define FEATUREMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     return static_cast<jboolean>(((core->getSimulation()->getObserver().getLocationFilter() & Location::flag) == 0) ? JNI_FALSE : JNI_TRUE); \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setShow##flag##Labels (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     core->getSimulation()->getObserver().setLocationFilter(bit_mask_value_update(value, Location::flag, core->getSimulation()->getObserver().getLocationFilter())); \
 } \
 
@@ -1035,14 +1036,14 @@ FEATUREMETHODS(Other)
 
 #define INTERACTIONMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getEnable##flag (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     return celestia::util::is_set(core->getInteractionFlags(), CelestiaCore::InteractionFlags::flag) ? JNI_TRUE : JNI_FALSE; \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setEnable##flag (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     auto flags = core->getInteractionFlags(); \
     celestia::util::set_or_unset(flags, CelestiaCore::InteractionFlags::flag, static_cast<bool>(value));                                                                      \
     core->setInteractionFlags(flags); \
@@ -1054,14 +1055,14 @@ INTERACTIONMETHODS(FocusZooming)
 
 #define OBSERVERMETHODS(flag) extern "C" JNIEXPORT jboolean JNICALL \
 Java_space_celestia_celestia_AppCore_c_1getEnable##flag (JNIEnv *env, jclass clazz, jlong pointer) { \
-    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     return celestia::util::is_set(core->getObserverFlags(), celestia::engine::ObserverFlags::flag) ? JNI_TRUE : JNI_FALSE; \
 } \
 extern "C" \
 JNIEXPORT void JNICALL \
 Java_space_celestia_celestia_AppCore_c_1setEnable##flag (JNIEnv *env, jclass clazz, jlong pointer, \
                                                                         jboolean value) { \
-    auto core = reinterpret_cast<CelestiaCore*>(pointer); \
+    auto core = fromHandle<CelestiaCore>(pointer); \
     auto flags = core->getObserverFlags(); \
     celestia::util::set_or_unset(flags, celestia::engine::ObserverFlags::flag, static_cast<bool>(value));                                                                      \
     core->setObserverFlags(flags); \
@@ -1073,226 +1074,226 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setResolution(JNIEnv *env, jclass clazz, jlong pointer,
                                                                  jint value) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setResolution(static_cast<celestia::engine::TextureResolution>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getResolution(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     return static_cast<jint>(core->getRenderer()->getResolution());
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setAtmosphereSegmentCount(JNIEnv*, jclass, jlong pointer, jint value) {
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setAtmosphereSegmentCount(static_cast<unsigned int>(value));
 }
 
 extern "C" JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getAtmosphereSegmentCount(JNIEnv*, jclass, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return static_cast<jint>(core->getRenderer()->getAtmosphereSegmentCount());
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setCloudSegmentCount(JNIEnv*, jclass, jlong pointer, jint value) {
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setCloudSegmentCount(static_cast<unsigned int>(value));
 }
 
 extern "C" JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getCloudSegmentCount(JNIEnv*, jclass, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return static_cast<jint>(core->getRenderer()->getCloudSegmentCount());
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setSeparateRayleighMieScaleHeights(JNIEnv*, jclass, jlong pointer, jboolean value) {
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setSeparateRayleighMieScaleHeights(value == JNI_TRUE);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_AppCore_c_1getSeparateRayleighMieScaleHeights(JNIEnv*, jclass, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getSeparateRayleighMieScaleHeights() ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setHudDetail(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->setHudDetail(value);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getHudDetail(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getHudDetail();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setMeasurementSystem(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->setMeasurementSystem(static_cast<celestia::MeasurementSystem>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getMeasurementSystem(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
-    return (jint)core->getMeasurementSystem();
+    auto core = fromHandle<CelestiaCore>(pointer);
+    return static_cast<jint>(core->getMeasurementSystem());
 }
 
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setTemperatureScale(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->setTemperatureScale(static_cast<celestia::TemperatureScale>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getTemperatureScale(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
-    return (jint)core->getTemperatureScale();
+    auto core = fromHandle<CelestiaCore>(pointer);
+    return static_cast<jint>(core->getTemperatureScale());
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setTimeZone(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->setTimeZoneBias(0 == value ? 1 : 0);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getTimeZone(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getTimeZoneBias() == 0 ? 1 : 0;
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setDateFormat(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
-    auto core = reinterpret_cast<CelestiaCore*>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->setDateFormat(static_cast<celestia::astro::Date::Format>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getDateFormat(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getDateFormat();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarStyle(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setStarStyle(static_cast<StarStyle>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarStyle(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     return static_cast<jint>(core->getRenderer()->getStarStyle());
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarPointRadius(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setStarPointRadius(value);
 }
 
 extern "C" JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarPointRadius(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getStarPointRadius();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarOptimization(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setStarOptimization(value);
 }
 
 extern "C" JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarOptimization(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getStarOptimization();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarMaxIrradiance(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setStarMaxIrradiance(value);
 }
 
 extern "C" JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarMaxIrradiance(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getStarMaxIrradiance();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarExposure(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setStarExposure(value);
 }
 
 extern "C" JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarExposure(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getStarExposure();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setToneMapping(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setToneMappingMode(static_cast<ToneMappingMode>(value));
 }
 
 extern "C" JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getToneMapping(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return static_cast<jint>(core->getRenderer()->getToneMappingMode());
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setExposure(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setToneMappingExposure(value);
 }
 
 extern "C" JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_AppCore_c_1getExposure(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getToneMappingExposure();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarDimClipFactor(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setStarDimClipFactor(value);
 }
 
 extern "C" JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarDimClipFactor(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getStarDimClipFactor();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setStarColors(JNIEnv *env, jclass clazz, jlong pointer, jint value) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setStarColorTable(static_cast<ColorTableType>(value));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getStarColors(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return static_cast<jint>(core->getRenderer()->getStarColorTable());
 }
 
@@ -1300,7 +1301,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setTintSaturation(JNIEnv *env, jclass clazz, jlong pointer,
                                                           jfloat tint_saturation) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setTintSaturation(tint_saturation);
 }
 
@@ -1308,14 +1309,14 @@ extern "C"
 JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_AppCore_c_1getTintSaturation(JNIEnv *env, jclass clazz,
                                                           jlong pointer) {
-    auto core = reinterpret_cast<CelestiaCore *>(pointer);
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getTintSaturation();
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_AppCore_c_1getRenderInfo(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     return env->NewStringUTF(Helper::getRenderInfo(core->getRenderer()).c_str());
 }
 
@@ -1323,9 +1324,9 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_AppCore_c_1saveScreenshot(JNIEnv *env, jclass clazz, jlong ptr, jstring file_path, int image_type)
 {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *c_path = env->GetStringUTFChars(file_path, nullptr);
-    bool result = core->saveScreenShot(c_path, (ContentType)image_type);
+    bool result = core->saveScreenShot(c_path, static_cast<ContentType>(image_type));
     env->ReleaseStringUTFChars(file_path, c_path);
     return result ? JNI_TRUE : JNI_FALSE;
 }
@@ -1333,21 +1334,21 @@ Java_space_celestia_celestia_AppCore_c_1saveScreenshot(JNIEnv *env, jclass clazz
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setAmbientLightLevel(JNIEnv *env, jclass clazz, jlong pointer, jdouble ambient_light_level) {
-    auto core = (CelestiaCore *)pointer;
-    core->getRenderer()->setAmbientLightLevel((float)ambient_light_level);
+    auto core = fromHandle<CelestiaCore>(pointer);
+    core->getRenderer()->setAmbientLightLevel(static_cast<float>(ambient_light_level));
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_AppCore_c_1getAmbientLightLevel(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getAmbientLightLevel();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setFaintestVisible(JNIEnv *env, jclass clazz, jlong pointer, jdouble faintest_visible) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     if (!celestia::util::is_set(core->getRenderer()->getRenderFlags(), RenderFlags::ShowAutoMag))
     {
         core->setFaintest(static_cast<float>(faintest_visible));
@@ -1362,7 +1363,7 @@ Java_space_celestia_celestia_AppCore_c_1setFaintestVisible(JNIEnv *env, jclass c
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_AppCore_c_1getFaintestVisible(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     if (!celestia::util::is_set(core->getRenderer()->getRenderFlags(), RenderFlags::ShowAutoMag))
     {
         return core->getSimulation()->getFaintestVisible();
@@ -1376,7 +1377,7 @@ Java_space_celestia_celestia_AppCore_c_1getFaintestVisible(JNIEnv *env, jclass c
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setGalaxyBrightness(JNIEnv *env, jclass clazz, jlong pointer, jdouble galaxy_brightness) {
-    Galaxy::setLightGain((float)galaxy_brightness);
+    Galaxy::setLightGain(static_cast<float>(galaxy_brightness));
 }
 
 extern "C"
@@ -1388,14 +1389,14 @@ Java_space_celestia_celestia_AppCore_c_1getGalaxyBrightness(JNIEnv *env, jclass 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setMinimumFeatureSize(JNIEnv *env, jclass clazz, jlong pointer, jdouble minimum_feature_size) {
-    auto core = (CelestiaCore *)pointer;
-    core->getRenderer()->setMinimumFeatureSize((float)minimum_feature_size);
+    auto core = fromHandle<CelestiaCore>(pointer);
+    core->getRenderer()->setMinimumFeatureSize(static_cast<float>(minimum_feature_size));
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_AppCore_c_1getMinimumFeatureSize(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     return core->getRenderer()->getMinimumFeatureSize();
 }
 
@@ -1406,7 +1407,7 @@ Java_space_celestia_celestia_AppCore_c_1setFont(JNIEnv *env, jclass clazz,
                                                            jstring font_path,
                                                            jint collection_index,
                                                            jint font_size) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
     core->setHudFont(c_path, collection_index, font_size);
     env->ReleaseStringUTFChars(font_path, c_path);
@@ -1419,7 +1420,7 @@ Java_space_celestia_celestia_AppCore_c_1setTitleFont(JNIEnv *env, jclass clazz,
                                                                 jstring font_path,
                                                                 jint collection_index,
                                                                 jint font_size) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
     core->setHudTitleFont(c_path, collection_index, font_size);
     env->ReleaseStringUTFChars(font_path, c_path);
@@ -1433,9 +1434,9 @@ Java_space_celestia_celestia_AppCore_c_1setRendererFont(JNIEnv *env, jclass claz
                                                                    jint collection_index,
                                                                    jint font_size,
                                                                    jint font_style) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *c_path = env->GetStringUTFChars(font_path, nullptr);
-    core->setRendererFont(c_path, collection_index, font_size, (Renderer::FontStyle)font_style);
+    core->setRendererFont(c_path, collection_index, font_size, static_cast<Renderer::FontStyle>(font_style));
     env->ReleaseStringUTFChars(font_path, c_path);
 }
 
@@ -1445,7 +1446,7 @@ Java_space_celestia_celestia_AppCore_c_1getReferenceMarkEnabled(JNIEnv *env,
                                                                            jclass clazz,
                                                                            jlong ptr,
                                                                            jstring str) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *c_str = env->GetStringUTFChars(str, nullptr);
     bool enabled = core->referenceMarkEnabled(c_str);
     env->ReleaseStringUTFChars(str, c_str);
@@ -1459,7 +1460,7 @@ Java_space_celestia_celestia_AppCore_c_1toggleReferenceMarkEnabled(JNIEnv *env,
                                                                               jclass clazz,
                                                                               jlong ptr,
                                                                               jstring str) {
-    auto core = (CelestiaCore *)ptr;
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *c_str = env->GetStringUTFChars(str, nullptr);
     core->toggleReferenceMark(c_str);
     env->ReleaseStringUTFChars(str, c_str);
@@ -1472,7 +1473,7 @@ Java_space_celestia_celestia_AppCore_c_1getReferenceMarkEnabledForSelection(JNIE
                                                                              jlong ptr,
                                                                              jstring str,
                                                                              jobject selection) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *c_str = env->GetStringUTFChars(str, nullptr);
     bool enabled = core->referenceMarkEnabled(c_str, javaSelectionAsSelection(env, selection));
     env->ReleaseStringUTFChars(str, c_str);
@@ -1486,7 +1487,7 @@ Java_space_celestia_celestia_AppCore_c_1toggleReferenceMarkForSelection(JNIEnv *
                                                                         jlong ptr,
                                                                         jstring str,
                                                                         jobject selection) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     const char *c_str = env->GetStringUTFChars(str, nullptr);
     core->toggleReferenceMark(c_str, javaSelectionAsSelection(env, selection));
     env->ReleaseStringUTFChars(str, c_str);
@@ -1497,7 +1498,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setPickTolerance(JNIEnv *env,
                                                                     jclass clazz, jlong ptr,
                                                                     jfloat pick_tolerance) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->setPickTolerance(static_cast<float>(pick_tolerance));
 }
 
@@ -1505,7 +1506,7 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_AppCore_c_1getLanguage(JNIEnv *env, jclass clazz) {
     const char *lang = dgettext("celestia", "LANGUAGE");
-    if (strcmp(lang, "LANGUAGE") == 0)
+    if (std::string_view(lang) == "LANGUAGE")
         return env->NewStringUTF("en");
     return env->NewStringUTF(lang);
 }
@@ -1515,23 +1516,23 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setScriptSystemAccessPolicy(JNIEnv *env, jclass clazz,
                                                                     jlong pointer,
                                                                     jint script_system_access_policy) {
-    auto core = (CelestiaCore *)pointer;
-    core->setScriptSystemAccessPolicy((CelestiaCore::ScriptSystemAccessPolicy)script_system_access_policy);
+    auto core = fromHandle<CelestiaCore>(pointer);
+    core->setScriptSystemAccessPolicy(static_cast<CelestiaCore::ScriptSystemAccessPolicy>(script_system_access_policy));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getScriptSystemAccessPolicy(JNIEnv *env, jclass clazz,
                                                                     jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
-    return (jint)core->getScriptSystemAccessPolicy();
+    auto core = fromHandle<CelestiaCore>(pointer);
+    return static_cast<jint>(core->getScriptSystemAccessPolicy());
 }
 
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getWidth(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     auto [width, _] = core->getWindowDimension();
     return static_cast<jint>(width);
 }
@@ -1539,7 +1540,7 @@ Java_space_celestia_celestia_AppCore_c_1getWidth(JNIEnv *env, jclass clazz, jlon
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getHeight(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     auto [_, height] = core->getWindowDimension();
     return static_cast<jint>(height);
 }
@@ -1547,7 +1548,7 @@ Java_space_celestia_celestia_AppCore_c_1getHeight(JNIEnv *env, jclass clazz, jlo
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getLayoutDirection(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     return static_cast<jint>(core->getLayoutDirection());
 }
 
@@ -1555,20 +1556,20 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setLayoutDirection(JNIEnv *env, jclass clazz, jlong ptr,
                                                            jint layout_direction) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->setLayoutDirection(static_cast<celestia::LayoutDirection>(layout_direction));
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setTextEnterMode(JNIEnv *env, jclass clazz, jlong ptr,
                                                          jint text_enter_mode) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     core->setTextEnterMode(static_cast<celestia::Hud::TextEnterMode>(text_enter_mode));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_AppCore_c_1getTextEnterMode(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto core = reinterpret_cast<CelestiaCore *>(ptr);
+    auto core = fromHandle<CelestiaCore>(ptr);
     return static_cast<jint>(core->getTextEnterMode());
 }

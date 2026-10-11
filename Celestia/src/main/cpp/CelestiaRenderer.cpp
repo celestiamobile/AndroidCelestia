@@ -66,14 +66,14 @@ static void KHRONOS_APIENTRY CelestiaKHRDebugCallback(GLenum source,
         default:                                 severityStr = "UNKNOWN"; break;
     }
     LOG_INFO("[GL_KHR_debug] source=%s type=%s id=%u severity=%s: %.*s",
-             sourceStr, typeStr, id, severityStr, (int)length, message);
+             sourceStr, typeStr, id, severityStr, static_cast<int>(length), message);
 }
 #endif
 
-#define CELESTIA_RENDERER_FRAME_MAX             0
-#define CELESTIA_RENDERER_FRAME_60FPS           1
-#define CELESTIA_RENDERER_FRAME_30FPS           2
-#define CELESTIA_RENDERER_FRAME_20FPS           3
+constexpr int CELESTIA_RENDERER_FRAME_MAX = 0;
+constexpr int CELESTIA_RENDERER_FRAME_60FPS = 1;
+constexpr int CELESTIA_RENDERER_FRAME_30FPS = 2;
+constexpr int CELESTIA_RENDERER_FRAME_20FPS = 3;
 
 struct CelestiaSurface
 {
@@ -117,13 +117,13 @@ public:
 
     CelestiaCore *core = nullptr;
 
-    enum RenderThreadMessage {
-        MSG_NONE = 0,
-        MSG_WINDOW_SET,
-        MSG_RENDER_LOOP_EXIT
+    enum class RenderThreadMessage {
+        None,
+        WindowSet,
+        RenderLoopExit,
     };
 
-    enum RenderThreadMessage msg = MSG_NONE;
+    RenderThreadMessage msg = RenderThreadMessage::None;
 
     bool enableMultisample = false;
     bool engineStartedCalled = false;
@@ -387,7 +387,7 @@ void CelestiaRenderer::start()
 void CelestiaRenderer::stop()
 {
     lock();
-    msg = CelestiaRenderer::MSG_RENDER_LOOP_EXIT;
+    msg = CelestiaRenderer::RenderThreadMessage::RenderLoopExit;
     unlock();
 
     pthread_join(threadId, nullptr);
@@ -431,7 +431,7 @@ void CelestiaRenderer::setSurface(JNIEnv *env, jobject m_surface, bool presentat
 {
     lock();
     CelestiaSurface &s = presentation ? presentationSurface : surface;
-    msg = CelestiaRenderer::MSG_WINDOW_SET;
+    msg = CelestiaRenderer::RenderThreadMessage::WindowSet;
 
     if (s.surface != EGL_NO_SURFACE)
     {
@@ -566,7 +566,7 @@ void CelestiaRenderer::initQuadShader() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -701,7 +701,7 @@ void CelestiaRenderer::drawTextureToScreen(unsigned int texture) {
 
 void *CelestiaRenderer::threadCallback(void *self)
 {
-    auto renderer = (CelestiaRenderer *)self;
+    auto renderer = static_cast<CelestiaRenderer *>(self);
 
     // Create ENV for the native thread
     JNIEnv *newEnv;
@@ -731,16 +731,16 @@ void *CelestiaRenderer::threadCallback(void *self)
 
         switch (renderer->msg)
         {
-            case CelestiaRenderer::MSG_WINDOW_SET:
+            case CelestiaRenderer::RenderThreadMessage::WindowSet:
                 renderer->initialize();
                 break;
-            case CelestiaRenderer::MSG_RENDER_LOOP_EXIT:
+            case CelestiaRenderer::RenderThreadMessage::RenderLoopExit:
                 renderingEnabled = false;
                 break;
             default:
                 break;
         }
-        renderer->msg = CelestiaRenderer::MSG_NONE;
+        renderer->msg = CelestiaRenderer::RenderThreadMessage::None;
 
         bool needsDrawn = false;
         bool hasPendingTasks = renderer->hasPendingTasks;
@@ -835,7 +835,7 @@ void *CelestiaRenderer::threadCallback(void *self)
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1initialize(JNIEnv *env, jobject thiz, jlong ptr) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
     renderer->javaObject = env->NewGlobalRef(thiz);
     jclass clazz = env->GetObjectClass(thiz);
     CelestiaRenderer::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(I)Z");
@@ -848,7 +848,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1destroy(JNIEnv *env, jobject thiz, jlong ptr) {
 
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
     env->DeleteGlobalRef(renderer->javaObject);
     delete renderer;
 }
@@ -865,7 +865,7 @@ Java_space_celestia_celestia_Renderer_c_1start(JNIEnv *env, jobject thiz,
 
     LOG_INFO("Creating renderer thread");
 
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
     renderer->enableMultisample = static_cast<bool>(enable_multisample);
 
     renderer->start();
@@ -874,7 +874,7 @@ Java_space_celestia_celestia_Renderer_c_1start(JNIEnv *env, jobject thiz,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1stop(JNIEnv *env, jobject thiz, jlong ptr) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
     LOG_INFO("Stopping renderer thread");
     renderer->stop();
@@ -886,7 +886,7 @@ Java_space_celestia_celestia_Renderer_c_1stop(JNIEnv *env, jobject thiz, jlong p
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1pause(JNIEnv *env, jobject thiz, jlong ptr) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
     renderer->pause();
 }
@@ -894,7 +894,7 @@ Java_space_celestia_celestia_Renderer_c_1pause(JNIEnv *env, jobject thiz, jlong 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1resume(JNIEnv *env, jobject thiz, jlong ptr) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
     renderer->resume();
 }
@@ -904,7 +904,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1setSurface(JNIEnv *env, jobject thiz,
                                                     jlong ptr,
                                                     jobject surface) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
     renderer->setSurface(env, surface, false);
 }
@@ -914,7 +914,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1setPresentationSurface(JNIEnv *env, jobject thiz,
                                                                 jlong ptr,
                                                                 jobject surface) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
     renderer->setSurface(env, surface, true);
 }
@@ -925,9 +925,9 @@ Java_space_celestia_celestia_Renderer_c_1setCorePointer(JNIEnv *env,
                                                         jobject thiz,
                                                         jlong ptr,
                                                         jlong core_ptr) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
-    renderer->setCorePointer((CelestiaCore *)core_ptr);
+    renderer->setCorePointer(fromHandle<CelestiaCore>(core_ptr));
 }
 
 extern "C"
@@ -937,7 +937,7 @@ Java_space_celestia_celestia_Renderer_c_1setSurfaceSize(JNIEnv *env,
                                                         jlong ptr,
                                                         jint width,
                                                         jint height) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
     renderer->setSize(width, height, false);
 }
@@ -949,7 +949,7 @@ Java_space_celestia_celestia_Renderer_c_1setPresentationSurfaceSize(JNIEnv *env,
                                                                     jlong ptr,
                                                                     jint width,
                                                                     jint height) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
     renderer->setSize(width, height, true);
 }
@@ -959,7 +959,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1makeContextCurrent(JNIEnv *env,
                                                             jobject thiz,
                                                             jlong ptr) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
     renderer->makeContextCurrent();
 }
 
@@ -969,7 +969,7 @@ Java_space_celestia_celestia_Renderer_c_1setFrameRateOption(JNIEnv *env,
                                                             jobject thiz,
                                                             jlong ptr,
                                                             jint frame_rate_option) {
-    auto renderer = (CelestiaRenderer *)ptr;
+    auto renderer = fromHandle<CelestiaRenderer>(ptr);
 
     renderer->setFrameRateOption(frame_rate_option);
 }
@@ -978,7 +978,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Renderer_c_1createNativeRenderObject(JNIEnv *env,
                                                                   jclass clazz) {
-    return (jlong)new CelestiaRenderer;
+    return toHandle(new CelestiaRenderer);
 }
 
 extern "C"
@@ -986,7 +986,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Renderer_c_1setHasPendingTasks(JNIEnv *env, jobject thiz,
                                                             jlong pointer,
                                                             jboolean has_pending_tasks) {
-    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    auto renderer = fromHandle<CelestiaRenderer>(pointer);
     renderer->setHasPendingTasks(static_cast<bool>(has_pending_tasks));
 }
 
@@ -994,7 +994,7 @@ extern "C"
 JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_Renderer_c_1getRenderingScaleX(JNIEnv *env, jobject thiz,
                                                              jlong pointer) {
-    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    auto renderer = fromHandle<CelestiaRenderer>(pointer);
     // Return width ratio (presentationSurface / surface) if both surfaces exist, otherwise 1.0
     if (renderer->presentationSurface.surface != EGL_NO_SURFACE && 
         renderer->surface.surface != EGL_NO_SURFACE &&
@@ -1009,7 +1009,7 @@ extern "C"
 JNIEXPORT jfloat JNICALL
 Java_space_celestia_celestia_Renderer_c_1getRenderingScaleY(JNIEnv *env, jobject thiz,
                                                              jlong pointer) {
-    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    auto renderer = fromHandle<CelestiaRenderer>(pointer);
     // Return height ratio (presentationSurface / surface) if both surfaces exist, otherwise 1.0
     if (renderer->presentationSurface.surface != EGL_NO_SURFACE && 
         renderer->surface.surface != EGL_NO_SURFACE &&
@@ -1024,6 +1024,6 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_Renderer_c_1hasPresentationSurface(JNIEnv *env, jobject thiz,
                                                                  jlong pointer) {
-    auto renderer = reinterpret_cast<CelestiaRenderer *>(pointer);
+    auto renderer = fromHandle<CelestiaRenderer>(pointer);
     return renderer->presentationSurface.surface != EGL_NO_SURFACE;
 }

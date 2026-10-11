@@ -14,27 +14,27 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_DSOCatalog_c_1getDSOName(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer,
                                                       jboolean localized) {
-    auto d = reinterpret_cast<DSODatabase *>(ptr);
-    return env->NewStringUTF(d->getDSOName(reinterpret_cast<DeepSkyObject *>(pointer), localized == JNI_TRUE).c_str());
+    auto d = fromHandle<DSODatabase>(ptr);
+    return env->NewStringUTF(d->getDSOName(fromHandle<DeepSkyObject>(pointer), localized == JNI_TRUE).c_str());
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_space_celestia_celestia_DSOCatalog_c_1getCount(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto d = reinterpret_cast<DSODatabase *>(ptr);
+    auto d = fromHandle<DSODatabase>(ptr);
     return static_cast<jint>(d->size());
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_DSOCatalog_c_1getDSO(JNIEnv *env, jclass clazz, jlong ptr, jint index) {
-    auto d = reinterpret_cast<DSODatabase *>(ptr);
-    return reinterpret_cast<jlong>(d->getDSO(index));
+    auto d = fromHandle<DSODatabase>(ptr);
+    return toHandle(d->getDSO(index));
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_DSOCatalog_c_1isDSOGalaxy(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto d = reinterpret_cast<DeepSkyObject *>(ptr);
+    auto d = fromHandle<DeepSkyObject>(ptr);
     return d->getObjType() == DeepSkyObjectType::Galaxy ? JNI_TRUE : JNI_FALSE;
 }

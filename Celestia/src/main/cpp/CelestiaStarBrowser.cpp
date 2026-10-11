@@ -10,19 +10,17 @@
 #include "CelestiaJNI.h"
 #include <celengine/starbrowser.h>
 
-#define BROWSER_MAX_STAR_COUNT          100
-
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_StarBrowser_c_1destroy(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto browser = reinterpret_cast<celestia::engine::StarBrowser *>(ptr);
+    auto browser = fromHandle<celestia::engine::StarBrowser>(ptr);
     delete browser;
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_StarBrowser_c_1getStars(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto browser = reinterpret_cast<celestia::engine::StarBrowser *>(ptr);
+    auto browser = fromHandle<celestia::engine::StarBrowser>(ptr);
     std::vector<celestia::engine::StarBrowserRecord> records;
     browser->populate(records);
     if (records.empty())
@@ -31,7 +29,7 @@ Java_space_celestia_celestia_StarBrowser_c_1getStars(JNIEnv *env, jclass clazz, 
     jobject arrayObject = env->NewObject(alClz, aliMethodID, static_cast<jint>(records.size()));
     for (const auto &record : records)
      {
-        jobject jstar = env->NewObject(csClz, csiMethodID, reinterpret_cast<jlong>(record.star));
+        jobject jstar = env->NewObject(csClz, csiMethodID, toHandle(record.star));
         env->CallBooleanMethod(arrayObject, alaMethodID, jstar);
         env->DeleteLocalRef(jstar);
     }

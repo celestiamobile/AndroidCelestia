@@ -11,12 +11,12 @@
 
 jobject createVectorForVector3d(JNIEnv *env, const Eigen::Vector3d &v)
 {
-    return env->NewObject(cvClz, cv3InitMethodID, (jdouble)v.x(), (jdouble)v.y(), (jdouble)v.z());
+    return env->NewObject(cvClz, cv3InitMethodID, static_cast<jdouble>(v.x()), static_cast<jdouble>(v.y()), static_cast<jdouble>(v.z()));
 }
 
 jobject createVectorForQuaterniond(JNIEnv *env, const Eigen::Quaterniond &v)
 {
-    return env->NewObject(cvClz, cv4InitMethodID, (jdouble)v.x(), (jdouble)v.y(), (jdouble)v.z(), (jdouble)v.w());
+    return env->NewObject(cvClz, cv4InitMethodID, static_cast<jdouble>(v.x()), static_cast<jdouble>(v.y()), static_cast<jdouble>(v.z()), static_cast<jdouble>(v.w()));
 }
 
 Eigen::Vector3d vector3dFromObject(JNIEnv *env, jobject thiz)

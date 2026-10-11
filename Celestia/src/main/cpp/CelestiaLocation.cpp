@@ -13,6 +13,6 @@
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_Location_c_1getName(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto location = (Location *)pointer;
+    auto location = fromHandle<Location>(pointer);
     return env->NewStringUTF(location->getName(true).c_str());
 }

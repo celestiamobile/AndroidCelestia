@@ -13,7 +13,7 @@
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_UniversalCoord_c_1destroy(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto ptr = (UniversalCoord *)pointer;
+    auto ptr = fromHandle<UniversalCoord>(pointer);
     delete ptr;
 }
 
@@ -21,7 +21,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_UniversalCoord_c_1getZero(JNIEnv *env,
                                                                   jclass clazz) {
-    return (jlong)new UniversalCoord(UniversalCoord::Zero());
+    return toHandle(new UniversalCoord(UniversalCoord::Zero()));
 }
 
 extern "C"
@@ -30,8 +30,8 @@ Java_space_celestia_celestia_UniversalCoord_c_1distanceFrom(JNIEnv *env,
                                                                        jclass clazz,
                                                                        jlong ptr1,
                                                                        jlong ptr2) {
-    UniversalCoord *u1 = (UniversalCoord *)ptr1;
-    UniversalCoord *u2 = (UniversalCoord *)ptr2;
+    UniversalCoord *u1 = fromHandle<UniversalCoord>(ptr1);
+    UniversalCoord *u2 = fromHandle<UniversalCoord>(ptr2);
     return u1->distanceFromKm(*u2);
 }
 
@@ -41,8 +41,8 @@ Java_space_celestia_celestia_UniversalCoord_c_1offsetFrom(JNIEnv *env,
                                                                      jclass clazz,
                                                                      jlong ptr1,
                                                                      jlong ptr2) {
-    UniversalCoord *u1 = (UniversalCoord *)ptr1;
-    UniversalCoord *u2 = (UniversalCoord *)ptr2;
+    UniversalCoord *u1 = fromHandle<UniversalCoord>(ptr1);
+    UniversalCoord *u2 = fromHandle<UniversalCoord>(ptr2);
     Eigen::Vector3d offset = u1->offsetFromKm(*u2);
     return createVectorForVector3d(env, offset);
 }

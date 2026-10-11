@@ -8,7 +8,7 @@
 // of the License, or (at your option) any later version.
 
 #include "CelestiaJNI.h"
-#import <celestia/scriptmenu.h>
+#include <celestia/scriptmenu.h>
 
 extern "C"
 JNIEXPORT jobject JNICALL

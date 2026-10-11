@@ -7,16 +7,18 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 
+#include <numbers>
+
 #include "CelestiaSelection.h"
-#import <celestia/destination.h>
-#import <celestia/celestiacore.h>
+#include <celestia/destination.h>
+#include <celestia/celestiacore.h>
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_AppCore_c_1getDestinations(JNIEnv *env,
                                                                    jobject clazz,
                                                                    jlong pointer) {
-    auto core = (CelestiaCore *)pointer;
+    auto core = fromHandle<CelestiaCore>(pointer);
     const DestinationList *destionations = core->getDestinations();
     int count = destionations ? destionations->size() : 0;
     jobject array = env->NewObject(alClz, aliMethodID, count);
@@ -49,7 +51,7 @@ Java_space_celestia_celestia_Simulation_c_1goToDestination(JNIEnv *env,
                                                            jlong pointer,
                                                            jstring target,
                                                            jdouble distance) {
-    auto sim = (Simulation *)pointer;
+    auto sim = fromHandle<Simulation>(pointer);
     const char *str = env->GetStringUTFChars(target, nullptr);
     Selection sel = sim->findObjectFromPath(str);
     if (!sel.empty())
@@ -82,7 +84,7 @@ Java_space_celestia_celestia_Simulation_c_1goToLocation(JNIEnv *env,
                                                         jobject selection,
                                                         jdouble distance,
                                                         jdouble duration) {
-    auto sim = (Simulation *)pointer;
+    auto sim = fromHandle<Simulation>(pointer);
     sim->setSelection(javaSelectionAsSelection(env, selection));
     sim->geosynchronousFollow();
     sim->gotoSelection(duration, distance, Eigen::Vector3f(0, 1, 0), ObserverFrame::CoordinateSystem::ObserverLocal);
@@ -98,9 +100,9 @@ Java_space_celestia_celestia_Simulation_c_1goToLocationLongLat(JNIEnv *env,
                                                                jfloat latitude,
                                                                jdouble distance,
                                                                jdouble duration) {
-    auto sim = (Simulation *)pointer;
+    auto sim = fromHandle<Simulation>(pointer);
     sim->setSelection(javaSelectionAsSelection(env, selection));
     sim->geosynchronousFollow();
-    sim->gotoSelectionLongLat(duration, distance, longitude * (float)M_PI / 180.0f, latitude * (float)M_PI / 180.0f, Eigen::Vector3f(0, 1, 0));
+    sim->gotoSelectionLongLat(duration, distance, longitude * std::numbers::pi_v<float> / 180.0f, latitude * std::numbers::pi_v<float> / 180.0f, Eigen::Vector3f(0, 1, 0));
 }
 

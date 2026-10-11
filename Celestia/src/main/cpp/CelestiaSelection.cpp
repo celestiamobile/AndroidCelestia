@@ -21,13 +21,13 @@ Selection javaSelectionAsSelection(JNIEnv *env, jobject javaSelection)
     switch (static_cast<SelectionType>(type))
     {
         case SelectionType::Body:
-            return { reinterpret_cast<Body*>(pointer) };
+            return { fromHandle<Body>(pointer) };
         case SelectionType::Star:
-            return { reinterpret_cast<Star*>(pointer) };
+            return { fromHandle<Star>(pointer) };
         case SelectionType::DeepSky:
-            return { reinterpret_cast<DeepSkyObject*>(pointer) };
+            return { fromHandle<DeepSkyObject>(pointer) };
         case SelectionType::Location:
-            return { reinterpret_cast<Location*>(pointer) };
+            return { fromHandle<Location>(pointer) };
         case SelectionType::None:
         default:
             return {};
@@ -55,7 +55,7 @@ jobject selectionAsJavaSelection(JNIEnv *env, Selection const& sel)
         default:
             break;
     }
-    return env->NewObject(selectionClz, selectionInitMethodID, reinterpret_cast<jlong>(pointer), static_cast<jint>(sel.getType()));
+    return env->NewObject(selectionClz, selectionInitMethodID, toHandle(pointer), static_cast<jint>(sel.getType()));
 }
 
 extern "C"

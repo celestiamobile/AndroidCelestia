@@ -13,28 +13,28 @@
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_Orbit_c_1isPeriodic(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto p = (const celestia::ephem::Orbit *)pointer;
-    return (jboolean)(p->isPeriodic() ? JNI_TRUE : JNI_FALSE);
+    auto p = fromHandle<const celestia::ephem::Orbit>(pointer);
+    return static_cast<jboolean>(p->isPeriodic() ? JNI_TRUE : JNI_FALSE);
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Orbit_c_1getPeriod(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto p = (const celestia::ephem::Orbit *)pointer;
+    auto p = fromHandle<const celestia::ephem::Orbit>(pointer);
     return p->getPeriod();
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Orbit_c_1getBoundingRadius(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto p = (const celestia::ephem::Orbit *)pointer;
+    auto p = fromHandle<const celestia::ephem::Orbit>(pointer);
     return p->getBoundingRadius();
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Orbit_c_1getValidBeginTime(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto p = (const celestia::ephem::Orbit *)pointer;
+    auto p = fromHandle<const celestia::ephem::Orbit>(pointer);
     double begin, end;
     p->getValidRange(begin, end);
     return begin;
@@ -43,7 +43,7 @@ Java_space_celestia_celestia_Orbit_c_1getValidBeginTime(JNIEnv *env, jclass claz
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Orbit_c_1getValidEndTime(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto p = (const celestia::ephem::Orbit *)pointer;
+    auto p = fromHandle<const celestia::ephem::Orbit>(pointer);
     double begin, end;
     p->getValidRange(begin, end);
     return end;
@@ -52,7 +52,7 @@ Java_space_celestia_celestia_Orbit_c_1getValidEndTime(JNIEnv *env, jclass clazz,
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Orbit_c_1getVelocityAtTime(JNIEnv *env, jclass clazz, jlong pointer, jdouble julian_day) {
-    auto p = (const celestia::ephem::Orbit *)pointer;
+    auto p = fromHandle<const celestia::ephem::Orbit>(pointer);
     const Eigen::Vector3d v = p->velocityAtTime(julian_day);
     return createVectorForVector3d(env, v);
 }
@@ -60,7 +60,7 @@ Java_space_celestia_celestia_Orbit_c_1getVelocityAtTime(JNIEnv *env, jclass claz
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Orbit_c_1getPositionAtTime(JNIEnv *env, jclass clazz, jlong pointer, jdouble julian_day) {
-    auto p = (const celestia::ephem::Orbit *)pointer;
+    auto p = fromHandle<const celestia::ephem::Orbit>(pointer);
     const Eigen::Vector3d v = p->positionAtTime(julian_day);
     return createVectorForVector3d(env, v);
 }

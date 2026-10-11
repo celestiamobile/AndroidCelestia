@@ -24,15 +24,15 @@
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Universe_c_1getStarCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto u = reinterpret_cast<Universe *>(pointer);
-    return (jlong)u->getStarCatalog();
+    auto u = fromHandle<Universe>(pointer);
+    return toHandle(u->getStarCatalog());
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Universe_c_1getDSOCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto u = reinterpret_cast<Universe *>(pointer);
-    return (jlong)u->getDSOCatalog();
+    auto u = fromHandle<Universe>(pointer);
+    return toHandle(u->getDSOCatalog());
 }
 
 extern "C"
@@ -43,8 +43,8 @@ Java_space_celestia_celestia_Universe_c_1getStarBrowser(JNIEnv *env, jclass claz
     const jint KIND_BRIGHTER      = 1;
     const jint KIND_BRIGHTEST     = 2;
     const jint KIND_WITH_PLANETS  = 3;
-    auto u = reinterpret_cast<Universe *>(pointer);
-    auto o = reinterpret_cast<Observer *>(observer);
+    auto u = fromHandle<Universe>(pointer);
+    auto o = fromHandle<Observer>(observer);
     auto b = new celestia::engine::StarBrowser(u);
     switch (kind)
     {
@@ -69,7 +69,7 @@ Java_space_celestia_celestia_Universe_c_1getStarBrowser(JNIEnv *env, jclass claz
     }
     b->setPosition(o->getPosition());
     b->setTime(o->getTime());
-    return reinterpret_cast<jlong>(b);
+    return toHandle(b);
 }
 
 using json = nlohmann::json;
@@ -81,31 +81,33 @@ const static jint BROWSER_ITEM_TYPE_LOCATION = 1;
 const static std::string BROWSER_ITEM_POINTER_KEY = "pointer";
 const static std::string BROWSER_ITEM_CHILDREN_KEY = "children";
 
-static json create_browser_item(std::string const& name, jint key, std::map<std::string, std::pair<jlong, std::string>> &mp) {
+using BrowserItemMap = std::map<std::string, std::pair<jlong, std::string>>;
+
+static json create_browser_item(std::string const& name, jint key, const BrowserItemMap &mp) {
     json j;
     j[BROWSER_ITEM_NAME_KEY] = name;
     json items;
-    std::map<std::string, std::pair<jlong, std::string>>::iterator iter;
-    for(iter = mp.begin(); iter != mp.end(); iter++) {
+    for (const auto &[itemKey, value] : mp) {
+        const auto &[itemPointer, itemName] = value;
         json item;
-        item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
-        item[BROWSER_ITEM_NAME_KEY] = iter->second.second;
+        item[BROWSER_ITEM_POINTER_KEY] = itemPointer;
+        item[BROWSER_ITEM_NAME_KEY] = itemName;
         item[BROWSER_ITEM_TYPE_KEY] = key;
-        items[iter->first] = item;
+        items[itemKey] = item;
     }
     j[BROWSER_ITEM_CHILDREN_KEY] = items;
     return j;
 }
 
-static void create_browser_item_and_add(json &parent, std::string const& name, int key, std::map<std::string, std::pair<jlong, std::string>> &mp) {
+static void create_browser_item_and_add(json &parent, std::string const& name, int key, const BrowserItemMap &mp) {
     parent[name] = create_browser_item(name, key, mp);
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
-    auto u = reinterpret_cast<Universe *>(ptr);
-    SolarSystem *ss = u->getSolarSystem((Star *)pointer);
+    auto u = fromHandle<Universe>(ptr);
+    SolarSystem *ss = u->getSolarSystem(fromHandle<Star>(pointer));
 
     PlanetarySystem *sys = nullptr;
     if (ss) sys = ss->getPlanets();
@@ -114,13 +116,13 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass 
 
     if (sys) {
         int sysSize = sys->getSystemSize();
-        std::map<std::string, std::pair<jlong, std::string>> topLevel;
-        std::map<std::string, std::pair<jlong, std::string>> planets;
-        std::map<std::string, std::pair<jlong, std::string>> dwarfPlanets;
-        std::map<std::string, std::pair<jlong, std::string>> minorMoons;
-        std::map<std::string, std::pair<jlong, std::string>> asteroids;
-        std::map<std::string, std::pair<jlong, std::string>> comets;
-        std::map<std::string, std::pair<jlong, std::string>> spacecrafts;
+        BrowserItemMap topLevel;
+        BrowserItemMap planets;
+        BrowserItemMap dwarfPlanets;
+        BrowserItemMap minorMoons;
+        BrowserItemMap asteroids;
+        BrowserItemMap comets;
+        BrowserItemMap spacecrafts;
 
         for (int i = 0; i < sysSize; i++) {
             Body* body = sys->getBody(i);
@@ -128,7 +130,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass 
                 continue;
 
             std::string name = body->getName(true);
-            auto jitem = make_pair(reinterpret_cast<jlong>(body), name);
+            auto jitem = make_pair(toHandle(body), name);
 
             auto bodyClass  = body->getClassification();
 
@@ -166,13 +168,13 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass 
             }
         }
 
-        std::map<std::string, std::pair<jlong, std::string>>::iterator iter;
-        for(iter = topLevel.begin(); iter != topLevel.end(); iter++) {
+        for (const auto &[itemKey, value] : topLevel) {
+            const auto &[itemPointer, itemName] = value;
             json item;
-            item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
-            item[BROWSER_ITEM_NAME_KEY] = iter->second.second;
+            item[BROWSER_ITEM_POINTER_KEY] = itemPointer;
+            item[BROWSER_ITEM_NAME_KEY] = itemName;
             item[BROWSER_ITEM_TYPE_KEY] = BROWSER_ITEM_TYPE_BODY;
-            j[iter->first] = item;
+            j[itemKey] = item;
         }
 
         if (!planets.empty())
@@ -200,7 +202,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForStar(JNIEnv *env, jclass 
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass clazz, jlong ptr, jlong pointer) {
-    auto b = reinterpret_cast<Body *>(pointer);
+    auto b = fromHandle<Body>(pointer);
     PlanetarySystem* sys = b->getSatellites();
 
     json j;
@@ -209,10 +211,10 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
     {
         int sysSize = sys->getSystemSize();
 
-        std::map<std::string, std::pair<jlong, std::string>> topLevel;
-        std::map<std::string, std::pair<jlong, std::string>> minorMoons;
-        std::map<std::string, std::pair<jlong, std::string>> comets;
-        std::map<std::string, std::pair<jlong, std::string>> spacecrafts;
+        BrowserItemMap topLevel;
+        BrowserItemMap minorMoons;
+        BrowserItemMap comets;
+        BrowserItemMap spacecrafts;
 
         int i;
         for (i = 0; i < sysSize; i++)
@@ -222,7 +224,7 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
                 continue;
 
             std::string name = body->getName(true);
-            auto jitem = make_pair(reinterpret_cast<jlong>(body), name);
+            auto jitem = make_pair(toHandle(body), name);
 
             auto bodyClass  = body->getClassification();
 
@@ -253,13 +255,13 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
             }
         }
 
-        std::map<std::string, std::pair<jlong, std::string>>::iterator iter;
-        for(iter = topLevel.begin(); iter != topLevel.end(); iter++) {
+        for (const auto &[itemKey, value] : topLevel) {
+            const auto &[itemPointer, itemName] = value;
             json item;
-            item[BROWSER_ITEM_POINTER_KEY] = iter->second.first;
-            item[BROWSER_ITEM_NAME_KEY] = iter->second.second;
+            item[BROWSER_ITEM_POINTER_KEY] = itemPointer;
+            item[BROWSER_ITEM_NAME_KEY] = itemName;
             item[BROWSER_ITEM_TYPE_KEY] = BROWSER_ITEM_TYPE_BODY;
-            j[iter->first] = item;
+            j[itemKey] = item;
         }
 
         if (!minorMoons.empty())
@@ -275,14 +277,14 @@ Java_space_celestia_celestia_Universe_c_1getChildrenForBody(JNIEnv *env, jclass 
     auto locations = GetBodyFeaturesManager()->getLocations(b);
     if (locations.has_value() && !locations->empty())
     {
-        std::map<std::string, std::pair<jlong, std::string>> locationsMap;
+        BrowserItemMap locationsMap;
         for (const auto loc : *locations)
         {
             auto name = loc->getName(true);
             if (name.empty())
                 continue;
 
-            locationsMap[name] = make_pair(reinterpret_cast<jlong>(loc), name);
+            locationsMap[name] = make_pair(toHandle(loc), name);
         }
         if (!locationsMap.empty())
             create_browser_item_and_add(j, _("Locations"), BROWSER_ITEM_TYPE_LOCATION, locationsMap);
@@ -296,7 +298,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Universe_c_1mark(JNIEnv *env, jclass clazz,
                                                          jlong ptr, jobject selection,
                                                          jint marker) {
-    auto u = reinterpret_cast<Universe *>(ptr);
+    auto u = fromHandle<Universe>(ptr);
     u->markObject(javaSelectionAsSelection(env, selection), celestia::MarkerRepresentation(celestia::MarkerRepresentation::Symbol(marker), 10.0f, Color(0.0f, 1.0f, 0.0f, 0.9f)), 1);
 }
 
@@ -304,7 +306,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Universe_c_1unmark(JNIEnv *env, jclass clazz,
                                                            jlong ptr, jobject selection) {
-    auto u = reinterpret_cast<Universe *>(ptr);
+    auto u = fromHandle<Universe>(ptr);
     u->unmarkObject(javaSelectionAsSelection(env, selection), 1);
 }
 
@@ -312,7 +314,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Universe_c_1unmarkAll(JNIEnv *env, jclass clazz,
                                                               jlong ptr) {
-    auto u = reinterpret_cast<Universe *>(ptr);
+    auto u = fromHandle<Universe>(ptr);
     u->unmarkAll();
 }
 
@@ -321,7 +323,7 @@ JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_Universe_c_1getWebInfoURLForSelection(JNIEnv *env, jclass clazz,
                                                                    jlong pointer,
                                                                    jobject selection) {
-    auto u = reinterpret_cast<Universe *>(pointer);
+    auto u = fromHandle<Universe>(pointer);
     auto url = u->getInfoURL(javaSelectionAsSelection(env, selection));
     return url.empty() ? nullptr : env->NewStringUTF(url.data());
 }

@@ -7,6 +7,7 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 
+#include <cmath>
 #include <numbers>
 
 #include "CelestiaVector.h"
@@ -53,7 +54,7 @@ Java_space_celestia_celestia_Utils_rectToSpherical(JNIEnv *env, jclass clazz,
                                                               jobject rect) {
     Eigen::Vector3d v = vector3dFromObject(env, rect);
     double r = v.norm();
-    double theta = atan2(v.y(), v.x());
+    double theta = std::atan2(v.y(), v.x());
     if (theta < 0)
         theta = theta + 2 * std::numbers::pi;
     double phi = asin(v.z() / r);

@@ -15,7 +15,7 @@ JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_Observer_c_1getDisplayedSurface(JNIEnv *env,
                                                                         jclass,
                                                                         jlong ptr) {
-    return env->NewStringUTF(((Observer *)ptr)->getDisplayedSurface().c_str());
+    return env->NewStringUTF(fromHandle<Observer>(ptr)->getDisplayedSurface().c_str());
 }
 
 extern "C"
@@ -25,7 +25,7 @@ Java_space_celestia_celestia_Observer_c_1setDisplayedSurface(JNIEnv *env,
                                                                         jlong ptr,
                                                                         jstring displayed_surface) {
     const char *str = env->GetStringUTFChars(displayed_surface, nullptr);
-    ((Observer *)ptr)->setDisplayedSurface(str);
+    fromHandle<Observer>(ptr)->setDisplayedSurface(str);
     env->ReleaseStringUTFChars(displayed_surface, str);
 }
 
@@ -34,7 +34,7 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Observer_c_1setFrame(JNIEnv *env, jclass, jlong ptr,
                                                   jint coordinate_system, jobject reference,
                                                   jobject target) {
-    auto observer = reinterpret_cast<Observer *>(ptr);
+    auto observer = fromHandle<Observer>(ptr);
     observer->setFrame(static_cast<ObserverFrame::CoordinateSystem>(coordinate_system), javaSelectionAsSelection(env, reference), javaSelectionAsSelection(env, target));
 }
 
@@ -42,7 +42,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Observer_c_1rotate(JNIEnv *env, jclass clazz, jlong ptr,
                                                 jfloatArray from, jfloatArray to) {
-    auto observer = reinterpret_cast<Observer *>(ptr);
+    auto observer = fromHandle<Observer>(ptr);
     float fromBuffer[4];
     float toBuffer[4];
     env->GetFloatArrayRegion(from, 0, 4, fromBuffer);
@@ -64,7 +64,7 @@ Java_space_celestia_celestia_Observer_c_1applyQuaternion(JNIEnv *env, jclass cla
     env->GetFloatArrayRegion(current, 0, 4, currBuffer);
     Eigen::Quaternionf prev(prevBuffer);
     Eigen::Quaternionf curr(currBuffer);
-    auto observer = reinterpret_cast<Observer *>(ptr);
+    auto observer = fromHandle<Observer>(ptr);
     observer->setOrientationTransform((curr * prev.inverse()).cast<double>() * observer->getOrientationTransform());
 }
 
@@ -72,13 +72,13 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Observer_c_1setCockpit(JNIEnv *env, jclass clazz, jlong ptr,
                                                     jobject selection) {
-    auto observer = reinterpret_cast<Observer *>(ptr);
+    auto observer = fromHandle<Observer>(ptr);
     observer->setCockpit(javaSelectionAsSelection(env, selection));
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Observer_c_1getCockpit(JNIEnv *env, jclass clazz, jlong ptr) {
-    auto observer = reinterpret_cast<Observer *>(ptr);
+    auto observer = fromHandle<Observer>(ptr);
     return selectionAsJavaSelection(env, observer->getCockpit());
 }

@@ -41,7 +41,7 @@ Eigen::Vector3d findMaxEclipsePoint(const Eigen::Vector3d& toOcculter,
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1getSelection(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
+    auto sim = fromHandle<Simulation>(pointer);
     Selection sel = sim->getSelection();
     return selectionAsJavaSelection(env, sel);
 }
@@ -50,26 +50,26 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1setSelection(JNIEnv *env, jclass clazz, jlong pointer,
                                                         jobject selection) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
+    auto sim = fromHandle<Simulation>(pointer);
     sim->setSelection(javaSelectionAsSelection(env, selection));
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Simulation_c_1getUniverse(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
-    return (jlong)sim->getUniverse();
+    auto sim = fromHandle<Simulation>(pointer);
+    return toHandle(sim->getUniverse());
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass clazz, jlong pointer, jstring text, jint limit) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
+    auto sim = fromHandle<Simulation>(pointer);
     const char *str = env->GetStringUTFChars(text, nullptr);
     std::vector<celestia::engine::Completion> results;
     sim->getObjectCompletion(results, str, true);
     env->ReleaseStringUTFChars(text, str);
-    jobject arrayObject = env->NewObject(alClz, aliMethodID, (int)results.size());
+    jobject arrayObject = env->NewObject(alClz, aliMethodID, static_cast<int>(results.size()));
     int count = 0;
     for (const auto& result : results) {
         if (count > limit)
@@ -90,7 +90,7 @@ Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_space_celestia_celestia_Simulation_c_1findObject(JNIEnv *env, jclass clazz, jlong pointer, jstring name) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
+    auto sim = fromHandle<Simulation>(pointer);
     const char *str = env->GetStringUTFChars(name, nullptr);
     auto sel = sim->findObjectFromPath(str, true);
     env->ReleaseStringUTFChars(name, str);
@@ -100,21 +100,21 @@ Java_space_celestia_celestia_Simulation_c_1findObject(JNIEnv *env, jclass clazz,
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1reverseObserverOrientation(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
+    auto sim = fromHandle<Simulation>(pointer);
     sim->reverseObserverOrientation();
 }
 
 extern "C"
 JNIEXPORT jdouble JNICALL
 Java_space_celestia_celestia_Simulation_c_1getTime(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
+    auto sim = fromHandle<Simulation>(pointer);
     return sim->getTime();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1setTime(JNIEnv *env, jclass clazz, jlong pointer, jdouble time) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
+    auto sim = fromHandle<Simulation>(pointer);
     sim->setTime(time);
 }
 
@@ -123,9 +123,9 @@ JNIEXPORT void JNICALL
 Java_space_celestia_celestia_Simulation_c_1performEclipseAction(
         JNIEnv *env, jclass clazz, jlong pointer, jdouble startTime, jdouble endTime,
         jlong occulterPointer, jlong receiverPointer, jint action) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
-    auto occulter = reinterpret_cast<Body *>(occulterPointer);
-    auto receiver = reinterpret_cast<Body *>(receiverPointer);
+    auto sim = fromHandle<Simulation>(pointer);
+    auto occulter = fromHandle<Body>(occulterPointer);
+    auto receiver = fromHandle<Body>(receiverPointer);
     auto sun = receiver->getSystem()->getStar();
     if (sun == nullptr)
         return;
@@ -179,6 +179,6 @@ Java_space_celestia_celestia_Simulation_c_1performEclipseAction(
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Simulation_c_1getActiveObserver(JNIEnv *env, jclass clazz, jlong pointer) {
-    auto sim = reinterpret_cast<Simulation *>(pointer);
-    return (jlong)sim->getActiveObserver();
+    auto sim = fromHandle<Simulation>(pointer);
+    return toHandle(sim->getActiveObserver());
 }

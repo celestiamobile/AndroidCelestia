@@ -10,6 +10,7 @@
 #ifndef CELESTIA_JNI_H
 #define CELESTIA_JNI_H
 
+#include <cstdint>
 #include <jni.h>
 #include <pthread.h>
 
@@ -62,6 +63,18 @@ extern jclass timelinePhaseClz;
 extern jmethodID timelinePhaseInitMethodID;
 
 extern pthread_key_t javaEnvKey;
+}
+
+template <typename T>
+inline T *fromHandle(jlong handle)
+{
+    return reinterpret_cast<T *>(static_cast<uintptr_t>(handle));
+}
+
+template <typename T>
+inline jlong toHandle(T *pointer)
+{
+    return static_cast<jlong>(reinterpret_cast<uintptr_t>(pointer));
 }
 
 #endif //CELESTIA_JNI_H
