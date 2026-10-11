@@ -168,8 +168,7 @@ list(APPEND CELESTIA_SOURCES
 
 list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celcompat/charconv.h
-        ${CELESTIA_SRC_DIR}/celcompat/numbers.h
-        ${CELESTIA_SRC_DIR}/celcompat/numbers_impl.h
+        ${CELESTIA_SRC_DIR}/celcompat/byteswap.h
         )
 
 list(APPEND CELESTIA_SOURCES
