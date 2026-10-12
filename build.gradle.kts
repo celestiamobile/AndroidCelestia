@@ -38,6 +38,7 @@ allprojects {
 }
 
 tasks.register<Delete>("clean") {
+    description = "Clean build caches"
     delete("${rootProject.projectDir}/app/src/sideload/assets/CelestiaResources")
     delete(rootProject.layout.buildDirectory)
 }

@@ -94,13 +94,14 @@ kotlin {
 
 // Custom tasks
 val copyLocalizedFiles = tasks.register<Exec>("copyLocalizedFiles") {
-    println("Copying localized files")
+    description = "Copy localized Android resources"
     workingDir = projectDir
     executable = "/bin/sh"
     args = listOf("copy_localized_files.sh", File(File(File(projectDir, "src"), "main"), "res").absolutePath)
 }
 
 val copyGeneralData = tasks.register<Exec>("copyGeneralData") {
+    description = "Copy Celestia data and configuration into app assets"
     mustRunAfter(copyLocalizedFiles)
     workingDir = projectDir
     executable = "/bin/sh"
@@ -108,8 +109,8 @@ val copyGeneralData = tasks.register<Exec>("copyGeneralData") {
 }
 
 val convertPO = tasks.register<Exec>("convertPO") {
+    description = "Compile PO translations into app locale assets"
     mustRunAfter(copyGeneralData)
-    println("Converting PO")
     workingDir = projectDir
     executable = "/bin/sh"
     args = listOf("convert_po.sh", File(File(File(projectDir, "src"), "sideload"), "assets").absolutePath)
