@@ -30,7 +30,37 @@ env:
   CONTENT_COMMIT_HASH: '60316cf1c7df289b44b3c99711913bdbf1daea2e'
 
 jobs:
+  check-build:
+    name: Check whether to build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - name: Skip duplicate main pushes
+        id: check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
+        run: |
+          SHOULD_BUILD=true
+          if [[ "$EVENT_NAME" == "push" && "$REF" == "refs/heads/main" ]]; then
+            DEVELOP_SHA=$(gh api "repos/$GH_REPO/git/ref/heads/develop" --jq '.object.sha')
+            if [[ "$SHA" == "$DEVELOP_SHA" ]]; then
+              SHOULD_BUILD=false
+              echo "Skipping build: main points to the same commit as develop."
+            fi
+          fi
+          echo "should_build=$SHOULD_BUILD" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: check-build
+    if: needs.check-build.outputs.should_build == 'true'
     name: 'Build ${{ matrix.name }}'
     runs-on: ubuntu-24.04
 
