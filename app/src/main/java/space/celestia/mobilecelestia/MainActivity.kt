@@ -1389,12 +1389,12 @@ class MainActivity : AppCompatActivity(),
                     }
                     return@setOnMenuItemClickListener true
                 }
-                for (action in CelestiaAction.allActions.withIndex()) {
-                    menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount + action.index + 1, Menu.NONE, action.value.title).setOnMenuItemClickListener { _ ->
+                for ((index, value) in CelestiaAction.allActions.withIndex()) {
+                    menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount + index + 1, Menu.NONE, value.title).setOnMenuItemClickListener { _ ->
                         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                             val newSelection = Selection(obj)
                             appCore.simulation.selection = newSelection
-                            appCore.perform(action.value)
+                            appCore.perform(value)
                         }
                         return@setOnMenuItemClickListener true
                     }
@@ -1420,11 +1420,11 @@ class MainActivity : AppCompatActivity(),
             }
             return@setOnMenuItemClickListener true
         }
-        for (action in CelestiaAction.allActions.withIndex()) {
-            menu.add(GROUP_ACTION, action.index + 1, Menu.NONE, action.value.title).setOnMenuItemClickListener { _ ->
+        for ((index, value) in CelestiaAction.allActions.withIndex()) {
+            menu.add(GROUP_ACTION, index + 1, Menu.NONE, value.title).setOnMenuItemClickListener { _ ->
                 lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                     appCore.simulation.selection = selection
-                    appCore.perform(action.value)
+                    appCore.perform(value)
                 }
                 return@setOnMenuItemClickListener true
             }
@@ -1454,10 +1454,12 @@ class MainActivity : AppCompatActivity(),
                     }
                     return@setOnMenuItemClickListener true
                 }
-                for (alternateSurface in alternateSurfaces.withIndex()) {
-                    subMenu.add(GROUP_ALT_SURFACE, alternateSurface.index + 1, Menu.NONE, alternateSurface.value).setOnMenuItemClickListener { _ ->
+                for ((index, value) in alternateSurfaces.withIndex()) {
+                    subMenu.add(GROUP_ALT_SURFACE, index + 1, Menu.NONE,
+                        value
+                    ).setOnMenuItemClickListener { _ ->
                         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
-                            appCore.simulation.activeObserver.displayedSurface = alternateSurface.value
+                            appCore.simulation.activeObserver.displayedSurface = value
                         }
                         return@setOnMenuItemClickListener true
                     }
@@ -1490,12 +1492,12 @@ class MainActivity : AppCompatActivity(),
 
         val markMenu = menu.addSubMenu(GROUP_MARK_TOP, 0, Menu.NONE, CelestiaString("Mark", "Mark an object"))
         val availableMarkers = getAvailableMarkers()
-        for (marker in availableMarkers.withIndex()) {
-            markMenu.add(GROUP_MARK, marker.index, Menu.NONE, marker.value).setOnMenuItemClickListener { _ ->
-                if (marker.index >= Universe.MARKER_COUNT) {
+        for ((index, value) in availableMarkers.withIndex()) {
+            markMenu.add(GROUP_MARK, index, Menu.NONE, value).setOnMenuItemClickListener { _ ->
+                if (index >= Universe.MARKER_COUNT) {
                     appCore.simulation.universe.unmark(selection)
                 } else {
-                    appCore.simulation.universe.mark(selection, marker.index)
+                    appCore.simulation.universe.mark(selection, index)
                     appCore.showMarkers = true
                 }
                 return@setOnMenuItemClickListener true
