@@ -289,6 +289,8 @@ list(APPEND CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celengine/curveplot.h
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.cpp
         ${CELESTIA_SRC_DIR}/celengine/deepskyobj.h
+        ${CELESTIA_SRC_DIR}/celengine/dsobrowser.cpp
+        ${CELESTIA_SRC_DIR}/celengine/dsobrowser.h
         ${CELESTIA_SRC_DIR}/celengine/dsodb.cpp
         ${CELESTIA_SRC_DIR}/celengine/dsodb.h
         ${CELESTIA_SRC_DIR}/celengine/dsodbbuilder.cpp

@@ -35,10 +35,11 @@ val commonRendererItems: List<SettingsItem> = listOf(
                 listOf(
                     SettingsSelectionSingleItem(key = SettingsKey.StarColors, options = listOf(
                         Pair(0, CelestiaString("Classic Colors", "Star colors option")),
-                        Pair(1, CelestiaString("Blackbody D65", "Star colors option")),
-                        Pair(2, CelestiaString("Blackbody (Solar Whitepoint)", "Star colors option")),
-                        Pair(3, CelestiaString("Blackbody (Vega Whitepoint)", "Star colors option")),
-                    ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 1),
+                        Pair(1, CelestiaString("Blackbody Illuminant E", "Star colors option")),
+                        Pair(2, CelestiaString("Blackbody D65", "Star colors option")),
+                        Pair(3, CelestiaString("Blackbody (Solar Whitepoint)", "Star colors option")),
+                        Pair(4, CelestiaString("Blackbody (Vega Whitepoint)", "Star colors option")),
+                    ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 2),
                     SettingsSliderItem(SettingsKey.TintSaturation, 0.0, 1.0),
                 ),
                 footer = Footer.Text(CelestiaString("Tinted illumination saturation setting is only effective with Blackbody star colors.", ""))

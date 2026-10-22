@@ -14,7 +14,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
     android:versionCode="727"
-    android:versionName="26.10.0">
+    android:versionName="26.11.0">
 
     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
     <uses-feature android:glEsVersion="0x00030000" android:required="true" />

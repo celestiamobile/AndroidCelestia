@@ -135,7 +135,19 @@ object AppModule {
     @Provides
     @CoreSettings
     fun provideCoreSettings(@ApplicationContext context: Context): PreferenceManager {
-        return PreferenceManager(context, "celestia_setting")
+        val settings = PreferenceManager(context, "celestia_setting")
+        val migrationKey = PreferenceManager.CustomKey("StarColorsIlluminantEMigrated")
+        if (settings[migrationKey] != "true") {
+            val starColorsKey = PreferenceManager.CustomKey("StarColors")
+            val starColors = settings[starColorsKey]?.toIntOrNull()
+            settings.startEditing()
+            if (starColors != null && starColors in 1..3) {
+                settings[starColorsKey] = (starColors + 1).toString()
+            }
+            settings[migrationKey] = "true"
+            settings.stopEditing()
+        }
+        return settings
     }
 
     @Singleton
