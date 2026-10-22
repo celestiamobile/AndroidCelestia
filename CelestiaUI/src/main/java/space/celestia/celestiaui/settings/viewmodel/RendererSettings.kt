@@ -99,7 +99,7 @@ fun rendererQualityItem(displayItems: List<SettingsItem>): SettingsItem {
                 header = CelestiaString("Atmosphere", "Atmosphere rendering quality settings"),
                 rows = listOf(
                     SettingsIntegerSliderItem(SettingsKey.AtmosphereSegmentCount, 1, 16, subtitle = CelestiaString("Number of segments used to integrate atmospheric scattering. Higher values improve quality at a greater performance cost.", "Atmosphere segment count setting description")),
-                    SettingsIntegerSliderItem(SettingsKey.CloudSegmentCount, 1, 16, subtitle = CelestiaString("Number of segments used to render clouds. Higher values improve quality at a greater performance cost.", "Atmosphere segment count setting description")),
+                    SettingsIntegerSliderItem(SettingsKey.CloudSegmentCount, 1, 16, subtitle = CelestiaString("Number of segments used to render clouds. Higher values improve quality at a greater performance cost.", "Cloud segment count setting description")),
                     SettingsSwitchItem(SettingsKey.SeparateRayleighMieScaleHeights, SettingsSwitchItem.Representation.Switch),
                 )
             )
