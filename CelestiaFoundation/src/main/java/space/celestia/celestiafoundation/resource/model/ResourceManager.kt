@@ -23,6 +23,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import space.celestia.ziputils.ZipExceptionContext
@@ -30,6 +31,7 @@ import space.celestia.ziputils.ZipUtils
 import java.io.File
 import java.io.IOException
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
 
 internal fun commitResourceInstallation(stagingDirectory: File, destinationDirectory: File) {
@@ -50,6 +52,7 @@ internal fun commitResourceInstallation(stagingDirectory: File, destinationDirec
 class ResourceManager {
     private var listeners = arrayListOf<Listener>()
     private var tasks = hashMapOf<String, Job>()
+    private val activeCalls = ConcurrentHashMap<String, Call>()
 
     sealed class ErrorContext {
         data object Cancelled: ErrorContext()
@@ -194,6 +197,7 @@ class ResourceManager {
 
     fun cancel(identifier: String) {
         tasks[identifier]?.cancel()
+        activeCalls[identifier]?.cancel()
     }
 
     private sealed class Result {
@@ -236,6 +240,8 @@ class ResourceManager {
         try {
             val client = OkHttpClient()
             val call = client.newCall(Request.Builder().url(item.item).get().build())
+            activeCalls[item.id] = call
+            currentCoroutineContext().ensureActive()
             call.execute().use { response ->
                 val body = response.body
                 if (!response.isSuccessful) {
@@ -287,6 +293,7 @@ class ResourceManager {
         } catch (e: CancellationException) {
             throw e
         } catch (e: IOException) {
+            currentCoroutineContext().ensureActive()
             Log.e(TAG, "Unable to install ${item.id}", e)
             return Result.Failure(errorContext)
         } catch (e: IllegalArgumentException) {
@@ -296,6 +303,7 @@ class ResourceManager {
             Log.e(TAG, "Unable to install ${item.id}", e)
             return Result.Failure(errorContext)
         } finally {
+            activeCalls.remove(item.id)
             if (stagingDirectory.exists() && !stagingDirectory.deleteRecursively()) {
                 Log.w(TAG, "Unable to remove installation staging directory $stagingDirectory")
             }

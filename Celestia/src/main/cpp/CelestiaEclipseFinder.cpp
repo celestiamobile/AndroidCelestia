@@ -10,6 +10,7 @@
 #include "CelestiaJNI.h"
 #include <json.hpp>
 #include <celestia/eclipsefinder.h>
+#include <atomic>
 #include <memory>
 
 class EclipseSeacherWatcher: public EclipseFinderWatcher
@@ -21,13 +22,13 @@ public:
 
     Status eclipseFinderProgressUpdate(double t) override
     {
-        return aborted ? Status::AbortOperation : Status::ContinueOperation;
+        return aborted.load() ? Status::AbortOperation : Status::ContinueOperation;
     };
 
     EclipseFinder *getFinder() { return finder.get(); }
-    void abort() { aborted = true; }
+    void abort() { aborted.store(true); }
 private:
-    bool aborted;
+    std::atomic<bool> aborted;
     std::unique_ptr<EclipseFinder> finder;
 };
 
