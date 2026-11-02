@@ -89,10 +89,10 @@ fun AddonScreen(
     var alert by remember { mutableStateOf<AddonAlert?>(null) }
 
     fun getAddonState(): AddonState {
-        if (viewModel.resourceManager.isInstalled(info))
-            return AddonState.Installed
         if (viewModel.resourceManager.isDownloading(info.id))
             return AddonState.Downloading
+        if (viewModel.resourceManager.isInstalled(info))
+            return AddonState.Installed
         return AddonState.None
     }
 
@@ -118,7 +118,7 @@ fun AddonScreen(
         val newState = getAddonState()
         if (newState !is AddonState.Downloading)
             downloadProgress = 0.0f
-        if (newState !is AddonState.Installed)
+        if (newState is AddonState.None)
             installedAddonChecksum = null
         state = newState
     }
@@ -141,8 +141,12 @@ fun AddonScreen(
             }
 
             override fun onFileUnzipped(identifier: String) {
-                if (identifier == info.id)
-                    updateAddonState()
+                if (identifier == info.id) {
+                    scope.launch {
+                        installedAddonChecksum = viewModel.resourceManager.installedResourceAsync(info)?.checksum
+                        updateAddonState()
+                    }
+                }
             }
 
             override fun onResourceFetchError(
@@ -150,6 +154,7 @@ fun AddonScreen(
                 errorContext: ResourceManager.ErrorContext
             ) {
                 if (identifier == info.id) {
+                    updateAddonState()
                     val message = when (errorContext) {
                         ResourceManager.ErrorContext.ZipError -> CelestiaString(
                             "Error unzipping add-on",
@@ -179,7 +184,6 @@ fun AddonScreen(
                         else -> null
                     } ?: return
                     alert = AddonAlert.DownloadFailed(message)
-                    updateAddonState()
                 }
             }
 

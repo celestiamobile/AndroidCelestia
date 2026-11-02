@@ -12,11 +12,14 @@ package space.celestia.celestiafoundation.resource.model
 import android.icu.text.Collator
 import android.icu.text.RuleBasedCollator
 import android.util.Log
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -25,18 +28,23 @@ import okhttp3.Request
 import space.celestia.ziputils.ZipExceptionContext
 import space.celestia.ziputils.ZipUtils
 import java.io.File
-import java.lang.ref.WeakReference
+import java.io.IOException
+import java.util.UUID
 import kotlin.math.max
 
-fun <P, R> CoroutineScope.executeAsyncTask(
-    doInBackground: suspend (suspend (P) -> Unit) -> R,
-    onPostExecute: (R) -> Unit,
-    onProgressUpdate: (P) -> Unit
-) = launch {
-    val result = doInBackground {
-        withContext(Dispatchers.Main) { onProgressUpdate(it) }
+internal fun commitResourceInstallation(stagingDirectory: File, destinationDirectory: File) {
+    val backupDirectory = File(destinationDirectory.parentFile, ".${destinationDirectory.name}.${UUID.randomUUID()}.backup")
+    val replacing = destinationDirectory.exists()
+    if (replacing && !destinationDirectory.renameTo(backupDirectory)) {
+        throw IOException("Unable to back up $destinationDirectory")
     }
-    withContext(Dispatchers.Main) { onPostExecute(result) }
+    if (!stagingDirectory.renameTo(destinationDirectory)) {
+        val restored = !replacing || backupDirectory.renameTo(destinationDirectory)
+        throw IOException(if (restored) "Unable to install $destinationDirectory" else "Unable to restore $destinationDirectory from $backupDirectory")
+    }
+    if (replacing && !backupDirectory.deleteRecursively()) {
+        Log.w("ResourceManager", "Unable to remove installation backup $backupDirectory")
+    }
 }
 
 class ResourceManager {
@@ -56,12 +64,6 @@ class ResourceManager {
 
     var addonDirectory: String? = null
     var scriptDirectory: String? = null
-
-    enum class State {
-        Downloading, Downloaded
-    }
-
-    class Progress(val state: State, val finished: Long, val total: Long)
 
     interface Listener {
         fun onProgressUpdate(identifier: String, progress: Float)
@@ -187,12 +189,11 @@ class ResourceManager {
     }
 
     fun reinstall(item: ResourceItem, destination: File) {
-        uninstallInternally(item)
         download(item, destination)
     }
 
     fun cancel(identifier: String) {
-        tasks.remove(identifier)?.cancel()
+        tasks[identifier]?.cancel()
     }
 
     private sealed class Result {
@@ -201,16 +202,44 @@ class ResourceManager {
     }
 
     fun download(item: ResourceItem, destination: File) {
+        if (isDownloading(item.id)) return
+        val task = CoroutineScope(parentJob + Dispatchers.IO).launch(start = CoroutineStart.LAZY) {
+            val result = try {
+                downloadAndInstall(item, destination)
+            } catch (_: CancellationException) {
+                Result.Failure(ErrorContext.Cancelled)
+            }
+            withContext(NonCancellable + Dispatchers.Main) {
+                when (result) {
+                    is Result.Success -> onUnzipFinished(item.id)
+                    is Result.Failure -> onResourceFetchingFailed(item.id, result.errorContext)
+                }
+            }
+        }
+        tasks[item.id] = task
+        task.invokeOnCompletion { cause ->
+            if (cause is CancellationException) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    if (tasks[item.id] === task) {
+                        onResourceFetchingFailed(item.id, ErrorContext.Cancelled)
+                    }
+                }
+            }
+        }
+        task.start()
+    }
+
+    private suspend fun downloadAndInstall(item: ResourceItem, destination: File): Result {
         val unzipDestination = contextDirectory(item)
-        val reference = WeakReference(this)
-        val task = CoroutineScope(parentJob + Dispatchers.IO).executeAsyncTask(doInBackground = { publishProgress: suspend (progress: Progress) -> Unit ->
+        val stagingDirectory = File(unzipDestination.parentFile, ".${item.id}.${UUID.randomUUID()}.staging")
+        var errorContext: ErrorContext = ErrorContext.Download
+        try {
             val client = OkHttpClient()
             val call = client.newCall(Request.Builder().url(item.item).get().build())
-            try {
-                val response = call.execute()
+            call.execute().use { response ->
                 val body = response.body
                 if (!response.isSuccessful) {
-                    return@executeAsyncTask Result.Success
+                    return Result.Failure(ErrorContext.Download)
                 }
 
                 val totalLength = body.contentLength()
@@ -220,62 +249,60 @@ class ResourceManager {
                         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                         var bytes = input.read(buffer)
                         while (bytes >= 0) {
+                            currentCoroutineContext().ensureActive()
                             output.write(buffer, 0, bytes)
                             writtenLength += bytes
-                            publishProgress(Progress(State.Downloading, writtenLength, totalLength))
-
-                            // Check if user has canceled
-                            if (!currentCoroutineContext().isActive)
-                                return@executeAsyncTask Result.Failure(errorContext = ErrorContext.Cancelled)
+                            withContext(Dispatchers.Main) {
+                                onProgressUpdate(item.id, writtenLength, totalLength)
+                            }
                             bytes = input.read(buffer)
                         }
                     }
                 }
-                publishProgress(Progress(State.Downloaded, 0, 0))
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                return@executeAsyncTask Result.Failure(errorContext = ErrorContext.Download)
+            }
+            withContext(Dispatchers.Main) { onFileDownloaded(item.id) }
+            currentCoroutineContext().ensureActive()
+
+            errorContext = ErrorContext.CreateDirectory(stagingDirectory.path)
+            if (!stagingDirectory.mkdirs()) {
+                return Result.Failure(errorContext)
             }
 
-            try {
-                if (!unzipDestination.exists() && !unzipDestination.mkdir()) {
-                    return@executeAsyncTask Result.Failure(errorContext = ErrorContext.CreateDirectory(unzipDestination.path))
-                }
-            } catch (_: Throwable) {
-                return@executeAsyncTask Result.Failure(errorContext = ErrorContext.CreateDirectory(unzipDestination.path))
-            }
-
-            val errorContext = ZipUtils.unzip(destination.path, unzipDestination.path)
-            if (errorContext != null) {
-                return@executeAsyncTask when (errorContext.code) {
+            errorContext = ErrorContext.ZipError
+            val zipError = ZipUtils.unzip(destination.path, stagingDirectory.path)
+            if (zipError != null) {
+                return when (zipError.code) {
                     ZipExceptionContext.ZIP_ERROR -> Result.Failure(errorContext = ErrorContext.ZipError)
-                    ZipExceptionContext.CREATE_DIRECTORY_ERROR -> Result.Failure(errorContext = ErrorContext.CreateDirectory(errorContext.contextPath ?: ""))
-                    ZipExceptionContext.OPEN_FILE_ERROR -> Result.Failure(errorContext = ErrorContext.OpenFile(errorContext.contextPath ?: ""))
-                    ZipExceptionContext.WRITE_FILE_ERROR -> Result.Failure(errorContext = ErrorContext.WriteFile(errorContext.contextPath ?: ""))
+                    ZipExceptionContext.CREATE_DIRECTORY_ERROR -> Result.Failure(errorContext = ErrorContext.CreateDirectory(zipError.contextPath ?: ""))
+                    ZipExceptionContext.OPEN_FILE_ERROR -> Result.Failure(errorContext = ErrorContext.OpenFile(zipError.contextPath ?: ""))
+                    ZipExceptionContext.WRITE_FILE_ERROR -> Result.Failure(errorContext = ErrorContext.WriteFile(zipError.contextPath ?: ""))
                     else -> Result.Failure(errorContext = ErrorContext.ZipError)
                 }
             }
-            // We also save a `description.json` just in case for future use
-            try {
-                File(unzipDestination, "description.json").writeText(json.encodeToString(item))
-            } catch (_: Throwable) {}
-            return@executeAsyncTask Result.Success
-        }, onPostExecute = { result: Result ->
-            when (result) {
-                is Result.Success -> {
-                    reference.get()?.onUnzipFinished(item.id)
-                }
-                is Result.Failure -> {
-                    reference.get()?.onResourceFetchingFailed(item.id, result.errorContext)
-                }
+            errorContext = ErrorContext.WriteFile(unzipDestination.path)
+            File(stagingDirectory, "description.json").writeText(json.encodeToString(item))
+            currentCoroutineContext().ensureActive()
+            commitResourceInstallation(stagingDirectory, unzipDestination)
+            return Result.Success
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: IOException) {
+            Log.e(TAG, "Unable to install ${item.id}", e)
+            return Result.Failure(errorContext)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Unable to install ${item.id}", e)
+            return Result.Failure(errorContext)
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Unable to install ${item.id}", e)
+            return Result.Failure(errorContext)
+        } finally {
+            if (stagingDirectory.exists() && !stagingDirectory.deleteRecursively()) {
+                Log.w(TAG, "Unable to remove installation staging directory $stagingDirectory")
             }
-        }, onProgressUpdate = { progress: Progress ->
-            if (progress.state == State.Downloading)
-                reference.get()?.onProgressUpdate(item.id, progress.finished, progress.total)
-            else
-                reference.get()?.onFileDownloaded(item.id)
-        })
-        tasks[item.id] = task
+            if (destination.exists() && !destination.delete()) {
+                Log.w(TAG, "Unable to remove downloaded archive $destination")
+            }
+        }
     }
 
     private fun callListenerProgressCallback(identifier: String, progress: Float) {
