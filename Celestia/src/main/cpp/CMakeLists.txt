@@ -44,8 +44,6 @@ set(CELESTIA_SOURCES
         ${CELESTIA_SRC_DIR}/celestia/textprintposition.cpp
         ${CELESTIA_SRC_DIR}/celestia/textprintposition.h
         ${CELESTIA_SRC_DIR}/celestia/timeinfo.h
-        ${CELESTIA_SRC_DIR}/celestia/url.cpp
-        ${CELESTIA_SRC_DIR}/celestia/url.h
         ${CELESTIA_SRC_DIR}/celestia/view.cpp
         ${CELESTIA_SRC_DIR}/celestia/view.h
         ${CELESTIA_SRC_DIR}/celestia/viewmanager.cpp

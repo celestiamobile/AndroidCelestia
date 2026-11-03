@@ -24,7 +24,7 @@
 #include <celutil/fsutils.h>
 #include <celutil/gettext.h>
 #include <celutil/localeutil.h>
-#include <celestia/url.h>
+#include <celestia/celestiastate.h>
 #include <unicode/uloc.h>
 #include <fmt/format.h>
 
@@ -696,11 +696,8 @@ JNIEXPORT jstring JNICALL
 Java_space_celestia_celestia_AppCore_c_1getCurrentURL(JNIEnv *env, jclass clazz,
                                                                  jlong ptr) {
     auto core = fromHandle<CelestiaCore>(ptr);
-    CelestiaState appState(core);
-    appState.captureState();
-
-    Url currentURL(appState, Url::CurrentVersion);
-    return env->NewStringUTF(currentURL.getAsString().c_str());
+    auto currentURL = celestia::CelestiaState::capture(*core).createURL();
+    return env->NewStringUTF(currentURL.c_str());
 }
 
 extern "C"
