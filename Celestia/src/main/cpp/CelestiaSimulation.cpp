@@ -8,6 +8,7 @@
 // of the License, or (at your option) any later version.
 
 #include "CelestiaSelection.h"
+#include <algorithm>
 #include <celengine/body.h>
 #include <celengine/simulation.h>
 #include <celengine/selection.h>
@@ -69,12 +70,10 @@ Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass
     std::vector<celestia::engine::Completion> results;
     sim->getObjectCompletion(results, str, true);
     env->ReleaseStringUTFChars(text, str);
+    const auto resultCount = std::min(results.size(), static_cast<std::size_t>(std::max(0, limit)));
+    results.erase(results.begin() + resultCount, results.end());
     jobject arrayObject = env->NewObject(alClz, aliMethodID, static_cast<int>(results.size()));
-    int count = 0;
     for (const auto& result : results) {
-        if (count > limit)
-            break;
-
         auto selection = selectionAsJavaSelection(env, result.getSelection());
         auto name = env->NewStringUTF(result.getName().c_str());
         auto completion = env->NewObject(completionClz, completionInitMethodID, name, selection);
@@ -82,7 +81,6 @@ Java_space_celestia_celestia_Simulation_c_1completionForText(JNIEnv *env, jclass
         env->DeleteLocalRef(name);
         env->CallBooleanMethod(arrayObject, alaMethodID, completion);
         env->DeleteLocalRef(completion);
-        count += 1;
     }
     return arrayObject;
 }
