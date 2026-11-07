@@ -25,7 +25,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiaui.R
@@ -138,6 +140,7 @@ fun WebScreen(
                     is Page.Home -> NavEntry(route) {
                         WebPage(
                             uri = uri,
+                            preserveHistory = true,
                             paddingValues = paddingValues,
                             titleChanged = { route.title.value = it },
                             canGoBackChanged = { route.canGoBack.value = it },
@@ -166,7 +169,11 @@ fun WebScreen(
                         )
                     }
                 }
-            }
+            },
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
+            )
         )
     }
 }

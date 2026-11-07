@@ -7,6 +7,7 @@ import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -61,6 +62,7 @@ fun WebPage(
     matchingQueryKeys: List<String> = listOf(),
     contextDirectory: File? = null,
     filterURL: Boolean = false,
+    preserveHistory: Boolean = false,
     fallbackContent: (@Composable (Modifier, PaddingValues) -> Unit)? = null,
     paddingValues: PaddingValues,
     titleChanged: ((String) -> Unit)? = null,
@@ -76,7 +78,7 @@ fun WebPage(
 ) {
     val viewModel: WebPageViewModel = hiltViewModel()
     var error by rememberSaveable { mutableStateOf<WebError?>(null) }
-    var initialLoadingFinished by rememberSaveable { mutableStateOf(false) }
+    var initialLoadingFinished by remember { mutableStateOf(false) }
     when (error) {
         is WebError.NotAvailable -> {
             Box(modifier = modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
@@ -99,6 +101,7 @@ fun WebPage(
                     matchingQueryKeys = matchingQueryKeys,
                     contextDirectory = contextDirectory,
                     filterURL = filterURL,
+                    preserveHistory = preserveHistory,
                     paddingValues = paddingValues,
                     titleChanged = titleChanged,
                     canGoBackChanged = canGoBackChanged,
@@ -131,6 +134,7 @@ private fun ComposeWebView(
     matchingQueryKeys: List<String>,
     contextDirectory: File?,
     filterURL: Boolean,
+    preserveHistory: Boolean,
     paddingValues: PaddingValues,
     titleChanged: ((String) -> Unit)?,
     canGoBackChanged: ((Boolean) -> Unit)?,
@@ -149,7 +153,6 @@ private fun ComposeWebView(
     val coroutineScope = rememberCoroutineScope()
     val canGoBackState = remember { mutableStateOf(false) }
     val webViewRef = remember { mutableStateOf<WebView?>(null) }
-    var savedWebViewState by rememberSaveable { mutableStateOf<Bundle?>(null) }
     val currentTitleChanged = rememberUpdatedState(titleChanged)
     val currentCanGoBackChanged = rememberUpdatedState(canGoBackChanged)
     val currentOpenAddon = rememberUpdatedState(openAddon)
@@ -292,22 +295,33 @@ private fun ComposeWebView(
                 }
 
                 webViewRef.value = this
-                val saved = savedWebViewState
-                if (saved != null) {
-                    restoreState(saved)
+                val saved = if (preserveHistory) viewModel.savedWebViewState else null
+                if (preserveHistory) viewModel.savedWebViewState = null
+                if (saved != null && restoreState(saved) != null) {
                     canGoBackState.value = canGoBack()
                     currentCanGoBackChanged.value?.invoke(canGoBack())
                     currentTitleChanged.value?.invoke(title ?: "")
                 } else {
+                    if (saved != null) {
+                        Log.w("WebPage", "Failed to restore add-on browsing history; reloading the page.")
+                    }
                     loadUrl(uri.toString())
                 }
             }
         },
         modifier = Modifier.fillMaxSize().padding(paddingValues),
-        onRelease = {
-            webViewRef.value?.let { wv ->
-                savedWebViewState = Bundle().also { wv.saveState(it) }
-                wv.destroy()
+        onRelease = { view ->
+            if (view is WebView) {
+                if (preserveHistory) {
+                    val saved = Bundle()
+                    if (view.saveState(saved) != null) {
+                        viewModel.savedWebViewState = saved
+                    } else {
+                        Log.w("WebPage", "Failed to save add-on browsing history.")
+                        viewModel.savedWebViewState = null
+                    }
+                }
+                view.destroy()
             }
             webViewRef.value = null
         }
