@@ -1374,14 +1374,19 @@ class MainActivity : AppCompatActivity(),
 
         browserItems.clear()
 
-        fun createSubMenu(menu: Menu, browserItem: BrowserItem) {
+        val menuActions = CelestiaAction.allActions
+        val menuActionTitles = menuActions.map { it.title }
+        var remainingBrowserMenuItems = MAX_CONTEXT_MENU_BROWSER_ITEMS
+
+        fun createSubMenu(menu: Menu, browserItem: BrowserItem, parentSelection: Selection, depth: Int) {
             val obj = browserItem.`object`
-            if (obj != null) {
+            val targetSelection = if (depth > 0 && obj != null) Selection(obj) else parentSelection
+            if (depth > 0 && obj != null) {
                 menu.add(GROUP_BROWSER_ITEM_GET_INFO, browserItems.size, Menu.NONE, CelestiaString("Get Info", "Action for getting info about current selected object")).setOnMenuItemClickListener { _ ->
                     showInfo(Selection(obj))
                     return@setOnMenuItemClickListener true
                 }
-                val actionCount = CelestiaAction.allActions.size + 1 // All actions + select
+                val actionCount = menuActions.size + 1 // All actions + select
                 menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount, Menu.NONE, CelestiaString("Select", "Select an object")).setOnMenuItemClickListener { _ ->
                     lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                         val newSelection = Selection(obj)
@@ -1389,8 +1394,8 @@ class MainActivity : AppCompatActivity(),
                     }
                     return@setOnMenuItemClickListener true
                 }
-                for ((index, value) in CelestiaAction.allActions.withIndex()) {
-                    menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount + index + 1, Menu.NONE, value.title).setOnMenuItemClickListener { _ ->
+                for ((index, value) in menuActions.withIndex()) {
+                    menu.add(GROUP_BROWSER_ITEM_ACTIONS, browserItems.size * actionCount + index + 1, Menu.NONE, menuActionTitles[index]).setOnMenuItemClickListener { _ ->
                         lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                             val newSelection = Selection(obj)
                             appCore.simulation.selection = newSelection
@@ -1401,11 +1406,38 @@ class MainActivity : AppCompatActivity(),
                 }
                 browserItems.add(browserItem)
             }
-            browserItem.children.withIndex().forEach {
-                val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, browserItem.childNameAtIndex(it.index))
-                createSubMenu(subMenu, it.value)
+            val children = browserItem.children
+            if (children.isNotEmpty()) {
+                // Reserve a fallback entry before descendants consume the shared budget.
+                remainingBrowserMenuItems--
+                var shouldInsertShowMore = depth >= MAX_CONTEXT_MENU_DEPTH
+                if (!shouldInsertShowMore) {
+                    for ((index, child) in children.withIndex()) {
+                        val itemCost = if (child.`object` != null) menuActions.size + 3 else 1
+                        if (remainingBrowserMenuItems < itemCost + 1) {
+                            shouldInsertShowMore = true
+                            break
+                        }
+                        remainingBrowserMenuItems -= itemCost
+                        val title = if (depth == 0) child.name else browserItem.childNameAtIndex(index)
+                        val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, title)
+                        createSubMenu(subMenu, child, targetSelection, depth + 1)
+                    }
+                }
+                if (shouldInsertShowMore) {
+                    menu.add(GROUP_BROWSER_ITEM, 0, Menu.NONE, CelestiaString("Show More\u2026", "Menu action to indicate that more items that are not shown in the menu")).setOnMenuItemClickListener {
+                        lifecycleScope.launch {
+                            showBottomSheetTool(ToolPage.SubsystemBrowser(targetSelection))
+                        }
+                        true
+                    }
+                } else {
+                    remainingBrowserMenuItems++
+                }
             }
-            MenuCompat.setGroupDividerEnabled(menu, true)
+            if (depth > 0) {
+                MenuCompat.setGroupDividerEnabled(menu, true)
+            }
         }
 
         menu.add(GROUP_HEADER, 0, Menu.NONE, appCore.simulation.universe.getNameForSelection(selection)).isEnabled = false
@@ -1420,8 +1452,8 @@ class MainActivity : AppCompatActivity(),
             }
             return@setOnMenuItemClickListener true
         }
-        for ((index, value) in CelestiaAction.allActions.withIndex()) {
-            menu.add(GROUP_ACTION, index + 1, Menu.NONE, value.title).setOnMenuItemClickListener { _ ->
+        for ((index, value) in menuActions.withIndex()) {
+            menu.add(GROUP_ACTION, index + 1, Menu.NONE, menuActionTitles[index]).setOnMenuItemClickListener { _ ->
                 lifecycleScope.launch(executor.asCoroutineDispatcher()) {
                     appCore.simulation.selection = selection
                     appCore.perform(value)
@@ -1438,10 +1470,7 @@ class MainActivity : AppCompatActivity(),
                 obj,
                 appCore.simulation.universe
             )
-            for (child in browserItem.children) {
-                val subMenu = menu.addSubMenu(GROUP_BROWSER_ITEM, 0, Menu.NONE, child.name)
-                createSubMenu(subMenu, child)
-            }
+            createSubMenu(menu, browserItem, selection, 0)
         }
 
         if (obj is Body) {
@@ -2235,6 +2264,8 @@ class MainActivity : AppCompatActivity(),
 
     companion object {
         private const val BOTTOM_CONTROL_ANIMATION_DURATION_MILLIS = 200
+        private const val MAX_CONTEXT_MENU_DEPTH = 2
+        private const val MAX_CONTEXT_MENU_BROWSER_ITEMS = 100
         private const val GROUP_ACTION = 0
         private const val GROUP_ALT_SURFACE_TOP = 1
         private const val GROUP_ALT_SURFACE = 2
