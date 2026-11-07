@@ -265,7 +265,7 @@ class MainActivity : AppCompatActivity(),
 
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
-    private lateinit var mediaRouter: MediaRouter
+    private var mediaRouter: MediaRouter? = null
     private var activePresentation: CelestiaPresentation? = null
     private var pendingDisplay: Display? = null
 
@@ -304,7 +304,16 @@ class MainActivity : AppCompatActivity(),
 
         super.onCreate(savedState)
 
-        mediaRouter = getSystemService(MEDIA_ROUTER_SERVICE) as MediaRouter
+        mediaRouter = try {
+            getSystemService(MediaRouter::class.java).also { router ->
+                if (router == null) {
+                    Log.w(TAG, "MediaRouter is unavailable; external display routing is disabled.")
+                }
+            }
+        } catch (error: SecurityException) {
+            Log.e(TAG, "Failed to initialize MediaRouter; external display routing is disabled.", error)
+            null
+        }
 
         Log.d(TAG, "Creating MainActivity")
 
@@ -378,7 +387,7 @@ class MainActivity : AppCompatActivity(),
 
     override fun onPause() {
         mediaRouterCallback?.let {
-            mediaRouter.removeCallback(it)
+            mediaRouter?.removeCallback(it)
         }
         mediaRouterCallback = null
 
@@ -408,6 +417,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun setUpDisplayListenerIfNeeded() {
         if (!readyForInteraction) return
+        val router = mediaRouter ?: return
 
         if (mediaRouterCallback == null) {
             val callback = object: MediaRouter.SimpleCallback() {
@@ -429,7 +439,7 @@ class MainActivity : AppCompatActivity(),
                     updatePresentation()
                 }
             }
-            mediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, callback)
+            router.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, callback)
             this.mediaRouterCallback = callback
         }
 
@@ -438,8 +448,9 @@ class MainActivity : AppCompatActivity(),
 
     @SuppressLint("DiscouragedPrivateApi")
     private fun updatePresentation() {
+        val router = mediaRouter ?: return
         // Get the current route and its presentation display.
-        val route: MediaRouter.RouteInfo? = mediaRouter.getSelectedRoute(
+        val route: MediaRouter.RouteInfo? = router.getSelectedRoute(
             MediaRouter.ROUTE_TYPE_LIVE_VIDEO
         )
 
