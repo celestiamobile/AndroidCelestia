@@ -10,6 +10,8 @@
 package space.celestia.celestia;
 
 import android.app.Activity;
+import android.os.CancellationSignal;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -28,7 +30,12 @@ public class Renderer implements AutoCloseable {
         void call();
     }
 
+    public interface ScreenshotCallback {
+        void call(boolean success);
+    }
+
     private List<Callback> tasks = new ArrayList<>();
+    private List<ScreenshotCallback> screenshotTasks = new ArrayList<>();
     private final Object taskLock = new Object();
     private final long pointer;
     private boolean started = false;
@@ -63,6 +70,21 @@ public class Renderer implements AutoCloseable {
             if (previousTaskCount == 0)
                 c_setHasPendingTasks(pointer, true);
         }
+    }
+
+    public void saveScreenshot(@NonNull String path, int imageType,
+                               @NonNull CancellationSignal cancellation,
+                               @NonNull ScreenshotCallback callback) {
+        if (cancellation.isCanceled()) return;
+        enqueueTask(() -> {
+            if (cancellation.isCanceled()) return;
+            screenshotTasks.add(frameAvailable -> {
+                if (cancellation.isCanceled()) return;
+                if (!frameAvailable)
+                    Log.e("Renderer", "Unable to capture screenshot: no rendered frame is available");
+                callback.call(frameAvailable && c_saveScreenshot(pointer, path, imageType));
+            });
+        });
     }
 
     public void startConditionally(@NonNull Activity activity, boolean enableMultisample) {
@@ -146,6 +168,14 @@ public class Renderer implements AutoCloseable {
             task.call();
     }
 
+    private void flushScreenshotTasks(boolean frameAvailable) {
+        if (screenshotTasks.isEmpty()) return;
+        List<ScreenshotCallback> taskCopy = screenshotTasks;
+        screenshotTasks = new ArrayList<>();
+        for (ScreenshotCallback task : taskCopy)
+            task.call(frameAvailable);
+    }
+
     private static native long c_createNativeRenderObject();
     private native void c_initialize(long pointer);
     private native void c_destroy(long pointer);
@@ -164,4 +194,5 @@ public class Renderer implements AutoCloseable {
     private native float c_getRenderingScaleX(long pointer);
     private native float c_getRenderingScaleY(long pointer);
     private native boolean c_hasPresentationSurface(long pointer);
+    private native boolean c_saveScreenshot(long pointer, String path, int imageType);
 }

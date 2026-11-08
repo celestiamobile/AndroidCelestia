@@ -153,6 +153,7 @@ import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import space.celestia.mobilecelestia.common.EdgeInsets
 import space.celestia.mobilecelestia.common.SheetLayout
 import space.celestia.mobilecelestia.common.rememberSafeAreaInsets
+import space.celestia.mobilecelestia.common.saveScreenshotAsync
 import space.celestia.mobilecelestia.compose.DrawerAlignment
 import space.celestia.mobilecelestia.compose.ModalNavigationDrawer
 import space.celestia.mobilecelestia.control.BottomControlAction
@@ -1654,11 +1655,11 @@ class MainActivity : AppCompatActivity(),
         val proposedScreenshotFile = File(parentDirectory, "screenshot.png")
         val celestiaInfo = withContext(executor.asCoroutineDispatcher()) {
             val renderInfo = appCore.renderInfo
-            val success = appCore.saveScreenshot(proposedScreenshotFile.absolutePath, AppCore.IMAGE_TYPE_PNG)
             val url = appCore.currentURL
-            return@withContext Triple(renderInfo, url, success)
+            return@withContext Pair(renderInfo, url)
         }
-        val screenshotFile = if (celestiaInfo.third) proposedScreenshotFile else null
+        val success = renderer.saveScreenshotAsync(proposedScreenshotFile.absolutePath, AppCore.IMAGE_TYPE_PNG)
+        val screenshotFile = if (success) proposedScreenshotFile else null
         val renderInfoFile = writeTextToFileWithName(celestiaInfo.first, parentDirectory, "renderinfo.txt")
         val urlInfoFile = writeTextToFileWithName(celestiaInfo.second, parentDirectory, "urlinfo.txt")
         val addons =
@@ -1805,9 +1806,7 @@ class MainActivity : AppCompatActivity(),
             directory.mkdir()
 
         val file = File(directory, "${UUID.randomUUID()}.png")
-        val success = withContext(executor.asCoroutineDispatcher()) {
-            return@withContext appCore.saveScreenshot(file.absolutePath, AppCore.IMAGE_TYPE_PNG)
-        }
+        val success = renderer.saveScreenshotAsync(file.absolutePath, AppCore.IMAGE_TYPE_PNG)
         if (success) {
             shareFile(file, "image/png")
         } else {

@@ -10,12 +10,16 @@
 #include <jni.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
+#include <array>
 #include <cstring>
+#include <filesystem>
+#include <mutex>
 #include <epoxy/egl.h>
 #include <epoxy/gl.h>
 #include <swappy/swappyGL.h>
 #include <swappy/swappyGL_extra.h>
 #include <celestia/celestiacore.h>
+#include <celimage/image.h>
 
 #include <android/log.h>
 
@@ -139,6 +143,7 @@ public:
 
     static JavaVM *jvm;
     static jmethodID flushTasksMethod;
+    static jmethodID flushScreenshotTasksMethod;
     static jmethodID engineStartedMethod;
 
 private:
@@ -174,6 +179,7 @@ private:
 
 JavaVM *CelestiaRenderer::jvm = nullptr;
 jmethodID CelestiaRenderer::flushTasksMethod = nullptr;
+jmethodID CelestiaRenderer::flushScreenshotTasksMethod = nullptr;
 jmethodID CelestiaRenderer::engineStartedMethod = nullptr;
 
 bool CelestiaRenderer::initialize()
@@ -747,12 +753,21 @@ void *CelestiaRenderer::threadCallback(void *self)
         CelestiaSurface &s = renderer->presentationSurface.surface != EGL_NO_SURFACE ? renderer->presentationSurface : renderer->surface;
         int newWindowWidth  = s.windowWidth;
         int newWindowHeight = s.windowHeight;
-        if (renderer->engineStartedCalled && s.surface != EGL_NO_SURFACE && renderer->core)
+        if (renderingEnabled && renderer->engineStartedCalled && s.surface != EGL_NO_SURFACE &&
+            renderer->core && newWindowWidth > 0 && newWindowHeight > 0)
             needsDrawn = true;
+        EGLSurface renderSurface = s.surface;
         renderer->unlock();
 
         if (renderer->engineStartedCalled && hasPendingTasks)
             newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushTasksMethod);
+
+        bool screenshotsFlushed = false;
+        if (needsDrawn && !eglMakeCurrent(renderer->display, renderSurface, renderSurface, renderer->context))
+        {
+            LOG_ERROR("eglMakeCurrent() before drawing failed: %d", eglGetError());
+            needsDrawn = false;
+        }
 
         if (needsDrawn)
         {
@@ -788,10 +803,15 @@ void *CelestiaRenderer::threadCallback(void *self)
                         0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight,
                         0, 0, renderer->presentationSurface.windowWidth, renderer->presentationSurface.windowHeight,
                         GL_COLOR_BUFFER_BIT,
-                        GL_LINEAR
+                        GL_NEAREST
                     );
                 }
 
+                // Read the resolved frame, not the multisample buffer or a swapped window.
+                glBindFramebuffer(GL_FRAMEBUFFER, renderer->offscreenFbo);
+                newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushScreenshotTasksMethod,
+                                      renderer->offscreenFbo != 0 ? JNI_TRUE : JNI_FALSE);
+                screenshotsFlushed = true;
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 
                 // Blit to main surface
@@ -820,10 +840,14 @@ void *CelestiaRenderer::threadCallback(void *self)
                 // MSAA comes from EGLConfig if enabled
                 renderer->resizeIfNeeded(newWindowWidth, newWindowHeight);
                 renderer->tickAndDraw();
-                if (!SwappyGL_swap(renderer->display, s.surface))
+                newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushScreenshotTasksMethod, JNI_TRUE);
+                screenshotsFlushed = true;
+                if (!SwappyGL_swap(renderer->display, renderSurface))
                     LOG_ERROR("SwappyGL_swap() returned error %d", eglGetError());
             }
         }
+        if (!screenshotsFlushed)
+            newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushScreenshotTasksMethod, JNI_FALSE);
     }
     renderer->destroy();
 
@@ -840,6 +864,7 @@ Java_space_celestia_celestia_Renderer_c_1initialize(JNIEnv *env, jobject thiz, j
     jclass clazz = env->GetObjectClass(thiz);
     CelestiaRenderer::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(I)Z");
     CelestiaRenderer::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
+    CelestiaRenderer::flushScreenshotTasksMethod = env->GetMethodID(clazz, "flushScreenshotTasks", "(Z)V");
 
     env->GetJavaVM(&CelestiaRenderer::jvm);
 }
@@ -988,6 +1013,64 @@ Java_space_celestia_celestia_Renderer_c_1setHasPendingTasks(JNIEnv *env, jobject
                                                             jboolean has_pending_tasks) {
     auto renderer = fromHandle<CelestiaRenderer>(pointer);
     renderer->setHasPendingTasks(static_cast<bool>(has_pending_tasks));
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_Renderer_c_1saveScreenshot(JNIEnv *env, jobject thiz,
+                                                       jlong pointer, jstring file_path,
+                                                       jint image_type) {
+    const char *c_path = env->GetStringUTFChars(file_path, nullptr);
+    if (c_path == nullptr)
+        return JNI_FALSE;
+    std::filesystem::path path(c_path);
+    env->ReleaseStringUTFChars(file_path, c_path);
+    auto type = static_cast<ContentType>(image_type);
+    if (type == ContentType::Unknown)
+        type = DetermineFileType(path);
+    if (!celestia::engine::Image::canSave(type))
+    {
+        LOG_ERROR("Unable to capture screenshot: unsupported image type");
+        return JNI_FALSE;
+    }
+
+    auto renderer = fromHandle<CelestiaRenderer>(pointer);
+    std::unique_lock<CelestiaRenderer> guard(*renderer);
+    EGLSurface readSurface = eglGetCurrentSurface(EGL_READ);
+    if (renderer->core == nullptr || renderer->core->getRenderer() == nullptr ||
+        renderer->context == EGL_NO_CONTEXT ||
+        eglGetCurrentContext() != renderer->context || readSurface == EGL_NO_SURFACE ||
+        (readSurface != renderer->surface.surface && readSurface != renderer->presentationSurface.surface) ||
+        renderer->msg == CelestiaRenderer::RenderThreadMessage::WindowSet)
+    {
+        LOG_ERROR("Unable to capture screenshot: render context or surface is unavailable");
+        return JNI_FALSE;
+    }
+
+    GLenum status = glCheckFramebufferStatus(GL_READ_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        LOG_ERROR("Unable to capture screenshot: incomplete read framebuffer (%u)", status);
+        return JNI_FALSE;
+    }
+
+    std::array<int, 4> viewport;
+    celestia::engine::PixelFormat format;
+    renderer->core->getCaptureInfo(viewport, format);
+    if (viewport[2] <= 0 || viewport[3] <= 0 ||
+        viewport[2] > celestia::engine::Image::MAX_DIMENSION ||
+        viewport[3] > celestia::engine::Image::MAX_DIMENSION)
+    {
+        LOG_ERROR("Unable to capture screenshot: invalid viewport (%d x %d)", viewport[2], viewport[3]);
+        return JNI_FALSE;
+    }
+
+    celestia::engine::Image image(format, viewport[2], viewport[3]);
+    if (!renderer->core->captureImage(image.getPixels(), viewport, format))
+        return JNI_FALSE;
+    guard.unlock();
+    bool result = image.save(path, type);
+    return result ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C"
