@@ -40,7 +40,6 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
     var recentSearches by mutableStateOf(emptyList<RecentSearch>())
         private set
-    private var historyGeneration = 0
     private var recentSearchJob: Job? = null
 
     init {
@@ -75,21 +74,12 @@ class SearchViewModel @Inject constructor(
 
     suspend fun recordSelection(selection: Selection) {
         if (selection.isEmpty) return
-        val generation = historyGeneration
         val path = withContext(executor.asCoroutineDispatcher()) {
             appCore.simulation.universe.getPathForSelection(selection)
         }
-        if (generation != historyGeneration) return
         check(path.isNotEmpty()) { "Selected object has no search path" }
         val updated = (listOf(path) + readRecentSearches().filter { it != path }).take(10)
         preferences[PreferenceManager.PredefinedKey.RecentSearches] = Json.encodeToString(updated)
         refreshRecentSearches()
-    }
-
-    fun clearHistory() {
-        historyGeneration++
-        recentSearchJob?.cancel()
-        preferences[PreferenceManager.PredefinedKey.RecentSearches] = null
-        recentSearches = emptyList()
     }
 }

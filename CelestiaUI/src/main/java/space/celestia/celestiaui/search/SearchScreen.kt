@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -176,11 +175,6 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
                     results = searchResults.toList(),
                     isSearching = isSearching,
                     recentSearches = viewModel.recentSearches,
-                    clearHistory = {
-                        selectionJob?.cancel()
-                        isLoadingPage = false
-                        viewModel.clearHistory()
-                    },
                     recentSelected = {
                         searchKey = ""
                         searchResults = emptyList()
@@ -230,7 +224,7 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkCli
 }
 
 @Composable
-private fun SearchResult(key: String, results: List<Completion>, isSearching: Boolean, recentSearches: List<RecentSearch>, clearHistory: () -> Unit, recentSelected: (RecentSearch) -> Unit, selectionHandler: (Selection) -> Unit) {
+private fun SearchResult(key: String, results: List<Completion>, isSearching: Boolean, recentSearches: List<RecentSearch>, recentSelected: (RecentSearch) -> Unit, selectionHandler: (Selection) -> Unit) {
     if (key.isEmpty() && recentSearches.isNotEmpty()) {
         LazyColumn(
             modifier = Modifier
@@ -242,15 +236,7 @@ private fun SearchResult(key: String, results: List<Completion>, isSearching: Bo
                 Header(
                     text = CelestiaString("Recent Searches", ""),
                     modifier = Modifier.fillMaxWidth(),
-                ) {
-                    IconButton(onClick = clearHistory) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.delete_24px),
-                            contentDescription = CelestiaString("Clear History", ""),
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
+                )
             }
             items(recentSearches, key = { it.path }) { recent ->
                 TextRow(primaryText = recent.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
