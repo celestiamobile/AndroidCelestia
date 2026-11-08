@@ -759,15 +759,9 @@ void *CelestiaRenderer::threadCallback(void *self)
         EGLSurface renderSurface = s.surface;
         renderer->unlock();
 
+        bool hasPendingScreenshots = false;
         if (renderer->engineStartedCalled && hasPendingTasks)
-            newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushTasksMethod);
-
-        bool screenshotsFlushed = false;
-        if (needsDrawn && !eglMakeCurrent(renderer->display, renderSurface, renderSurface, renderer->context))
-        {
-            LOG_ERROR("eglMakeCurrent() before drawing failed: %d", eglGetError());
-            needsDrawn = false;
-        }
+            hasPendingScreenshots = static_cast<bool>(newEnv->CallBooleanMethod(renderer->javaObject, CelestiaRenderer::flushTasksMethod));
 
         if (needsDrawn)
         {
@@ -807,11 +801,13 @@ void *CelestiaRenderer::threadCallback(void *self)
                     );
                 }
 
-                // Read the resolved frame, not the multisample buffer or a swapped window.
-                glBindFramebuffer(GL_FRAMEBUFFER, renderer->offscreenFbo);
-                newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushScreenshotTasksMethod,
-                                      renderer->offscreenFbo != 0 ? JNI_TRUE : JNI_FALSE);
-                screenshotsFlushed = true;
+                if (hasPendingScreenshots) {
+                    // Read the resolved frame, not the multisample buffer or a swapped window.
+                    glBindFramebuffer(GL_FRAMEBUFFER, renderer->offscreenFbo);
+                    newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushScreenshotTasksMethod,
+                                          renderer->offscreenFbo != 0 ? JNI_TRUE : JNI_FALSE);
+                    hasPendingScreenshots = false;
+                }
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 
                 // Blit to main surface
@@ -840,13 +836,15 @@ void *CelestiaRenderer::threadCallback(void *self)
                 // MSAA comes from EGLConfig if enabled
                 renderer->resizeIfNeeded(newWindowWidth, newWindowHeight);
                 renderer->tickAndDraw();
-                newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushScreenshotTasksMethod, JNI_TRUE);
-                screenshotsFlushed = true;
+                if (hasPendingScreenshots) {
+                    newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushScreenshotTasksMethod, JNI_TRUE);
+                    hasPendingScreenshots = false;
+                }
                 if (!SwappyGL_swap(renderer->display, renderSurface))
                     LOG_ERROR("SwappyGL_swap() returned error %d", eglGetError());
             }
         }
-        if (!screenshotsFlushed)
+        if (hasPendingScreenshots)
             newEnv->CallVoidMethod(renderer->javaObject, CelestiaRenderer::flushScreenshotTasksMethod, JNI_FALSE);
     }
     renderer->destroy();
@@ -863,7 +861,7 @@ Java_space_celestia_celestia_Renderer_c_1initialize(JNIEnv *env, jobject thiz, j
     renderer->javaObject = env->NewGlobalRef(thiz);
     jclass clazz = env->GetObjectClass(thiz);
     CelestiaRenderer::engineStartedMethod = env->GetMethodID(clazz, "engineStarted", "(I)Z");
-    CelestiaRenderer::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()V");
+    CelestiaRenderer::flushTasksMethod = env->GetMethodID(clazz, "flushTasks", "()Z");
     CelestiaRenderer::flushScreenshotTasksMethod = env->GetMethodID(clazz, "flushScreenshotTasks", "(Z)V");
 
     env->GetJavaVM(&CelestiaRenderer::jvm);
