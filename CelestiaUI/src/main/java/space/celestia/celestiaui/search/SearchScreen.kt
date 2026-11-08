@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -49,16 +50,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.celestia.celestia.Completion
 import space.celestia.celestia.Selection
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.EmptyHint
+import space.celestia.celestiaui.compose.Header
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.TextRow
 import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.info.InfoScreen
+import space.celestia.celestiaui.search.viewmodel.RecentSearch
 import space.celestia.celestiaui.search.viewmodel.SearchViewModel
 import space.celestia.celestiaui.utils.CelestiaString
 
@@ -90,13 +94,35 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
     }
     var alert by remember { mutableStateOf<SearchAlert?>(null) }
     val scope = rememberCoroutineScope()
+    var selectionJob by remember { mutableStateOf<Job?>(null) }
     val focusRequester = remember { FocusRequester() }
+
+    fun showResult(selection: Selection? = null, path: String? = null) {
+        selectionJob?.cancel()
+        isSearchActive = false
+        isLoadingPage = true
+        selectionJob = scope.launch {
+            val resolved = selection ?: withContext(viewModel.executor.asCoroutineDispatcher()) {
+                viewModel.appCore.simulation.findObject(requireNotNull(path))
+            }
+            if (resolved.isEmpty) {
+                alert = SearchAlert.ObjectNotFound
+            } else {
+                viewModel.recordSelection(resolved)
+                currentSelection = resolved
+            }
+            isLoadingPage = false
+        }
+    }
+
     Scaffold(topBar = {
         SearchBar(
             inputField = {
                 SearchBarDefaults.InputField(
                     query = searchKey,
                     onQueryChange = {
+                        selectionJob?.cancel()
+                        isLoadingPage = false
                         searchKey = it
                         isSearching = true
                         scope.launch {
@@ -110,15 +136,7 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
                     onSearch = {
                         isSearchActive = false
                         if (searchKey.isNotEmpty() && searchResults.isEmpty()) {
-                            isLoadingPage = true
-                            scope.launch {
-                                val selection = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.simulation.findObject(searchKey) }
-                                isLoadingPage = false
-                                if (selection.isEmpty)
-                                    alert = SearchAlert.ObjectNotFound
-                                else
-                                    currentSelection = selection
-                            }
+                            showResult(path = searchKey)
                         }
                     },
                     expanded = isSearchActive,
@@ -156,17 +174,20 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
                 SearchResult(
                     key = searchKey,
                     results = searchResults.toList(),
-                    isSearching = isSearching
-                ) {
-                    isSearchActive = false
-                    isLoadingPage = true
-                    scope.launch {
+                    isSearching = isSearching,
+                    recentSearches = viewModel.recentSearches,
+                    clearHistory = {
+                        selectionJob?.cancel()
                         isLoadingPage = false
-                        if (it.isEmpty)
-                            alert = SearchAlert.ObjectNotFound
-                        else
-                            currentSelection = it
+                        viewModel.clearHistory()
+                    },
+                    recentSelected = {
+                        searchKey = ""
+                        searchResults = emptyList()
+                        showResult(path = it.path)
                     }
+                ) {
+                    showResult(selection = it)
                 }
             },
         )
@@ -209,8 +230,35 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkCli
 }
 
 @Composable
-private fun SearchResult(key: String, results: List<Completion>, isSearching: Boolean, selectionHandler: (Selection) -> Unit) {
-    if (results.isEmpty() && isSearching) {
+private fun SearchResult(key: String, results: List<Completion>, isSearching: Boolean, recentSearches: List<RecentSearch>, clearHistory: () -> Unit, recentSelected: (RecentSearch) -> Unit, selectionHandler: (Selection) -> Unit) {
+    if (key.isEmpty() && recentSearches.isNotEmpty()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxHeight()
+                .imePadding()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            item {
+                Header(
+                    text = CelestiaString("Recent Searches", ""),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    IconButton(onClick = clearHistory) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.delete_24px),
+                            contentDescription = CelestiaString("Clear History", ""),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+            items(recentSearches, key = { it.path }) { recent ->
+                TextRow(primaryText = recent.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                    recentSelected(recent)
+                }))
+            }
+        }
+    } else if (results.isEmpty() && isSearching) {
         Box(modifier = Modifier
             .fillMaxSize()
             .imePadding()

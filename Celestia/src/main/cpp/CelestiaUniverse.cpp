@@ -29,6 +29,32 @@ Java_space_celestia_celestia_Universe_c_1getStarCatalog(JNIEnv *env, jclass claz
 }
 
 extern "C"
+JNIEXPORT jstring JNICALL
+Java_space_celestia_celestia_Universe_c_1getPathForSelection(JNIEnv *env, jclass clazz,
+                                                         jlong pointer, jobject selection) {
+    auto u = fromHandle<Universe>(pointer);
+    const Selection sel = javaSelectionAsSelection(env, selection);
+    std::string path;
+    switch (sel.getType()) {
+        case SelectionType::Star:
+            path = u->getStarCatalog()->getStarName(*sel.star(), false);
+            break;
+        case SelectionType::Body:
+            path = sel.body()->getPath(u->getStarCatalog());
+            break;
+        case SelectionType::DeepSky:
+            path = u->getDSOCatalog()->getDSOName(sel.deepsky(), false);
+            break;
+        case SelectionType::Location:
+            path = sel.location()->getPath(u->getStarCatalog());
+            break;
+        default:
+            break;
+    }
+    return env->NewStringUTF(path.c_str());
+}
+
+extern "C"
 JNIEXPORT jlong JNICALL
 Java_space_celestia_celestia_Universe_c_1getDSOCatalog(JNIEnv *env, jclass clazz, jlong pointer) {
     auto u = fromHandle<Universe>(pointer);

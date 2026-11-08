@@ -32,6 +32,7 @@ class PreferenceManager(context: Context, name: String) {
         Language,
         PrivacyPolicyAccepted,
         LastNewsID,
+        RecentSearches,
         ControllerRemapA,
         ControllerRemapB,
         ControllerRemapX,

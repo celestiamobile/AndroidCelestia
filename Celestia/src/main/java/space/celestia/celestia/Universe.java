@@ -74,6 +74,11 @@ public class Universe implements BrowserItem.ChildrenProvider {
         return "";
     }
 
+    @NonNull
+    public String getPathForSelection(@NonNull Selection selection) {
+        return c_getPathForSelection(pointer, selection);
+    }
+
     @Override
     @Nullable
     public Map<String, BrowserItem> childrenForItem(@NonNull BrowserItem item) {
@@ -106,6 +111,7 @@ public class Universe implements BrowserItem.ChildrenProvider {
 
     // C functions
     private static native long c_getStarCatalog(long ptr);
+    private static native String c_getPathForSelection(long ptr, Selection selection);
     private static native long c_getDSOCatalog(long ptr);
     private static native long c_getStarBrowser(long pointer, int kind, long observer);
     private static native String c_getChildrenForStar(long ptr, long pointer);
