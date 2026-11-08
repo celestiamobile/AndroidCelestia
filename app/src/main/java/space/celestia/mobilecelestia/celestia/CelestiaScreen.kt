@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -66,7 +69,7 @@ private val InteractionModeSaver = Saver<CelestiaInteraction.InteractionMode, St
 )
 
 @Composable
-fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInsets, pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, canAcceptKeyEvents: () -> Boolean, showMenu: () -> Unit, showInfo: () -> Unit, showSearch: () -> Unit, goTo: () -> Unit, onInteractionModeChanged: (CelestiaInteraction.InteractionMode) -> Unit, onInteractionViewReady: (View) -> Unit) {
+fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInsets, hideControls: Boolean, retainedRenderSize: IntSize?, onRenderSizeChanged: (IntSize) -> Unit, keepRenderingWhilePaused: () -> Boolean, pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, canAcceptKeyEvents: () -> Boolean, showMenu: () -> Unit, showInfo: () -> Unit, showSearch: () -> Unit, goTo: () -> Unit, onInteractionModeChanged: (CelestiaInteraction.InteractionMode) -> Unit, onInteractionViewReady: (View) -> Unit) {
     val lifeCycleOwner = LocalLifecycleOwner.current
     val viewModel: RendererViewModel = hiltViewModel()
 
@@ -74,6 +77,14 @@ fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInset
     val scope = rememberCoroutineScope()
 
     val zoomTimerHolder = remember { object { var timer: Timer? = null } }
+
+    LaunchedEffect(hideControls) {
+        if (hideControls) {
+            zoomTimerHolder.timer?.cancel()
+            zoomTimerHolder.timer = null
+            viewInteraction?.zoomMode = null
+        }
+    }
 
     var isControlViewVisible by remember { mutableStateOf(true) }
 
@@ -97,6 +108,9 @@ fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInset
             safeAreaInsets = rendererSafeAreaInsets,
             frameRateOptionEvents = frameRateOptionEvents,
             reapplyContentScaleEvents = reapplyContentScaleEvents,
+            keepRenderingWhilePaused = keepRenderingWhilePaused,
+            retainedRenderSize = retainedRenderSize,
+            onRenderSizeChanged = onRenderSizeChanged,
             celestiaRendererReady = {
                 showInteractionOverlay = true
             },
@@ -156,12 +170,18 @@ fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInset
                 viewInteraction = interaction
                 onInteractionViewReady(view)
                 return@AndroidView view
-            }, modifier = Modifier.fillMaxSize(), update = {})
+            }, modifier = Modifier.fillMaxSize(), update = { view ->
+                view.visibility = if (hideControls) View.INVISIBLE else View.VISIBLE
+                viewInteraction?.isReady = !hideControls
+                if (hideControls && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && view.hasPointerCapture()) {
+                    view.releasePointerCapture()
+                }
+            })
 
             AnimatedVisibility(
-                visible = isControlViewVisible,
+                visible = isControlViewVisible && !hideControls,
                 enter = fadeIn(tween(200)),
-                exit = fadeOut(tween(200)),
+                exit = if (hideControls) ExitTransition.None else fadeOut(tween(200)),
                 modifier = Modifier.fillMaxSize()
             ) {
                 Box(
@@ -298,7 +318,7 @@ fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInset
         }
     }
 
-    systemAccessDeferred?.let { deferred ->
+    systemAccessDeferred?.takeUnless { hideControls }?.let { deferred ->
         SimpleAlertDialog(
             onDismissRequest = {
                 systemAccessDeferred = null
@@ -314,7 +334,7 @@ fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInset
         )
     }
 
-    alert?.let { content ->
+    alert?.takeUnless { hideControls }?.let { content ->
         when (content) {
             CelestiaAlert.ErrorLoadingData -> {
                 SimpleAlertDialog(onDismissRequest = {

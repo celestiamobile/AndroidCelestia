@@ -255,7 +255,7 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
     SettingsLanguageItem(),
 )
 
-private val staticRendererItems: List<SettingsItem> = commonRendererItems + listOf(
+private fun rendererItems(supportsPictureInPicture: Boolean): List<SettingsItem> = commonRendererItems + listOf(
     SettingsRefreshRateItem(),
 ) + rendererQualityItem(listOf(
     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, CelestiaString("HiDPI", "HiDPI support in display"), true),
@@ -267,7 +267,20 @@ private val staticRendererItems: List<SettingsItem> = commonRendererItems + list
             rows = listOf(SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.DetectVirtualDisplay, CelestiaString("Detect Virtual Display (Casting)", "Settings to support virtual display in external display"), false)),
             footer = Footer.TextWithLink(text = CelestiaString("Wireless displays can sometimes stay 'active' after disconnecting. If casting fails, please check the FAQ.", "Warning text for using virtual display in Celestia"), linkText = CelestiaString("FAQ", "The text FAQ found in other text where FAQ indicates the link"), link = "https://celestia.mobi/help/faq", localizable = true)
         ),
-    )),
+    ) + if (supportsPictureInPicture) listOf(
+        SettingsCommonItem.Section(
+            header = CelestiaString("Picture in Picture", ""),
+            rows = listOf(
+                SettingsPreferenceSwitchItem(
+                    PreferenceManager.PredefinedKey.AutomaticPictureInPicture,
+                    CelestiaString("Start Picture in Picture Automatically", ""),
+                    false,
+                    subtitle = CelestiaString("Keep rendering in Picture in Picture when leaving the app.", "Automatic Picture in Picture setting description")
+                )
+            ),
+            footer = Footer.Text(CelestiaString("Picture in Picture is unavailable while using an external display.", ""))
+        )
+    ) else emptyList()),
     SettingsRenderInfoItem()
 )
 
@@ -387,10 +400,10 @@ val celestiaPlusSettingSection: List<CommonSectionV2<SettingsItem>> by lazy {
     }
 }
 
-val mainSettingSectionsBeforePlus: List<CommonSectionV2<SettingsItem>> = listOf(
+fun mainSettingSectionsBeforePlus(supportsPictureInPicture: Boolean): List<CommonSectionV2<SettingsItem>> = listOf(
     CommonSectionV2(staticDisplayItems, CelestiaString("Display", "Display settings")),
     CommonSectionV2(staticTimeAndRegionItems, CelestiaString("Time & Region", "time and region related settings")),
-    CommonSectionV2(staticRendererItems, CelestiaString("Renderer", "In settings")),
+    CommonSectionV2(rendererItems(supportsPictureInPicture), CelestiaString("Renderer", "In settings")),
     CommonSectionV2(staticAdvancedItems, CelestiaString("Advanced", "Advanced setting items")),
 )
 

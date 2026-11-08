@@ -18,6 +18,7 @@ fun SimpleAlertDialog(
     dismissOnBackPressOrClickOutside: Boolean = true,
     confirmButtonText: String? = null
 ) {
+    if (!LocalRetainedVisibility.current) return
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {

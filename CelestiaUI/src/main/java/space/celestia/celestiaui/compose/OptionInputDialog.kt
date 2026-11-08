@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.dropUnlessResumed
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OptionInputDialog(onDismissRequest: () -> Unit, title: String? = null, items: List<String>, selectionHandler: (Int) -> Unit) {
+    if (!LocalRetainedVisibility.current) return
     // val DialogPadding = PaddingValues(all = 24.dp)
     // val TitlePadding = PaddingValues(bottom = 16.dp)
     BasicAlertDialog(

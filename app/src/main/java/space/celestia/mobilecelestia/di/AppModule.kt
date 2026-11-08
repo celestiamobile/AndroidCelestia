@@ -33,6 +33,7 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.BuildConfig
+import space.celestia.mobilecelestia.celestia.supportsPictureInPicture
 import space.celestia.celestiaui.pushnotification.UserAPIService
 import space.celestia.mobilecelestia.settings.SettingsEntryProviderImpl
 import java.util.concurrent.Executor
@@ -214,8 +215,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideSettingsEntryProvider(featureFlags: FeatureFlags): SettingsEntryProvider {
-        return SettingsEntryProviderImpl(featureFlags)
+    fun provideSettingsEntryProvider(@ApplicationContext context: Context, featureFlags: FeatureFlags): SettingsEntryProvider {
+        return SettingsEntryProviderImpl(featureFlags, context.supportsPictureInPicture())
     }
 
     @Singleton

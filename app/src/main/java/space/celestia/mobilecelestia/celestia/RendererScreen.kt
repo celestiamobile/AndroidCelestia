@@ -3,7 +3,9 @@ package space.celestia.mobilecelestia.celestia
 import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.AndroidExternalSurface
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -14,15 +16,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.core.app.OnPictureInPictureModeChangedProvider
+import androidx.core.app.PictureInPictureModeChangedInfo
+import androidx.core.util.Consumer
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -40,13 +46,14 @@ import space.celestia.mobilecelestia.common.EdgeInsets
 import java.util.Locale
 
 @Composable
-fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, safeAreaInsets: EdgeInsets, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, celestiaRendererReady: () -> Unit, celestiaRendererLoadingFromFallback: () -> Unit) {
+fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, safeAreaInsets: EdgeInsets, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, keepRenderingWhilePaused: () -> Boolean, retainedRenderSize: IntSize?, onRenderSizeChanged: (IntSize) -> Unit, celestiaRendererReady: () -> Unit, celestiaRendererLoadingFromFallback: () -> Unit) {
     val viewModel: RendererViewModel = hiltViewModel()
     val density = LocalDensity.current.density
     val fontScale = LocalConfiguration.current.fontScale
     val layoutDirection = LocalLayoutDirection.current
     val scaleFactor = if (viewModel.rendererSettings.enableFullResolution) 1.0f else (1.0f / density)
-    var surfaceSize by remember { mutableStateOf(IntSize.Zero) }
+    var viewSize by remember { mutableStateOf(IntSize.Zero) }
+    val surfaceSize = renderSurfaceSize(viewSize, retainedRenderSize, scaleFactor)
     var haveSurface by remember { mutableStateOf(false) }
     var loadSuccess by remember { mutableStateOf(false) }
 
@@ -55,6 +62,8 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
     val currentSafeAreaInsets by rememberUpdatedState(safeAreaInsets)
     val currentDensity by rememberUpdatedState(density)
     val currentFontScale by rememberUpdatedState(fontScale)
+    val currentKeepRenderingWhilePaused by rememberUpdatedState(keepRenderingWhilePaused)
+    val currentOnRenderSizeChanged by rememberUpdatedState(onRenderSizeChanged)
 
     fun renderChanges(): RenderChanges {
         return if (viewModel.renderer.hasPresentationSurface()) RenderChanges() else RenderChanges(scaling = currentDensity != viewModel.rendererSettings.density || currentFontScale != viewModel.rendererSettings.fontScale, safeArea = currentSafeAreaInsets != viewModel.rendererSettings.safeAreaInsets)
@@ -220,39 +229,47 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
         }
         viewModel.renderer.startConditionally(activity, viewModel.rendererSettings.enableMultisample)
 
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
+        fun updateRenderingState() {
+            // Auto-entry can pause the activity before its PiP-mode callback arrives.
+            if (shouldRenderForLifecycle(lifecycleOwner.lifecycle.currentState, currentKeepRenderingWhilePaused())) {
                 viewModel.renderer.resume()
-            } else if (event == Lifecycle.Event.ON_PAUSE) {
+            } else {
                 viewModel.renderer.pause()
             }
         }
+
+        val observer = LifecycleEventObserver { _, _ -> updateRenderingState() }
+        val pictureInPictureProvider = activity as? OnPictureInPictureModeChangedProvider
+        val pictureInPictureListener = Consumer<PictureInPictureModeChangedInfo> { updateRenderingState() }
         lifecycleOwner.lifecycle.addObserver(observer)
+        pictureInPictureProvider?.addOnPictureInPictureModeChangedListener(pictureInPictureListener)
         onDispose {
             viewModel.appStatusReporter.unregister(listener)
             lifecycleOwner.lifecycle.removeObserver(observer)
+            pictureInPictureProvider?.removeOnPictureInPictureModeChangedListener(pictureInPictureListener)
         }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .onSizeChanged { size ->
-                surfaceSize = IntSize(
-                    (size.width.toFloat() * scaleFactor).toInt(),
-                    (size.height.toFloat() * scaleFactor).toInt()
-                )
-            }
+            .background(if (retainedRenderSize != null) Color.Black else Color.Transparent)
+            .onSizeChanged { viewSize = it }
     ) {
         if (surfaceSize.width > 0 && surfaceSize.height > 0) {
             AndroidExternalSurface(
-                modifier = Modifier.fillMaxSize(),
+                modifier = if (retainedRenderSize != null) {
+                    Modifier.align(Alignment.Center).aspectRatio(surfaceSize.width.toFloat() / surfaceSize.height)
+                } else {
+                    Modifier.fillMaxSize()
+                },
                 surfaceSize = surfaceSize
             ) {
                 onSurface { surface, width, height ->
                     viewModel.renderer.setSurface(surface)
                     viewModel.renderer.setFrameRateOption(viewModel.rendererSettings.frameRateOption)
                     viewModel.renderer.setSurfaceSize(width, height)
+                    currentOnRenderSizeChanged(IntSize(width, height))
                     haveSurface = true
                     if (viewModel.appStatusReporter.state.value >= AppStatusReporter.State.LOADING_SUCCESS.value) {
                         scope.launch { loadingFinished() }
@@ -261,6 +278,7 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
                     surface.onChanged { width, height ->
                         Log.d("RendererScreen", "Resize to $width x $height")
                         viewModel.renderer.setSurfaceSize(width, height)
+                        currentOnRenderSizeChanged(IntSize(width, height))
                     }
 
                     surface.onDestroyed {

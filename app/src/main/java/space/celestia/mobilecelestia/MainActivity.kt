@@ -11,8 +11,13 @@ package space.celestia.mobilecelestia
 
 import android.annotation.SuppressLint
 import android.app.NotificationManager
+import android.app.PictureInPictureParams
+import android.app.PictureInPictureUiState
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -23,6 +28,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.LayoutDirection
 import android.util.Log
+import android.util.Rational
 import android.view.ContextMenu
 import android.view.Display
 import android.view.LayoutInflater
@@ -38,6 +44,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedVisibility
@@ -55,6 +62,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -64,10 +72,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
@@ -142,12 +153,14 @@ import space.celestia.celestiaui.utils.AppURL
 import space.celestia.celestiaui.utils.AppURLResult
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
+import space.celestia.celestiaui.compose.RetainedVisibility
 import space.celestia.celestiaui.utils.showAlert
 import space.celestia.celestiaui.utils.showError
 import space.celestia.celestiaui.utils.showOptions
 import space.celestia.mobilecelestia.celestia.CelestiaInteraction
 import space.celestia.mobilecelestia.celestia.CelestiaPresentation
 import space.celestia.mobilecelestia.celestia.CelestiaScreen
+import space.celestia.mobilecelestia.celestia.supportsPictureInPicture
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import space.celestia.mobilecelestia.common.EdgeInsets
@@ -175,6 +188,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.Executor
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
@@ -268,7 +282,26 @@ class MainActivity : AppCompatActivity(),
 
     private var mediaRouter: MediaRouter? = null
     private var activePresentation: CelestiaPresentation? = null
+        set(value) {
+            field = value
+            updatePictureInPictureParameters()
+        }
     private var pendingDisplay: Display? = null
+
+    private val pictureInPictureSupported by lazy { supportsPictureInPicture() }
+    private var hideControlsForPictureInPicture by mutableStateOf(false)
+    private var pictureInPictureSourceRect: Rect? = null
+    private var latestRenderSize: IntSize? = null
+    private var normalRenderSize: IntSize? = null
+    private var pictureInPictureRenderSize by mutableStateOf<IntSize?>(null)
+    private val pictureInPicturePreferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == null || key == PreferenceManager.PredefinedKey.AutomaticPictureInPicture.valueString) {
+            updatePictureInPictureParameters()
+        }
+    }
+
+    private val pictureInPictureActive: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isInPictureInPictureMode
 
     private var showCelestiaPlus = mutableStateOf<Boolean?>(null)
 
@@ -282,6 +315,7 @@ class MainActivity : AppCompatActivity(),
     private var pendingReferenceMarkStates: Map<String, Boolean> = emptyMap()
     private val browserItems: ArrayList<BrowserItem> = arrayListOf()
     private var contextMenuView: View? = null
+    private var toolbarOverflowPopup: PopupMenu? = null
 
     private val frameRateOptionEvents = MutableSharedFlow<Int>(extraBufferCapacity = 1)
     private val reapplyContentScaleEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
@@ -304,6 +338,9 @@ class MainActivity : AppCompatActivity(),
         val savedState = if (currentState == AppStatusReporter.State.NONE) null else savedInstanceState
 
         super.onCreate(savedState)
+
+        hideControlsForPictureInPicture = pictureInPictureActive
+        appSettings.registerOnSharedPreferenceChangeListener(pictureInPicturePreferenceListener)
 
         mediaRouter = try {
             getSystemService(MediaRouter::class.java).also { router ->
@@ -380,13 +417,20 @@ class MainActivity : AppCompatActivity(),
     override fun onResume() {
         super.onResume()
 
+        hideControlsForPictureInPicture = pictureInPictureActive
         setUpDisplayListenerIfNeeded()
+        if (!pictureInPictureActive) {
+            pictureInPictureRenderSize = null
+            normalRenderSize = latestRenderSize
+        }
+        updatePictureInPictureParameters()
         if (::sensorManager.isInitialized && sessionSettings.isGyroscopeEnabled) {
             updateGyroscope(true)
         }
     }
 
     override fun onPause() {
+        toolbarOverflowPopup?.dismiss()
         mediaRouterCallback?.let {
             mediaRouter?.removeCallback(it)
         }
@@ -402,6 +446,8 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onDestroy() {
+        toolbarOverflowPopup?.dismiss()
+        appSettings.unregisterOnSharedPreferenceChangeListener(pictureInPicturePreferenceListener)
         appStatusReporter.unregister(this)
         onBackPressedCallback?.remove()
         onBackPressedCallback = null
@@ -409,6 +455,84 @@ class MainActivity : AppCompatActivity(),
         Log.d(TAG, "Destroying MainActivity")
 
         super.onDestroy()
+    }
+
+    private fun canAutomaticallyEnterPictureInPicture(): Boolean {
+        return pictureInPictureSupported && readyForInteraction && !isFinishing &&
+            activePresentation == null && normalRenderSize != null && pictureInPictureSourceRect?.isEmpty == false &&
+            appSettings[PreferenceManager.PredefinedKey.AutomaticPictureInPicture] == "true"
+    }
+
+    private fun renderSizeChanged(size: IntSize) {
+        if (size.width <= 0 || size.height <= 0) {
+            Log.w(TAG, "Ignoring empty render surface size: $size")
+            return
+        }
+        latestRenderSize = size
+        // PiP can resize the surface before its mode-change callback arrives.
+        if (pictureInPictureRenderSize == null && !pictureInPictureActive &&
+            (normalRenderSize == null || lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))) {
+            normalRenderSize = size
+            updatePictureInPictureParameters()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun pictureInPictureParameters(): PictureInPictureParams {
+        return PictureInPictureParams.Builder().apply {
+            (pictureInPictureRenderSize ?: normalRenderSize)?.let { size ->
+                setAspectRatio(
+                    Rational(size.width, size.height).coerceIn(Rational(100, 239), Rational(239, 100))
+                )
+            }
+            pictureInPictureSourceRect?.let { setSourceRectHint(it) }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                setAutoEnterEnabled(canAutomaticallyEnterPictureInPicture())
+                setSeamlessResizeEnabled(false)
+            }
+        }.build()
+    }
+
+    private fun updatePictureInPictureParameters() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !pictureInPictureSupported || isFinishing || isDestroyed) return
+        try {
+            setPictureInPictureParams(pictureInPictureParameters())
+        } catch (error: IllegalStateException) {
+            Log.e(TAG, "Failed to update Picture in Picture parameters.", error)
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !canAutomaticallyEnterPictureInPicture()) return
+        pictureInPictureRenderSize = normalRenderSize
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) return
+        try {
+            if (enterPictureInPictureMode(pictureInPictureParameters())) {
+                hideControlsForPictureInPicture = true
+            } else {
+                pictureInPictureRenderSize = null
+                Log.w(TAG, "Picture in Picture entry was not allowed.")
+            }
+        } catch (error: IllegalStateException) {
+            pictureInPictureRenderSize = null
+            Log.e(TAG, "Failed to enter Picture in Picture.", error)
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
+        pictureInPictureRenderSize = if (isInPictureInPictureMode) pictureInPictureRenderSize ?: normalRenderSize else null
+        hideControlsForPictureInPicture = isInPictureInPictureMode
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    override fun onPictureInPictureUiStateChanged(pipState: PictureInPictureUiState) {
+        super.onPictureInPictureUiStateChanged(pipState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM && pipState.isTransitioningToPip) {
+            pictureInPictureRenderSize = pictureInPictureRenderSize ?: normalRenderSize
+            hideControlsForPictureInPicture = true
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -673,6 +797,7 @@ class MainActivity : AppCompatActivity(),
         resourceManager.scriptDirectory = extraScriptPaths.firstOrNull()
         favoriteManager.extraScriptPaths = extraScriptPaths
         readyForInteraction = true
+        updatePictureInPictureParameters()
 
         snapshotFlow { sessionSettings.isGyroscopeEnabled }
             .onEach { isEnabled -> updateGyroscope(isEnabled) }
@@ -1345,6 +1470,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun celestiaFragmentCanAcceptKeyEvents(): Boolean {
+        if (hideControlsForPictureInPicture) return false
         // check drawer
         if (isMenuOpen())
             return false
@@ -1847,7 +1973,11 @@ class MainActivity : AppCompatActivity(),
 
     @Composable
     private fun MainContentWithDrawer() {
+        LaunchedEffect(hideControlsForPictureInPicture) {
+            if (hideControlsForPictureInPicture) toolbarOverflowPopup?.dismiss()
+        }
         val drawerState = rememberDrawerState(DrawerValue.Closed)
+        val pictureInPictureDrawerState = rememberDrawerState(DrawerValue.Closed)
         val coroutineScope = rememberCoroutineScope()
         val safeAreaInsets = rememberSafeAreaInsets()
         val density = LocalDensity.current
@@ -1876,16 +2006,18 @@ class MainActivity : AppCompatActivity(),
                             with(density) { endInset.toDp() }
                     )
                 ) {
-                    showCelestiaPlus.value?.let { show ->
-                        MenuScreen(if (show) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()) { action ->
-                            toolbarActionSelected(action)
+                    RetainedVisibility(visible = !hideControlsForPictureInPicture) {
+                        showCelestiaPlus.value?.let { show ->
+                            MenuScreen(if (show) listOf(listOf(ToolbarAction.CelestiaPlus)) else listOf()) { action ->
+                                toolbarActionSelected(action)
+                            }
                         }
                     }
                 }
             },
-            drawerState = drawerState,
+            drawerState = if (hideControlsForPictureInPicture) pictureInPictureDrawerState else drawerState,
             drawerAlignment = DrawerAlignment.End,
-            gesturesEnabled = drawerState.isOpen,
+            gesturesEnabled = !hideControlsForPictureInPicture && drawerState.isOpen,
         ) {
             MainContent()
         }
@@ -1904,7 +2036,8 @@ class MainActivity : AppCompatActivity(),
 
     @Composable
     private fun MainContent() {
-        val safeAreaInsets = rememberSafeAreaInsets()
+        val windowSafeAreaInsets = rememberSafeAreaInsets()
+        val safeAreaInsets = if (hideControlsForPictureInPicture) EdgeInsets(0, 0, 0, 0) else windowSafeAreaInsets
         val density = LocalDensity.current
         val bottomControlMargin = dimensionResource(space.celestia.celestiaui.R.dimen.common_page_medium_margin_vertical)
         val bottomControlMarginPx = with(density) { bottomControlMargin.roundToPx() }
@@ -1914,10 +2047,11 @@ class MainActivity : AppCompatActivity(),
             targetState = isBottomControlVisible,
             label = "BottomControlVisibility"
         )
-        val isBottomControlShowing =
+        val isBottomControlShowing = !hideControlsForPictureInPicture && (
             bottomControlTransition.currentState ||
                 bottomControlTransition.targetState ||
                 bottomControlTransition.isRunning
+            )
         val rendererSafeAreaInsets = remember(
             safeAreaInsets.left,
             safeAreaInsets.top,
@@ -1935,24 +2069,33 @@ class MainActivity : AppCompatActivity(),
                     if (isBottomControlShowing) bottomControlHeight + bottomControlMarginPx else 0
             )
         }
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { coordinates ->
+            val bounds = coordinates.boundsInWindow()
+            val rect = Rect(bounds.left.roundToInt(), bounds.top.roundToInt(), bounds.right.roundToInt(), bounds.bottom.roundToInt())
+            if (!rect.isEmpty && rect != pictureInPictureSourceRect) {
+                pictureInPictureSourceRect = rect
+                updatePictureInPictureParameters()
+            }
+        }) {
             RenderContent(
                 safeAreaInsets = safeAreaInsets,
                 rendererSafeAreaInsets = rendererSafeAreaInsets
             )
-            PlaybackToolbar(
-                safeAreaInsets = safeAreaInsets,
-                visibilityTransition = bottomControlTransition,
-                onHeightChanged = { bottomControlHeight = it }
-            )
-            SheetLayout(
-                safeAreaInsets = safeAreaInsets,
-                visible = viewModel.bottomSheetVisible.value,
-                onDismiss = {
-                    viewModel.bottomSheetVisible.value = false
+            RetainedVisibility(visible = !hideControlsForPictureInPicture) {
+                PlaybackToolbar(
+                    safeAreaInsets = safeAreaInsets,
+                    visibilityTransition = bottomControlTransition,
+                    onHeightChanged = { bottomControlHeight = it }
+                )
+                SheetLayout(
+                    safeAreaInsets = safeAreaInsets,
+                    visible = viewModel.bottomSheetVisible.value,
+                    onDismiss = {
+                        viewModel.bottomSheetVisible.value = false
+                    }
+                ) {
+                    ToolScreenContent()
                 }
-            ) {
-                ToolScreenContent()
             }
             if (viewModel.loadingVisible.value) {
                 LoadingScreen(safeAreaInsets = safeAreaInsets)
@@ -2031,6 +2174,12 @@ class MainActivity : AppCompatActivity(),
             CelestiaScreen(
                 safeAreaInsets = safeAreaInsets,
                 rendererSafeAreaInsets = rendererSafeAreaInsets,
+                hideControls = hideControlsForPictureInPicture,
+                retainedRenderSize = pictureInPictureRenderSize,
+                onRenderSizeChanged = ::renderSizeChanged,
+                keepRenderingWhilePaused = {
+                    pictureInPictureActive || canAutomaticallyEnterPictureInPicture()
+                },
                 pathToLoad = celestiaDataDirPath,
                 cfgToLoad = celestiaConfigFilePath,
                 addonDirsToLoad = addonPaths,
@@ -2182,7 +2331,16 @@ class MainActivity : AppCompatActivity(),
         overflowButton.contentDescription = CelestiaString("More actions", "Button to show more actions to in the bottom toolbar")
         overflowButton.setOnTouchListener(null)
         overflowButton.setOnClickListener {
+            toolbarOverflowPopup?.dismiss()
             val popup = PopupMenu(it.context, it)
+            toolbarOverflowPopup = popup
+            popup.setOnDismissListener { dismissedPopup ->
+                weakSelf.get()?.let { activity ->
+                    if (activity.toolbarOverflowPopup === dismissedPopup) {
+                        activity.toolbarOverflowPopup = null
+                    }
+                }
+            }
             for (i in overflowItems.indices) {
                 val action = overflowItems[i]
                 popup.menu.add(Menu.NONE, i, Menu.NONE, action.title)

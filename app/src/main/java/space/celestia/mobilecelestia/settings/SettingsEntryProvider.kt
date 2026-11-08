@@ -8,10 +8,10 @@ import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
 import space.celestia.celestiaui.settings.viewmodel.SettingsItem
 import space.celestia.mobilecelestia.pushnotification.pushNotificationSettingsSection
 
-class SettingsEntryProviderImpl(private val featureFlags: FeatureFlags) : SettingsEntryProvider {
+class SettingsEntryProviderImpl(private val featureFlags: FeatureFlags, private val supportsPictureInPicture: Boolean) : SettingsEntryProvider {
     override fun settings(purchaseManager: PurchaseManager): List<CommonSectionV2<SettingsItem>> {
         val sections = mutableListOf<CommonSectionV2<SettingsItem>>()
-        sections.addAll(mainSettingSectionsBeforePlus)
+        sections.addAll(mainSettingSectionsBeforePlus(supportsPictureInPicture))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             pushNotificationSettingsSection()?.let { sections.add(it) }
         }

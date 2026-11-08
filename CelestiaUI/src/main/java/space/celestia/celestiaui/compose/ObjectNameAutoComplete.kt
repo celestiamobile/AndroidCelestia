@@ -55,9 +55,10 @@ fun ObjectNameAutoComplete(executor: Executor, core: AppCore, name: String, modi
     }
 
     val focusManager = LocalFocusManager.current
+    val showMenu = expanded && LocalRetainedVisibility.current
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
+        expanded = showMenu,
         onExpandedChange = { if (!it) expanded = false },
         modifier = modifier
     ) {
@@ -73,22 +74,24 @@ fun ObjectNameAutoComplete(executor: Executor, core: AppCore, name: String, modi
                 .fillMaxWidth()
                 .onFocusChanged { if (it.isFocused) fetchCompletions(text) }
         )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            completions.forEach { completion ->
-                DropdownMenuItem(
-                    text = { Text(completion.name) },
-                    onClick = {
-                        text = completion.name
-                        inputUpdated(completion.name)
-                        selectionUpdated(completion.selection)
-                        expanded = false
-                        focusManager.clearFocus()
-                    },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                )
+        if (LocalRetainedVisibility.current) {
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                completions.forEach { completion ->
+                    DropdownMenuItem(
+                        text = { Text(completion.name) },
+                        onClick = {
+                            text = completion.name
+                            inputUpdated(completion.name)
+                            selectionUpdated(completion.selection)
+                            expanded = false
+                            focusManager.clearFocus()
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
             }
         }
     }

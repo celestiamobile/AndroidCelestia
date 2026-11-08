@@ -35,8 +35,10 @@ fun ContextMenuContainer(expanded: Boolean, onDismissRequest: () -> Unit, menu: 
     }) {
         content()
         Box(modifier = Modifier.absoluteOffset { IntOffset(x = offset.x.toInt(), y = offset.y.toInt()) }) {
-            DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
-                menu()
+            if (LocalRetainedVisibility.current) {
+                DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
+                    menu()
+                }
             }
         }
     }

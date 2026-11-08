@@ -30,6 +30,7 @@ import space.celestia.celestiaui.utils.CelestiaString
 @Composable
 fun TextInputDialog(onDismissRequest: () -> Unit, confirmHandler: () -> Unit, title: String, text: String?, placeholder: String? = null, textChange: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
+    if (!LocalRetainedVisibility.current) return
     AlertDialog(onDismissRequest = onDismissRequest, confirmButton = {
         TextButton(onClick = dropUnlessResumed { confirmHandler() }) {
             Text(text = CelestiaString("OK", ""))

@@ -59,6 +59,7 @@ class PreferenceManager(context: Context, name: String) {
         MigrationTargetDirectory,
         UseMediaDirForAddons,
         DetectVirtualDisplay,
+        AutomaticPictureInPicture,
         LocalSettingMigration,
         FeatureFlags,
         DeviceID,
@@ -82,6 +83,14 @@ class PreferenceManager(context: Context, name: String) {
 
     operator fun get(key: Key): String? {
         return sp.getString(key.valueString, null)
+    }
+
+    fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        sp.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        sp.unregisterOnSharedPreferenceChangeListener(listener)
     }
 
     @SuppressLint("CommitPrefEdits")

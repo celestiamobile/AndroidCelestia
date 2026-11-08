@@ -19,8 +19,9 @@ import androidx.compose.ui.Modifier
 @Composable
 fun OptionSelect(options: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, selectionChange: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val showMenu = expanded && LocalRetainedVisibility.current
     ExposedDropdownMenuBox(
-        expanded = expanded,
+        expanded = showMenu,
         onExpandedChange = { expanded = it },
         modifier = modifier
     ) {
@@ -31,19 +32,21 @@ fun OptionSelect(options: List<String>, selectedIndex: Int, modifier: Modifier =
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
         )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            options.forEachIndexed { index, option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        selectionChange(index)
-                        expanded = false
-                    },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                )
+        if (LocalRetainedVisibility.current) {
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEachIndexed { index, option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            selectionChange(index)
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
             }
         }
     }
