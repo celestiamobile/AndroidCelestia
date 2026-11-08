@@ -1052,7 +1052,7 @@ Java_space_celestia_celestia_Renderer_c_1saveScreenshot(JNIEnv *env, jobject thi
         return JNI_FALSE;
     }
 
-    std::array<int, 4> viewport;
+    std::array<int, 4> viewport{};
     celestia::engine::PixelFormat format;
     renderer->core->getCaptureInfo(viewport, format);
     if (viewport[2] <= 0 || viewport[3] <= 0 ||

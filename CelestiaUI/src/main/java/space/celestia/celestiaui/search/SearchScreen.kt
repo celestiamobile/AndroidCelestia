@@ -32,6 +32,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -87,6 +90,7 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
     }
     var alert by remember { mutableStateOf<SearchAlert?>(null) }
     val scope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
     Scaffold(topBar = {
         SearchBar(
             inputField = {
@@ -127,7 +131,11 @@ fun SearchScreen(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Un
                     leadingIcon = {
                         Icon(painter = painterResource(id = R.drawable.search_24px), contentDescription = null)
                     },
+                    modifier = Modifier.focusRequester(focusRequester),
                 )
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                }
             },
             expanded = isSearchActive,
             onExpandedChange = {
