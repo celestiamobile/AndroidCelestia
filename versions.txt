@@ -1,4 +1,4 @@
 Celestia=99e89d7
 CelestiaContent=457e4ee
-CelestiaLocalization=30a3c59
+CelestiaLocalization=a49e15c
 apple-android-dependencies=97a59cf
