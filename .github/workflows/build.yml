@@ -27,7 +27,7 @@ concurrency:
 
 env:
   DEPENDENCY_VERSION: '1.0.109'
-  CONTENT_COMMIT_HASH: 'd6bb1f4973590cb5b151ed7ca958510ad2349d0b'
+  CONTENT_COMMIT_HASH: '457e4eebf1b37ca428d5719178c49408fb3282bf'
 
 jobs:
   check-build:
