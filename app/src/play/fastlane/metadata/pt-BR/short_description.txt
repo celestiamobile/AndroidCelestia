@@ -1,1 +1,1 @@
-Planetário 3D
+Planetário 3D interativo

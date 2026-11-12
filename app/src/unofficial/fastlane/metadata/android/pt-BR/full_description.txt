@@ -1,17 +1,15 @@
-Celestia - visualização 3D do espaço em tempo real
+Celestia — visualização 3D do espaço em tempo real
 
-3D Space Simulator | Celestia permite explorar nosso universo em três dimensões.
+Observação: esta é uma versão não oficial do Celestia. As atualizações podem demorar e alguns recursos podem não estar disponíveis.
 
-Celestia simula muitos tipos diferentes de objetos celestes. De planetas e luas a aglomerados de estrelas e galáxias, você pode visitar todos os objetos no banco de dados expansível e visualizá-lo em qualquer ponto do espaço e do tempo. A posição e o movimento dos objetos do sistema solar são calculados com precisão em tempo real, a qualquer taxa desejada.
+Simulador espacial 3D | Explore nosso universo em três dimensões com o Celestia.
 
-Planetário interativo
+O Celestia simula muitos tipos de objetos celestes. De planetas e luas a aglomerados estelares e galáxias, você pode visitar qualquer objeto do banco de dados expansível e observá-lo de qualquer ponto do espaço e em qualquer momento. A posição e o movimento dos objetos do Sistema Solar são calculados com precisão em tempo real, com a velocidade de passagem do tempo que você escolher.
 
-Celestia serve como um planetário - para um observador em qualquer objeto celeste.
+Planetário interativo | O Celestia funciona como um planetário para um observador em qualquer corpo celeste.
 
-Você pode navegar facilmente para qualquer mundo e pousar em sua superfície. Quando usado como um planetário, Celestia mostra posições precisas de objetos do sistema solar no céu. Você pode ativar ou desativar rótulos e outros recursos de suporte com teclas de atalho ou ampliar e reduzir um objeto de interesse, por exemplo, o sistema de luas de Júpiter.
+Você pode navegar facilmente até qualquer mundo e pousar em sua superfície. Como planetário, o Celestia mostra as posições exatas dos objetos do Sistema Solar no céu. Você pode ativar ou desativar rótulos e outros recursos auxiliares com atalhos de teclado, ou ampliar e reduzir a visualização de um objeto de interesse, como o sistema de luas de Júpiter.
 
-Conteúdo expansível
+Conteúdo expansível | Personalize o Celestia de acordo com suas necessidades.
 
-Personalize o Celestia de acordo com suas necessidades.
-
-Os catálogos da Celestia podem ser facilmente expandidos. Existem muitos complementos diferentes disponíveis, contendo novos objetos, como cometas ou estrelas, texturas de alta resolução da Terra e outros corpos do sistema solar bem mapeados, além de modelos 3D para asteróides e naves espaciais em trajetórias precisas. Até objetos fictícios de franquias de ficção científica bem conhecidas podem ser encontrados.
+Os catálogos do Celestia podem ser facilmente expandidos. Há diversos complementos com novos objetos, como cometas ou estrelas, texturas de alta resolução da Terra e de outros corpos do Sistema Solar bem mapeados, além de modelos 3D de asteroides e de espaçonaves em trajetórias precisas. Você pode encontrar até objetos fictícios de franquias conhecidas de ficção científica.

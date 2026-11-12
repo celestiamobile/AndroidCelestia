@@ -1,0 +1,15 @@
+Celestia — visualizzazione dello spazio in 3D in tempo reale
+
+Nota: questa è una versione non ufficiale di Celestia. Gli aggiornamenti potrebbero arrivare in ritardo e alcune funzionalità potrebbero non essere disponibili.
+
+Simulatore spaziale 3D | Celestia ti permette di esplorare il nostro universo in tre dimensioni.
+
+Celestia simula molti tipi di oggetti celesti. Dai pianeti e dalle lune agli ammassi stellari e alle galassie, puoi visitare ogni oggetto del database espandibile e osservarlo da qualsiasi punto nello spazio e nel tempo. La posizione e il movimento degli oggetti del sistema solare vengono calcolati con precisione in tempo reale, alla velocità di simulazione che preferisci.
+
+Planetario interattivo | Celestia funge da planetario per un osservatore situato su qualsiasi oggetto celeste.
+
+Puoi raggiungere facilmente qualsiasi mondo e atterrare sulla sua superficie. Usato come planetario, Celestia mostra le posizioni esatte degli oggetti del sistema solare nel cielo. Puoi attivare e disattivare le etichette e altre funzioni di supporto tramite scorciatoie da tastiera, oppure ingrandire o ridurre la vista di un oggetto che ti interessa, come il sistema di lune di Giove.
+
+Contenuti espandibili | Personalizza Celestia in base alle tue esigenze.
+
+I cataloghi di Celestia si possono espandere facilmente. Sono disponibili numerosi componenti aggiuntivi con nuovi oggetti, come comete o stelle, texture ad alta risoluzione della Terra e di altri corpi del sistema solare ben cartografati, oltre a modelli 3D di asteroidi e veicoli spaziali che seguono traiettorie precise. Puoi trovare persino oggetti immaginari di celebri saghe di fantascienza.
