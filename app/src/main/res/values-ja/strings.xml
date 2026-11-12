@@ -1,4 +1,58 @@
+<!--
+  ~ strings.xml
+  ~
+  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License
+  ~ as published by the Free Software Foundation; either version 2
+  ~ of the License, or (at your option) any later version.
+  -->
+
 <resources>
     <string name="app_name">Celestia</string>
     <string name="celestia_language">ja</string>
+    <string name="privacy_policy_alert_title">プライバシーポリシーと利用規約</string>
+    <string name="privacy_policy_alert_detail">プライバシーポリシーと利用規約をよくお読みください。</string>
+    <string name="privacy_policy_alert_show_policy_button_title">ポリシーを見る</string>
+    <string name="privacy_policy_alert_accept_button_title">同意する</string>
+    <string name="privacy_policy_alert_decline_button_title">今はしない</string>
+    <string name="subscription_offer_price_template_per_year">%s/年</string>
+    <string name="subscription_offer_price_template_per_month">%s/月</string>
+    <string name="subscription_offer_price_template_per_week">%s/週</string>
+    <string name="subscription_offer_price_template_per_day">%s/日</string>
+    <string name="subscription_offer_price_template_thereafter">その後は%s</string>
+    <string name="subscription_offer_price_unavailable">価格を取得できません</string>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_month">
+        <item quantity="other">最初の%2$dか月は%1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_year">
+        <item quantity="other">最初の%2$d年は%1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_week">
+        <item quantity="other">最初の%2$d週間は%1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_day">
+        <item quantity="other">最初の%2$d日は%1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_year_multiple">
+        <item quantity="other">%2$d年ごとに%1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_month_multiple">
+        <item quantity="other">%2$dか月ごとに%1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_week_multiple">
+        <item quantity="other">%2$d週間ごとに%1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_day_multiple">
+        <item quantity="other">%2$d日ごとに%1$s</item>
+    </plurals>
 </resources>

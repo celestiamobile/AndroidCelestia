@@ -1,4 +1,58 @@
+<!--
+  ~ strings.xml
+  ~
+  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License
+  ~ as published by the Free Software Foundation; either version 2
+  ~ of the License, or (at your option) any later version.
+  -->
+
 <resources>
     <string name="app_name">Celestia</string>
     <string name="celestia_language">ko</string>
+    <string name="privacy_policy_alert_title">개인정보 처리방침 및 이용약관</string>
+    <string name="privacy_policy_alert_detail">개인정보 처리방침 및 이용약관을 주의 깊게 읽어 주세요.</string>
+    <string name="privacy_policy_alert_show_policy_button_title">정책 보기</string>
+    <string name="privacy_policy_alert_accept_button_title">동의</string>
+    <string name="privacy_policy_alert_decline_button_title">나중에</string>
+    <string name="subscription_offer_price_template_per_year">%s/년</string>
+    <string name="subscription_offer_price_template_per_month">%s/월</string>
+    <string name="subscription_offer_price_template_per_week">%s/주</string>
+    <string name="subscription_offer_price_template_per_day">%s/일</string>
+    <string name="subscription_offer_price_template_thereafter">이후 %s</string>
+    <string name="subscription_offer_price_unavailable">가격을 확인할 수 없음</string>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_month">
+        <item quantity="other">%2$d개월 동안 %1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_year">
+        <item quantity="other">%2$d년 동안 %1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_week">
+        <item quantity="other">%2$d주 동안 %1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_day">
+        <item quantity="other">%2$d일 동안 %1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_year_multiple">
+        <item quantity="other">%2$d년마다 %1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_month_multiple">
+        <item quantity="other">%2$d개월마다 %1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_week_multiple">
+        <item quantity="other">%2$d주마다 %1$s</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_day_multiple">
+        <item quantity="other">%2$d일마다 %1$s</item>
+    </plurals>
 </resources>

@@ -1,4 +1,66 @@
+<!--
+  ~ strings.xml
+  ~
+  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License
+  ~ as published by the Free Software Foundation; either version 2
+  ~ of the License, or (at your option) any later version.
+  -->
+
 <resources>
     <string name="app_name">Celestia</string>
     <string name="celestia_language">de</string>
+    <string name="privacy_policy_alert_title">Datenschutzerklärung und Nutzungsvereinbarung</string>
+    <string name="privacy_policy_alert_detail">Bitte lesen Sie die Datenschutzerklärung und die Nutzungsvereinbarung sorgfältig durch.</string>
+    <string name="privacy_policy_alert_show_policy_button_title">Datenschutzerklärung anzeigen</string>
+    <string name="privacy_policy_alert_accept_button_title">Zustimmen</string>
+    <string name="privacy_policy_alert_decline_button_title">Jetzt nicht</string>
+    <string name="subscription_offer_price_template_per_year">%s/Jahr</string>
+    <string name="subscription_offer_price_template_per_month">%s/Monat</string>
+    <string name="subscription_offer_price_template_per_week">%s/Woche</string>
+    <string name="subscription_offer_price_template_per_day">%s/Tag</string>
+    <string name="subscription_offer_price_template_thereafter">danach %s</string>
+    <string name="subscription_offer_price_unavailable">Preis nicht verfügbar</string>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_month">
+        <item quantity="one">%1$s für %2$d Monat</item>
+        <item quantity="other">%1$s für %2$d Monate</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_year">
+        <item quantity="one">%1$s für %2$d Jahr</item>
+        <item quantity="other">%1$s für %2$d Jahre</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_week">
+        <item quantity="one">%1$s für %2$d Woche</item>
+        <item quantity="other">%1$s für %2$d Wochen</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_day">
+        <item quantity="one">%1$s für %2$d Tag</item>
+        <item quantity="other">%1$s für %2$d Tage</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_year_multiple">
+        <item quantity="one">%1$s im Abstand von %2$d Jahr</item>
+        <item quantity="other">%1$s im Abstand von %2$d Jahren</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_month_multiple">
+        <item quantity="one">%1$s im Abstand von %2$d Monat</item>
+        <item quantity="other">%1$s im Abstand von %2$d Monaten</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_week_multiple">
+        <item quantity="one">%1$s im Abstand von %2$d Woche</item>
+        <item quantity="other">%1$s im Abstand von %2$d Wochen</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_day_multiple">
+        <item quantity="one">%1$s im Abstand von %2$d Tag</item>
+        <item quantity="other">%1$s im Abstand von %2$d Tagen</item>
+    </plurals>
 </resources>

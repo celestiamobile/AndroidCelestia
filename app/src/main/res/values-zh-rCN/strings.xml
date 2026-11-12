@@ -42,15 +42,15 @@
     </plurals>
 
     <plurals name="subscription_offer_price_template_per_year_multiple">
-        <item quantity="other">每$2$d年 %1$s</item>
+        <item quantity="other">每%2$d年 %1$s</item>
     </plurals>
     <plurals name="subscription_offer_price_template_per_month_multiple">
-        <item quantity="other">每$2$d月 %1$s</item>
+        <item quantity="other">每%2$d月 %1$s</item>
     </plurals>
     <plurals name="subscription_offer_price_template_per_week_multiple">
-        <item quantity="other">每$2$d周 %1$s</item>
+        <item quantity="other">每%2$d周 %1$s</item>
     </plurals>
     <plurals name="subscription_offer_price_template_per_day_multiple">
-        <item quantity="other">每$2$d天 %1$s</item>
+        <item quantity="other">每%2$d天 %1$s</item>
     </plurals>
 </resources>

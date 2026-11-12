@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Celestia</string>
     <string name="celestia_language">zh_TW</string>
+    <string name="privacy_policy_alert_title">隱私權政策與服務協議</string>
+    <string name="privacy_policy_alert_detail">請仔細閱讀隱私權政策與服務協議。</string>
+    <string name="privacy_policy_alert_show_policy_button_title">檢視協議</string>
+    <string name="privacy_policy_alert_accept_button_title">同意</string>
+    <string name="privacy_policy_alert_decline_button_title">暫不同意</string>
 
     <string name="subscription_offer_price_template_per_year">%s/年</string>
     <string name="subscription_offer_price_template_per_month">%s/月</string>
@@ -26,15 +31,15 @@
     </plurals>
 
     <plurals name="subscription_offer_price_template_per_year_multiple">
-        <item quantity="other">每$2$d年 %1$s</item>
+        <item quantity="other">每%2$d年 %1$s</item>
     </plurals>
     <plurals name="subscription_offer_price_template_per_month_multiple">
-        <item quantity="other">每$2$d月 %1$s</item>
+        <item quantity="other">每%2$d月 %1$s</item>
     </plurals>
     <plurals name="subscription_offer_price_template_per_week_multiple">
-        <item quantity="other">每$2$d週 %1$s</item>
+        <item quantity="other">每%2$d週 %1$s</item>
     </plurals>
     <plurals name="subscription_offer_price_template_per_day_multiple">
-        <item quantity="other">每$2$d天 %1$s</item>
+        <item quantity="other">每%2$d天 %1$s</item>
     </plurals>
 </resources>

@@ -1,4 +1,74 @@
+<!--
+  ~ strings.xml
+  ~
+  ~ Copyright (C) 2001-2020, Celestia Development Team
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License
+  ~ as published by the Free Software Foundation; either version 2
+  ~ of the License, or (at your option) any later version.
+  -->
+
 <resources>
     <string name="app_name">Celestia</string>
     <string name="celestia_language">fr</string>
+    <string name="privacy_policy_alert_title">Politique de confidentialité et contrat de service</string>
+    <string name="privacy_policy_alert_detail">Veuillez lire attentivement la politique de confidentialité et le contrat de service.</string>
+    <string name="privacy_policy_alert_show_policy_button_title">Consulter la politique</string>
+    <string name="privacy_policy_alert_accept_button_title">Accepter</string>
+    <string name="privacy_policy_alert_decline_button_title">Pas maintenant</string>
+    <string name="subscription_offer_price_template_per_year">%s/an</string>
+    <string name="subscription_offer_price_template_per_month">%s/mois</string>
+    <string name="subscription_offer_price_template_per_week">%s/semaine</string>
+    <string name="subscription_offer_price_template_per_day">%s/jour</string>
+    <string name="subscription_offer_price_template_thereafter">puis %s par la suite</string>
+    <string name="subscription_offer_price_unavailable">Prix indisponible</string>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_month">
+        <item quantity="one">%1$s pendant %2$d mois</item>
+        <item quantity="many">%1$s pendant %2$d mois</item>
+        <item quantity="other">%1$s pendant %2$d mois</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_year">
+        <item quantity="one">%1$s pendant %2$d an</item>
+        <item quantity="many">%1$s pendant %2$d ans</item>
+        <item quantity="other">%1$s pendant %2$d ans</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_week">
+        <item quantity="one">%1$s pendant %2$d semaine</item>
+        <item quantity="many">%1$s pendant %2$d semaines</item>
+        <item quantity="other">%1$s pendant %2$d semaines</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_day">
+        <item quantity="one">%1$s pendant %2$d jour</item>
+        <item quantity="many">%1$s pendant %2$d jours</item>
+        <item quantity="other">%1$s pendant %2$d jours</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_year_multiple">
+        <item quantity="one">%1$s par période de %2$d an</item>
+        <item quantity="many">%1$s par période de %2$d ans</item>
+        <item quantity="other">%1$s par période de %2$d ans</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_month_multiple">
+        <item quantity="one">%1$s par période de %2$d mois</item>
+        <item quantity="many">%1$s par période de %2$d mois</item>
+        <item quantity="other">%1$s par période de %2$d mois</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_week_multiple">
+        <item quantity="one">%1$s par période de %2$d semaine</item>
+        <item quantity="many">%1$s par période de %2$d semaines</item>
+        <item quantity="other">%1$s par période de %2$d semaines</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_day_multiple">
+        <item quantity="one">%1$s par période de %2$d jour</item>
+        <item quantity="many">%1$s par période de %2$d jours</item>
+        <item quantity="other">%1$s par période de %2$d jours</item>
+    </plurals>
 </resources>

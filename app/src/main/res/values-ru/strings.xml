@@ -17,4 +17,66 @@
     <string name="privacy_policy_alert_show_policy_button_title">Показать</string>
     <string name="privacy_policy_alert_accept_button_title">Принимаю</string>
     <string name="privacy_policy_alert_decline_button_title">Не сейчас</string>
+    <string name="subscription_offer_price_template_per_year">%s/год</string>
+    <string name="subscription_offer_price_template_per_month">%s/мес.</string>
+    <string name="subscription_offer_price_template_per_week">%s/нед.</string>
+    <string name="subscription_offer_price_template_per_day">%s/сут.</string>
+    <string name="subscription_offer_price_template_thereafter">затем %s</string>
+    <string name="subscription_offer_price_unavailable">Цена недоступна</string>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_month">
+        <item quantity="one">%1$s в течение %2$d месяца</item>
+        <item quantity="few">%1$s в течение %2$d месяцев</item>
+        <item quantity="many">%1$s в течение %2$d месяцев</item>
+        <item quantity="other">%1$s в течение %2$d месяца</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_year">
+        <item quantity="one">%1$s в течение %2$d года</item>
+        <item quantity="few">%1$s в течение %2$d лет</item>
+        <item quantity="many">%1$s в течение %2$d лет</item>
+        <item quantity="other">%1$s в течение %2$d года</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_week">
+        <item quantity="one">%1$s в течение %2$d недели</item>
+        <item quantity="few">%1$s в течение %2$d недель</item>
+        <item quantity="many">%1$s в течение %2$d недель</item>
+        <item quantity="other">%1$s в течение %2$d недели</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_with_phase_template_per_day">
+        <item quantity="one">%1$s в течение %2$d дня</item>
+        <item quantity="few">%1$s в течение %2$d дней</item>
+        <item quantity="many">%1$s в течение %2$d дней</item>
+        <item quantity="other">%1$s в течение %2$d дня</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_year_multiple">
+        <item quantity="one">%1$s раз в %2$d год</item>
+        <item quantity="few">%1$s раз в %2$d года</item>
+        <item quantity="many">%1$s раз в %2$d лет</item>
+        <item quantity="other">%1$s раз в %2$d года</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_month_multiple">
+        <item quantity="one">%1$s раз в %2$d месяц</item>
+        <item quantity="few">%1$s раз в %2$d месяца</item>
+        <item quantity="many">%1$s раз в %2$d месяцев</item>
+        <item quantity="other">%1$s раз в %2$d месяца</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_week_multiple">
+        <item quantity="one">%1$s раз в %2$d неделю</item>
+        <item quantity="few">%1$s раз в %2$d недели</item>
+        <item quantity="many">%1$s раз в %2$d недель</item>
+        <item quantity="other">%1$s раз в %2$d недели</item>
+    </plurals>
+
+    <plurals name="subscription_offer_price_template_per_day_multiple">
+        <item quantity="one">%1$s раз в %2$d день</item>
+        <item quantity="few">%1$s раз в %2$d дня</item>
+        <item quantity="many">%1$s раз в %2$d дней</item>
+        <item quantity="other">%1$s раз в %2$d дня</item>
+    </plurals>
 </resources>
