@@ -497,6 +497,11 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     }
 
     private fun updateTransform(event: MotionEvent) {
+        if (appSettings[PreferenceManager.PredefinedKey.TwoFingerPanAndRotation] == "false") {
+            // Keep the pinch focus current while pan and rotation are disabled.
+            resetTransformPointers(event)
+            return
+        }
         val previous = transformPointers ?: return
         val first = event.findPointerIndex(previous.firstId)
         val second = event.findPointerIndex(previous.secondId)

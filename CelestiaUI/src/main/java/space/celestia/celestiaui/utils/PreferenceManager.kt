@@ -51,6 +51,7 @@ class PreferenceManager(context: Context, name: String) {
         ControllerEnableLeftThumbstick,
         ControllerEnableRightThumbstick,
         ContextMenu,
+        TwoFingerPanAndRotation,
         PickSensitivity,
         NormalFontPath,
         NormalFontIndex,
