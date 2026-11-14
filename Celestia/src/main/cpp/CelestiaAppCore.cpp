@@ -270,10 +270,11 @@ Java_space_celestia_celestia_AppCore_c_1setFatalErrorHandler(JNIEnv *env, jobjec
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_space_celestia_celestia_AppCore_c_1startRenderer(JNIEnv *env, jclass clazz,
-                                                                 jlong ptr, jboolean srgb_rendering, jint shadow_map_size) {
+                                                                 jlong ptr, jboolean srgb_rendering, jint shadow_map_size, jint samples) {
     auto core = fromHandle<CelestiaCore>(ptr);
 
-    if (!core->initRenderer(celestia::engine::TextureResolution::medres, srgb_rendering == JNI_TRUE))
+    if (!core->initRenderer(celestia::engine::TextureResolution::medres, srgb_rendering == JNI_TRUE,
+                            samples > 1 ? static_cast<unsigned int>(samples) : 1u))
         return JNI_FALSE;
 
     // start with default values
