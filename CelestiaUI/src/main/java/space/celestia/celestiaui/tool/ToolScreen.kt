@@ -6,14 +6,22 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
@@ -31,6 +39,7 @@ import space.celestia.celestiaui.favorite.FavoriteScriptItem
 import space.celestia.celestiaui.favorite.MutableFavoriteBaseItem
 import space.celestia.celestiaui.help.NewHelpScreen
 import space.celestia.celestiaui.info.InfoScreen
+import space.celestia.celestiaui.info.viewmodel.InfoViewModel
 import space.celestia.celestiaui.resource.AddonDownload
 import space.celestia.celestiaui.resource.AddonManagerScreen
 import space.celestia.celestiaui.resource.SingleAddonScreen
@@ -45,6 +54,7 @@ import space.celestia.celestiaui.tool.viewmodel.ToolPage
 import space.celestia.celestiaui.tool.viewmodel.ToolViewModel
 import java.io.File
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToolScreen(
     backStack: List<ToolPage>,
@@ -136,7 +146,21 @@ fun ToolScreen(
                 )
             }
             is ToolPage.Info -> NavEntry(entry) {
-                Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)) { paddingValues ->
+                val infoViewModel: InfoViewModel = hiltViewModel()
+                val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = {
+                                Text(infoViewModel.appCore.simulation.universe.getNameForSelection(entry.selection))
+                            },
+                            scrollBehavior = scrollBehavior,
+                            windowInsets = WindowInsets()
+                        )
+                    },
+                    contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                ) { paddingValues ->
                     InfoScreen(
                         selection = entry.selection,
                         linkClicked = {
@@ -157,7 +181,7 @@ fun ToolScreen(
                                 backStack.add(ToolPage.RelatedAddons(it))
                             }
                         },
-                        showTitle = true,
+                        showTitle = false,
                         paddingValues = paddingValues
                     )
                 }
