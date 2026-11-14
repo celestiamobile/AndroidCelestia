@@ -671,6 +671,20 @@ Java_space_celestia_celestia_AppCore_c_1pinchUpdate(JNIEnv *env, jclass clazz, j
 
 extern "C"
 JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1rotateUpdate(JNIEnv *env, jclass clazz, jlong ptr, jfloat x, jfloat y, jfloat rotation, jboolean orbit) {
+    auto core = fromHandle<CelestiaCore>(ptr);
+    core->rotateUpdate(static_cast<float>(x), static_cast<float>(y), static_cast<float>(rotation), static_cast<bool>(orbit));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1panUpdate(JNIEnv *env, jclass clazz, jlong ptr, jfloat x, jfloat y, jfloat dx, jfloat dy, jboolean orbit, jboolean begin) {
+    auto core = fromHandle<CelestiaCore>(ptr);
+    core->panUpdate(static_cast<float>(x), static_cast<float>(y), static_cast<float>(dx), static_cast<float>(dy), static_cast<bool>(orbit), static_cast<bool>(begin));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1runScript(JNIEnv *env, jclass clazz,
                                                              jlong ptr,
                                                              jstring path) {

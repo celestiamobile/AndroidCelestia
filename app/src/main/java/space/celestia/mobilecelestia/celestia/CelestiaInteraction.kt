@@ -24,6 +24,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.view.ViewConfiguration
 import androidx.annotation.RequiresApi
 import space.celestia.celestia.AppCore
 import space.celestia.celestia.Renderer
@@ -32,6 +33,12 @@ import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererSettings
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executor
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.min
+import kotlin.math.sin
 
 class CelestiaInteraction(context: Context, private val appCore: AppCore, private val renderer: Renderer, private val executor: Executor, interactionMode: InteractionMode, appSettings: PreferenceManager, private val rendererSettings: RendererSettings, private val canAcceptKeyEvents: () -> Boolean, private val showMenu: () -> Unit): View.OnTouchListener, View.OnKeyListener, View.OnGenericMotionListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener, View.OnHoverListener {
     enum class InteractionMode {
@@ -101,6 +108,26 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     private var canScroll = true
     private var canInteract = true
     private var isScaling = false
+    private var isTransforming = false
+    private var canScaleTransform = false
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+    private val rotationSlop = Math.toRadians(3.0).toFloat()
+    private var transformPointers: TransformPointers? = null
+    private var pendingRotation = 0f
+    private var pendingPan = PointF()
+    private var isRotating = false
+    private var isPanning = false
+
+    private data class TransformPointers(
+        val firstId: Int,
+        val secondId: Int,
+        val first: PointF,
+        val second: PointF,
+    ) {
+        val focus = PointF((first.x + second.x) / 2, (first.y + second.y) / 2)
+        val span = hypot(second.x - first.x, second.y - first.y)
+        val angle = atan2(second.y - first.y, second.x - first.x)
+    }
 
     private var currentPressedMouseButton = 0
     private var scrollingMouseButton = AppCore.MOUSE_BUTTON_LEFT
@@ -380,6 +407,10 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             }
         }
 
+        val wasTransforming = isTransforming || isScaling
+        handleTransformPointerChange(event)
+        canScaleTransform = event.pointerCount == 2 && event.actionMasked != MotionEvent.ACTION_POINTER_UP
+
         // First test if scaling is in progress
         try {
             // Listeners in Android T SDK do not have optional parameters, might
@@ -387,18 +418,9 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
             scaleGestureDetector.onTouchEvent(event)
         } catch (_: Throwable) {}
 
-        if (isScaling) {
-            if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
-                // Only mark scaling as ended when last finger is lifted
-                isScaling = false
-                canScroll = true
-            }
-            return true
-        }
-
-        if (event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
-            // Before detected as a scale, we might receiver ACTION_POINTER_DOWN, disable scrolling in advance
-            canScroll = false
+        if (isScaling || isTransforming || wasTransforming) {
+            if (event.actionMasked == MotionEvent.ACTION_MOVE && isTransforming)
+                updateTransform(event)
             return true
         }
 
@@ -424,6 +446,119 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
         return true
     }
 
+    private fun handleTransformPointerChange(event: MotionEvent) {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                isScaling = false
+                isTransforming = false
+                canScroll = true
+                resetTransformPointers(null)
+            }
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                if (!isTransforming) {
+                    if (isScrolling)
+                        stopScrolling()
+                    val cancellation = MotionEvent.obtain(event)
+                    cancellation.action = MotionEvent.ACTION_CANCEL
+                    try {
+                        gestureDetector.onTouchEvent(cancellation)
+                    } finally {
+                        cancellation.recycle()
+                    }
+                }
+                isTransforming = true
+                canScroll = false
+                resetTransformPointers(event)
+            }
+            MotionEvent.ACTION_POINTER_UP -> {
+                if (isTransforming)
+                    resetTransformPointers(event, event.actionIndex)
+            }
+        }
+    }
+
+    private fun resetTransformPointers(event: MotionEvent?, excludedIndex: Int = -1) {
+        val indices = event?.let { (0 until it.pointerCount).filter { index -> index != excludedIndex } }
+        transformPointers = if (event != null && indices != null && indices.size == 2) {
+            val first = indices[0]
+            val second = indices[1]
+            TransformPointers(
+                event.getPointerId(first), event.getPointerId(second),
+                PointF(event.getX(first), event.getY(first)),
+                PointF(event.getX(second), event.getY(second)),
+            )
+        } else {
+            null
+        }
+        pendingRotation = 0f
+        pendingPan = PointF()
+        isRotating = false
+        isPanning = false
+    }
+
+    private fun updateTransform(event: MotionEvent) {
+        val previous = transformPointers ?: return
+        val first = event.findPointerIndex(previous.firstId)
+        val second = event.findPointerIndex(previous.secondId)
+        if (first < 0 || second < 0) {
+            Log.w(TAG, "Transform pointer missing; resetting the gesture")
+            resetTransformPointers(event)
+            return
+        }
+        val current = TransformPointers(
+            previous.firstId, previous.secondId,
+            PointF(event.getX(first), event.getY(first)),
+            PointF(event.getX(second), event.getY(second)),
+        )
+        transformPointers = current
+        if (min(previous.span, current.span) < touchSlop) {
+            pendingRotation = 0f
+            pendingPan = PointF()
+            isRotating = false
+            isPanning = false
+            return
+        }
+
+        val angle = current.angle - previous.angle
+        val angleDelta = atan2(sin(angle), cos(angle))
+        var rotation = 0f
+        if (isRotating) {
+            rotation = angleDelta
+        } else {
+            pendingRotation += angleDelta
+            if (abs(pendingRotation) > rotationSlop &&
+                abs(pendingRotation) * min(previous.span, current.span) / 2 > touchSlop) {
+                isRotating = true
+            }
+        }
+
+        val dx = current.focus.x - previous.focus.x
+        val dy = current.focus.y - previous.focus.y
+        val beginPan: Boolean
+        if (isPanning) {
+            beginPan = false
+        } else {
+            pendingPan.offset(dx, dy)
+            beginPan = hypot(pendingPan.x, pendingPan.y) > touchSlop
+            if (beginPan)
+                isPanning = true
+        }
+
+        val pan = isPanning && (beginPan || dx != 0f || dy != 0f)
+        if (rotation != 0f || pan) {
+            val rotationFocus = previous.focus.scaleByRatio(scaleX, scaleY)
+            val panFocus = current.focus.scaleByRatio(scaleX, scaleY)
+            val offset = if (beginPan) PointF() else PointF(dx, dy).scaleByRatio(scaleX, scaleY)
+            val orbit = internalInteractionMode == InteractionMode.Object
+            executor.execute {
+                if (rotation != 0f)
+                    appCore.rotateUpdate(rotationFocus, rotation, orbit)
+                if (pan)
+                    appCore.panUpdate(panFocus, offset, orbit, beginPan)
+            }
+        }
+    }
+
     override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
         if (isScrolling)
             stopScrolling()
@@ -435,8 +570,11 @@ class CelestiaInteraction(context: Context, private val appCore: AppCore, privat
     override fun onScaleEnd(detector: ScaleGestureDetector) {}
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
+        if (isTransforming && !canScaleTransform)
+            return true
+
         val isCameraMode = internalInteractionMode == InteractionMode.Camera
-        val focus = PointF(detector.focusX, detector.focusY).scaleByRatio(scaleX, scaleY)
+        val focus = (transformPointers?.focus ?: PointF(detector.focusX, detector.focusY)).scaleByRatio(scaleX, scaleY)
         val scale = detector.scaleFactor
         executor.execute {
             appCore.pinchUpdate(focus, scale, isCameraMode)

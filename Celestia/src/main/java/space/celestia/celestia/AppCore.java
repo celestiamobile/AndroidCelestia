@@ -238,6 +238,14 @@ public class AppCore {
         c_pinchUpdate(pointer, focus.x, focus.y, scale, zoomFOV);
     }
 
+    public void rotateUpdate(@NonNull PointF focus, float rotation, boolean orbit) {
+        c_rotateUpdate(pointer, focus.x, focus.y, rotation, orbit);
+    }
+
+    public void panUpdate(@NonNull PointF focus, @NonNull PointF offset, boolean orbit, boolean begin) {
+        c_panUpdate(pointer, focus.x, focus.y, offset.x, offset.y, orbit, begin);
+    }
+
     public void runScript(@NonNull String scriptPath) { c_runScript(pointer, scriptPath); }
     public void runDemo() { c_runDemo(pointer); }
     public @NonNull String getCurrentURL() { return c_getCurrentURL(pointer); }
@@ -329,6 +337,8 @@ public class AppCore {
     private static native void c_joystickButtonUp(long ptr, int button);
     private static native void c_joystickAxis(long ptr, int axis, float amount);
     private static native void c_pinchUpdate(long ptr, float focusX, float focusY, float scale, boolean zoomFOV);
+    private static native void c_rotateUpdate(long ptr, float focusX, float focusY, float rotation, boolean orbit);
+    private static native void c_panUpdate(long ptr, float focusX, float focusY, float dx, float dy, boolean orbit, boolean begin);
     private static native void c_runScript(long ptr, String path);
     private static native void c_runDemo(long ptr);
     private static native String c_getCurrentURL(long ptr);
