@@ -111,6 +111,7 @@ object AppModule {
             frameRateOption = appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS,
             enableFullResolution = appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false", // default on
             enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true",
+            enablePresentationMultisample = appSettings[PreferenceManager.PredefinedKey.PresentationMSAA] == "true",
             enableSRGBRendering = appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true",
             shadowMapSize = appSettings[PreferenceManager.PredefinedKey.ShadowMapSize]
                 ?.toIntOrNull()

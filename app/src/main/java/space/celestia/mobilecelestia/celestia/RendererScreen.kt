@@ -79,7 +79,7 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
         viewModel.appCore.updateContentScale(viewModel.rendererSettings, changes)
     }
 
-    fun loadCelestia(samples: Int): Boolean {
+    fun loadCelestia(): Boolean {
         val addonDirs = addonDirsToLoad.toTypedArray()
 
         viewModel.appStatusReporter.updateState(AppStatusReporter.State.LOADING)
@@ -112,7 +112,7 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
         }
 
         // Prepare renderer
-        if (!viewModel.appCore.startRenderer(viewModel.rendererSettings.enableSRGBRendering, viewModel.rendererSettings.shadowMapSize, samples)) {
+        if (!viewModel.appCore.startRenderer(viewModel.rendererSettings.enableSRGBRendering, viewModel.rendererSettings.shadowMapSize, if (viewModel.rendererSettings.enableMultisample) 4 else 1)) {
             viewModel.appStatusReporter.updateState(AppStatusReporter.State.LOADING_FAILURE)
             return false
         }
@@ -215,10 +215,10 @@ fun RendererScreen(pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<
             }
         }
         viewModel.appStatusReporter.register(listener)
-        viewModel.renderer.setEngineStartedListener { samples ->
-            loadCelestia(samples)
+        viewModel.renderer.setEngineStartedListener {
+            loadCelestia()
         }
-        viewModel.renderer.startConditionally(activity, viewModel.rendererSettings.enableMultisample)
+        viewModel.renderer.startConditionally(activity, viewModel.rendererSettings.enablePresentationMultisample)
 
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {

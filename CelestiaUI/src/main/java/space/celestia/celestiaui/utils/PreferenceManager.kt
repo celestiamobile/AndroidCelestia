@@ -29,6 +29,7 @@ class PreferenceManager(context: Context, name: String) {
         ConfigFilePath,
         FullDPI,
         MSAA,
+        PresentationMSAA,
         FrameRateOption,
         Language,
         PrivacyPolicyAccepted,

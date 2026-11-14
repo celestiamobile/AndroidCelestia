@@ -259,7 +259,8 @@ private val staticRendererItems: List<SettingsItem> = commonRendererItems + list
     SettingsRefreshRateItem(),
 ) + rendererQualityItem(listOf(
     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.FullDPI, CelestiaString("HiDPI", "HiDPI support in display"), true),
-    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Anti-aliasing", "")),
+    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.MSAA, CelestiaString("Scene anti-aliasing", "Anti-aliasing for the rendered scene")),
+    SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.PresentationMSAA, CelestiaString("Overlay anti-aliasing", "Anti-aliasing for labels, markers, and other overlays")),
 )) + listOf(
     outputRenderingItem(listOf(
         SettingsCommonItem.Section(
