@@ -54,6 +54,8 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.compose.ContextMenuContainer
@@ -74,7 +76,7 @@ sealed class FavoriteItemAlert {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit) {
+fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, shareRequested: (MutableFavoriteBaseItem) -> Unit, openBookmarkRequested: (FavoriteBookmarkItem) -> Unit, openScriptRequested: (FavoriteScriptItem) -> Unit, additionalBottomPadding: Dp = 0.dp) {
     val viewModel: FavoriteViewModel = hiltViewModel()
     var alert by remember { mutableStateOf<FavoriteItemAlert?>(null)  }
     if (parent.children.isEmpty()) {
@@ -89,7 +91,7 @@ fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, s
             start = paddingValues.calculateStartPadding(direction),
             top = dimensionResource(id = R.dimen.list_spacing_short) + paddingValues.calculateTopPadding(),
             end = paddingValues.calculateEndPadding(direction),
-            bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding(),
+            bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding() + additionalBottomPadding,
         )
 
         val listState = rememberLazyListState()

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -32,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,7 +41,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -84,6 +89,8 @@ fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBoo
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    var fabHeightPx by remember { mutableIntStateOf(0) }
     var alert by remember { mutableStateOf<FavoriteAlert?>(null)  }
     val backStack = viewModel.backStack
     if (backStack.isEmpty()) return
@@ -121,29 +128,30 @@ fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBoo
                         )
                     }
                 }
-            }, actions = {
-                val current = backStack.lastOrNull() ?: return@TopAppBar
-                if (current !is Page.Item || current.item !is MutableFavoriteBaseItem) return@TopAppBar
-                IconButton(onClick = dropUnlessResumed {
-                    when (current.item) {
-                        is FavoriteBookmarkItem -> {
-                            scope.launch {
-                                val bookmark = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.currentBookmark }
-                                if (bookmark == null) {
-                                    alert = FavoriteAlert.UnableToAdd
-                                    return@launch
-                                }
-                                current.item.append(FavoriteBookmarkItem(bookmark))
+            }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
+        },
+        floatingActionButton = {
+            val current = backStack.lastOrNull()
+            if (current is Page.Item && current.item is FavoriteBookmarkItem) {
+                FloatingActionButton(
+                    onClick = dropUnlessResumed {
+                        scope.launch {
+                            val bookmark = withContext(viewModel.executor.asCoroutineDispatcher()) { viewModel.appCore.currentBookmark }
+                            if (bookmark == null) {
+                                alert = FavoriteAlert.UnableToAdd
+                                return@launch
                             }
+                            current.item.append(FavoriteBookmarkItem(bookmark))
                         }
-                    }
-                }) {
+                    },
+                    modifier = Modifier.onSizeChanged { fabHeightPx = it.height }
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_add),
                         contentDescription = CelestiaString("Add", "Add a new item (bookmark)")
                     )
                 }
-            }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
+            }
         },
         contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -166,7 +174,20 @@ fun FavoriteContainer(shareRequested: (MutableFavoriteBaseItem) -> Unit, openBoo
                 when (route) {
                     is Page.Item -> {
                         NavEntry(route) {
-                            FavoriteItemScreen(route.item, paddingValues, shareRequested = shareRequested, openBookmarkRequested = openBookmarkRequested, openScriptRequested = openScriptRequested)
+                            val additionalBottomPadding = if (route.item is FavoriteBookmarkItem) {
+                                // Include Scaffold's FAB bottom margin.
+                                with(density) { fabHeightPx.toDp() } + 16.dp
+                            } else {
+                                0.dp
+                            }
+                            FavoriteItemScreen(
+                                parent = route.item,
+                                paddingValues = paddingValues,
+                                shareRequested = shareRequested,
+                                openBookmarkRequested = openBookmarkRequested,
+                                openScriptRequested = openScriptRequested,
+                                additionalBottomPadding = additionalBottomPadding
+                            )
                         }
                     }
                     is Page.Destination -> {
