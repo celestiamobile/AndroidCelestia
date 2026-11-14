@@ -24,6 +24,7 @@ class PreferenceManager(context: Context, name: String) {
     enum class PredefinedKey : Key {
         DataVersion,
         OnboardMessage,
+        ControlViewRestoreHintAcknowledged,
         DataDirPath,
         ConfigFilePath,
         FullDPI,

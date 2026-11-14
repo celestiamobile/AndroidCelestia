@@ -643,6 +643,8 @@ class MainActivity : AppCompatActivity(),
                         self.lifecycleScope.launch {
                             self.hideOverlay(true)
                         }
+                    } else if (!viewModel.controlViewVisible.value) {
+                        viewModel.controlViewVisible.value = true
                     } else if (!self.isAskingForExit) {
                         self.isAskingForExit = true
                         self.showAlert(
@@ -2029,6 +2031,10 @@ class MainActivity : AppCompatActivity(),
 
         if (currentState.value >= AppStatusReporter.State.EXTERNAL_LOADING_SUCCESS.value) {
             CelestiaScreen(
+                controlViewVisible = this@MainActivity.viewModel.controlViewVisible.value,
+                onControlViewVisibilityChanged = { visible ->
+                    this@MainActivity.viewModel.controlViewVisible.value = visible
+                },
                 safeAreaInsets = safeAreaInsets,
                 rendererSafeAreaInsets = rendererSafeAreaInsets,
                 pathToLoad = celestiaDataDirPath,

@@ -9,19 +9,36 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RichTooltip
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
@@ -43,6 +60,7 @@ import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.settings.ToolbarAction
 import space.celestia.celestiaui.settings.toolbarItems
 import space.celestia.celestiaui.utils.CelestiaString
+import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.celestia.viewmodel.RendererViewModel
 import space.celestia.mobilecelestia.common.EdgeInsets
 import java.util.Timer
@@ -66,7 +84,8 @@ private val InteractionModeSaver = Saver<CelestiaInteraction.InteractionMode, St
 )
 
 @Composable
-fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInsets, pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, canAcceptKeyEvents: () -> Boolean, showMenu: () -> Unit, showInfo: () -> Unit, showSearch: () -> Unit, goTo: () -> Unit, onInteractionModeChanged: (CelestiaInteraction.InteractionMode) -> Unit, onInteractionViewReady: (View) -> Unit) {
+@OptIn(ExperimentalMaterial3Api::class)
+fun CelestiaScreen(controlViewVisible: Boolean, onControlViewVisibilityChanged: (Boolean) -> Unit, safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInsets, pathToLoad: String, cfgToLoad: String, addonDirsToLoad: List<String>, languageOverride: String, frameRateOptionEvents: Flow<Int>, reapplyContentScaleEvents: Flow<Unit>, canAcceptKeyEvents: () -> Boolean, showMenu: () -> Unit, showInfo: () -> Unit, showSearch: () -> Unit, goTo: () -> Unit, onInteractionModeChanged: (CelestiaInteraction.InteractionMode) -> Unit, onInteractionViewReady: (View) -> Unit) {
     val lifeCycleOwner = LocalLifecycleOwner.current
     val viewModel: RendererViewModel = hiltViewModel()
 
@@ -75,10 +94,30 @@ fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInset
 
     val zoomTimerHolder = remember { object { var timer: Timer? = null } }
 
-    var isControlViewVisible by remember { mutableStateOf(true) }
+    val isControlViewVisible by rememberUpdatedState(controlViewVisible)
+    val setControlViewVisible by rememberUpdatedState(onControlViewVisibilityChanged)
+    val restoreHintState = rememberTooltipState(isPersistent = true)
+    var showRestoreHint by rememberSaveable { mutableStateOf(false) }
 
-    fun showControlViewIfNeeded() { isControlViewVisible = true }
-    fun hideControlViewIfNeeded() { isControlViewVisible = false }
+    fun showControlViewIfNeeded() { setControlViewVisible(true) }
+    fun hideControlViewIfNeeded() {
+        setControlViewVisible(false)
+        if (viewModel.appSettings[PreferenceManager.PredefinedKey.ControlViewRestoreHintAcknowledged] != "true") {
+            showRestoreHint = true
+        }
+    }
+
+    LaunchedEffect(isControlViewVisible, showRestoreHint) {
+        if (!isControlViewVisible && showRestoreHint) {
+            try {
+                restoreHintState.show()
+            } finally {
+                showRestoreHint = false
+            }
+        } else {
+            restoreHintState.dismiss()
+        }
+    }
 
     var showInteractionOverlay by remember { mutableStateOf(false) }
     var interactionMode by rememberSaveable(stateSaver = InteractionModeSaver) { mutableStateOf(CelestiaInteraction.InteractionMode.Object) }
@@ -125,7 +164,6 @@ fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInset
                 // All interaction listeners on the container - no need for GL view reference
                 @Suppress("ClickableViewAccessibility")
                 view.setOnTouchListener { v, event ->
-                    showControlViewIfNeeded()
                     interaction.onTouch(v, event)
                 }
 
@@ -246,6 +284,65 @@ fun CelestiaScreen(safeAreaInsets: EdgeInsets, rendererSafeAreaInsets: EdgeInset
 
                         floatingToolbar
                     })
+                }
+            }
+
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = with(density) { safeAreaInsets.top.toDp() } + 16.dp,
+                        start = with(density) { (if (layoutDirection == LayoutDirection.Rtl) safeAreaInsets.right else safeAreaInsets.left).toDp() } + 16.dp,
+                        end = with(density) { (if (layoutDirection == LayoutDirection.Rtl) safeAreaInsets.left else safeAreaInsets.right).toDp() } + 16.dp,
+                        bottom = with(density) { safeAreaInsets.bottom.toDp() } + 16.dp
+                    ),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                val maximumHintHeight = maxHeight
+                TooltipBox(
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                    tooltip = {
+                        // Reserve the standard action row and its bottom padding.
+                        val minimumActionHeight = maxOf(
+                            48.dp,
+                            with(density) { MaterialTheme.typography.labelLarge.lineHeight.toDp() } + 16.dp
+                        ) + 8.dp
+                        var actionHeight by remember(minimumActionHeight) { mutableStateOf(minimumActionHeight) }
+                        RichTooltip(
+                            modifier = Modifier.heightIn(max = maximumHintHeight),
+                            title = { Text(CelestiaString("Show the toolbar", "Title for the hidden toolbar hint")) },
+                            action = {
+                                TextButton(
+                                    modifier = Modifier.onSizeChanged {
+                                        actionHeight = maxOf(minimumActionHeight, with(density) { it.height.toDp() } + 8.dp)
+                                    },
+                                    onClick = {
+                                        viewModel.appSettings[PreferenceManager.PredefinedKey.ControlViewRestoreHintAcknowledged] = "true"
+                                        restoreHintState.dismiss()
+                                    }
+                                ) {
+                                    Text(CelestiaString("Got it", "Dismiss the hidden toolbar hint"))
+                                }
+                            }
+                        ) {
+                            BoxWithConstraints {
+                                Text(
+                                    CelestiaString("The toolbar is hidden. Press your device's Back button to show the toolbar again. If you use gesture navigation, swipe inward from either side of the screen instead.", "Hint shown the first time the toolbar is hidden"),
+                                    modifier = Modifier
+                                        .heightIn(max = (maxHeight - actionHeight).coerceAtLeast(0.dp))
+                                        .verticalScroll(rememberScrollState())
+                                )
+                            }
+                        }
+                    },
+                    state = restoreHintState,
+                    // Require acknowledgement instead of dismissing on outside touches or Back.
+                    onDismissRequest = {},
+                    focusable = true,
+                    enableUserInput = false,
+                    hasAction = true
+                ) {
+                    Box(Modifier.size(1.dp))
                 }
             }
 

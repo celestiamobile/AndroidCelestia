@@ -12,6 +12,7 @@ class MainViewModel: ViewModel() {
     var bottomSheetVisible = mutableStateOf(false)
     var loadingVisible = mutableStateOf(true)
     var toolbarVisible = mutableStateOf(false)
+    var controlViewVisible = mutableStateOf(true)
     var toolbarActions = mutableStateOf<List<BottomControlAction>>(listOf())
     var toolbarOverflowActions = mutableStateOf<List<OverflowItem>>(listOf())
 }
