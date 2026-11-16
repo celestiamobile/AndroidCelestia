@@ -116,7 +116,9 @@ fun outputRenderingItem(extraSections: List<SettingsCommonItem.Section> = emptyL
                     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", "")),
                     SettingsSelectionSingleItem(key = SettingsKey.ToneMapping, options = listOf(
                         Pair(0, CelestiaString("Off", "Tone mapping mode")),
-                        Pair(1, CelestiaString("Manual", "Tone mapping mode")),
+                        Pair(1, CelestiaString("Exponential", "Tone mapping mode")),
+                        Pair(2, CelestiaString("ACES (fitted)", "Tone mapping mode")),
+                        Pair(3, CelestiaString("Reinhard", "Tone mapping mode")),
                     ), displayName = SettingsKey.ToneMapping.displayName, defaultSelection = 0).visibleWhen { viewModel ->
                         viewModel.appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true"
                     },
@@ -124,7 +126,7 @@ fun outputRenderingItem(extraSections: List<SettingsCommonItem.Section> = emptyL
                         val srgbEnabled = viewModel.appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true"
                         val toneMapping = viewModel.coreSettings[PreferenceManager.CustomKey(SettingsKey.ToneMapping.valueString)]?.toIntOrNull()
                             ?: viewModel.appCore.getIntValueForField(SettingsKey.ToneMapping.valueString)
-                        srgbEnabled && toneMapping == 1
+                        srgbEnabled && toneMapping > 0
                     },
                 ),
                 footer = Footer.Text(CelestiaString("Changes to sRGB rendering take effect after a restart.", "Output rendering settings footnote"))
