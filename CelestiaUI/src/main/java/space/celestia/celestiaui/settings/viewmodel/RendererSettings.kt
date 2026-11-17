@@ -92,6 +92,10 @@ fun rendererQualityItem(displayItems: List<SettingsItem>): SettingsItem {
             ),
             SettingsCommonItem.Section(
                 header = CelestiaString("Display", "Display quality settings"),
+                rows = listOf(SettingsSwitchItem(SettingsKey.SceneMSAA, SettingsSwitchItem.Representation.Switch))
+            ),
+            SettingsCommonItem.Section(
+                header = null,
                 rows = displayItems,
                 footer = Footer.Text(CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
             ),

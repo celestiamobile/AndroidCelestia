@@ -1273,6 +1273,18 @@ Java_space_celestia_celestia_AppCore_c_1getToneMapping(JNIEnv *env, jclass clazz
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_space_celestia_celestia_AppCore_c_1setSceneMSAA(JNIEnv *env, jclass clazz, jlong pointer, jboolean enabled) {
+    auto core = fromHandle<CelestiaCore>(pointer);
+    core->setSceneMSAASamples(enabled == JNI_TRUE ? 4u : 1u);
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_space_celestia_celestia_AppCore_c_1getSceneMSAA(JNIEnv *env, jclass clazz, jlong pointer) {
+    auto core = fromHandle<CelestiaCore>(pointer);
+    return core->getSceneMSAASamples() > 1 ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_space_celestia_celestia_AppCore_c_1setExposure(JNIEnv *env, jclass clazz, jlong pointer, jfloat value) {
     auto core = fromHandle<CelestiaCore>(pointer);
     core->getRenderer()->setToneMappingExposure(value);

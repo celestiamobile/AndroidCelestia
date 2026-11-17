@@ -958,6 +958,15 @@ public class AppCore {
     private static native void c_setToneMapping(long pointer, int toneMapping);
     private static native int c_getToneMapping(long pointer);
 
+    /**
+     * Call on the core thread after renderer initialization. Applied on the next draw;
+     * enabled requests 4 samples, disabled requests 1, subject to hardware limits.
+     */
+    public void setSceneMSAA(boolean enabled) { c_setSceneMSAA(pointer, enabled); }
+    public boolean getSceneMSAA() { return c_getSceneMSAA(pointer); }
+    private static native void c_setSceneMSAA(long pointer, boolean enabled);
+    private static native boolean c_getSceneMSAA(long pointer);
+
     public void setExposure(double exposure) { c_setExposure(pointer, (float)exposure); }
     public double getExposure() { return c_getExposure(pointer); }
     private static native void c_setExposure(long pointer, float exposure);

@@ -30,6 +30,7 @@ import space.celestia.celestiaui.resource.model.FeatureFlags
 import space.celestia.celestiaui.resource.model.FeatureFlagsManager
 import space.celestia.celestiaui.resource.model.ResourceAPIService
 import space.celestia.celestiaui.settings.viewmodel.SettingsEntryProvider
+import space.celestia.celestiaui.settings.viewmodel.SettingsKey
 import space.celestia.celestiaui.utils.AppStatusReporter
 import space.celestia.celestiaui.utils.PreferenceManager
 import space.celestia.mobilecelestia.BuildConfig
@@ -103,14 +104,18 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideRendererSettings(@AppSettings appSettings: PreferenceManager): RendererSettings {
+    fun provideRendererSettings(@AppSettings appSettings: PreferenceManager, @CoreSettings coreSettings: PreferenceManager): RendererSettings {
+        val sceneMSAAKey = PreferenceManager.CustomKey(SettingsKey.SceneMSAA.valueString)
+        if (coreSettings[sceneMSAAKey] == null) {
+            coreSettings[sceneMSAAKey] = if (appSettings[PreferenceManager.PredefinedKey.MSAA] == "true") "1" else "0"
+        }
         return RendererSettings(
             density = 0.0f,
             fontScale = 0.0f,
             safeAreaInsets = EdgeInsets(),
             frameRateOption = appSettings[PreferenceManager.PredefinedKey.FrameRateOption]?.toIntOrNull() ?: Renderer.FRAME_60FPS,
             enableFullResolution = appSettings[PreferenceManager.PredefinedKey.FullDPI] != "false", // default on
-            enableMultisample = appSettings[PreferenceManager.PredefinedKey.MSAA] == "true",
+            enableMultisample = coreSettings[sceneMSAAKey] == "1",
             enablePresentationMultisample = appSettings[PreferenceManager.PredefinedKey.PresentationMSAA] == "true",
             enableSRGBRendering = appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true",
             shadowMapSize = appSettings[PreferenceManager.PredefinedKey.ShadowMapSize]

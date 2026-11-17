@@ -139,6 +139,7 @@ enum class SettingsKey : PreferenceManager.Key {
     EnableFocusZooming,
     EnableAlignCameraToSurfaceOnLand,
     SeparateRayleighMieScaleHeights,
+    SceneMSAA,
     // Int values
     TimeZone,
     DateFormat,
@@ -286,6 +287,7 @@ enum class SettingsKey : PreferenceManager.Key {
             ShowAutoMag -> CelestiaString("Auto Mag", "Auto mag for star display")
             ShowSmoothLines -> CelestiaString("Smooth Lines", "Smooth lines for rendering")
             ToneMapping -> CelestiaString("Tone Mapping", "")
+            SceneMSAA -> CelestiaString("Scene anti-aliasing", "Anti-aliasing for the rendered scene")
             EnableReverseWheel -> CelestiaString("Reverse Mouse Wheel", "")
             EnableRayBasedDragging -> CelestiaString("Ray-Based Dragging", "")
             EnableFocusZooming -> CelestiaString("Focus Zooming", "")
@@ -443,6 +445,7 @@ enum class SettingsKey : PreferenceManager.Key {
                 EnableFocusZooming,
                 EnableAlignCameraToSurfaceOnLand,
                 SeparateRayleighMieScaleHeights,
+                SceneMSAA,
             )
 
         val allIntCases: List<SettingsKey>
