@@ -33,8 +33,11 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.net.toUri
+import space.celestia.celestia.AppCore
 import space.celestia.celestiafoundation.utils.versionCode
 import space.celestia.celestiafoundation.utils.versionName
 import space.celestia.celestiaui.R
@@ -86,6 +89,9 @@ fun AboutScreen(paddingValues: PaddingValues, linkClicked: (String, Boolean) -> 
 
         val links = arrayListOf(Link(text = "https://celestia.mobi", url = "https://celestia.mobi"))
         if (Locale.current.region == "CN") {
+            val baseURL = "https://celestia.mobi/privacy"
+            val uri = baseURL.toUri().buildUpon().appendQueryParameter("lang", AppCore.getLanguage()).build()
+            links.add(Link(text = stringResource(R.string.privacy_policy_link_title), url = uri.toString()))
             links.add(Link(text = "苏ICP备2023039249号-4A", url = "https://beian.miit.gov.cn"))
         }
         FooterLink(text = links.joinToString(separator = " | ", transform = { it.text }), links = links, textAlign = TextAlign.Center, modifier = textModifier, action = { link ->

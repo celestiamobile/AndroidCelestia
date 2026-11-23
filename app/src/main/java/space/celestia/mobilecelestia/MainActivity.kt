@@ -527,7 +527,8 @@ class MainActivity : AppCompatActivity(),
             builder.setMessage(R.string.privacy_policy_alert_detail)
             builder.setNeutralButton(R.string.privacy_policy_alert_show_policy_button_title) { _, _ ->
                 val baseURL = "https://celestia.mobi/privacy"
-                val uri = baseURL.toUri().buildUpon().appendQueryParameter("lang", "zh_CN").build()
+                // AppCore.getLanguage() might not be ready yet
+                val uri = baseURL.toUri().buildUpon().appendQueryParameter("lang", getString(R.string.celestia_language)).build()
                 openURI(uri)
                 requestPrivacyConsentIfNeeded()
             }
