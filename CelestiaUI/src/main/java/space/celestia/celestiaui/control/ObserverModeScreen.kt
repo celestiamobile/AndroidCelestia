@@ -37,9 +37,10 @@ import space.celestia.celestiaui.utils.CelestiaString
 @Composable
 fun ObserverModeScreen(paddingValues: PaddingValues, observerModeLearnMoreClicked: (String, Boolean) -> Unit) {
     val viewModel: CameraControlViewModel = hiltViewModel()
+    val horizontalPadding = dimensionResource(R.dimen.common_page_medium_margin_horizontal)
     val fieldModifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = dimensionResource(id = R.dimen.section_header_margin_horizontal))
+        .padding(horizontal = horizontalPadding)
     var referenceObjectName by rememberSaveable {
         mutableStateOf("")
     }
@@ -63,13 +64,13 @@ fun ObserverModeScreen(paddingValues: PaddingValues, observerModeLearnMoreClicke
         .nestedScroll(nestedScrollInterop)
         .verticalScroll(state = rememberScrollState(), enabled = true)
         .padding(contentPadding)) {
-        Header(text = CelestiaString("Coordinate System", "Used in Flight Mode"), isFirst = true)
+        Header(text = CelestiaString("Coordinate System", "Used in Flight Mode"), isFirst = true, horizontalPadding = horizontalPadding)
         OptionSelect(options = CameraControlViewModel.coordinateSystems.map { it.second }, selectedIndex = selectedCoordinateIndex, selectionChange = {
             selectedCoordinateIndex = it
         }, modifier = fieldModifier)
 
         if (selectedCoordinateSystem != Observer.COORDINATE_SYSTEM_UNIVERSAL) {
-            Header(text = CelestiaString("Reference Object", "Used in Flight Mode"))
+            Header(text = CelestiaString("Reference Object", "Used in Flight Mode"), horizontalPadding = horizontalPadding)
             ObjectNameAutoComplete(executor = viewModel.executor, core = viewModel.appCore, name = referenceObjectName, selection = referenceObject, inputUpdated = {
                 referenceObjectName = it
             }, selectionUpdated = {
@@ -78,7 +79,7 @@ fun ObserverModeScreen(paddingValues: PaddingValues, observerModeLearnMoreClicke
         }
 
         if (selectedCoordinateSystem == Observer.COORDINATE_SYSTEM_PHASE_LOCK) {
-            Header(text = CelestiaString("Target Object", "Used in Flight Mode"))
+            Header(text = CelestiaString("Target Object", "Used in Flight Mode"), horizontalPadding = horizontalPadding)
             ObjectNameAutoComplete(executor = viewModel.executor, core = viewModel.appCore, name = targetObjectName, selection = targetObject, inputUpdated = {
                 targetObjectName = it
             }, selectionUpdated = {
@@ -91,9 +92,9 @@ fun ObserverModeScreen(paddingValues: PaddingValues, observerModeLearnMoreClicke
         FooterLink(text = infoText, linkText = infoLinkText, link = "https://celestia.mobi/help/flight-mode", action = { link ->
             observerModeLearnMoreClicked(link, true)
         }, modifier = Modifier.fillMaxWidth().padding(
-            start = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
+            start = horizontalPadding,
             top = dimensionResource(id = R.dimen.section_footer_margin_top),
-            end = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
+            end = horizontalPadding,
             bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
         ))
 

@@ -76,9 +76,10 @@ fun GoToScreen(paddingValues: PaddingValues) {
     var distanceString by rememberSaveable {
         mutableStateOf(displayNumberFormat.format(viewModel.initialDistance))
     }
+    val horizontalPadding = dimensionResource(R.dimen.common_page_medium_margin_horizontal)
     val fieldModifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = dimensionResource(id = R.dimen.section_header_margin_horizontal))
+        .padding(horizontal = horizontalPadding)
     val currentLongitudeValue = longitudeString.toDoubleOrNull(parseNumberFormat)
     val currentLatitudeValue = latitudeString.toDoubleOrNull(parseNumberFormat)
     val currentDistanceValue = distanceString.toDoubleOrNull(parseNumberFormat)
@@ -91,13 +92,13 @@ fun GoToScreen(paddingValues: PaddingValues) {
         .nestedScroll(nestedScrollInterop)
         .verticalScroll(state = rememberScrollState(), enabled = true)
         .padding(groupedListContentPadding(paddingValues))) {
-        Header(text = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"), isFirst = true)
+        Header(text = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"), isFirst = true, horizontalPadding = horizontalPadding)
         ObjectNameAutoComplete(executor = viewModel.executor, core = viewModel.appCore, name = viewModel.objectName.value, selection = viewModel.selection.value, modifier = fieldModifier, inputUpdated = {
             viewModel.objectName.value = it
         }, selectionUpdated = {
             viewModel.selection.value = it
         })
-        Header(text = CelestiaString("Coordinates", "Longitude and latitude (in Go to)"))
+        Header(text = CelestiaString("Coordinates", "Longitude and latitude (in Go to)"), horizontalPadding = horizontalPadding)
         Row(modifier = fieldModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
             OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "Coordinates")) }, onValueChange = {
                 latitudeString = it
@@ -106,7 +107,7 @@ fun GoToScreen(paddingValues: PaddingValues) {
                 longitudeString = it
             }, isError = !isLongitudeValid, modifier = Modifier.weight(1.0f))
         }
-        Header(text = CelestiaString("Distance", "Distance to the object (in Go to)"))
+        Header(text = CelestiaString("Distance", "Distance to the object (in Go to)"), horizontalPadding = horizontalPadding)
         Column(modifier = fieldModifier, verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_vertical))) {
             OutlinedTextField(value = distanceString, onValueChange = {
                 distanceString = it
