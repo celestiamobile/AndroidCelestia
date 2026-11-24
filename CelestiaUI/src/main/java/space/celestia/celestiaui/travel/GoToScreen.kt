@@ -38,6 +38,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestia.GoToLocation
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.compose.Header
 import space.celestia.celestiaui.compose.ObjectNameAutoComplete
 import space.celestia.celestiaui.compose.OptionSelect
@@ -75,12 +76,9 @@ fun GoToScreen(paddingValues: PaddingValues) {
     var distanceString by rememberSaveable {
         mutableStateOf(displayNumberFormat.format(viewModel.initialDistance))
     }
-    val textViewModifier = Modifier
+    val fieldModifier = Modifier
         .fillMaxWidth()
-        .padding(
-            horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal),
-            vertical = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
-        )
+        .padding(horizontal = dimensionResource(id = R.dimen.section_header_margin_horizontal))
     val currentLongitudeValue = longitudeString.toDoubleOrNull(parseNumberFormat)
     val currentLatitudeValue = latitudeString.toDoubleOrNull(parseNumberFormat)
     val currentDistanceValue = distanceString.toDoubleOrNull(parseNumberFormat)
@@ -92,15 +90,15 @@ fun GoToScreen(paddingValues: PaddingValues) {
     Column(modifier = Modifier
         .nestedScroll(nestedScrollInterop)
         .verticalScroll(state = rememberScrollState(), enabled = true)
-        .padding(paddingValues)) {
-        Header(text = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"))
-        ObjectNameAutoComplete(executor = viewModel.executor, core = viewModel.appCore, name = viewModel.objectName.value, selection = viewModel.selection.value, modifier = textViewModifier, inputUpdated = {
+        .padding(groupedListContentPadding(paddingValues))) {
+        Header(text = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"), isFirst = true)
+        ObjectNameAutoComplete(executor = viewModel.executor, core = viewModel.appCore, name = viewModel.objectName.value, selection = viewModel.selection.value, modifier = fieldModifier, inputUpdated = {
             viewModel.objectName.value = it
         }, selectionUpdated = {
             viewModel.selection.value = it
         })
         Header(text = CelestiaString("Coordinates", "Longitude and latitude (in Go to)"))
-        Row(modifier = textViewModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+        Row(modifier = fieldModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
             OutlinedTextField(value = latitudeString, label = { Text(text = CelestiaString("Latitude", "Coordinates")) }, onValueChange = {
                 latitudeString = it
             }, isError = !isLatitudeValid, modifier = Modifier.weight(1.0f))
@@ -109,11 +107,11 @@ fun GoToScreen(paddingValues: PaddingValues) {
             }, isError = !isLongitudeValid, modifier = Modifier.weight(1.0f))
         }
         Header(text = CelestiaString("Distance", "Distance to the object (in Go to)"))
-        Row(modifier = textViewModifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal))) {
+        Column(modifier = fieldModifier, verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_vertical))) {
             OutlinedTextField(value = distanceString, onValueChange = {
                 distanceString = it
-            }, isError = !isDistanceValid, modifier = Modifier.weight(2f))
-            OptionSelect(modifier = Modifier.weight(1f), options = GoToViewModel.distanceUnits.map {
+            }, isError = !isDistanceValid, modifier = Modifier.fillMaxWidth())
+            OptionSelect(modifier = Modifier.fillMaxWidth(), options = GoToViewModel.distanceUnits.map {
                 when(it) {
                     GoToLocation.DistanceUnit.radii -> {
                         CelestiaString("radii", "In Go to, specify the distance based on the object radius")
@@ -131,14 +129,7 @@ fun GoToScreen(paddingValues: PaddingValues) {
         }
         FilledTonalButton(
             enabled = isLatitudeValid && isLongitudeValid && isDistanceValid,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
-                    top = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
-                    end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
-                    bottom = dimensionResource(id = R.dimen.common_page_medium_margin_vertical)
-                ),
+            modifier = fieldModifier.padding(top = dimensionResource(id = R.dimen.list_group_spacing)),
             onClick = dropUnlessResumed {
                 val longitude = currentLongitudeValue ?: return@dropUnlessResumed
                 val latitude = currentLatitudeValue ?: return@dropUnlessResumed

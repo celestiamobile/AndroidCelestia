@@ -12,12 +12,9 @@ package space.celestia.celestiaui.eventfinder
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,9 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
-import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestia.EclipseFinder
 import space.celestia.celestia.Simulation
@@ -39,6 +34,8 @@ import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.ContextMenuContainer
 import space.celestia.celestiaui.compose.EmptyHint
 import space.celestia.celestiaui.compose.TextRow
+import space.celestia.celestiaui.compose.groupedItems
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.utils.CelestiaString
 import java.text.DateFormat
 import java.util.Locale
@@ -53,18 +50,12 @@ fun EventFinderResultsScreen(results: List<EclipseFinder.Eclipse>, paddingValues
             EmptyHint(text = CelestiaString("No eclipse is found for the given object in the time range", ""))
         }
     } else {
-        val direction = LocalLayoutDirection.current
-        val contentPadding = PaddingValues(
-            start = paddingValues.calculateStartPadding(direction),
-            top = dimensionResource(id = R.dimen.list_spacing_short) + paddingValues.calculateTopPadding(),
-            end = paddingValues.calculateEndPadding(direction),
-            bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding(),
-        )
+        val contentPadding = groupedListContentPadding(paddingValues)
         LazyColumn(
             contentPadding = contentPadding,
             modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
         ) {
-            items(results) { eclipse ->
+            groupedItems(results) { eclipse ->
                 var expanded by remember(eclipse) { mutableStateOf(false) }
                 ContextMenuContainer(expanded = expanded, onDismissRequest = { expanded = false }, menu = {
                     val actions = listOf(

@@ -51,6 +51,8 @@ import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.EmptyHint
 import space.celestia.celestiaui.compose.SwitchRow
+import space.celestia.celestiaui.compose.groupedItem
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.settings.viewmodel.SettingsViewModel
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
@@ -147,31 +149,30 @@ private fun GrantedContent(paddingValues: PaddingValues, viewModel: SettingsView
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(rememberNestedScrollInteropConnection()),
-        contentPadding = paddingValues
+        contentPadding = groupedListContentPadding(paddingValues)
     ) {
-        item { Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short))) }
-        item {
+        groupedItem(index = 0, count = 3) {
             SwitchRow(
                 primaryText = CelestiaString("Weekly Add-on", "Push notification content type — weekly featured add-on"),
                 checked = weeklyAddon,
                 onCheckedChange = { weeklyAddon = it }
             )
         }
-        item {
+        groupedItem(index = 1, count = 3) {
             SwitchRow(
                 primaryText = CelestiaString("Featured Add-on", "Push notification content type — featured add-on"),
                 checked = featuredAddon,
                 onCheckedChange = { featuredAddon = it }
             )
         }
-        item {
+        groupedItem(index = 2, count = 3) {
             SwitchRow(
                 primaryText = CelestiaString("Latest News", "Push notification content type — latest news"),
                 checked = latestNews,
                 onCheckedChange = { latestNews = it }
             )
         }
-        item { Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall))) }
+        item { Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing))) }
         item {
             FilledTonalButton(
                 onClick = dropUnlessResumed {

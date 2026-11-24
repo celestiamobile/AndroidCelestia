@@ -20,8 +20,6 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +29,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -45,11 +44,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -62,6 +61,8 @@ import space.celestia.celestiaui.compose.ContextMenuContainer
 import space.celestia.celestiaui.compose.DragDropState
 import space.celestia.celestiaui.compose.DraggableItem
 import space.celestia.celestiaui.compose.EmptyHint
+import space.celestia.celestiaui.compose.GroupedListItem
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.compose.TextInputDialog
 import space.celestia.celestiaui.compose.dragContainerForDragHandle
 import space.celestia.celestiaui.compose.rememberDragDropState
@@ -86,13 +87,7 @@ fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, s
             EmptyHint(text = parent.emptyHint ?: "")
         }
     } else {
-        val direction = LocalLayoutDirection.current
-        val contentPadding = PaddingValues(
-            start = paddingValues.calculateStartPadding(direction),
-            top = dimensionResource(id = R.dimen.list_spacing_short) + paddingValues.calculateTopPadding(),
-            end = paddingValues.calculateEndPadding(direction),
-            bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding() + additionalBottomPadding,
-        )
+        val contentPadding = groupedListContentPadding(paddingValues, additionalBottomPadding)
 
         val listState = rememberLazyListState()
         val dragDropState = rememberDragDropState(listState) { fromIndex, toIndex ->
@@ -139,10 +134,10 @@ fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, s
                         alert = FavoriteItemAlert.Rename(item)
                     }} else {{}}
                     DraggableItem(dragDropState = dragDropState, index = index, modifier = Modifier.animateItem()) {
-                        Item(item = item, index = index, dragDropState = dragDropState, isDraggable = true, selected = selectionHandler, deleteRequested = deleteHandler, renameRequested = renameHandler, shareRequested = shareHandler)
+                        Item(item = item, index = index, count = parent.children.size, dragDropState = dragDropState, isDraggable = true, selected = selectionHandler, deleteRequested = deleteHandler, renameRequested = renameHandler, shareRequested = shareHandler)
                     }
                 } else {
-                    Item(item = item, index = index, dragDropState = dragDropState, isDraggable = false, selected = selectionHandler, deleteRequested = {}, renameRequested = {}, shareRequested = shareHandler)
+                    Item(item = item, index = index, count = parent.children.size, dragDropState = dragDropState, isDraggable = false, selected = selectionHandler, deleteRequested = {}, renameRequested = {}, shareRequested = shareHandler)
                 }
             }
         }
@@ -166,11 +161,10 @@ fun FavoriteItemScreen(parent: FavoriteBaseItem, paddingValues: PaddingValues, s
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Item(item: FavoriteBaseItem, index: Int, dragDropState: DragDropState, isDraggable: Boolean, selected: () -> Unit, renameRequested: () -> Unit, deleteRequested: () -> Unit, shareRequested: () -> Unit, ) {
+private fun Item(item: FavoriteBaseItem, index: Int, count: Int, dragDropState: DragDropState, isDraggable: Boolean, selected: () -> Unit, renameRequested: () -> Unit, deleteRequested: () -> Unit, shareRequested: () -> Unit, ) {
     var showMenu by remember { mutableStateOf(false) }
     var rowModifier = Modifier
         .fillMaxWidth()
-        .background(MaterialTheme.colorScheme.background)
         .defaultMinSize(minHeight = dimensionResource(R.dimen.list_item_one_line_min_height))
         .padding(
             horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)
@@ -191,45 +185,53 @@ private fun Item(item: FavoriteBaseItem, index: Int, dragDropState: DragDropStat
             })
             .then(rowModifier)
     }
-    BuildSwipeToDismissBox(item = item, index = index, renameRequested = renameRequested, deleteRequested = deleteRequested) {
-        BuildContextMenuContainer(item = item, index = index, showMenu = showMenu, dismissMenu = { showMenu = false }, renameRequested = renameRequested, deleteRequested = deleteRequested, shareRequested = shareRequested) {
-            Row(
-                modifier = rowModifier,
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal)),
-            ) {
-                Text(
-                    item.title,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .weight(1.0f)
-                        .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))
-                )
-                if (isDraggable) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.reorder_24px),
-                        contentDescription = CelestiaString(
-                            "Drag Handle",
-                            "Accessibility description for the drag handle for reorder"
-                        ),
-                        tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled),
-                        modifier = Modifier
-                            .dragContainerForDragHandle(
-                                dragDropState = dragDropState,
-                                key = item.id
+    Box(modifier = Modifier
+        .padding(horizontal = dimensionResource(R.dimen.list_item_medium_margin_horizontal))
+        .padding(bottom = if (index < count - 1) ListItemDefaults.SegmentedGap else 0.dp)
+        .clip(ListItemDefaults.segmentedShapes(index, count).shape)
+    ) {
+        BuildSwipeToDismissBox(item = item, index = index, renameRequested = renameRequested, deleteRequested = deleteRequested) {
+            BuildContextMenuContainer(item = item, index = index, showMenu = showMenu, dismissMenu = { showMenu = false }, renameRequested = renameRequested, deleteRequested = deleteRequested, shareRequested = shareRequested) {
+                GroupedListItem(index, count, horizontalInset = 0.dp, bottomSpacing = 0.dp) {
+                    Row(
+                        modifier = rowModifier,
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.list_item_gap_horizontal)),
+                    ) {
+                        Text(
+                            item.title,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier
+                                .weight(1.0f)
+                                .padding(vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))
+                        )
+                        if (isDraggable) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.reorder_24px),
+                                contentDescription = CelestiaString(
+                                    "Drag Handle",
+                                    "Accessibility description for the drag handle for reorder"
+                                ),
+                                tint = colorResource(id = com.google.android.material.R.color.material_on_background_disabled),
+                                modifier = Modifier
+                                    .dragContainerForDragHandle(
+                                        dragDropState = dragDropState,
+                                        key = item.id
+                                    )
+                                    .padding(
+                                        dimensionResource(id = R.dimen.list_item_action_icon_padding)
+                                    )
                             )
-                            .padding(
-                                dimensionResource(id = R.dimen.list_item_action_icon_padding)
+                        }
+                        if (!item.isLeaf || item.hasFullPageRepresentation) {
+                            Image(
+                                painter = painterResource(id = R.drawable.accessory_full_disclosure),
+                                contentDescription = "",
+                                colorFilter = ColorFilter.tint(colorResource(id = com.google.android.material.R.color.material_on_background_disabled))
                             )
-                    )
-                }
-                if (!item.isLeaf || item.hasFullPageRepresentation) {
-                    Image(
-                        painter = painterResource(id = R.drawable.accessory_full_disclosure),
-                        contentDescription = "",
-                        colorFilter = ColorFilter.tint(colorResource(id = com.google.android.material.R.color.material_on_background_disabled))
-                    )
+                        }
+                    }
                 }
             }
         }

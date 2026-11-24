@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,7 +27,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -39,6 +36,8 @@ import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.CheckboxRow
 import space.celestia.celestiaui.compose.Footer
+import space.celestia.celestiaui.compose.GroupedListItem
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.compose.Stepper
 import space.celestia.celestiaui.compose.TextRow
 import space.celestia.celestiaui.control.viewmodel.CameraControlViewModel
@@ -60,34 +59,40 @@ fun CameraControl(paddingValues: PaddingValues, cameraControlObserverModeClicked
         )
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
 
-    val direction = LocalLayoutDirection.current
-    val contentPadding = PaddingValues(
-        start = paddingValues.calculateStartPadding(direction),
-        top = dimensionResource(id = R.dimen.list_spacing_short) + paddingValues.calculateTopPadding(),
-        end = paddingValues.calculateEndPadding(direction),
-        bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding(),
-    )
+    val contentPadding = groupedListContentPadding(paddingValues)
     Column(modifier = Modifier
         .nestedScroll(nestedScrollInterop)
         .verticalScroll(state = rememberScrollState(), enabled = true)
         .padding(contentPadding)) {
-        StepperRow(name = CelestiaString("Pitch", "Camera control"), minusAction = CameraControlAction.Pitch0, plusAction = CameraControlAction.Pitch1, modifier = internalViewModifier)
-        StepperRow(name = CelestiaString("Yaw", "Camera control"), minusAction = CameraControlAction.Yaw0, plusAction = CameraControlAction.Yaw1, modifier = internalViewModifier)
-        StepperRow(name = CelestiaString("Roll", "Camera control"), minusAction = CameraControlAction.Roll0, plusAction = CameraControlAction.Roll1, modifier = internalViewModifier)
-        Footer(text = CelestiaString("Long press on stepper to change orientation.", ""))
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-        StepperRow(name = CelestiaString("Zoom (Distance)", "Zoom in/out in Camera Control, this changes the relative distance to the object"), minusAction = CameraControlAction.ZoomOut, plusAction = CameraControlAction.ZoomIn, modifier = internalViewModifier)
-        Footer(text = CelestiaString("Long press on stepper to zoom in/out.", ""))
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-        if (viewModel.sessionSettings.isGyroscopeSupported) {
-            CheckboxRow(primaryText = CelestiaString("Enable Gyroscope Control", "Enable gyroscope control for camera rotation"), checked = viewModel.sessionSettings.isGyroscopeEnabled, onCheckedChange = {
-                viewModel.sessionSettings.isGyroscopeEnabled = it
-            })
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+        GroupedListItem(index = 0, count = 3) {
+            StepperRow(name = CelestiaString("Pitch", "Camera control"), minusAction = CameraControlAction.Pitch0, plusAction = CameraControlAction.Pitch1, modifier = internalViewModifier)
         }
-        TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = dropUnlessResumed {
-            cameraControlObserverModeClicked()
-        }))
+        GroupedListItem(index = 1, count = 3) {
+            StepperRow(name = CelestiaString("Yaw", "Camera control"), minusAction = CameraControlAction.Yaw0, plusAction = CameraControlAction.Yaw1, modifier = internalViewModifier)
+        }
+        GroupedListItem(index = 2, count = 3) {
+            StepperRow(name = CelestiaString("Roll", "Camera control"), minusAction = CameraControlAction.Roll0, plusAction = CameraControlAction.Roll1, modifier = internalViewModifier)
+        }
+        Footer(text = CelestiaString("Long press on stepper to change orientation.", ""))
+        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
+        GroupedListItem {
+            StepperRow(name = CelestiaString("Zoom (Distance)", "Zoom in/out in Camera Control, this changes the relative distance to the object"), minusAction = CameraControlAction.ZoomOut, plusAction = CameraControlAction.ZoomIn, modifier = internalViewModifier)
+        }
+        Footer(text = CelestiaString("Long press on stepper to zoom in/out.", ""))
+        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
+        if (viewModel.sessionSettings.isGyroscopeSupported) {
+            GroupedListItem {
+                CheckboxRow(primaryText = CelestiaString("Enable Gyroscope Control", "Enable gyroscope control for camera rotation"), checked = viewModel.sessionSettings.isGyroscopeEnabled, onCheckedChange = {
+                    viewModel.sessionSettings.isGyroscopeEnabled = it
+                })
+            }
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
+        }
+        GroupedListItem {
+            TextRow(primaryText = CelestiaString("Flight Mode", ""), accessoryResource = R.drawable.accessory_full_disclosure, modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                cameraControlObserverModeClicked()
+            }))
+        }
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
         FilledTonalButton(modifier = internalViewModifier, onClick = dropUnlessResumed {
             scope.launch(viewModel.executor.asCoroutineDispatcher()) {

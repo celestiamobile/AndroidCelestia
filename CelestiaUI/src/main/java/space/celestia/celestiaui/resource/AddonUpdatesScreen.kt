@@ -4,12 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -27,9 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
-import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -41,6 +36,8 @@ import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.EmptyHint
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.TextRow
+import space.celestia.celestiaui.compose.groupedItems
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.resource.model.AddonUpdateManager
 import space.celestia.celestiaui.resource.viewmodel.AddonManagerViewModel
 import space.celestia.celestiaui.utils.CelestiaString
@@ -128,21 +125,15 @@ fun AddonUpdatesScreen(paddingValues: PaddingValues, requestOpenAddon: (Resource
                 EmptyHint(text = CelestiaString("No Update Available", "Hint that there is no update for installed add-ons."))
             }
         } else {
-            val direction = LocalLayoutDirection.current
-            val contentPadding = PaddingValues(
-                start = paddingValues.calculateStartPadding(direction),
-                top = dimensionResource(id = R.dimen.list_spacing_short) + paddingValues.calculateTopPadding(),
-                end = paddingValues.calculateEndPadding(direction),
-                bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding(),
-            )
+            val contentPadding = groupedListContentPadding(paddingValues)
             LazyColumn(
                 contentPadding = contentPadding,
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(rememberNestedScrollInteropConnection())
-                    .background(color = MaterialTheme.colorScheme.background)
+                    .background(color = MaterialTheme.colorScheme.surfaceContainerLow)
             ) {
-                items(viewModel.addonUpdateManager.pendingUpdates) {
+                groupedItems(viewModel.addonUpdateManager.pendingUpdates) {
                     TextRow(
                         modifier = Modifier.clickable(onClick = dropUnlessResumed {
                             requestOpenAddon(it.addon)

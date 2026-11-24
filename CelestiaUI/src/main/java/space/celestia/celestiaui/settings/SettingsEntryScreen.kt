@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -37,10 +37,11 @@ import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.CheckboxRow
 import space.celestia.celestiaui.compose.Footer
 import space.celestia.celestiaui.compose.FooterLink
+import space.celestia.celestiaui.compose.GroupedListItem
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.compose.Header
 import space.celestia.celestiaui.compose.OptionInputDialog
 import space.celestia.celestiaui.compose.RadioButtonRow
-import space.celestia.celestiaui.compose.Separator
 import space.celestia.celestiaui.compose.SliderRow
 import space.celestia.celestiaui.compose.SwitchRow
 import space.celestia.celestiaui.compose.TextRow
@@ -68,49 +69,57 @@ import java.text.NumberFormat
 fun SettingsEntryScreen(item: SettingsCommonItem, paddingValues: PaddingValues, linkClicked: (String, Boolean) -> Unit) {
     val viewModel: SettingsViewModel = hiltViewModel()
     LazyColumn(modifier = Modifier
-        .nestedScroll(rememberNestedScrollInteropConnection()), contentPadding = paddingValues) {
+        .nestedScroll(rememberNestedScrollInteropConnection()), contentPadding = groupedListContentPadding(paddingValues)) {
+        var visibleSectionCount = 0
         for (index in item.sections.indices) {
             val section = item.sections[index]
+            val visibleRows = section.rows.withIndex()
+                .filter { it.value.isVisible(viewModel) }
+                .map { it.index to it.value.resolvedItem() }
+            val rowOffsets = visibleRows.runningFold(0) { count, (_, row) ->
+                count + if (row is SettingsSelectionSingleItem) {
+                    row.options.size + if (row.showTitle) 1 else 0
+                } else {
+                    1
+                }
+            }
+            if (rowOffsets.last() == 0) continue
+            val isFirst = visibleSectionCount == 0
+            visibleSectionCount++
             item(key = "section-$index-header") {
                 val header = section.header
                 if (header.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+                    if (!isFirst) {
+                        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.list_group_spacing)))
+                    }
                 } else {
-                    Header(text = header)
+                    Header(text = header, isFirst = isFirst)
                 }
             }
-            val visibleRows = section.rows.withIndex().filter { it.value.isVisible(viewModel) }
-            items(visibleRows, key = { "section-$index-row-${it.index}" }) { indexedItem ->
-                SettingEntry(item = indexedItem.value.resolvedItem(), viewModel = viewModel)
+            itemsIndexed(visibleRows, key = { _, row -> "section-$index-row-${row.first}" }) { rowIndex, row ->
+                SettingEntry(item = row.second, viewModel = viewModel, index = rowOffsets[rowIndex], count = rowOffsets.last())
             }
             item(key = "section-$index-footer") {
                 val footer = section.footer
                 when (footer) {
                     is Footer.Text -> {
-                        Footer(text = footer.text)
-                    }
-                    is Footer.TextWithLink -> {
-                        FooterLink(text = footer.text, link = footer.link, linkText = footer.linkText, action = {
-                            linkClicked(it, footer.localizable)
-                        }, modifier = Modifier.fillMaxWidth().padding(
-                            start = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
-                            top = dimensionResource(id = R.dimen.section_footer_margin_top),
-                            end = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
-                            bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
-                        ))
-                    }
-                    else -> {}
-                }
-                if (index == item.sections.size - 1) {
-                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
-                } else {
-                    val nextHeader = item.sections[index + 1].header
-                    if (nextHeader.isNullOrEmpty()) {
-                        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-                        if (footer == null) {
-                            Separator()
+                        if (footer.text.isNotEmpty()) {
+                            Footer(text = footer.text)
                         }
                     }
+                    is Footer.TextWithLink -> {
+                        if (footer.text.isNotEmpty()) {
+                            FooterLink(text = footer.text, link = footer.link, linkText = footer.linkText, action = {
+                                linkClicked(it, footer.localizable)
+                            }, modifier = Modifier.fillMaxWidth().padding(
+                                start = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
+                                top = dimensionResource(id = R.dimen.section_footer_margin_top),
+                                end = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
+                                bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
+                            ))
+                        }
+                    }
+                    else -> {}
                 }
             }
         }
@@ -118,7 +127,18 @@ fun SettingsEntryScreen(item: SettingsCommonItem, paddingValues: PaddingValues, 
 }
 
 @Composable
-private fun SettingEntry(item: SettingsItem, viewModel: SettingsViewModel) {
+private fun SettingEntry(item: SettingsItem, viewModel: SettingsViewModel, index: Int, count: Int) {
+    if (item is SettingsSelectionSingleItem) {
+        SettingEntryContent(item, viewModel, index, count)
+    } else {
+        GroupedListItem(index, count) {
+            SettingEntryContent(item, viewModel, index, count)
+        }
+    }
+}
+
+@Composable
+private fun SettingEntryContent(item: SettingsItem, viewModel: SettingsViewModel, index: Int, count: Int) {
     val scope = rememberCoroutineScope()
     when (item) {
         is SettingsSwitchItem -> {
@@ -163,15 +183,20 @@ private fun SettingEntry(item: SettingsItem, viewModel: SettingsViewModel) {
                 )
             }
             if (item.showTitle) {
-                TextRow(primaryText = item.name, secondaryText = item.subtitle)
+                GroupedListItem(index, count) {
+                    TextRow(primaryText = item.name, secondaryText = item.subtitle)
+                }
             }
-            for (option in item.options) {
-                RadioButtonRow(primaryText = option.second, selected = option.first == selected) {
-                    selected = option.first
-                    viewModel.coreSettings[PreferenceManager.CustomKey(item.key)] = option.first.toString()
-                    viewModel.refreshSettingVisibility()
-                    scope.launch(viewModel.executor.asCoroutineDispatcher()) {
-                        viewModel.appCore.setIntValueForField(item.key, option.first)
+            val optionOffset = if (item.showTitle) 1 else 0
+            for ((optionIndex, option) in item.options.withIndex()) {
+                GroupedListItem(index + optionOffset + optionIndex, count) {
+                    RadioButtonRow(primaryText = option.second, selected = option.first == selected) {
+                        selected = option.first
+                        viewModel.coreSettings[PreferenceManager.CustomKey(item.key)] = option.first.toString()
+                        viewModel.refreshSettingVisibility()
+                        scope.launch(viewModel.executor.asCoroutineDispatcher()) {
+                            viewModel.appCore.setIntValueForField(item.key, option.first)
+                        }
                     }
                 }
             }

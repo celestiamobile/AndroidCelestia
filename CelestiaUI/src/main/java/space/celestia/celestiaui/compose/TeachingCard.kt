@@ -12,6 +12,7 @@ package space.celestia.celestiaui.compose
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
@@ -25,7 +26,12 @@ import space.celestia.celestiaui.R
 
 @Composable
 fun TeachingCard(title: String, actionButtonTitle: String, action: () -> Unit, modifier: Modifier = Modifier) {
-    ElevatedCard(modifier = modifier) {
+    ElevatedCard(
+        modifier = modifier,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
         Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.common_page_medium_gap_vertical)), horizontalAlignment = Alignment.Start, modifier = Modifier.padding(
             dimensionResource(id = R.dimen.card_content_padding)
         )) {

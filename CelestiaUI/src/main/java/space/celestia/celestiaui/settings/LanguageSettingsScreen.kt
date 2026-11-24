@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,8 +36,10 @@ import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.Footer
 import space.celestia.celestiaui.compose.RadioButtonRow
-import space.celestia.celestiaui.compose.Separator
+import space.celestia.celestiaui.compose.GroupedListItem
 import space.celestia.celestiaui.compose.TextRow
+import space.celestia.celestiaui.compose.groupedItems
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.settings.viewmodel.SettingsViewModel
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
@@ -109,19 +110,18 @@ fun LanguageSettingsScreen(paddingValues: PaddingValues) {
         mutableStateOf(currentOverrideLanguage(availableLanguageCodes))
     }
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
-    LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = paddingValues) {
+    LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = groupedListContentPadding(paddingValues)) {
         item {
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-            TextRow(primaryText = CelestiaString("Current Language", "Current display language"), secondaryText = getLocalizedLanguageName(currentLanguage()))
+            GroupedListItem {
+                TextRow(primaryText = CelestiaString("Current Language", "Current display language"), secondaryText = getLocalizedLanguageName(currentLanguage()))
+            }
         }
 
         if (availableLanguageCodes.isNotEmpty()) {
             item {
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-                Separator()
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
             }
-            items(items = availableLanguageCodes) {
+            groupedItems(items = availableLanguageCodes) {
                 RadioButtonRow(primaryText = getLocalizedLanguageName(it), selected = currentOverrideLanguage == it) {
                     currentOverrideLanguage = it
                     setOverrideLanguage(it)
@@ -130,9 +130,7 @@ fun LanguageSettingsScreen(paddingValues: PaddingValues) {
         }
 
         item {
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-            Separator()
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
         }
 
         item {
@@ -143,7 +141,6 @@ fun LanguageSettingsScreen(paddingValues: PaddingValues) {
                 Text(text = CelestiaString("Reset to Default", "Reset celestia.cfg, data directory location"))
             }
             Footer(text = CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
         }
     }
 }

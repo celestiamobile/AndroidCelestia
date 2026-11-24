@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -35,8 +35,11 @@ import kotlinx.coroutines.withContext
 import space.celestia.celestia.Font
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.Footer
+import space.celestia.celestiaui.compose.GroupedListItem
 import space.celestia.celestiaui.compose.Header
 import space.celestia.celestiaui.compose.RadioButtonRow
+import space.celestia.celestiaui.compose.groupedItems
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.settings.viewmodel.CustomFont
 import space.celestia.celestiaui.settings.viewmodel.boldFont
 import space.celestia.celestiaui.settings.viewmodel.normalFont
@@ -68,9 +71,12 @@ fun FontSettingsScreen(paddingValues: PaddingValues) {
     val currentFont = if (selectedTabIndex == 0) normalFont else boldFont
     if (fontsLoaded) {
         val nestedScrollInterop = rememberNestedScrollInteropConnection()
-        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = paddingValues) {
+        LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = groupedListContentPadding(paddingValues)) {
             item {
-                PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+                PrimaryTabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ) {
                     val tabTitleModifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.tab_title_text_padding_vertical))
                     Tab(selected = selectedTabIndex == 0, onClick = {
                         selectedTabIndex = 0
@@ -85,23 +91,24 @@ fun FontSettingsScreen(paddingValues: PaddingValues) {
                 }
             }
             item {
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-                RadioButtonRow(primaryText = CelestiaString("Default", ""), selected = currentFont == null, onClick = {
-                    if (selectedTabIndex == 0) {
-                        viewModel.appSettingsNoBackup.normalFont = null
-                        normalFont = null
-                    } else {
-                        viewModel.appSettingsNoBackup.boldFont = null
-                        boldFont = null
-                    }
-                })
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
+                GroupedListItem {
+                    RadioButtonRow(primaryText = CelestiaString("Default", ""), selected = currentFont == null, onClick = {
+                        if (selectedTabIndex == 0) {
+                            viewModel.appSettingsNoBackup.normalFont = null
+                            normalFont = null
+                        } else {
+                            viewModel.appSettingsNoBackup.boldFont = null
+                            boldFont = null
+                        }
+                    })
+                }
             }
             if (systemFonts.isNotEmpty()) {
                 item {
-                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
                     Header(text = CelestiaString("System Fonts", ""))
                 }
-                items(items = systemFonts) {
+                groupedItems(items = systemFonts) {
                     val typeface = cachedTypefaces[it]
                     if (typeface == null) {
                         LaunchedEffect(Unit) {
@@ -130,7 +137,6 @@ fun FontSettingsScreen(paddingValues: PaddingValues) {
             }
             item {
                 Footer(text = CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
             }
         }
     } else {

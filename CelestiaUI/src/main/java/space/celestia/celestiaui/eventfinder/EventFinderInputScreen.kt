@@ -12,8 +12,6 @@ package space.celestia.celestiaui.eventfinder
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,7 +26,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -37,8 +34,9 @@ import space.celestia.celestia.EclipseFinder
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.CheckboxRow
 import space.celestia.celestiaui.compose.DateInputDialog
+import space.celestia.celestiaui.compose.GroupedListItem
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.compose.OptionInputDialog
-import space.celestia.celestiaui.compose.Separator
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.TextInputDialog
 import space.celestia.celestiaui.compose.TextRow
@@ -74,38 +72,40 @@ fun EventFinderInputScreen(paddingValues: PaddingValues, handler: (objectName: S
         ))
     }
 
-    val direction = LocalLayoutDirection.current
-    val contentPadding = PaddingValues(
-        start = paddingValues.calculateStartPadding(direction),
-        top = dimensionResource(id = R.dimen.list_spacing_short) + paddingValues.calculateTopPadding(),
-        end = paddingValues.calculateEndPadding(direction),
-        bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding(),
-    )
+    val contentPadding = groupedListContentPadding(paddingValues)
     LazyColumn(
         contentPadding = contentPadding,
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         item {
-            TextRow(primaryText = CelestiaString("Start Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(startTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
-                alert = EventFinderInputAlert.TimeInput(true)
-            }))
-            TextRow(primaryText = CelestiaString("End Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(endTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
-                alert = EventFinderInputAlert.TimeInput(false)
-            }))
+            GroupedListItem(index = 0, count = 2) {
+                TextRow(primaryText = CelestiaString("Start Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(startTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                    alert = EventFinderInputAlert.TimeInput(true)
+                }))
+            }
+            GroupedListItem(index = 1, count = 2) {
+                TextRow(primaryText = CelestiaString("End Time", "In eclipse finder, range of time to find eclipse in"), secondaryText = formatter.format(endTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                    alert = EventFinderInputAlert.TimeInput(false)
+                }))
+            }
         }
 
         item {
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-            Separator()
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
         }
 
         item {
-            TextRow(primaryText = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"), secondaryText = objectName, modifier = Modifier.clickable(onClick = dropUnlessResumed {
-                alert = EventFinderInputAlert.ObjectSelection
-            }))
-            CheckboxRow(primaryText = CelestiaString("Solar", "Solar eclipses."), checked = findSolar, onCheckedChange = { findSolar = it })
-            CheckboxRow(primaryText = CelestiaString("Lunar", "Lunar eclipses."), checked = findLunar, onCheckedChange = { findLunar = it })
+            GroupedListItem(index = 0, count = 3) {
+                TextRow(primaryText = CelestiaString("Object", "In eclipse finder, object to find eclipse with, or in go to"), secondaryText = objectName, modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                    alert = EventFinderInputAlert.ObjectSelection
+                }))
+            }
+            GroupedListItem(index = 1, count = 3) {
+                CheckboxRow(primaryText = CelestiaString("Solar", "Solar eclipses."), checked = findSolar, onCheckedChange = { findSolar = it })
+            }
+            GroupedListItem(index = 2, count = 3) {
+                CheckboxRow(primaryText = CelestiaString("Lunar", "Lunar eclipses."), checked = findLunar, onCheckedChange = { findLunar = it })
+            }
         }
 
         item {

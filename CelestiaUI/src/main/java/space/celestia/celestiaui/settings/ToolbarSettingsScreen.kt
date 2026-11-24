@@ -15,10 +15,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -53,6 +52,8 @@ import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.ContextMenuContainer
 import space.celestia.celestiaui.compose.DraggableItem
 import space.celestia.celestiaui.compose.Footer
+import space.celestia.celestiaui.compose.GroupedListItem
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.compose.dragContainerForDragHandle
 import space.celestia.celestiaui.compose.rememberDragDropState
 import space.celestia.celestiaui.settings.viewmodel.SettingsViewModel
@@ -199,13 +200,7 @@ fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
         }
     }
 
-    val direction = LocalLayoutDirection.current
-    val contentPadding = PaddingValues(
-        start = paddingValues.calculateStartPadding(direction),
-        top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical) + paddingValues.calculateTopPadding(),
-        end = paddingValues.calculateEndPadding(direction),
-        bottom = dimensionResource(id = R.dimen.list_spacing_tall) + paddingValues.calculateBottomPadding(),
-    )
+    val contentPadding = groupedListContentPadding(paddingValues)
 
     LazyColumn(
         state = listState,
@@ -214,12 +209,21 @@ fun ToolbarSettingsScreen(paddingValues: PaddingValues) {
     ) {
         itemsIndexed(list, key = { _, item -> item.id }) { index, item ->
             DraggableItem(dragDropState, index, modifier = Modifier.animateItem()) { _ ->
-                Item(item = item, isDraggable = true)
+                GroupedListItem(index, list.size) {
+                    Item(item = item, isDraggable = true)
+                }
             }
         }
 
-        itemsIndexed(otherItems, key = { _, item -> item.id }) { _, item ->
-            Item(item = item, isDraggable = false)
+        if (list.isNotEmpty() && otherItems.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.list_group_spacing)))
+            }
+        }
+        itemsIndexed(otherItems, key = { _, item -> item.id }) { index, item ->
+            GroupedListItem(index, otherItems.size) {
+                Item(item = item, isDraggable = false)
+            }
         }
 
         item {

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -25,28 +24,31 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.Footer
 import space.celestia.celestiaui.compose.Header
-import space.celestia.celestiaui.compose.Separator
 import space.celestia.celestiaui.compose.TextRow
+import space.celestia.celestiaui.compose.groupedItems
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.settings.viewmodel.SettingsItem
 import space.celestia.celestiaui.settings.viewmodel.SettingsViewModel
 
 @Composable
 fun SettingsHomeScreen(paddingValues: PaddingValues, itemSelected: (SettingsItem) -> Unit) {
     val viewModel: SettingsViewModel = hiltViewModel()
-    val sections = viewModel.settingsEntryProvider.settings(viewModel.purchaseManager)
+    val sections = viewModel.settingsEntryProvider.settings(viewModel.purchaseManager).filter { it.items.isNotEmpty() }
     LazyColumn(modifier = Modifier
-        .nestedScroll(rememberNestedScrollInteropConnection()), contentPadding = paddingValues) {
+        .nestedScroll(rememberNestedScrollInteropConnection()), contentPadding = groupedListContentPadding(paddingValues)) {
         for (index in sections.indices) {
             val section = sections[index]
             item {
                 val header = section.header
                 if (header.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+                    if (index > 0) {
+                        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.list_group_spacing)))
+                    }
                 } else {
-                    Header(text = header)
+                    Header(text = header, isFirst = index == 0)
                 }
             }
-            items(section.items) { item ->
+            groupedItems(section.items) { item ->
                 TextRow(primaryText = item.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     itemSelected(item)
                 }), accessoryResource = R.drawable.accessory_full_disclosure)
@@ -55,17 +57,6 @@ fun SettingsHomeScreen(paddingValues: PaddingValues, itemSelected: (SettingsItem
                 val footer = section.footer
                 if (!footer.isNullOrEmpty()) {
                     Footer(text = footer)
-                }
-                if (index == sections.size - 1) {
-                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
-                } else {
-                    val nextHeader = sections[index + 1].header
-                    if (nextHeader.isNullOrEmpty()) {
-                        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-                        if (footer.isNullOrEmpty()) {
-                            Separator()
-                        }
-                    }
                 }
             }
         }

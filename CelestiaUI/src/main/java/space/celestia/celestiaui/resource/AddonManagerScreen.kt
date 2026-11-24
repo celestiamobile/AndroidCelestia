@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
@@ -62,6 +63,7 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
     var alert by remember { mutableStateOf<AddonManagerAlert?>(null) }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             TopAppBar(title = {
                 val lastEntry = backStack.lastOrNull() ?: return@TopAppBar
@@ -124,7 +126,9 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
                         }
                     }
                 }
-            }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ), scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
         },
         contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)

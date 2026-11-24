@@ -33,6 +33,8 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.groupedItems
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.help.viewmodel.HelpViewModel
 import space.celestia.celestiaui.utils.CelestiaString
 
@@ -67,7 +69,7 @@ fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, link
         horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal)
     )
     LazyColumn(
-        contentPadding = paddingValues,
+        contentPadding = groupedListContentPadding(paddingValues),
         modifier = modifier.nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         item {
@@ -79,7 +81,7 @@ fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, link
             ))
         }
 
-        items(staticHelpDescriptionItems) {
+        groupedItems(staticHelpDescriptionItems) {
             Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.tutorial_list_item_gap_horizontal)), modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal), vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))) {
                 Icon(painter = painterResource(id = it.imageResourceID), contentDescription = "", modifier = Modifier.size(dimensionResource(id = R.dimen.tutorial_list_icon_dimension)), tint = MaterialTheme.colorScheme.onBackground)
                 Text(text = it.description, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyLarge)

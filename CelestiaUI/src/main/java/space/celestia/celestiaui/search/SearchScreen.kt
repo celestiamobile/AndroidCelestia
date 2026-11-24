@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.CircularProgressIndicator
@@ -76,6 +75,8 @@ import space.celestia.celestiaui.compose.EmptyHint
 import space.celestia.celestiaui.compose.Header
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.TextRow
+import space.celestia.celestiaui.compose.groupedItems
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.info.InfoScreen
 import space.celestia.celestiaui.search.viewmodel.RecentSearch
@@ -94,6 +95,7 @@ fun SearchScreen(prepareForInput: suspend () -> Boolean, linkClicked: (String) -
     val searchBarState = rememberSearchBarState()
     val isSearchExpanded = searchBarState.currentValue == SearchBarValue.Expanded ||
         searchBarState.targetValue == SearchBarValue.Expanded
+    val pageContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
     val searchBarColors = SearchBarDefaults.colors()
     val searchWindowInsets = SearchBarDefaults.windowInsets.only(WindowInsetsSides.Horizontal)
     val searchKey = textFieldState.text.toString()
@@ -219,11 +221,11 @@ fun SearchScreen(prepareForInput: suspend () -> Boolean, linkClicked: (String) -
         collapseSearch()
     }
 
-    Scaffold(topBar = {
+    Scaffold(containerColor = pageContainerColor, topBar = {
         // AppBarWithSearch disables the IME for its collapsed input; expand within the sheet instead.
         if (isSearchExpanded) {
             Surface(
-                color = searchBarColors.containerColor,
+                color = pageContainerColor,
                 modifier = Modifier
                     .fillMaxWidth()
                     .windowInsetsPadding(searchWindowInsets)
@@ -234,6 +236,11 @@ fun SearchScreen(prepareForInput: suspend () -> Boolean, linkClicked: (String) -
             AppBarWithSearch(
                 state = searchBarState,
                 inputField = inputField,
+                colors = SearchBarDefaults.appBarWithSearchColors(
+                    searchBarColors = searchBarColors,
+                    appBarContainerColor = pageContainerColor,
+                    scrolledAppBarContainerColor = pageContainerColor
+                ),
                 windowInsets = searchWindowInsets,
                 contentPadding = PaddingValues(
                     horizontal = dimensionResource(R.dimen.search_bar_padding_horizontal),
@@ -301,7 +308,7 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkCli
         Box(modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+            .background(color = MaterialTheme.colorScheme.surfaceContainerLow), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
     } else if (selection != null) {
@@ -310,7 +317,7 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkCli
         Box(modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+            .background(color = MaterialTheme.colorScheme.surfaceContainerLow), contentAlignment = Alignment.Center) {
             EmptyHint(text = CelestiaString("Find stars, DSOs, and nearby objects", ""))
         }
     }
@@ -320,17 +327,19 @@ private fun SearchContent(selection: Selection?, isLoadingPage: Boolean, linkCli
 private fun SearchResult(key: String, results: List<Completion>, isSearching: Boolean, recentSearches: List<RecentSearch>, recentSelected: (RecentSearch) -> Unit, selectionHandler: (Selection) -> Unit) {
     if (key.isEmpty() && recentSearches.isNotEmpty()) {
         LazyColumn(
+            contentPadding = groupedListContentPadding(),
             modifier = Modifier
                 .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
         ) {
             item {
                 Header(
                     text = CelestiaString("Recent Searches", ""),
                     modifier = Modifier.fillMaxWidth(),
+                    isFirst = true,
                 )
             }
-            items(recentSearches, key = { it.path }) { recent ->
+            groupedItems(recentSearches, key = { it.path }) { recent ->
                 TextRow(primaryText = recent.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     recentSelected(recent)
                 }))
@@ -339,22 +348,23 @@ private fun SearchResult(key: String, results: List<Completion>, isSearching: Bo
     } else if (results.isEmpty() && isSearching) {
         Box(modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+            .background(color = MaterialTheme.colorScheme.surfaceContainerLow), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
     } else if (results.isEmpty()) {
         Box(modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
+            .background(color = MaterialTheme.colorScheme.surfaceContainerLow), contentAlignment = Alignment.Center) {
             EmptyHint(text = if (key.isEmpty()) CelestiaString("Find stars, DSOs, and nearby objects", "") else CelestiaString("No result found", ""))
         }
     } else {
         LazyColumn(
+            contentPadding = groupedListContentPadding(),
             modifier = Modifier
                 .fillMaxHeight()
-                .background(color = MaterialTheme.colorScheme.background)
+                .background(color = MaterialTheme.colorScheme.surfaceContainerLow)
         ) {
-            items(results) {
+            groupedItems(results) {
                 TextRow(primaryText = it.name, modifier = Modifier.clickable(onClick = dropUnlessResumed {
                     selectionHandler(it.selection)
                 }))

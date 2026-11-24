@@ -18,12 +18,13 @@
     <dimen name="list_item_medium_margin_vertical">12dp</dimen>
     <dimen name="list_item_small_margin_horizontal">12dp</dimen>
     <dimen name="list_item_small_margin_vertical">8dp</dimen>
-    <dimen name="section_header_margin_horizontal">16dp</dimen>
-    <dimen name="section_header_margin_top">16dp</dimen>
+    <dimen name="section_header_margin_horizontal">32dp</dimen>
+    <dimen name="section_header_margin_top">24dp</dimen>
     <dimen name="section_header_margin_bottom">8dp</dimen>
-    <dimen name="section_footer_margin_horizontal">16dp</dimen>
+    <dimen name="section_footer_margin_horizontal">32dp</dimen>
     <dimen name="section_footer_margin_top">8dp</dimen>
-    <dimen name="section_footer_margin_bottom">12dp</dimen>
+    <!-- Section transitions and page padding own the space after a footer. -->
+    <dimen name="section_footer_margin_bottom">0dp</dimen>
     <dimen name="list_item_gap_horizontal">8dp</dimen>
     <dimen name="list_item_gap_image_text_horizontal">12dp</dimen>
     <dimen name="list_item_gap_vertical">8dp</dimen>
@@ -77,6 +78,8 @@
     <dimen name="stepper_corner_radius">7dp</dimen>
 
     <dimen name="list_spacing_short">8dp</dimen>
+    <dimen name="list_group_spacing">16dp</dimen>
+    <dimen name="list_content_padding_vertical">16dp</dimen>
     <dimen name="list_spacing_tall">28dp</dimen>
 
     <dimen name="tab_title_text_padding_vertical">10dp</dimen>

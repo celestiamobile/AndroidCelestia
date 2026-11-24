@@ -22,6 +22,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
@@ -73,7 +74,10 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
     }
 
     if (viewModel.tabs.isEmpty() || viewModel.selectedTabIndex.intValue >= viewModel.tabs.size || viewModel.selectedTabIndex.intValue >= viewModel.backStacks.size) {
-        Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)) { paddingValues ->
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)
+        ) { paddingValues ->
             Box(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 contentAlignment = Alignment.Center
@@ -85,6 +89,7 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
         val backStack = viewModel.backStacks[viewModel.selectedTabIndex.intValue]
         if (backStack.isEmpty()) return
         Scaffold(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             topBar = {
                 TopAppBar(title = {
                     val current = backStack.lastOrNull() ?: return@TopAppBar
@@ -109,7 +114,9 @@ fun Browser(linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, a
                             )
                         }
                     }
-                }, scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ), scrollBehavior = scrollBehavior, windowInsets = WindowInsets())
             },
             bottomBar = {
                 NavigationBar(

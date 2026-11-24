@@ -12,8 +12,6 @@ package space.celestia.celestiaui.settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -27,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
-import androidx.compose.ui.res.dimensionResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -36,6 +33,8 @@ import kotlinx.coroutines.withContext
 import space.celestia.celestia.Utils
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.DateInputDialog
+import space.celestia.celestiaui.compose.GroupedListItem
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.TextInputDialog
 import space.celestia.celestiaui.compose.TextRow
@@ -79,25 +78,29 @@ fun TimeSettingsScreen(paddingValues: PaddingValues) {
     Column(modifier = Modifier
         .nestedScroll(nestedScrollInterop)
         .verticalScroll(state = rememberScrollState(), enabled = true)
-        .padding(paddingValues)) {
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-        TextRow(primaryText = CelestiaString("Select Time", "Select simulation time"), secondaryText = dateTimeDisplayFormatter.format(currentTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
-            alert = TimeSettingsAlert.TimeInput
-        }))
-        TextRow(primaryText = CelestiaString("Julian Day", "Select time via entering Julian day"), secondaryText = displayNumberFormat.format(currentJulianDay), modifier = Modifier.clickable(onClick = dropUnlessResumed {
-            alert = TimeSettingsAlert.JulianDayInput
-        }))
-        TextRow(primaryText = CelestiaString("Set to Current Time", "Set simulation time to device"), modifier = Modifier.clickable(onClick = dropUnlessResumed {
-            scope.launch {
-                val julianDay = withContext(viewModel.executor.asCoroutineDispatcher()) {
-                    viewModel.appCore.perform(CelestiaAction.CurrentTime)
-                    return@withContext viewModel.appCore.simulation.time
+        .padding(groupedListContentPadding(paddingValues))) {
+        GroupedListItem(index = 0, count = 3) {
+            TextRow(primaryText = CelestiaString("Select Time", "Select simulation time"), secondaryText = dateTimeDisplayFormatter.format(currentTime), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                alert = TimeSettingsAlert.TimeInput
+            }))
+        }
+        GroupedListItem(index = 1, count = 3) {
+            TextRow(primaryText = CelestiaString("Julian Day", "Select time via entering Julian day"), secondaryText = displayNumberFormat.format(currentJulianDay), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                alert = TimeSettingsAlert.JulianDayInput
+            }))
+        }
+        GroupedListItem(index = 2, count = 3) {
+            TextRow(primaryText = CelestiaString("Set to Current Time", "Set simulation time to device"), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                scope.launch {
+                    val julianDay = withContext(viewModel.executor.asCoroutineDispatcher()) {
+                        viewModel.appCore.perform(CelestiaAction.CurrentTime)
+                        return@withContext viewModel.appCore.simulation.time
+                    }
+                    currentTime = Utils.createDateFromJulianDay(julianDay)
+                    currentJulianDay = julianDay
                 }
-                currentTime = Utils.createDateFromJulianDay(julianDay)
-                currentJulianDay = julianDay
-            }
-        }))
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
+            }))
+        }
     }
 
     alert?.let { content ->

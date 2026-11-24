@@ -36,10 +36,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.dropUnlessResumed
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.Footer
+import space.celestia.celestiaui.compose.GroupedListItem
 import space.celestia.celestiaui.compose.OptionInputDialog
-import space.celestia.celestiaui.compose.Separator
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.TextRow
+import space.celestia.celestiaui.compose.groupedItem
+import space.celestia.celestiaui.compose.groupedListContentPadding
 import space.celestia.celestiaui.settings.viewmodel.SettingsViewModel
 import space.celestia.celestiaui.utils.CelestiaString
 import space.celestia.celestiaui.utils.PreferenceManager
@@ -90,33 +92,37 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
         }
     }
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
-    LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = paddingValues) {
+    LazyColumn(modifier = Modifier.nestedScroll(nestedScrollInterop), contentPadding = groupedListContentPadding(paddingValues)) {
         item {
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-        }
-        item {
-            TextRow(primaryText = CelestiaString("Config File", "celestia.cfg"), secondaryText = if (customConfigFilePath == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable(onClick = dropUnlessResumed {
-                val packageManager = localActivity?.packageManager ?: return@dropUnlessResumed
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                intent.type = "*/*"
-                intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                if (intent.resolveActivity(packageManager) != null)
-                    fileChooserLauncher.launch(intent)
-                else
-                    alert = AlertContent.UnsupportedAction
-            }))
-            TextRow(primaryText = CelestiaString("Data Directory", "Directory to load data from"), secondaryText = if (customDataDirPath == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable(onClick = dropUnlessResumed {
-                val packageManager = localActivity?.packageManager ?: return@dropUnlessResumed
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                if (intent.resolveActivity(packageManager) != null)
-                    directoryChooserLauncher.launch(intent)
-                else
-                    alert = AlertContent.UnsupportedAction
-            }))
+            GroupedListItem(index = 0, count = 2) {
+                TextRow(primaryText = CelestiaString("Config File", "celestia.cfg"), secondaryText = if (customConfigFilePath == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                    val packageManager = localActivity?.packageManager ?: return@dropUnlessResumed
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    intent.type = "*/*"
+                    intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+                    if (intent.resolveActivity(packageManager) != null)
+                        fileChooserLauncher.launch(intent)
+                    else
+                        alert = AlertContent.UnsupportedAction
+                }))
+            }
+            GroupedListItem(index = 1, count = 2) {
+                TextRow(primaryText = CelestiaString("Data Directory", "Directory to load data from"), secondaryText = if (customDataDirPath == null) CelestiaString("Default", "") else CelestiaString("Custom", ""), modifier = Modifier.clickable(onClick = dropUnlessResumed {
+                    val packageManager = localActivity?.packageManager ?: return@dropUnlessResumed
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                    intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+                    if (intent.resolveActivity(packageManager) != null)
+                        directoryChooserLauncher.launch(intent)
+                    else
+                        alert = AlertContent.UnsupportedAction
+                }))
+            }
         }
 
         item {
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
+        }
+        groupedItem {
             TextRow(primaryText = CelestiaString("Migrate Add-on Data", "Action to migrate data where the add-on is downloaded"), modifier = Modifier.clickable(onClick = dropUnlessResumed {
                 val activity = localActivity ?: return@dropUnlessResumed
                 val dataDir = activity.getExternalFilesDir(null)
@@ -130,9 +136,7 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
         }
 
         item {
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
-            Separator()
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_short)))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_group_spacing)))
         }
         item {
             FilledTonalButton(modifier = internalViewModifier, onClick = dropUnlessResumed {
@@ -144,7 +148,6 @@ fun DataLocationSettingsScreen(paddingValues: PaddingValues) {
                 Text(text = CelestiaString("Reset to Default", "Reset celestia.cfg, data directory location"))
             }
             Footer(text = CelestiaString("Configuration will take effect after a restart.", "Change requires a restart"))
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.list_spacing_tall)))
         }
     }
 

@@ -2,18 +2,13 @@ package space.celestia.celestiaui.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -27,7 +22,7 @@ fun Footer(text: String, modifier: Modifier = Modifier) {
         end = dimensionResource(id = R.dimen.section_footer_margin_horizontal),
         bottom = dimensionResource(id = R.dimen.section_footer_margin_bottom)
     )) {
-        Text(text = text, color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium), style = MaterialTheme.typography.labelMedium)
+        Text(text = text, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -37,23 +32,6 @@ data class Link(val text: String, val url: String)
 fun FooterLink(text: String, links: List<Link>, action: (String) -> Unit, modifier: Modifier = Modifier, textAlign: TextAlign? = null) {
     val annotatedString = buildAnnotatedString {
         append(text)
-        addStyle(
-            style = ParagraphStyle(textAlign = textAlign ?: TextAlign.Unspecified),
-            start = 0,
-            end = text.length
-        )
-        addStyle(
-            style = SpanStyle(
-                color = colorResource(id = com.google.android.material.R.color.material_on_background_emphasis_medium),
-                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                fontWeight = MaterialTheme.typography.labelMedium.fontWeight,
-                fontStyle = MaterialTheme.typography.labelMedium.fontStyle,
-            ),
-            start = 0,
-            end = text.length
-        )
-
         for (entry in links.withIndex()) {
             val startIndex = text.indexOf(entry.value.text)
             if (startIndex == -1)
@@ -79,7 +57,13 @@ fun FooterLink(text: String, links: List<Link>, action: (String) -> Unit, modifi
         }
     }
 
-    BasicText(annotatedString, modifier = modifier)
+    Text(
+        text = annotatedString,
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodySmall,
+        textAlign = textAlign,
+    )
 }
 
 @Composable
