@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.13)
+project(ZipUtils LANGUAGES C CXX)
 
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../../../../dependencies")
 set(THIRD_PARTY_LIB_DIR "${THIRD_PARTY_DIR}/libs")

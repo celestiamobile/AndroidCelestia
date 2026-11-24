@@ -58,6 +58,7 @@ import java.io.File
 @Composable
 fun ToolScreen(
     backStack: List<ToolPage>,
+    prepareForInput: suspend () -> Boolean,
     linkClicked: (String, Boolean) -> Unit,
     providePreferredDisplay: () -> Display?,
     refreshRateChanged: (Int) -> Unit,
@@ -201,6 +202,7 @@ fun ToolScreen(
             }
             is ToolPage.Search -> NavEntry(entry) {
                 SearchScreen(
+                    prepareForInput = prepareForInput,
                     linkClicked = {
                         linkClicked(it, false)
                     },

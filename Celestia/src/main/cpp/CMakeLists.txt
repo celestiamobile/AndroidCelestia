@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.13)
+project(Celestia LANGUAGES C CXX)
 
 set(CELESTIA_DIR ${CMAKE_SOURCE_DIR}/../../../../../Celestia)
 set(CELESTIA_SRC_DIR "${CELESTIA_DIR}/src")

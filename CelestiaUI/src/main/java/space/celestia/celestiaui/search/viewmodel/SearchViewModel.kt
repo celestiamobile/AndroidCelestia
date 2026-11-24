@@ -38,6 +38,8 @@ class SearchViewModel @Inject constructor(
     val executor: Executor,
     @param:AppSettingsNoBackup private val preferences: PreferenceManager,
 ) : ViewModel() {
+    var currentSelection by mutableStateOf<Selection?>(null)
+        private set
     var recentSearches by mutableStateOf(emptyList<RecentSearch>())
         private set
     private var recentSearchJob: Job? = null
@@ -81,5 +83,6 @@ class SearchViewModel @Inject constructor(
         val updated = (listOf(path) + readRecentSearches().filter { it != path }).take(10)
         preferences[PreferenceManager.PredefinedKey.RecentSearches] = Json.encodeToString(updated)
         refreshRecentSearches()
+        currentSelection = selection
     }
 }

@@ -25,14 +25,10 @@ import android.util.LayoutDirection
 import android.util.Log
 import android.view.ContextMenu
 import android.view.Display
-import android.view.LayoutInflater
 import android.view.Menu
-import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
 import android.view.WindowManager
-import android.widget.LinearLayout
-import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
@@ -68,9 +64,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ShareCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
@@ -82,9 +76,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingtoolbar.FloatingToolbarLayout
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -162,6 +154,7 @@ import space.celestia.mobilecelestia.control.CustomAction
 import space.celestia.mobilecelestia.control.CustomActionType
 import space.celestia.mobilecelestia.control.InstantAction
 import space.celestia.mobilecelestia.control.OverflowItem
+import space.celestia.mobilecelestia.control.PlaybackControls
 import space.celestia.mobilecelestia.loading.LoadingScreen
 import space.celestia.mobilecelestia.menu.MenuScreen
 import space.celestia.mobilecelestia.menu.ToolbarAction
@@ -1954,8 +1947,8 @@ class MainActivity : AppCompatActivity(),
                 onDismiss = {
                     viewModel.bottomSheetVisible.value = false
                 }
-            ) {
-                ToolScreenContent()
+            ) { prepareForInput ->
+                ToolScreenContent(prepareForInput)
             }
             if (viewModel.loadingVisible.value) {
                 LoadingScreen(safeAreaInsets = safeAreaInsets)
@@ -1989,17 +1982,25 @@ class MainActivity : AppCompatActivity(),
                     ),
                 contentAlignment = Alignment.BottomStart
             ) {
-                AndroidView(factory = { ctx ->
-                    val toolbar = LayoutInflater.from(ctx).inflate(R.layout.playback_toolbar, null) as FloatingToolbarLayout
-                    toolbar
-                }, update = { toolbar ->
-                    val content = toolbar.findViewById<LinearLayout>(R.id.playback_toolbar_content)
-                    val signature = actions to overflowItems
-                    if (content.tag != signature) {
-                        content.tag = signature
-                        populateToolbarContent(content, actions, overflowItems)
-                    }
-                }, modifier = Modifier.onSizeChanged { onHeightChanged(it.height) })
+                PlaybackControls(
+                    actions = actions,
+                    overflowItems = overflowItems,
+                    onAction = { action ->
+                        when (action) {
+                            is InstantAction -> onInstantActionSelected(action.action)
+                            is ContinuousAction -> {
+                                onContinuousActionDown(action.action)
+                                onContinuousActionUp(action.action)
+                            }
+                            is CustomAction -> onCustomAction(action.type)
+                        }
+                    },
+                    onContinuousActionDown = ::onContinuousActionDown,
+                    onContinuousActionUp = ::onContinuousActionUp,
+                    onClose = ::hideToolbar,
+                    modifier = Modifier.onSizeChanged { onHeightChanged(it.height) },
+                    enabled = visibilityTransition.targetState
+                )
             }
         }
     }
@@ -2074,9 +2075,10 @@ class MainActivity : AppCompatActivity(),
     }
 
     @Composable
-    private fun ToolScreenContent() {
+    private fun ToolScreenContent(prepareForInput: suspend () -> Boolean) {
         ToolScreen(
             backStack = viewModel.backStack,
+            prepareForInput = prepareForInput,
             linkClicked = { link, localizable ->
                 openLink(link, localizable)
             },
@@ -2141,83 +2143,6 @@ class MainActivity : AppCompatActivity(),
         viewModel.toolbarOverflowActions.value = overflowItems
         viewModel.toolbarActions.value = actions
         viewModel.toolbarVisible.value = true
-    }
-
-    private fun populateToolbarContent(contentView: LinearLayout, actions: List<BottomControlAction>, overflowItems: List<OverflowItem>) {
-        contentView.removeAllViews()
-        val inflater = LayoutInflater.from(contentView.context)
-        val weakSelf = WeakReference(this)
-        for (action in actions) {
-            val button = inflater.inflate(R.layout.floating_toolbar_button, contentView, false) as MaterialButton
-            contentView.addView(button)
-            button.icon = ContextCompat.getDrawable(this, action.imageID ?: 0)
-            button.contentDescription = action.contentDescription
-            button.setOnClickListener(null)
-            button.setOnTouchListener(null)
-            when (action) {
-                is InstantAction -> {
-                    button.setOnClickListener {
-                        weakSelf.get()?.onInstantActionSelected(action.action)
-                    }
-                }
-
-                is ContinuousAction -> {
-                    @SuppressLint("ClickableViewAccessibility")
-                    button.setOnTouchListener { view, event ->
-                        when (event.actionMasked) {
-                            MotionEvent.ACTION_DOWN -> {
-                                weakSelf.get()?.onContinuousActionDown(action.action)
-                            }
-                            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                                weakSelf.get()?.onContinuousActionUp(action.action)
-                            }
-                        }
-                        return@setOnTouchListener view.onTouchEvent(event)
-                    }
-                }
-
-                is CustomAction -> {
-                    button.setOnClickListener {
-                        weakSelf.get()?.onCustomAction(action.type)
-                    }
-                }
-            }
-        }
-
-        val overflowButton = inflater.inflate(R.layout.floating_toolbar_button, contentView, false) as MaterialButton
-        overflowButton.icon = ContextCompat.getDrawable(this, R.drawable.bottom_toolbar_overflow)
-        overflowButton.contentDescription = CelestiaString("More actions", "Button to show more actions to in the bottom toolbar")
-        overflowButton.setOnTouchListener(null)
-        overflowButton.setOnClickListener {
-            val popup = PopupMenu(it.context, it)
-            for (i in overflowItems.indices) {
-                val action = overflowItems[i]
-                popup.menu.add(Menu.NONE, i, Menu.NONE, action.title)
-            }
-            popup.menu.add(Menu.NONE, overflowItems.size, Menu.NONE, CelestiaString("Close", ""))
-            popup.setOnMenuItemClickListener { menuItem ->
-                val self = weakSelf.get() ?: return@setOnMenuItemClickListener true
-                if (menuItem.itemId >= overflowItems.size) {
-                    self.hideToolbar()
-                } else {
-                    when (val action = overflowItems[menuItem.itemId].action) {
-                        is InstantAction -> {
-                            self.onInstantActionSelected(action.action)
-                        }
-                        is ContinuousAction -> {
-                            self.onContinuousActionDown(action.action)
-                            self.onContinuousActionUp(action.action)
-                        }
-                        is CustomAction -> {
-                            self.onCustomAction(action.type)
-                        }
-                    }
-                }
-                return@setOnMenuItemClickListener true
-            }
-            popup.show()
-        }
-        contentView.addView(overflowButton)
     }
 
     private fun updateGyroscope(isEnabled: Boolean) {

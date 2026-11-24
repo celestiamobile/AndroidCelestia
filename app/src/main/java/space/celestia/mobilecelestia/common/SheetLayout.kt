@@ -19,12 +19,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -35,8 +39,10 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -50,6 +56,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.async
 import kotlin.math.roundToInt
 
 enum class SheetDetent { Hidden, QuarterExpanded, PartiallyExpanded, Expanded }
@@ -60,11 +67,13 @@ fun SheetLayout(
     visible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
+    content: @Composable (prepareForInput: suspend () -> Boolean) -> Unit,
 ) {
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val containerSize = LocalWindowInfo.current.containerSize
+    val currentVisible by rememberUpdatedState(visible)
+    val scope = rememberCoroutineScope()
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val fullHeightPx = constraints.maxHeight.toFloat()
         val isWideScreen = with(density) { containerSize.width.toDp() } > SHEET_MAX_FULL_WIDTH_DP.dp
@@ -124,7 +133,7 @@ fun SheetLayout(
         if (isSheetVisible) {
             // Sheet
             val sheetAlignment = if (isWideScreen) {
-                if (layoutDirection == LayoutDirection.Rtl) Alignment.BottomEnd else Alignment.BottomStart
+                Alignment.BottomStart
             } else {
                 Alignment.BottomCenter
             }
@@ -136,7 +145,11 @@ fun SheetLayout(
             val sheetWidthModifier = if (isWideScreen) {
                 val containerWidthDp = with(density) { containerSize.width.toDp() }
                 val widthDp = if (containerWidthDp > SHEET_WIDE_THRESHOLD_DP.dp) SHEET_WIDE_WIDTH_DP.dp else SHEET_NARROW_WIDTH_DP.dp
-                Modifier.padding(start = safeStart + SHEET_LANDSCAPE_PADDING_DP.dp).width(widthDp)
+                // The bounded sheet is already positioned inside the horizontal safe area.
+                Modifier
+                    .padding(start = safeStart + SHEET_LANDSCAPE_PADDING_DP.dp)
+                    .width(widthDp)
+                    .consumeWindowInsets(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
             } else {
                 Modifier.fillMaxWidth()
             }
@@ -173,7 +186,21 @@ fun SheetLayout(
                         )
                     }
                     Box(modifier = Modifier.weight(1f).nestedScroll(nestedScrollConnection)) {
-                        content()
+                        content {
+                            // Keep expansion alive if the requesting screen leaves.
+                            scope.async {
+                                if (currentVisible) {
+                                    state.animateTo(SheetDetent.Expanded)
+                                    // Let the expanded offset reach layout before opening the IME.
+                                    withFrameNanos {}
+                                    currentVisible &&
+                                        state.currentValue == SheetDetent.Expanded &&
+                                        state.targetValue == SheetDetent.Expanded
+                                } else {
+                                    false
+                                }
+                            }.await()
+                        }
                     }
                 }
             }
