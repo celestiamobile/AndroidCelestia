@@ -1,9 +1,11 @@
 #!/bin/sh
 
-cd `dirname $0`
+set -e
 
-CELESTIA_ANDROID_ROOT=$1
-CELESTIA_LOCALIZATION_REPO_ROOT=`pwd`/../../CelestiaLocalization
-CELESTIA_LOCALIZATION_ANDROID_ROOT=$CELESTIA_LOCALIZATION_REPO_ROOT/android
+cd "$(dirname "$0")"
 
-rsync -rv --quiet $CELESTIA_LOCALIZATION_ANDROID_ROOT/* $CELESTIA_ANDROID_ROOT
+CELESTIA_ANDROID_ROOT=${1:?Missing Android resources destination}
+CELESTIA_LOCALIZATION_REPO_ROOT="$(pwd)/../../CelestiaLocalization"
+CELESTIA_LOCALIZATION_ANDROID_ROOT="$CELESTIA_LOCALIZATION_REPO_ROOT/android/${2:?Missing Android module name}"
+
+rsync -rv --quiet "$CELESTIA_LOCALIZATION_ANDROID_ROOT"/values* "$CELESTIA_ANDROID_ROOT"

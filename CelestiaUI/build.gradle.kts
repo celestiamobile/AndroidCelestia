@@ -9,6 +9,7 @@
  * of the License, or (at your option) any later version.
  */
 
+import org.gradle.kotlin.dsl.preBuild
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -61,6 +62,21 @@ kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_21
     }
+}
+
+val copyLocalizedFiles = tasks.register<Exec>("copyLocalizedFiles") {
+    description = "Copy localized CelestiaUI Android resources"
+    workingDir = projectDir
+    executable = "/bin/sh"
+    args = listOf(
+        rootProject.file("app/copy_localized_files.sh").absolutePath,
+        projectDir.resolve("src/main/res").absolutePath,
+        "CelestiaUI"
+    )
+}
+
+tasks.preBuild {
+    dependsOn(copyLocalizedFiles)
 }
 
 dependencies {

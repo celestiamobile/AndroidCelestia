@@ -97,7 +97,11 @@ val copyLocalizedFiles = tasks.register<Exec>("copyLocalizedFiles") {
     description = "Copy localized Android resources"
     workingDir = projectDir
     executable = "/bin/sh"
-    args = listOf("copy_localized_files.sh", File(File(File(projectDir, "src"), "main"), "res").absolutePath)
+    args = listOf(
+        "copy_localized_files.sh",
+        projectDir.resolve("src/main/res").absolutePath,
+        "app"
+    )
 }
 
 val copyGeneralData = tasks.register<Exec>("copyGeneralData") {
