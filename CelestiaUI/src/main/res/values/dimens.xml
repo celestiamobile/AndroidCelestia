@@ -59,12 +59,6 @@
     <dimen name="dialog_text_input_view_padding_vertical">12dp</dimen>
     <dimen name="dialog_text_input_text_padding_horizontal">4dp</dimen>
 
-    <dimen name="stepper_width">94dp</dimen>
-    <dimen name="stepper_height">32dp</dimen>
-    <dimen name="stepper_button_padding">5dp</dimen>
-    <dimen name="stepper_separator_top_margin">7dp</dimen>
-    <dimen name="stepper_separator_width">1dp</dimen>
-
     <dimen name="link_card_corner_radius">8dp</dimen>
     <dimen name="link_text_content_vertical_padding">8dp</dimen>
     <dimen name="link_text_content_horizontal_padding">12dp</dimen>
@@ -74,8 +68,6 @@
     <dimen name="app_icon_dimension">128dp</dimen>
     <dimen name="app_icon_padding">14dp</dimen>
     <dimen name="app_icon_rounded_corner">30dp</dimen>
-
-    <dimen name="stepper_corner_radius">7dp</dimen>
 
     <dimen name="list_spacing_short">8dp</dimen>
     <dimen name="list_group_spacing">16dp</dimen>

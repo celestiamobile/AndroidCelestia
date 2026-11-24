@@ -107,17 +107,31 @@ fun CameraControl(paddingValues: PaddingValues, cameraControlObserverModeClicked
 @Composable
 private fun StepperRow(name: String, minusAction: CameraControlAction, plusAction: CameraControlAction, modifier: Modifier = Modifier) {
     val viewModel: CameraControlViewModel = hiltViewModel()
-    val scope = rememberCoroutineScope()
-    Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(text = name)
-        Stepper(touchDown = { minus ->
-            scope.launch(viewModel.executor.asCoroutineDispatcher()) {
-                viewModel.appCore.keyDown((if (minus) minusAction else plusAction).value)
-            }
-        }, touchUp = { minus ->
-            scope.launch(viewModel.executor.asCoroutineDispatcher()) {
-                viewModel.appCore.keyUp((if (minus) minusAction else plusAction).value)
-            }
-        })
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.list_item_gap_horizontal)), verticalAlignment = Alignment.CenterVertically) {
+        Text(text = name, modifier = Modifier.weight(1f))
+        Stepper(
+            minusLabel = CelestiaString("Decrease %s", "Accessibility label for a camera control").format(name),
+            plusLabel = CelestiaString("Increase %s", "Accessibility label for a camera control").format(name),
+            touchDown = { minus ->
+                viewModel.executor.execute {
+                    viewModel.appCore.keyDown((if (minus) minusAction else plusAction).value)
+                }
+            },
+            touchUp = { minus ->
+                viewModel.executor.execute {
+                    viewModel.appCore.keyUp((if (minus) minusAction else plusAction).value)
+                }
+            },
+            onClick = { minus ->
+                val key = (if (minus) minusAction else plusAction).value
+                viewModel.executor.execute {
+                    viewModel.appCore.keyDown(key)
+                    // A nested task runs after the renderer has ticked with the key held.
+                    viewModel.executor.execute {
+                        viewModel.appCore.keyUp(key)
+                    }
+                }
+            },
+        )
     }
 }

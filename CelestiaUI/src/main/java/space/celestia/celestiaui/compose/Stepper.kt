@@ -1,102 +1,107 @@
 package space.celestia.celestiaui.compose
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.ButtonGroupScope
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.ripple
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconButtonDefaults.IconButtonWidthOption
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import space.celestia.celestiaui.R
 
 @Composable
-fun Stepper(touchDown: (Boolean) -> Unit, touchUp: (Boolean) -> Unit) {
-    val startInteractionSource = remember { MutableInteractionSource() }
-    val endInteractionSource = remember { MutableInteractionSource() }
-    val isStartPressed = startInteractionSource.collectIsPressedAsState()
-    val isEndPressed = endInteractionSource.collectIsPressedAsState()
-
-    LaunchedEffect(isStartPressed.value) {
-        if (isStartPressed.value) {
-            touchDown(true)
-        } else {
-            touchUp(true)
-        }
-    }
-
-    LaunchedEffect(isEndPressed.value) {
-        if (isEndPressed.value) {
-            touchDown(false)
-        } else {
-            touchUp(false)
-        }
-    }
-
-    Row(
-        modifier = Modifier
-            .width(dimensionResource(id = R.dimen.stepper_width))
-            .height(dimensionResource(id = R.dimen.stepper_height))
-            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.stepper_corner_radius)))
-            .background(MaterialTheme.colorScheme.secondaryContainer),
-        verticalAlignment = Alignment.CenterVertically
+fun Stepper(
+    minusLabel: String,
+    plusLabel: String,
+    touchDown: (Boolean) -> Unit,
+    touchUp: (Boolean) -> Unit,
+    onClick: (Boolean) -> Unit,
+) {
+    val minimumButtonWidth = LocalViewConfiguration.current.minimumTouchTargetSize.width
+    val buttonWidth = maxOf(
+        IconButtonDefaults.smallContainerSize(IconButtonWidthOption.Wide).width,
+        minimumButtonWidth,
+    )
+    val gap = ButtonGroupDefaults.ConnectedSpaceBetween
+    ButtonGroup(
+        overflowIndicator = { menuState ->
+            ButtonGroupDefaults.OverflowIndicator(
+                menuState = menuState,
+                colors = IconButtonDefaults.filledTonalIconButtonColors(),
+            )
+        },
+        modifier = Modifier.width(buttonWidth * 2 + gap),
+        horizontalArrangement = Arrangement.spacedBy(gap),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .clickable(
-                    interactionSource = startInteractionSource,
-                    indication = ripple(),
-                    onClick = {}
-                )
-                .padding(dimensionResource(R.dimen.stepper_button_padding)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_remove),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
-        VerticalDivider(
-            modifier = Modifier
-                .width(dimensionResource(id = R.dimen.stepper_separator_width))
-                .padding(vertical = dimensionResource(id = R.dimen.stepper_separator_top_margin))
-                .background(MaterialTheme.colorScheme.outline)
+        stepperButton(
+            label = minusLabel,
+            icon = R.drawable.ic_remove,
+            leading = true,
+            compressionLimit = buttonWidth - minimumButtonWidth,
+            onPress = { touchDown(true) },
+            onRelease = { touchUp(true) },
+            onClick = { onClick(true) },
         )
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .clickable(
-                    interactionSource = endInteractionSource,
-                    indication = ripple(),
-                    onClick = {}
-                )
-                .padding(dimensionResource(R.dimen.stepper_button_padding)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_add),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
+        stepperButton(
+            label = plusLabel,
+            icon = R.drawable.ic_add,
+            leading = false,
+            compressionLimit = buttonWidth - minimumButtonWidth,
+            onPress = { touchDown(false) },
+            onRelease = { touchUp(false) },
+            onClick = { onClick(false) },
+        )
     }
+}
+
+private fun ButtonGroupScope.stepperButton(
+    label: String,
+    @DrawableRes icon: Int,
+    leading: Boolean,
+    compressionLimit: Dp,
+    onPress: () -> Unit,
+    onRelease: () -> Unit,
+    onClick: () -> Unit,
+) {
+    customItem(
+        buttonGroupContent = {
+            HoldButton(onPress = onPress, onRelease = onRelease, onActivate = onClick) { modifier, interactionSource ->
+                FilledTonalIconButton(
+                    onClick = {},
+                    shapes = IconButtonDefaults.shapes(
+                        shape = if (leading) ButtonGroupDefaults.connectedLeadingButtonShape else ButtonGroupDefaults.connectedTrailingButtonShape,
+                        pressedShape = if (leading) ButtonGroupDefaults.connectedLeadingButtonPressShape else ButtonGroupDefaults.connectedTrailingButtonPressShape,
+                    ),
+                    modifier = modifier
+                        .weight(1f)
+                        .animateWidth(interactionSource, compressionLimit),
+                    interactionSource = interactionSource,
+                ) {
+                    Icon(painter = painterResource(icon), contentDescription = label)
+                }
+            }
+        },
+        menuContent = { menuState ->
+            DropdownMenuItem(
+                text = { Text(label) },
+                leadingIcon = { Icon(painter = painterResource(icon), contentDescription = null) },
+                onClick = {
+                    onClick()
+                    menuState.dismiss()
+                },
+            )
+        },
+    )
 }
