@@ -22,9 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -34,6 +32,8 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.SheetTopAppBar
+import space.celestia.celestiaui.compose.rememberPageTopAppBarScrollBehavior
 import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.control.viewmodel.CameraControlViewModel
 import space.celestia.celestiaui.control.viewmodel.Page
@@ -43,15 +43,15 @@ import space.celestia.celestiaui.utils.CelestiaString
 @Composable
 fun CameraControlContainer(observerModeLearnMoreClicked: (String, Boolean) -> Unit) {
     val viewModel: CameraControlViewModel = hiltViewModel()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     val backStack = viewModel.backStack
     if (backStack.isEmpty()) return
+    val scrollBehavior = rememberPageTopAppBarScrollBehavior(backStack)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
-            TopAppBar(title = {
+            SheetTopAppBar(title = {
                 when (backStack.lastOrNull()) {
                     Page.CameraControl -> {
                         Text(CelestiaString("Camera Control", "Observer control"))

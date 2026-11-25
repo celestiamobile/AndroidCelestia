@@ -22,9 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +39,8 @@ import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestia.BrowserItem
 import space.celestia.celestia.Selection
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.SheetTopAppBar
+import space.celestia.celestiaui.compose.rememberPageTopAppBarScrollBehavior
 import space.celestia.celestiaui.browser.viewmodel.BrowserPredefinedItem
 import space.celestia.celestiaui.browser.viewmodel.SubsystemPage
 import space.celestia.celestiaui.browser.viewmodel.SubsystemViewModel
@@ -56,7 +56,6 @@ sealed class SubsystemBrowserAlert {
 @Composable
 fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSubsystem: (Selection) -> Unit, addonCategoryRequested: (BrowserPredefinedItem.CategoryInfo) -> Unit, openRelatedAddons: (String) -> Unit, openSubscriptionManagement: () -> Unit) {
     val viewModel: SubsystemViewModel = hiltViewModel()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     var alert by remember { mutableStateOf<SubsystemBrowserAlert?>(null)  }
     val backStack = viewModel.backStack
     LaunchedEffect(Unit) {
@@ -65,12 +64,13 @@ fun SubsystemBrowser(selection: Selection, linkClicked: (String) -> Unit, openSu
     }
 
     if (backStack.isEmpty()) return
+    val scrollBehavior = rememberPageTopAppBarScrollBehavior(backStack)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
-            TopAppBar(title = {
-                val current = backStack.lastOrNull() ?: return@TopAppBar
+            SheetTopAppBar(title = {
+                val current = backStack.lastOrNull() ?: return@SheetTopAppBar
                 when (current) {
                     is SubsystemPage.Item -> {
                         Text(current.item.alternativeName ?: current.item.name)

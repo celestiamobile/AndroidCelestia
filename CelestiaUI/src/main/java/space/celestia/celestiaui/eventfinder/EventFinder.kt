@@ -22,9 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +43,8 @@ import kotlinx.coroutines.withContext
 import space.celestia.celestia.Body
 import space.celestia.celestia.EclipseFinder
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.SheetTopAppBar
+import space.celestia.celestiaui.compose.rememberPageTopAppBarScrollBehavior
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.eventfinder.viewmodel.EventFinderViewModel
@@ -62,16 +62,16 @@ sealed class EventFinderAlert {
 fun EventFinder() {
     val scope = rememberCoroutineScope()
     val viewModel: EventFinderViewModel = hiltViewModel()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     val backStack = viewModel.backStack
     var alert by remember { mutableStateOf<EventFinderAlert?>(null) }
     if (backStack.isEmpty()) return
+    val scrollBehavior = rememberPageTopAppBarScrollBehavior(backStack)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
-            TopAppBar(title = {
+            SheetTopAppBar(title = {
                 Text(CelestiaString("Eclipse Finder", ""))
             }, navigationIcon = {
                 if (backStack.count() > 1) {

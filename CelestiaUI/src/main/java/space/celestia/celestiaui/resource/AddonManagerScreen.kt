@@ -23,9 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +37,8 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.SheetTopAppBar
+import space.celestia.celestiaui.compose.rememberPageTopAppBarScrollBehavior
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.purchase.SubscriptionBackingScreen
@@ -55,18 +55,18 @@ sealed class AddonManagerAlert {
 @Composable
 fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (String, String) -> Unit, openSubscriptionManagement: () -> Unit, requestOpenAddonDownload: () -> Unit, runScript: (String, String, String?, String?, File?) -> Unit, shareURL: (String, String) -> Unit, receivedACK: (String) -> Unit, runDemo: () -> Unit, openSubscriptionPage: (String?) -> Unit, externalLinkClicked: (String) -> Unit) {
     val viewModel: AddonManagerViewModel = hiltViewModel()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val backStack = viewModel.backStack
 
     if (backStack.isEmpty()) return
+    val scrollBehavior = rememberPageTopAppBarScrollBehavior(backStack)
 
     var alert by remember { mutableStateOf<AddonManagerAlert?>(null) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
-            TopAppBar(title = {
-                val lastEntry = backStack.lastOrNull() ?: return@TopAppBar
+            SheetTopAppBar(title = {
+                val lastEntry = backStack.lastOrNull() ?: return@SheetTopAppBar
                 when (lastEntry) {
                     is AddonManagerPage.Home -> {
                         Text(CelestiaString("Installed", "Title for the list of installed add-ons"))
@@ -92,7 +92,7 @@ fun AddonManagerScreen(requestRunScript: (File) -> Unit, requestShareAddon: (Str
                     }
                 }
             }, actions = {
-                val lastEntry = backStack.lastOrNull() ?: return@TopAppBar
+                val lastEntry = backStack.lastOrNull() ?: return@SheetTopAppBar
                 when (lastEntry) {
                     is AddonManagerPage.Home -> {
                         if (viewModel.purchaseManager.canUseInAppPurchase()) {

@@ -12,9 +12,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
@@ -29,6 +27,8 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiafoundation.resource.model.ResourceItem
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.SheetTopAppBar
+import space.celestia.celestiaui.compose.rememberPageTopAppBarScrollBehavior
 import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import java.io.File
 
@@ -56,7 +56,6 @@ fun SingleAddonScreen(
     externalLinkClicked: (String) -> Unit,
 ) {
     val viewModel: SingleAddonViewModel = hiltViewModel()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val backStack = viewModel.backStack
     LaunchedEffect(Unit) {
         if (backStack.isEmpty())
@@ -64,11 +63,12 @@ fun SingleAddonScreen(
     }
 
     if (backStack.isEmpty()) return
+    val scrollBehavior = rememberPageTopAppBarScrollBehavior(backStack)
 
     Scaffold(
         topBar = {
-            TopAppBar(title = {
-                val lastEntry = backStack.lastOrNull() ?: return@TopAppBar
+            SheetTopAppBar(title = {
+                val lastEntry = backStack.lastOrNull() ?: return@SheetTopAppBar
                 when (lastEntry) {
                     is SingleAddonPage.Addon -> {
                         Text(lastEntry.title.value)
@@ -88,7 +88,7 @@ fun SingleAddonScreen(
                     }
                 }
             }, actions = {
-                val lastEntry = backStack.lastOrNull() ?: return@TopAppBar
+                val lastEntry = backStack.lastOrNull() ?: return@SheetTopAppBar
                 if (lastEntry is SingleAddonPage.Addon) {
                     IconButton({
                         requestShareAddon(lastEntry.title.value, lastEntry.addon.id)

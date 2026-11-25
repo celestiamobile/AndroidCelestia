@@ -13,7 +13,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -30,6 +29,7 @@ import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestia.AppCore
 import space.celestia.celestiaui.browser.Browser
 import space.celestia.celestiaui.browser.SubsystemBrowser
+import space.celestia.celestiaui.compose.SheetTopAppBar
 import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.control.CameraControlContainer
 import space.celestia.celestiaui.eventfinder.EventFinder
@@ -151,7 +151,7 @@ fun ToolScreen(
                 val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
                 Scaffold(
                     topBar = {
-                        TopAppBar(
+                        SheetTopAppBar(
                             title = {
                                 Text(infoViewModel.appCore.simulation.universe.getNameForSelection(entry.selection))
                             },

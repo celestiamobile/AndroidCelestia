@@ -24,9 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -36,6 +34,8 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import space.celestia.celestiaui.R
+import space.celestia.celestiaui.compose.SheetTopAppBar
+import space.celestia.celestiaui.compose.rememberPageTopAppBarScrollBehavior
 import space.celestia.celestiaui.compose.contentWindowInsetsIgnoringVisibility
 import space.celestia.celestiaui.purchase.SubscriptionBackingScreen
 import space.celestia.celestiaui.settings.viewmodel.Page
@@ -57,16 +57,16 @@ import space.celestia.celestiaui.utils.CelestiaString
 @Composable
 fun Settings(linkClicked: (String, Boolean) -> Unit, providePreferredDisplay: () -> Display?, refreshRateChanged: (Int) -> Unit, openSubscriptionManagement: () -> Unit) {
     val viewModel: SettingsViewModel = hiltViewModel()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     val backStack = viewModel.backStack
     if (backStack.isEmpty()) return
+    val scrollBehavior = rememberPageTopAppBarScrollBehavior(backStack)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
-            TopAppBar(title = {
-                val current = backStack.lastOrNull() ?: return@TopAppBar
+            SheetTopAppBar(title = {
+                val current = backStack.lastOrNull() ?: return@SheetTopAppBar
                 when (current) {
                     is Page.Home -> {
                         Text(CelestiaString("Settings", ""))

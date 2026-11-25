@@ -73,6 +73,7 @@ import space.celestia.celestia.Selection
 import space.celestia.celestiaui.R
 import space.celestia.celestiaui.compose.EmptyHint
 import space.celestia.celestiaui.compose.Header
+import space.celestia.celestiaui.compose.SheetHeaderColor
 import space.celestia.celestiaui.compose.SimpleAlertDialog
 import space.celestia.celestiaui.compose.TextRow
 import space.celestia.celestiaui.compose.groupedItems
@@ -96,6 +97,7 @@ fun SearchScreen(prepareForInput: suspend () -> Boolean, linkClicked: (String) -
     val isSearchExpanded = searchBarState.currentValue == SearchBarValue.Expanded ||
         searchBarState.targetValue == SearchBarValue.Expanded
     val pageContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
+    SheetHeaderColor(pageContainerColor)
     val searchBarColors = SearchBarDefaults.colors()
     val searchWindowInsets = SearchBarDefaults.windowInsets.only(WindowInsetsSides.Horizontal)
     val searchKey = textFieldState.text.toString()

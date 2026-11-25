@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
@@ -45,6 +46,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -57,6 +59,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.async
+import space.celestia.celestiaui.compose.LocalSheetHeaderState
+import space.celestia.celestiaui.compose.rememberSheetHeaderState
 import kotlin.math.roundToInt
 
 enum class SheetDetent { Hidden, QuarterExpanded, PartiallyExpanded, Expanded }
@@ -74,6 +78,7 @@ fun SheetLayout(
     val containerSize = LocalWindowInfo.current.containerSize
     val currentVisible by rememberUpdatedState(visible)
     val scope = rememberCoroutineScope()
+    val headerState = rememberSheetHeaderState()
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val fullHeightPx = constraints.maxHeight.toFloat()
         val isWideScreen = with(density) { containerSize.width.toDp() } > SHEET_MAX_FULL_WIDTH_DP.dp
@@ -172,6 +177,7 @@ fun SheetLayout(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(32.dp)
+                            .drawBehind { drawRect(headerState.color) }
                             .anchoredDraggable(state, Orientation.Vertical),
                         contentAlignment = Alignment.Center
                     ) {
@@ -186,20 +192,22 @@ fun SheetLayout(
                         )
                     }
                     Box(modifier = Modifier.weight(1f).nestedScroll(nestedScrollConnection)) {
-                        content {
-                            // Keep expansion alive if the requesting screen leaves.
-                            scope.async {
-                                if (currentVisible) {
-                                    state.animateTo(SheetDetent.Expanded)
-                                    // Let the expanded offset reach layout before opening the IME.
-                                    withFrameNanos {}
-                                    currentVisible &&
-                                        state.currentValue == SheetDetent.Expanded &&
-                                        state.targetValue == SheetDetent.Expanded
-                                } else {
-                                    false
-                                }
-                            }.await()
+                        CompositionLocalProvider(LocalSheetHeaderState provides headerState) {
+                            content {
+                                // Keep expansion alive if the requesting screen leaves.
+                                scope.async {
+                                    if (currentVisible) {
+                                        state.animateTo(SheetDetent.Expanded)
+                                        // Let the expanded offset reach layout before opening the IME.
+                                        withFrameNanos {}
+                                        currentVisible &&
+                                            state.currentValue == SheetDetent.Expanded &&
+                                            state.targetValue == SheetDetent.Expanded
+                                    } else {
+                                        false
+                                    }
+                                }.await()
+                            }
                         }
                     }
                 }
