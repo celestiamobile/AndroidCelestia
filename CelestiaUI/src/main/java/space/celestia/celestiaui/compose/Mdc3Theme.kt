@@ -32,7 +32,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.content.res.getResourceIdOrThrow
@@ -41,36 +40,11 @@ import space.celestia.celestiaui.R
 import java.lang.reflect.Method
 
 /**
- * A [MaterialTheme] which reads the corresponding values from a Material Components for Android
- * theme in the given [context].
- *
- * By default the text colors from any associated `TextAppearance`s from the theme are *not* read.
- * This is because setting a fixed color in the resulting [TextStyle] breaks the usage of
- * [androidx.compose.material.ContentAlpha] through [androidx.compose.material.LocalContentAlpha].
- * You can customize this through the [setTextColors] parameter.
- *
- * @param context The context to read the theme from.
- * @param readColorScheme whether the read the MDC color palette from the [context]'s theme.
- * If `false`, the current value of [MaterialTheme.colorScheme] is preserved.
- * @param readTypography whether the read the MDC text appearances from [context]'s theme.
- * If `false`, the current value of [MaterialTheme.typography] is preserved.
- * @param readShapes whether the read the MDC shape appearances from the [context]'s theme.
- * If `false`, the current value of [MaterialTheme.shapes] is preserved.
- * @param setTextColors whether to read the colors from the `TextAppearance`s associated from the
- * theme. Defaults to `false`.
- * @param setDefaultFontFamily whether to read and prioritize the `fontFamily` attributes from
- * [context]'s theme, over any specified in the MDC text appearances. Defaults to `false`.
+ * Applies the host XML theme's colors, typography, and shapes to Compose.
  */
 @Composable
-fun Mdc3Theme(
-    context: Context = LocalContext.current,
-    readColorScheme: Boolean = true,
-    readTypography: Boolean = true,
-    readShapes: Boolean = true,
-    setTextColors: Boolean = false,
-    setDefaultFontFamily: Boolean = false,
-    content: @Composable () -> Unit
-) {
+fun Mdc3Theme(content: @Composable () -> Unit) {
+    val context = LocalContext.current
     // We try and use the theme key value if available, which should be a perfect key for caching
     // and avoid the expensive theme lookups in re-compositions.
     //
@@ -85,19 +59,14 @@ fun Mdc3Theme(
     val themeParams = remember(key) {
         createMdc3Theme(
             context = context,
-            layoutDirection = layoutDirection,
-            readColorScheme = readColorScheme,
-            readTypography = readTypography,
-            readShapes = readShapes,
-            setTextColors = setTextColors,
-            setDefaultFontFamily = setDefaultFontFamily
+            layoutDirection = layoutDirection
         )
     }
 
     MaterialTheme(
-        colorScheme = themeParams.colorScheme ?: MaterialTheme.colorScheme,
-        typography = themeParams.typography ?: MaterialTheme.typography,
-        shapes = themeParams.shapes ?: MaterialTheme.shapes
+        colorScheme = themeParams.colorScheme,
+        typography = themeParams.typography,
+        shapes = themeParams.shapes
     ) {
         // We update the LocalContentColor to match our onBackground. This allows the default
         // content color to be more appropriate to the theme background
@@ -108,61 +77,26 @@ fun Mdc3Theme(
     }
 }
 
-/**
- * This class contains the individual components of a [MaterialTheme]: [ColorScheme] and
- * [Typography].
- */
-data class Theme3Parameters(
-    val colorScheme: ColorScheme?,
-    val typography: Typography?,
-    val shapes: Shapes?
+private data class Theme3Parameters(
+    val colorScheme: ColorScheme,
+    val typography: Typography,
+    val shapes: Shapes
 )
 
 /**
- * This function creates the components of a [androidx.compose.material.MaterialTheme], reading the
- * values from an Material Components for Android theme.
- *
- * By default the text colors from any associated `TextAppearance`s from the theme are *not* read.
- * This is because setting a fixed color in the resulting [TextStyle] breaks the usage of
- * [androidx.compose.material.ContentAlpha] through [androidx.compose.material.LocalContentAlpha].
- * You can customize this through the [setTextColors] parameter.
- *
- * For [Shapes], the [layoutDirection] is taken into account when reading corner sizes of
- * `ShapeAppearance`s from the theme. For example, [Shapes.medium.topStart] will be read from
- * `cornerSizeTopLeft` for [LayoutDirection.Ltr] and `cornerSizeTopRight` for [LayoutDirection.Rtl].
- *
- * The individual components of the returned [Theme3Parameters] may be `null`, depending on the
- * matching 'read' parameter. For example, if you set [readColorScheme] to `false`,
- * [Theme3Parameters.colors] will be null.
- *
- * @param context The context to read the theme from.
- * @param layoutDirection The layout direction to be used when reading shapes.
- * @param density The current density.
- * @param readColorScheme whether the read the MDC color palette from the [context]'s theme.
- * @param readTypography whether the read the MDC text appearances from [context]'s theme.
- * @param readShapes whether the read the MDC shape appearances from the [context]'s theme.
- * @param setTextColors whether to read the colors from the `TextAppearance`s associated from the
- * theme. Defaults to `false`.
- * @param setDefaultFontFamily whether to read and prioritize the `fontFamily` attributes from
- * [context]'s theme, over any specified in the MDC text appearances. Defaults to `false`.
- * @return [Theme3Parameters] instance containing the resulting [ColorScheme] and [Typography].
+ * Reads text appearances without fixed text colors so Compose can supply content colors.
  */
-fun createMdc3Theme(
+private fun createMdc3Theme(
     context: Context,
     layoutDirection: LayoutDirection,
-    density: Density = Density(context),
-    readColorScheme: Boolean = true,
-    readTypography: Boolean = true,
-    readShapes: Boolean = true,
-    setTextColors: Boolean = false,
-    setDefaultFontFamily: Boolean = false
 ): Theme3Parameters {
+    val density = Density(context)
     return context.obtainStyledAttributes(R.styleable.ThemeAdapterMaterial3Theme).use { ta ->
         require(ta.hasValue(R.styleable.ThemeAdapterMaterial3Theme_isMaterial3Theme)) {
             "createMdc3Theme requires the host context's theme to extend Theme.Material3"
         }
 
-        val colorScheme: ColorScheme? = if (readColorScheme) {
+        val colorScheme = run {
             /* First we'll read the Material 3 color palette */
             val primary = ta.parseColor(R.styleable.ThemeAdapterMaterial3Theme_colorPrimary)
             val onPrimary = ta.parseColor(R.styleable.ThemeAdapterMaterial3Theme_colorOnPrimary)
@@ -318,171 +252,66 @@ fun createMdc3Theme(
                     scrim = scrimBackground
                 )
             }
-        } else null
+        }
 
-        /**
-         * Next we'll create a typography instance, using the Material Theme text appearances
-         * for TextStyles.
-         *
-         * We create a normal 'empty' instance first to start from the defaults, then merge in our
-         * created text styles from the Android theme.
-         */
+        fun readTextAppearance(index: Int) = parseTextAppearance(
+            context = context,
+            id = ta.getResourceIdOrThrow(index),
+            density = density,
+            setTextColors = false,
+            defaultFontFamily = null
+        )
 
-        val typography = if (readTypography) {
-            val defaultFontFamily = if (setDefaultFontFamily) {
-                val defaultFontFamilyWithWeight: FontFamilyWithWeight? = ta.parseFontFamily(
-                    R.styleable.ThemeAdapterMaterial3Theme_fontFamily
-                ) ?: ta.parseFontFamily(R.styleable.ThemeAdapterMaterial3Theme_android_fontFamily)
-                defaultFontFamilyWithWeight?.fontFamily
-            } else {
-                null
-            }
-            Typography(
-                displayLarge = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceDisplayLarge),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                displayMedium = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceDisplayMedium),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                displaySmall = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceDisplaySmall),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                headlineLarge = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceHeadlineLarge),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                headlineMedium = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceHeadlineMedium),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                headlineSmall = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceHeadlineSmall),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                titleLarge = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceTitleLarge),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                titleMedium = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceTitleMedium),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                titleSmall = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceTitleSmall),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                bodyLarge = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceBodyLarge),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                bodyMedium = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceBodyMedium),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                bodySmall = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceBodySmall),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                labelLarge = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceLabelLarge),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                labelMedium = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceLabelMedium),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
-                labelSmall = parseTextAppearance(
-                    context,
-                    ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceLabelSmall),
-                    density,
-                    setTextColors,
-                    defaultFontFamily
-                ),
+        val typography = Typography(
+            displayLarge = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceDisplayLarge),
+            displayMedium = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceDisplayMedium),
+            displaySmall = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceDisplaySmall),
+            headlineLarge = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceHeadlineLarge),
+            headlineMedium = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceHeadlineMedium),
+            headlineSmall = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceHeadlineSmall),
+            titleLarge = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceTitleLarge),
+            titleMedium = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceTitleMedium),
+            titleSmall = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceTitleSmall),
+            bodyLarge = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceBodyLarge),
+            bodyMedium = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceBodyMedium),
+            bodySmall = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceBodySmall),
+            labelLarge = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceLabelLarge),
+            labelMedium = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceLabelMedium),
+            labelSmall = readTextAppearance(R.styleable.ThemeAdapterMaterial3Theme_textAppearanceLabelSmall),
+        )
+
+        val shapes = Shapes(
+            extraSmall = parseShapeAppearance(
+                context = context,
+                id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerExtraSmall),
+                layoutDirection = layoutDirection,
+                fallbackShape = emptyShapes.extraSmall
+            ),
+            small = parseShapeAppearance(
+                context = context,
+                id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerSmall),
+                layoutDirection = layoutDirection,
+                fallbackShape = emptyShapes.small
+            ),
+            medium = parseShapeAppearance(
+                context = context,
+                id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerMedium),
+                layoutDirection = layoutDirection,
+                fallbackShape = emptyShapes.medium
+            ),
+            large = parseShapeAppearance(
+                context = context,
+                id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerLarge),
+                layoutDirection = layoutDirection,
+                fallbackShape = emptyShapes.large
+            ),
+            extraLarge = parseShapeAppearance(
+                context = context,
+                id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerExtraLarge),
+                layoutDirection = layoutDirection,
+                fallbackShape = emptyShapes.extraLarge
             )
-        } else null
-
-        /**
-         * Now read the shape appearances, taking into account the layout direction.
-         */
-        val shapes = if (readShapes) {
-            Shapes(
-                extraSmall = parseShapeAppearance(
-                    context = context,
-                    id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerExtraSmall),
-                    layoutDirection = layoutDirection,
-                    fallbackShape = emptyShapes.extraSmall
-                ),
-                small = parseShapeAppearance(
-                    context = context,
-                    id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerSmall),
-                    layoutDirection = layoutDirection,
-                    fallbackShape = emptyShapes.small
-                ),
-                medium = parseShapeAppearance(
-                    context = context,
-                    id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerMedium),
-                    layoutDirection = layoutDirection,
-                    fallbackShape = emptyShapes.medium
-                ),
-                large = parseShapeAppearance(
-                    context = context,
-                    id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerLarge),
-                    layoutDirection = layoutDirection,
-                    fallbackShape = emptyShapes.large
-                ),
-                extraLarge = parseShapeAppearance(
-                    context = context,
-                    id = ta.getResourceIdOrThrow(R.styleable.ThemeAdapterMaterial3Theme_shapeAppearanceCornerExtraLarge),
-                    layoutDirection = layoutDirection,
-                    fallbackShape = emptyShapes.extraLarge
-                )
-            )
-        } else null
+        )
 
         Theme3Parameters(colorScheme, typography, shapes)
     }

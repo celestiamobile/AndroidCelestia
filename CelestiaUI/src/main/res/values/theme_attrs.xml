@@ -32,8 +32,6 @@
         <attr name="android:fontFeatureSettings" />
         <attr name="android:fontFamily" />
         <attr name="fontFamily" />
-        <!-- TODOs below -->
-        <attr name="android:fontVariationSettings" />
     </declare-styleable>
 
     <declare-styleable name="ThemeAdapterShapeAppearance">
@@ -98,8 +96,6 @@
         <attr name="colorOnErrorContainer" />
         <attr name="scrimBackground" />
         <!-- Typography -->
-        <attr name="fontFamily" />
-        <attr name="android:fontFamily" />
         <attr name="textAppearanceDisplayLarge" />
         <attr name="textAppearanceDisplayMedium" />
         <attr name="textAppearanceDisplaySmall" />
