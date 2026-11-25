@@ -213,7 +213,7 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
             SettingsSelectionSingleItem(key = SettingsKey.TimeZone, options = listOf(
                 Pair(0, CelestiaString("Local Time", "")),
                 Pair(1, CelestiaString("UTC", "")),
-            ), displayName = SettingsKey.TimeZone.displayName, defaultSelection = 0, showTitle = false)
+            ), displayName = SettingsKey.TimeZone.displayName, defaultSelection = 0)
         )
     ),
     SettingsCommonItem.create(
@@ -224,22 +224,31 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
                 Pair(1, CelestiaString("YYYY MMM DD HH:MM:SS TZ", "")),
                 Pair(2, CelestiaString("UTC Offset", "")),
                 Pair(3, CelestiaString("ISO 8601", "")),
-            ), displayName = SettingsKey.DateFormat.displayName, defaultSelection = 1, showTitle = false)
+            ), displayName = SettingsKey.DateFormat.displayName, defaultSelection = 1)
         )
     ),
     SettingsCurrentTimeItem(),
-    SettingsCommonItem.create(
+    SettingsCommonItem(
         SettingsKey.MeasurementSystem.displayName,
         listOf(
-            SettingsSelectionSingleItem(key = SettingsKey.MeasurementSystem, options = listOf(
-                Pair(0, CelestiaString("Metric", "Metric measurement system")),
-                Pair(1, CelestiaString("Imperial", "Imperial measurement system")),
-            ), displayName = SettingsKey.MeasurementSystem.displayName, defaultSelection = 0, showTitle = false),
-            SettingsSelectionSingleItem(key = SettingsKey.TemperatureScale, options = listOf(
-                Pair(0, CelestiaString("Kelvin", "Temperature scale")),
-                Pair(1, CelestiaString("Celsius", "Temperature scale")),
-                Pair(2, CelestiaString("Fahrenheit", "Temperature scale")),
-            ), displayName = SettingsKey.TemperatureScale.displayName, defaultSelection = 0, showTitle = true)
+            SettingsCommonItem.Section(
+                rows = listOf(
+                    SettingsSelectionSingleItem(key = SettingsKey.MeasurementSystem, options = listOf(
+                        Pair(0, CelestiaString("Metric", "Metric measurement system")),
+                        Pair(1, CelestiaString("Imperial", "Imperial measurement system")),
+                    ), displayName = SettingsKey.MeasurementSystem.displayName, defaultSelection = 0),
+                ),
+            ),
+            SettingsCommonItem.Section(
+                header = SettingsKey.TemperatureScale.displayName,
+                rows = listOf(
+                    SettingsSelectionSingleItem(key = SettingsKey.TemperatureScale, options = listOf(
+                        Pair(0, CelestiaString("Kelvin", "Temperature scale")),
+                        Pair(1, CelestiaString("Celsius", "Temperature scale")),
+                        Pair(2, CelestiaString("Fahrenheit", "Temperature scale")),
+                    ), displayName = SettingsKey.TemperatureScale.displayName, defaultSelection = 0),
+                ),
+            ),
         )
     ),
     SettingsCommonItem.create(
@@ -249,7 +258,7 @@ private val staticTimeAndRegionItems: List<SettingsItem> = listOf(
                 Pair(0, CelestiaString("None", "Empty HUD display")),
                 Pair(1, CelestiaString("Terse", "Terse HUD display")),
                 Pair(2, CelestiaString("Verbose", "Verbose HUD display")),
-            ), displayName = SettingsKey.HudDetail.displayName, defaultSelection = 1, showTitle = false),
+            ), displayName = SettingsKey.HudDetail.displayName, defaultSelection = 1),
         )
     ),
     SettingsLanguageItem(),
@@ -357,8 +366,10 @@ private val staticAdvancedItems: List<SettingsItem> = listOf(
                         Pair(0, CelestiaString("Ask", "Script system access policy option")),
                         Pair(1, CelestiaString("Allow", "Script system access policy option")),
                         Pair(2, CelestiaString("Deny", "Script system access policy option")),
-                    ), displayName = SettingsKey.ScriptSystemAccessPolicy.displayName, defaultSelection = 0, showTitle = true, subtitle = CelestiaString("Lua scripts' access to the file system", "Note for Script System Access Policy"))
+                    ), displayName = SettingsKey.ScriptSystemAccessPolicy.displayName, defaultSelection = 0)
                 ),
+                header = SettingsKey.ScriptSystemAccessPolicy.displayName,
+                footer = Footer.Text(CelestiaString("Lua scripts' access to the file system", "Note for Script System Access Policy")),
             )
         )
     ),

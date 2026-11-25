@@ -612,13 +612,11 @@ class SettingsSelectionSingleItem(
     private val displayName: String,
     val options: List<Pair<Int, String>>,
     val defaultSelection: Int,
-    val showTitle: Boolean = true,
-    val subtitle: String? = null
 ) : SettingsItem {
     override val name: String
         get() = displayName
 
-    constructor(key: SettingsKey, displayName: String, options: List<Pair<Int, String>>, defaultSelection: Int, showTitle: Boolean = true, subtitle: String? = null) : this(key.valueString, displayName, options, defaultSelection, showTitle, subtitle)
+    constructor(key: SettingsKey, displayName: String, options: List<Pair<Int, String>>, defaultSelection: Int) : this(key.valueString, displayName, options, defaultSelection)
 }
 
 class SettingsCurrentTimeItem : SettingsItem {

@@ -17,13 +17,18 @@ val commonRendererItems: List<SettingsItem> = listOf(
         CelestiaString("Stars", "Star rendering settings"),
         listOf(
             SettingsCommonItem.Section(
-                listOf(
+                header = SettingsKey.StarStyle.displayName,
+                rows = listOf(
                     SettingsSelectionSingleItem(key = SettingsKey.StarStyle, options = listOf(
                         Pair(0, CelestiaString("Fuzzy Points", "Star style")),
                         Pair(1, CelestiaString("Points", "Star style")),
                         Pair(2, CelestiaString("Scaled Discs", "Star style")),
                         Pair(3, CelestiaString("Point Spread Function", "Star style")),
                     ), displayName = SettingsKey.StarStyle.displayName, defaultSelection = 0),
+                ),
+            ),
+            SettingsCommonItem.Section(
+                listOf(
                     SettingsSliderItem(SettingsKey.StarPointRadius, 1.0, 10.0, subtitle = CelestiaString("Pixel radius of a unit-irradiance star sprite.", "PSF star setting footnote")).visibleWhen { isPointSpreadFunctionStarStyle(it) },
                     SettingsSliderItem(SettingsKey.StarOptimization, 0.05, 1.0, subtitle = CelestiaString("Extent of the eye PSF glow around bright stars. Lower values widen the glow at higher GPU cost.", "PSF star setting footnote")).visibleWhen { isPointSpreadFunctionStarStyle(it) },
                     SettingsSliderItem(SettingsKey.StarMaxIrradiance, 1.0, 1000000.0, isLogarithmic = true, subtitle = CelestiaString("Soft upper limit on per-star peak irradiance to prevent bloom saturation.", "PSF star setting footnote")).visibleWhen { isPointSpreadFunctionStarStyle(it) },
@@ -32,7 +37,8 @@ val commonRendererItems: List<SettingsItem> = listOf(
                 )
             ),
             SettingsCommonItem.Section(
-                listOf(
+                header = SettingsKey.StarColors.displayName,
+                rows = listOf(
                     SettingsSelectionSingleItem(key = SettingsKey.StarColors, options = listOf(
                         Pair(0, CelestiaString("Classic Colors", "Star colors option")),
                         Pair(1, CelestiaString("Blackbody Illuminant E", "Star colors option")),
@@ -40,6 +46,10 @@ val commonRendererItems: List<SettingsItem> = listOf(
                         Pair(3, CelestiaString("Blackbody (Solar Whitepoint)", "Star colors option")),
                         Pair(4, CelestiaString("Blackbody (Vega Whitepoint)", "Star colors option")),
                     ), displayName = SettingsKey.StarColors.displayName, defaultSelection = 2),
+                ),
+            ),
+            SettingsCommonItem.Section(
+                listOf(
                     SettingsSliderItem(SettingsKey.TintSaturation, 0.0, 1.0),
                 ),
                 footer = Footer.Text(CelestiaString("Tinted illumination saturation setting is only effective with Blackbody star colors.", ""))
@@ -68,7 +78,7 @@ fun rendererQualityItem(displayItems: List<SettingsItem>): SettingsItem {
         CelestiaString("Quality", "Rendering quality settings"),
         listOf(
             SettingsCommonItem.Section(
-                header = CelestiaString("Textures", "Texture rendering quality settings"),
+                header = SettingsKey.Resolution.displayName,
                 rows = listOf(
                     SettingsSelectionSingleItem(key = SettingsKey.Resolution, options = listOf(
                         Pair(0, CelestiaString("Low", "Low resolution")),
@@ -118,6 +128,12 @@ fun outputRenderingItem(extraSections: List<SettingsCommonItem.Section> = emptyL
             SettingsCommonItem.Section(
                 rows = listOf(
                     SettingsPreferenceSwitchItem(PreferenceManager.PredefinedKey.SRGBRendering, CelestiaString("sRGB Rendering (Experimental)", "")),
+                ),
+                footer = Footer.Text(CelestiaString("Changes to sRGB rendering take effect after a restart.", "Output rendering settings footnote"))
+            ),
+            SettingsCommonItem.Section(
+                header = SettingsKey.ToneMapping.displayName,
+                rows = listOf(
                     SettingsSelectionSingleItem(key = SettingsKey.ToneMapping, options = listOf(
                         Pair(0, CelestiaString("Off", "Tone mapping mode")),
                         Pair(1, CelestiaString("Exponential", "Tone mapping mode")),
@@ -126,6 +142,10 @@ fun outputRenderingItem(extraSections: List<SettingsCommonItem.Section> = emptyL
                     ), displayName = SettingsKey.ToneMapping.displayName, defaultSelection = 0).visibleWhen { viewModel ->
                         viewModel.appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true"
                     },
+                ),
+            ),
+            SettingsCommonItem.Section(
+                rows = listOf(
                     SettingsSliderItem(SettingsKey.Exposure, 0.01, 100.0, isLogarithmic = true).visibleWhen { viewModel ->
                         val srgbEnabled = viewModel.appSettings[PreferenceManager.PredefinedKey.SRGBRendering] == "true"
                         val toneMapping = viewModel.coreSettings[PreferenceManager.CustomKey(SettingsKey.ToneMapping.valueString)]?.toIntOrNull()
@@ -133,7 +153,6 @@ fun outputRenderingItem(extraSections: List<SettingsCommonItem.Section> = emptyL
                         srgbEnabled && toneMapping > 0
                     },
                 ),
-                footer = Footer.Text(CelestiaString("Changes to sRGB rendering take effect after a restart.", "Output rendering settings footnote"))
             ),
         ) + extraSections
     )

@@ -78,7 +78,7 @@ fun SettingsEntryScreen(item: SettingsCommonItem, paddingValues: PaddingValues, 
                 .map { it.index to it.value.resolvedItem() }
             val rowOffsets = visibleRows.runningFold(0) { count, (_, row) ->
                 count + if (row is SettingsSelectionSingleItem) {
-                    row.options.size + if (row.showTitle) 1 else 0
+                    row.options.size
                 } else {
                     1
                 }
@@ -182,14 +182,8 @@ private fun SettingEntryContent(item: SettingsItem, viewModel: SettingsViewModel
                     }
                 )
             }
-            if (item.showTitle) {
-                GroupedListItem(index, count) {
-                    TextRow(primaryText = item.name, secondaryText = item.subtitle)
-                }
-            }
-            val optionOffset = if (item.showTitle) 1 else 0
             for ((optionIndex, option) in item.options.withIndex()) {
-                GroupedListItem(index + optionOffset + optionIndex, count) {
+                GroupedListItem(index + optionIndex, count) {
                     RadioButtonRow(primaryText = option.second, selected = option.first == selected) {
                         selected = option.first
                         viewModel.coreSettings[PreferenceManager.CustomKey(item.key)] = option.first.toString()
