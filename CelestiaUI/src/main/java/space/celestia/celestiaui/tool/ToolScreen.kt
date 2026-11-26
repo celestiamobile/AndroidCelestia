@@ -43,7 +43,7 @@ import space.celestia.celestiaui.info.viewmodel.InfoViewModel
 import space.celestia.celestiaui.resource.AddonDownload
 import space.celestia.celestiaui.resource.AddonManagerScreen
 import space.celestia.celestiaui.resource.SingleAddonScreen
-import space.celestia.celestiaui.resource.WebPage
+import space.celestia.celestiaui.resource.GuideScreen
 import space.celestia.celestiaui.resource.WebScreen
 import space.celestia.celestiaui.search.SearchScreen
 import space.celestia.celestiaui.settings.Settings
@@ -238,20 +238,15 @@ fun ToolScreen(
             }
             is ToolPage.Article -> NavEntry(entry) {
                 val uri by remember { mutableStateOf(URLHelper.buildInAppGuideURI(id = entry.id, language = AppCore.getLanguage(), platform = viewModel.platform, purchaseManager = viewModel.purchaseManager)) }
-                Scaffold(contentWindowInsets = ScaffoldDefaults.contentWindowInsetsIgnoringVisibility.only(WindowInsetsSides.Bottom)) { paddingValues ->
-                    WebPage(
-                        uri = uri,
-                        filterURL = true,
-                        matchingQueryKeys = listOf("guide"),
-                        paddingValues = paddingValues,
-                        runScript = runScript,
-                        shareURL = shareURL,
-                        receivedACK = receivedACK,
-                        runDemo = runDemo,
-                        openSubscriptionPage = openSubscriptionPage,
-                        externalLinkClicked = externalLinkClicked,
-                    )
-                }
+                GuideScreen(
+                    uri = uri,
+                    runScript = runScript,
+                    shareURL = shareURL,
+                    receivedACK = receivedACK,
+                    runDemo = runDemo,
+                    openSubscriptionPage = openSubscriptionPage,
+                    externalLinkClicked = externalLinkClicked,
+                )
             }
             is ToolPage.TimeSettings -> NavEntry(entry) {
                 TimeSettingsContainer()

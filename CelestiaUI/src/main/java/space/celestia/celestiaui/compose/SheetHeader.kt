@@ -76,46 +76,53 @@ fun SheetTopAppBar(
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    subtitle: (@Composable () -> Unit)? = null,
 ) {
-    if (LocalSheetHeaderState.current == null) {
+    var barModifier = modifier
+    var barColors = colors
+    if (LocalSheetHeaderState.current != null) {
+        val targetColor by remember(colors, scrollBehavior) {
+            derivedStateOf {
+                if ((scrollBehavior?.state?.overlappedFraction ?: 0f) > 0.01f) {
+                    colors.scrolledContainerColor
+                } else {
+                    colors.containerColor
+                }
+            }
+        }
+        val backgroundColor = animateColorAsState(
+            targetValue = targetColor,
+            animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
+            label = "SheetHeaderColor"
+        )
+        RegisterSheetHeaderColor(backgroundColor)
+        barModifier = modifier.drawBehind { drawRect(backgroundColor.value) }
+        barColors = colors.copy(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent
+        )
+    }
+
+    if (subtitle == null) {
         TopAppBar(
             title = title,
-            modifier = modifier,
+            modifier = barModifier,
             navigationIcon = navigationIcon,
             actions = actions,
             windowInsets = windowInsets,
-            colors = colors,
+            colors = barColors,
             scrollBehavior = scrollBehavior
         )
-        return
+    } else {
+        TopAppBar(
+            title = title,
+            subtitle = subtitle,
+            modifier = barModifier,
+            navigationIcon = navigationIcon,
+            actions = actions,
+            windowInsets = windowInsets,
+            colors = barColors,
+            scrollBehavior = scrollBehavior
+        )
     }
-
-    val targetColor by remember(colors, scrollBehavior) {
-        derivedStateOf {
-            if ((scrollBehavior?.state?.overlappedFraction ?: 0f) > 0.01f) {
-                colors.scrolledContainerColor
-            } else {
-                colors.containerColor
-            }
-        }
-    }
-    val backgroundColor = animateColorAsState(
-        targetValue = targetColor,
-        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
-        label = "SheetHeaderColor"
-    )
-    RegisterSheetHeaderColor(backgroundColor)
-
-    TopAppBar(
-        title = title,
-        modifier = modifier.drawBehind { drawRect(backgroundColor.value) },
-        navigationIcon = navigationIcon,
-        actions = actions,
-        windowInsets = windowInsets,
-        colors = colors.copy(
-            containerColor = Color.Transparent,
-            scrolledContainerColor = Color.Transparent
-        ),
-        scrollBehavior = scrollBehavior
-    )
 }

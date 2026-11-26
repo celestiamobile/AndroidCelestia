@@ -1,6 +1,7 @@
 package space.celestia.celestiaui.resource
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.net.http.SslError
@@ -66,6 +67,7 @@ fun WebPage(
     fallbackContent: (@Composable (Modifier, PaddingValues) -> Unit)? = null,
     paddingValues: PaddingValues,
     titleChanged: ((String) -> Unit)? = null,
+    pageInfoChanged: ((CelestiaJavascriptInterface.SendACKContext?) -> Unit)? = null,
     canGoBackChanged: ((Boolean) -> Unit)? = null,
     goBackRequest: ((() -> Unit) -> Unit)? = null,
     openAddon: ((ResourceItem) -> Unit)? = null,
@@ -104,6 +106,7 @@ fun WebPage(
                     preserveHistory = preserveHistory,
                     paddingValues = paddingValues,
                     titleChanged = titleChanged,
+                    pageInfoChanged = pageInfoChanged,
                     canGoBackChanged = canGoBackChanged,
                     goBackRequest = goBackRequest,
                     openAddon = openAddon,
@@ -114,7 +117,11 @@ fun WebPage(
                     openSubscriptionPage = openSubscriptionPage,
                     externalLinkClicked = externalLinkClicked,
                     viewModel = viewModel,
-                    onError = { error = it },
+                    onError = {
+                        error = it
+                        pageInfoChanged?.invoke(null)
+                        canGoBackChanged?.invoke(false)
+                    },
                     onInitialLoadingFinished = { initialLoadingFinished = true }
                 )
                 if (!initialLoadingFinished) {
@@ -137,6 +144,7 @@ private fun ComposeWebView(
     preserveHistory: Boolean,
     paddingValues: PaddingValues,
     titleChanged: ((String) -> Unit)?,
+    pageInfoChanged: ((CelestiaJavascriptInterface.SendACKContext?) -> Unit)?,
     canGoBackChanged: ((Boolean) -> Unit)?,
     goBackRequest: ((() -> Unit) -> Unit)?,
     openAddon: ((ResourceItem) -> Unit)?,
@@ -154,6 +162,7 @@ private fun ComposeWebView(
     val canGoBackState = remember { mutableStateOf(false) }
     val webViewRef = remember { mutableStateOf<WebView?>(null) }
     val currentTitleChanged = rememberUpdatedState(titleChanged)
+    val currentPageInfoChanged = rememberUpdatedState(pageInfoChanged)
     val currentCanGoBackChanged = rememberUpdatedState(canGoBackChanged)
     val currentOpenAddon = rememberUpdatedState(openAddon)
     val currentRunScript = rememberUpdatedState(runScript)
@@ -168,8 +177,7 @@ private fun ComposeWebView(
     }
 
     SideEffect {
-        val ref = webViewRef.value
-        goBackRequest?.invoke { ref?.goBack() }
+        goBackRequest?.invoke { webViewRef.value?.goBack() }
     }
 
     val messageHandler = remember {
@@ -180,8 +188,11 @@ private fun ComposeWebView(
             override fun shareURL(title: String, url: String) {
                 currentShareURL.value.invoke(title, url)
             }
-            override fun receivedACK(id: String) {
-                currentReceivedACK.value.invoke(id)
+            override fun receivedACK(context: CelestiaJavascriptInterface.SendACKContext) {
+                coroutineScope.launch {
+                    currentPageInfoChanged.value?.invoke(context)
+                    currentReceivedACK.value.invoke(context.id)
+                }
             }
             override fun openAddonNext(id: String) {
                 val lang = AppCore.getLanguage()
@@ -229,6 +240,11 @@ private fun ComposeWebView(
                 val defaultUri = uri
 
                 webViewClient = object : WebViewClient() {
+                    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                        super.onPageStarted(view, url, favicon)
+                        currentPageInfoChanged.value?.invoke(null)
+                    }
+
                     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?) =
                         shouldOverrideUrl(request?.url.toString())
 
@@ -311,6 +327,9 @@ private fun ComposeWebView(
         },
         modifier = Modifier.fillMaxSize().padding(paddingValues),
         onRelease = { view ->
+            webViewRef.value = null
+            canGoBackState.value = false
+            currentCanGoBackChanged.value?.invoke(false)
             if (view is WebView) {
                 if (preserveHistory) {
                     val saved = Bundle()
@@ -323,7 +342,6 @@ private fun ComposeWebView(
                 }
                 view.destroy()
             }
-            webViewRef.value = null
         }
     )
 }

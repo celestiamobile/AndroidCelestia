@@ -12,7 +12,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     interface MessageHandler {
         fun runScript(type: String, content: String, scriptName: String?, scriptLocation: String?)
         fun shareURL(title: String, url: String)
-        fun receivedACK(id: String)
+        fun receivedACK(context: SendACKContext)
         fun openAddonNext(id: String)
         fun runDemo()
         fun openSubscriptionPage(preferredPlayOfferId: String?)
@@ -34,7 +34,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
     class ShareURLContext(val title: String, val url: String)
     @Keep
     @Serializable
-    class SendACKContext(val id: String)
+    class SendACKContext(val id: String, val title: String? = null, val subtitle: String? = null, val shareURL: String? = null)
     @Keep
     @Serializable
     class OpenAddonNextContext(val id: String)
@@ -79,7 +79,7 @@ class CelestiaJavascriptInterface(handler: MessageHandler) {
             get() = "sendACK"
 
         override fun execute(context: SendACKContext, handler: MessageHandler) {
-            handler.receivedACK(context.id)
+            handler.receivedACK(context)
         }
     }
 

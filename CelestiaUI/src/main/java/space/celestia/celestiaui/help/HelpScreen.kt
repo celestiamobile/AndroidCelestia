@@ -72,15 +72,6 @@ fun HelpScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues, link
         contentPadding = groupedListContentPadding(paddingValues),
         modifier = modifier.nestedScroll(rememberNestedScrollInteropConnection())
     ) {
-        item {
-            Text(text = CelestiaString("Welcome to Celestia", "Welcome message"), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.padding(
-                start = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
-                end = dimensionResource(id = R.dimen.common_page_medium_margin_horizontal),
-                top = dimensionResource(id = R.dimen.common_page_medium_margin_vertical),
-                bottom = dimensionResource(id = R.dimen.common_page_medium_gap_vertical),
-            ))
-        }
-
         groupedItems(staticHelpDescriptionItems) {
             Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.tutorial_list_item_gap_horizontal)), modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(id = R.dimen.list_item_medium_margin_horizontal), vertical = dimensionResource(id = R.dimen.list_item_medium_margin_vertical))) {
                 Icon(painter = painterResource(id = it.imageResourceID), contentDescription = "", modifier = Modifier.size(dimensionResource(id = R.dimen.tutorial_list_icon_dimension)), tint = MaterialTheme.colorScheme.onBackground)
